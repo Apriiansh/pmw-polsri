@@ -265,7 +265,7 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
                 <?php endforeach; ?>
             <?php endif; ?>
         "
-        class="fixed top-24 right-6 z-9999 flex flex-col gap-3 w-full max-w-sm pointer-events-none"
+        class="fixed top-24 z-9999 flex flex-col gap-3 w-full max-w-sm pointer-events-none <?= $isAuthPage ? 'left-1/2 -translate-x-1/2 px-4' : 'right-6' ?>"
     >
         <template x-for="n in notifications" :key="n.id">
             <div 

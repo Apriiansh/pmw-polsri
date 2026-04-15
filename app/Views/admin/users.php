@@ -166,8 +166,12 @@
                         <td class="text-right whitespace-nowrap">
                             <div class="flex items-center justify-end gap-1.5 sm:gap-2">
                                 <!-- Detail Button -->
+                                <?php
+                                $profileJson = json_encode($user->profile ?? []);
+                                $profileEscaped = htmlspecialchars($profileJson, ENT_QUOTES, 'UTF-8');
+                                ?>
                                 <button type="button"
-                                        onclick="openUserModal(<?= $user->id ?>, '<?= esc($user->username) ?>', '<?= esc($user->email ?? '-') ?>', '<?= $roleLabel ?>', '<?= $mainGroup ?>', <?= $user->active ? 'true' : 'false' ?>, '<?= $user->created_at ? date('d M Y H:i', strtotime($user->created_at->toDateTimeString())) : '-' ?>')"
+                                        onclick='openUserModal(<?= $user->id ?>, "<?= esc($user->username) ?>", "<?= esc($user->email ?? '-') ?>", "<?= $roleLabel ?>", "<?= $mainGroup ?>", <?= $user->active ? 'true' : 'false' ?>, "<?= $user->created_at ? date('d M Y H:i', strtotime($user->created_at->toDateTimeString())) : '-' ?>", "<?= $mainGroup ?>", <?= $profileJson ?>)'
                                         class="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg bg-violet-50 text-violet-500 hover:bg-violet-500 hover:text-white transition-all"
                                         title="Detail">
                                     <i class="fas fa-eye text-[11px] sm:text-xs"></i>
@@ -180,7 +184,7 @@
                                 <?php if ($user->id !== auth()->user()->id): ?>
                                 <!-- Toggle Status -->
                                 <a href="<?= base_url('admin/users/toggle-status/' . $user->id) ?>"
-                                   class="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg <?= $user->active ? 'bg-orange-50 text-orange-500 hover:bg-orange-500' : 'bg-emerald-50 text-emerald-500 hover:bg-emerald-500' ?> hover:text-white transition-all"
+                                   class="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg <?= $user->active ? "bg-orange-50 text-orange-500 hover:bg-orange-500" : "bg-emerald-50 text-emerald-500 hover:bg-emerald-500" ?> hover:text-white transition-all"
                                    title="<?= $user->active ? 'Nonaktifkan' : 'Aktifkan' ?>"
                                    onclick="return confirm('<?= $user->active ? 'Nonaktifkan user ini?' : 'Aktifkan user ini?' ?>')">
                                     <i class="fas <?= $user->active ? 'fa-ban' : 'fa-check' ?> text-[11px] sm:text-xs"></i>
@@ -235,7 +239,7 @@
     <!-- Modal Panel -->
     <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
                 <!-- Modal Header -->
                 <div class="bg-linear-to-r from-sky-500 to-sky-600 px-6 py-4">
                     <div class="flex items-center justify-between">
@@ -259,55 +263,75 @@
                         </span>
                     </div>
 
-                    <!-- Info Grid -->
-                    <div class="space-y-3">
-                        <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
-                            <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-slate-400 shadow-sm">
-                                <i class="fas fa-id-card"></i>
-                            </div>
-                            <div>
-                                <p class="text-[11px] text-slate-400 font-semibold uppercase">User ID</p>
-                                <p id="modal-userid" class="font-mono text-sm text-slate-700">--</p>
+                    <!-- Two Column Layout -->
+                    <div class="grid md:grid-cols-2 gap-5 p-4">
+                        <!-- Left: Detail Akun -->
+                        <div>
+                            <h5 class="font-display font-bold text-sm text-slate-700 mb-3 flex items-center gap-2">
+                                <i class="fas fa-user-circle text-sky-500"></i>
+                                Detail Akun
+                            </h5>
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
+                                    <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-slate-400 shadow-sm">
+                                        <i class="fas fa-id-card"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[11px] text-slate-400 font-semibold uppercase">User ID</p>
+                                        <p id="modal-userid" class="font-mono text-sm text-slate-700">--</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
+                                    <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-slate-400 shadow-sm">
+                                        <i class="fas fa-envelope"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[11px] text-slate-400 font-semibold uppercase">Email</p>
+                                        <p id="modal-email" class="text-sm text-slate-700">--</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
+                                    <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-slate-400 shadow-sm">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[11px] text-slate-400 font-semibold uppercase">Role</p>
+                                        <p id="modal-role" class="text-sm text-slate-700">--</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
+                                    <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-slate-400 shadow-sm">
+                                        <i class="fas fa-circle-check"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[11px] text-slate-400 font-semibold uppercase">Status</p>
+                                        <p id="modal-status" class="text-sm">--</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
+                                    <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-slate-400 shadow-sm">
+                                        <i class="fas fa-calendar"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[11px] text-slate-400 font-semibold uppercase">Terdaftar</p>
+                                        <p id="modal-created" class="text-sm text-slate-700">--</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
-                            <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-slate-400 shadow-sm">
-                                <i class="fas fa-envelope"></i>
-                            </div>
-                            <div>
-                                <p class="text-[11px] text-slate-400 font-semibold uppercase">Email</p>
-                                <p id="modal-email" class="text-sm text-slate-700">--</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
-                            <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-slate-400 shadow-sm">
-                                <i class="fas fa-shield-alt"></i>
-                            </div>
-                            <div>
-                                <p class="text-[11px] text-slate-400 font-semibold uppercase">Role</p>
-                                <p id="modal-role" class="text-sm text-slate-700">--</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
-                            <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-slate-400 shadow-sm">
-                                <i class="fas fa-circle-check"></i>
-                            </div>
-                            <div>
-                                <p class="text-[11px] text-slate-400 font-semibold uppercase">Status</p>
-                                <p id="modal-status" class="text-sm">--</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
-                            <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-slate-400 shadow-sm">
-                                <i class="fas fa-calendar"></i>
-                            </div>
-                            <div>
-                                <p class="text-[11px] text-slate-400 font-semibold uppercase">Terdaftar</p>
-                                <p id="modal-created" class="text-sm text-slate-700">--</p>
+                        <!-- Right: Detail Role -->
+                        <div id="modal-profile-section" class="hidden">
+                            <h5 class="font-display font-bold text-sm text-slate-700 mb-3 flex items-center gap-2">
+                                <i class="fas fa-id-badge text-sky-500"></i>
+                                Detail <span id="modal-profile-role">Role</span>
+                            </h5>
+                            <div id="modal-profile-content" class="space-y-3">
+                                <!-- Dynamic content -->
                             </div>
                         </div>
                     </div>
@@ -325,7 +349,7 @@
 </div>
 
 <script>
-function openUserModal(id, username, email, roleLabel, roleKey, isActive, createdAt) {
+function openUserModal(id, username, email, roleLabel, roleKey, isActive, createdAt, roleGroup, profileData) {
     // Set avatar initials
     const initials = username.substring(0, 2).toUpperCase();
     document.getElementById('modal-avatar').textContent = initials;
@@ -357,9 +381,88 @@ function openUserModal(id, username, email, roleLabel, roleKey, isActive, create
     roleBadge.className = `inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border mt-2 ${roleColors[roleKey] || 'bg-slate-50 text-slate-600 border-slate-200'}`;
     roleBadge.innerHTML = `<i class="fas fa-shield-alt text-[10px]"></i> ${roleLabel}`;
 
+    // Render role-specific profile data
+    const profileSection = document.getElementById('modal-profile-section');
+    const profileContent = document.getElementById('modal-profile-content');
+    const profileRoleLabel = document.getElementById('modal-profile-role');
+
+    profileContent.innerHTML = ''; // Clear previous
+
+    if (profileData && Object.keys(profileData).length > 0) {
+        profileSection.classList.remove('hidden');
+        profileRoleLabel.textContent = roleLabel;
+
+        let html = '';
+
+        switch(roleGroup) {
+            case 'mahasiswa':
+                html = `
+                    ${renderProfileField('fa-id-card', 'NIM', profileData.nim)}
+                    ${renderProfileField('fa-user', 'Nama Lengkap', profileData.nama)}
+                    ${renderProfileField('fa-building', 'Jurusan', profileData.jurusan)}
+                    ${renderProfileField('fa-graduation-cap', 'Prodi', profileData.prodi)}
+                    ${renderProfileField('fa-layer-group', 'Semester', profileData.semester)}
+                    ${renderProfileField('fa-phone', 'No. HP', profileData.phone)}
+                    ${profileData.gender ? renderProfileField('fa-venus-mars', 'Gender', profileData.gender === 'L' ? 'Laki-laki' : 'Perempuan') : ''}
+                `;
+                break;
+            case 'dosen':
+                html = `
+                    ${renderProfileField('fa-id-badge', 'NIDN', profileData.nidn)}
+                    ${renderProfileField('fa-user', 'Nama Lengkap', profileData.nama)}
+                    ${renderProfileField('fa-building', 'Jurusan', profileData.jurusan)}
+                    ${renderProfileField('fa-graduation-cap', 'Prodi', profileData.prodi)}
+                    ${renderProfileField('fa-phone', 'No. HP', profileData.phone)}
+                    ${profileData.gender ? renderProfileField('fa-venus-mars', 'Gender', profileData.gender === 'L' ? 'Laki-laki' : 'Perempuan') : ''}
+                `;
+                break;
+            case 'mentor':
+                html = `
+                    ${renderProfileField('fa-user', 'Nama Lengkap', profileData.nama)}
+                    ${renderProfileField('fa-building', 'Perusahaan', profileData.company)}
+                    ${renderProfileField('fa-phone', 'No. HP', profileData.phone)}
+                    ${renderProfileField('fa-envelope', 'Email', profileData.email)}
+                    ${renderProfileField('fa-briefcase', 'Jabatan', profileData.position)}
+                    ${renderProfileField('fa-lightbulb', 'Keahlian', profileData.expertise)}
+                `;
+                break;
+            case 'reviewer':
+                html = `
+                    ${renderProfileField('fa-id-badge', 'NIP/NIDN', profileData.nip)}
+                    ${renderProfileField('fa-user', 'Nama Lengkap', profileData.nama)}
+                    ${renderProfileField('fa-building', 'Institusi', profileData.institution)}
+                    ${renderProfileField('fa-phone', 'No. HP', profileData.phone)}
+                    ${renderProfileField('fa-envelope', 'Email', profileData.email)}
+                    ${renderProfileField('fa-star', 'Spesialisasi', profileData.specialization)}
+                `;
+                break;
+            default:
+                profileSection.classList.add('hidden');
+        }
+
+        profileContent.innerHTML = html;
+    } else {
+        profileSection.classList.add('hidden');
+    }
+
     // Show modal
     document.getElementById('userModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+}
+
+function renderProfileField(icon, label, value) {
+    if (!value) return '';
+    return `
+        <div class="flex items-center gap-3 p-3 rounded-xl bg-sky-50/50 border border-sky-100">
+            <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-sky-400 shadow-sm">
+                <i class="fas ${icon} text-xs"></i>
+            </div>
+            <div>
+                <p class="text-[10px] text-slate-400 font-semibold uppercase">${label}</p>
+                <p class="text-sm text-slate-700 font-medium">${value}</p>
+            </div>
+        </div>
+    `;
 }
 
 function closeUserModal() {

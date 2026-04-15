@@ -6,6 +6,19 @@
     x-data="{ 
         showPass: false, 
         showConfirm: false,
+        nama: '<?= old('nama') ?? '' ?>',
+        nim: '<?= old('nim') ?? '' ?>',
+        username: '<?= old('username') ?? '' ?>',
+        generateUsername() {
+            const nama = (this.nama || '').trim().toLowerCase();
+            const nim = (this.nim || '').toString().trim();
+
+            const parts = nama.split(/\s+/).filter(Boolean).map(p => p.replace(/[^a-z]/g, ''));
+            const middle = (parts.length >= 2 ? parts[1] : (parts.length ? parts[parts.length - 1] : ''));
+            const last4 = nim.slice(-4);
+
+            this.username = (middle + last4).replace(/[^a-z0-9]/g, '');
+        },
         jurusan: '<?= old('jurusan') ?? '' ?>',
         prodi: '<?= old('prodi') ?? '' ?>',
         prodiList: {
@@ -101,13 +114,15 @@
                     </div>
                 <?php endif; ?>
 
-                <form action="<?= base_url('register') ?>" method="post" enctype="multipart/form-data" class="space-y-5 sm:space-y-6">
+                <form action="<?= base_url('register') ?>" method="post" enctype="multipart/form-data" class="space-y-5 sm:space-y-6" x-init="generateUsername()">
                     <?= csrf_field() ?>
+
+                    <input type="hidden" name="username" :value="username">
 
                     <!-- Nama Lengkap -->
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-2">Nama Lengkap Ketua</label>
-                        <input type="text" name="nama" value="<?= old('nama') ?>"
+                        <input type="text" name="nama" value="<?= old('nama') ?>" x-model="nama" @input="generateUsername()"
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all text-sm sm:text-base"
                             placeholder="Contoh: Nama Lengkap Tanpa Gelar" required>
                         <?php if (isset(session('errors')['nama'])): ?>
@@ -118,13 +133,12 @@
                     <div class="grid md:grid-cols-2 gap-4 sm:gap-6">
                         <!-- NIM -->
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-2">NIM (Username)</label>
-                            <input type="text" name="username" value="<?= old('username') ?>"
+                            <label class="block text-sm font-medium text-slate-700 mb-2">NIM</label>
+                            <input type="text" name="nim" value="<?= old('nim') ?>" x-model="nim" @input="generateUsername()"
                                 class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all text-sm sm:text-base"
                                 placeholder="Contoh: 062230700000" required>
-                            <p class="mt-1.5 text-[11px] text-slate-400 italic hidden sm:block">Gunakan 12 digit NIM Anda. Ini juga akan menjadi username login.</p>
-                            <?php if (isset(session('errors')['username'])): ?>
-                                <p class="mt-1 text-xs text-rose-500"><?= session('errors')['username'] ?></p>
+                            <?php if (isset(session('errors')['nim'])): ?>
+                                <p class="mt-1 text-xs text-rose-500"><?= session('errors')['nim'] ?></p>
                             <?php endif; ?>
                         </div>
 

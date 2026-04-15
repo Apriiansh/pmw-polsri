@@ -25,6 +25,7 @@ Mandatory development standards for the PMW Polsri project.
 
 ## 5. COMMIT & DOCUMENTATION
 - **Prefixes**: `feat:`, `fix:`, `docs:`, `style:`, `refactor:`.
+
 ## 6. PROGRESS TRACKING (MY-KISAH)
 - **Log Every Step**: Every major interaction and system change MUST be recorded in the `my-kisah/` directory.
 - **Naming Pattern**: Use the format `[Day][Month]-[Time][AM/PM].md` (e.g., `14Apr-1141AM.md`).

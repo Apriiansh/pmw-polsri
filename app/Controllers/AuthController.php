@@ -33,7 +33,8 @@ class AuthController extends BaseController
     {
         $validation = $this->validate([
             'nama' => 'required|min_length[3]|max_length[100]',
-            'username' => 'required|min_length[5]|max_length[20]|is_unique[users.username]|is_unique[pmw_profiles.nim]',
+            'nim' => 'required|min_length[5]|max_length[20]|is_unique[pmw_profiles.nim]',
+            'username' => 'permit_empty|is_unique[users.username]',
             'email' => 'required|valid_email|is_unique[auth_identities.secret]',
             'password' => 'required|min_length[8]|strong_password',
             'password_confirm' => 'required|matches[password]',
@@ -44,8 +45,11 @@ class AuthController extends BaseController
             'semester' => 'permit_empty|numeric',
             'gender' => 'permit_empty|in_list[L,P]',
         ], [
+            'nim' => [
+                'is_unique' => 'NIM ini sudah terdaftar sebagai akun.',
+            ],
             'username' => [
-                'is_unique' => 'NIM atau username ini sudah terdaftar sebagai akun.',
+                'is_unique' => 'Username ini sudah digunakan.',
             ],
             'email' => [
                 'is_unique' => 'Alamat email ini sudah terdaftar.',
@@ -61,6 +65,13 @@ class AuthController extends BaseController
 
         $data = $this->request->getPost();
 
+        // Generate username: middle name, fallback to last name + last 4 digits of NIM
+        $namaParts = array_values(array_filter(explode(' ', strtolower(trim($data['nama'])))));
+        $middleName = $namaParts[1] ?? end($namaParts);
+        $middleName = preg_replace('/[^a-z]/', '', (string) $middleName);
+        $last4Nim = substr((string) $data['nim'], -4);
+        $data['username'] = $middleName . $last4Nim;
+
         // Handle foto upload
         $fotoPath = null;
         $foto = $this->request->getFile('foto');
@@ -70,51 +81,73 @@ class AuthController extends BaseController
             $fotoPath = 'uploads/profiles/' . $newName;
         }
 
-        // Create Shield user
+        // Create Shield user provider
         $users = auth()->getProvider();
+
+        // Ensure username is unique by appending number if needed
+        $userModel = new UserModel();
+        $baseUsername = $data['username'];
+        $counter = 1;
+        $finalUsername = $baseUsername;
+        while ($userModel->where('username', $finalUsername)->first()) {
+            $finalUsername = $baseUsername . $counter;
+            $counter++;
+        }
+
+        // Create Shield user
         $user = new User([
-            'username' => $data['username'], // Using the field directly
+            'username' => $finalUsername,
             'email' => $data['email'],
             'password' => $data['password'],
         ]);
 
+        $db = \Config\Database::connect();
+        $db->transStart();
+
         try {
-            // Save user to get user ID
             if (!$users->save($user)) {
                 throw new \Exception('Gagal membuat akun user: ' . implode(', ', $users->errors()));
             }
-            
+
             $userId = $users->getInsertID();
 
             // Create PMW profile
             $profileModel = new \App\Models\ProfileModel();
-            $profileModel->insert([
+            $profileData = [
                 'user_id' => $userId,
                 'nama' => $data['nama'],
-                'nim' => $data['username'], // Save username (NIM input) to profile nim column
+                'nim' => $data['nim'],
                 'jurusan' => $data['jurusan'],
                 'prodi' => $data['prodi'],
                 'semester' => $data['semester'] ?? 1,
                 'phone' => $data['phone'],
                 'foto' => $fotoPath,
                 'gender' => $data['gender'] ?? 'L',
-            ]);
+            ];
+
+            if (!$profileModel->insert($profileData)) {
+                throw new \Exception('Gagal membuat profil mahasiswa: ' . implode(', ', $profileModel->errors()));
+            }
 
             // Fetch the saved user and assign group
             $savedUser = $users->findById($userId);
             $savedUser->addGroup('mahasiswa');
+
+            $db->transComplete();
 
             // Auto login with the saved user
             auth()->login($savedUser);
 
             return redirect()->to('/dashboard')->with('message', 'Registrasi berhasil! Selamat datang di PMW Polsri.');
         } catch (ValidationException $e) {
+            $db->transRollback();
             // Delete uploaded foto if error
             if ($fotoPath && file_exists(WRITEPATH . $fotoPath)) {
                 unlink(WRITEPATH . $fotoPath);
             }
             return redirect()->back()->withInput()->with('error', 'Validasi gagal: ' . $e->getMessage());
         } catch (\Exception $e) {
+            $db->transRollback();
             // Delete uploaded foto if error
             if ($fotoPath && file_exists(WRITEPATH . $fotoPath)) {
                 unlink(WRITEPATH . $fotoPath);

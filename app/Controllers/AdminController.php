@@ -108,9 +108,32 @@ class AdminController extends BaseController
         $userModel = new UserModel();
         $users = $userModel->findAll();
 
-        // Get groups for each user
+        // Get groups and profile data for each user
         foreach ($users as $user) {
             $user->groups = $user->getGroups();
+            $mainGroup = $user->groups[0] ?? '';
+
+            // Load role-specific profile data
+            switch ($mainGroup) {
+                case 'mahasiswa':
+                    $profileModel = new ProfileModel();
+                    $user->profile = $profileModel->where('user_id', $user->id)->first();
+                    break;
+                case 'dosen':
+                    $lecturerModel = new LecturerModel();
+                    $user->profile = $lecturerModel->where('user_id', $user->id)->first();
+                    break;
+                case 'mentor':
+                    $mentorModel = new MentorModel();
+                    $user->profile = $mentorModel->where('user_id', $user->id)->first();
+                    break;
+                case 'reviewer':
+                    $reviewerModel = new ReviewerModel();
+                    $user->profile = $reviewerModel->where('user_id', $user->id)->first();
+                    break;
+                default:
+                    $user->profile = null;
+            }
         }
 
         $data = [
