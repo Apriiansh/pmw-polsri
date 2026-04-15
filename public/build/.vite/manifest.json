@@ -1,0 +1,17 @@
+{
+  "app/Views/css/input.css": {
+    "file": "style.css",
+    "name": "style",
+    "names": [
+      "style.css"
+    ],
+    "src": "app/Views/css/input.css",
+    "isEntry": true
+  },
+  "app/Views/js/app.js": {
+    "file": "app.js",
+    "name": "app",
+    "src": "app/Views/js/app.js",
+    "isEntry": true
+  }
+}

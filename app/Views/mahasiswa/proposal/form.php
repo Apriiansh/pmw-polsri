@@ -19,25 +19,7 @@
             </a>
         </div>
 
-        <?php if (session('error')): ?>
-            <div class="card-premium p-4 border border-rose-100 bg-rose-50 text-rose-700">
-                <?= esc(session('error')) ?>
-            </div>
-        <?php endif; ?>
 
-        <?php if (session('errors')): ?>
-            <div class="card-premium p-4 border border-rose-100 bg-rose-50 text-rose-700 space-y-1">
-                <?php foreach (session('errors') as $err): ?>
-                    <div><?= esc($err) ?></div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-
-        <?php if (session('message')): ?>
-            <div class="card-premium p-4 border border-emerald-100 bg-emerald-50 text-emerald-700">
-                <?= esc(session('message')) ?>
-            </div>
-        <?php endif; ?>
 
         <!-- Period Info Card -->
         <div class="card-premium p-5 sm:p-7">
@@ -67,6 +49,10 @@
 
             <!-- Section 1: Identitas Tim -->
             <div class="card-premium p-5 sm:p-7 space-y-6">
+                <?php
+                $anggotaOnly = array_values(array_filter($members ?? [], fn($m) => ($m['role'] ?? '') === 'anggota'));
+                $existingCount = count($anggotaOnly);
+                ?>
                 <div class="flex items-center justify-between gap-4 flex-wrap">
                     <div>
                         <h3 class="font-display text-base font-bold text-slate-800">1) Identitas Tim</h3>
@@ -113,18 +99,124 @@
 
                 <div class="flex items-center justify-between gap-4 flex-wrap">
                     <p class="text-xs text-slate-500">Wajib 2–4 anggota.</p>
-                    <button type="button" class="btn-outline inline-flex items-center gap-2" @click="addMember()" :disabled="members.length >= 4">
+                    <button type="button" class="btn-outline inline-flex items-center gap-2" @click="addMember()" :disabled="<?= $existingCount ?> + newMembers.length >= 4">
                         <i class="fas fa-user-plus"></i>
                         Tambah Anggota
                     </button>
                 </div>
 
                 <div class="space-y-4">
-                    <template x-for="(m, idx) in members" :key="idx">
-                        <div class="p-4 rounded-xl bg-white border border-slate-100">
+
+                    <!-- PHP Loop: Existing Members (100% Reliable for Stored Data) -->
+                    <?php foreach ($anggotaOnly as $idx => $m): ?>
+                        <div class="p-4 rounded-xl bg-white border border-slate-100 member-row animate-in fade-in slide-in-from-top-2"
+                             x-data="{ 
+                                 show: true, 
+                                 jurusan: '<?= esc(old('members.'.$idx.'.jurusan', $m['jurusan'] ?? ''), 'js') ?>', 
+                                 prodi: '<?= esc(old('members.'.$idx.'.prodi', $m['prodi'] ?? ''), 'js') ?>' 
+                             }"
+                             x-init="$nextTick(() => { prodi = '<?= esc(old('members.'.$idx.'.prodi', $m['prodi'] ?? ''), 'js') ?>' })"
+                             x-show="show">
                             <div class="flex items-center justify-between gap-3 mb-4">
-                                <p class="text-sm font-bold text-slate-800">Anggota <span x-text="idx + 1"></span></p>
-                                <button type="button" class="btn-ghost btn-sm text-rose-600 hover:text-rose-700" @click="removeMember(idx)" x-show="members.length > 2">
+                                <p class="text-sm font-bold text-slate-800">Anggota <span x-text="<?= $idx + 1 ?>"></span></p>
+                                <button type="button" class="btn-ghost btn-sm text-rose-600 hover:text-rose-700" @click="show = false">
+                                    <i class="fas fa-trash-alt mr-1"></i> Hapus
+                                </button>
+                            </div>
+                            <!-- Conditional inputs: only if show is true -->
+                            <template x-if="show">
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div class="form-field">
+                                        <label class="form-label text-xs">Nama</label>
+                                        <div class="input-group">
+                                            <span class="input-icon"><i class="fas fa-user text-xs"></i></span>
+                                            <input type="text" name="members[<?= $idx ?>][nama]" value="<?= esc(old('members.'.$idx.'.nama', $m['nama'] ?? '')) ?>" placeholder="Nama lengkap" required>
+                                        </div>
+                                        <input type="hidden" name="members[<?= $idx ?>][role]" value="anggota">
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="form-label text-xs">NIM</label>
+                                        <div class="input-group">
+                                            <span class="input-icon"><i class="fas fa-id-card text-xs"></i></span>
+                                            <input type="text" name="members[<?= $idx ?>][nim]" value="<?= esc(old('members.'.$idx.'.nim', $m['nim'] ?? '')) ?>" placeholder="Nomor Induk Mahasiswa" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="form-label text-xs">Jurusan</label>
+                                        <div class="input-group">
+                                            <span class="input-icon"><i class="fas fa-building text-xs"></i></span>
+                                            <select name="members[<?= $idx ?>][jurusan]" x-model="jurusan" @change="prodi = ''"
+                                                    class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all text-xs bg-white" required>
+                                                <option value="">Pilih Jurusan</option>
+                                                <?php foreach (array_keys($prodiList) as $j): ?>
+                                                    <option value="<?= esc($j) ?>"><?= esc($j) ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="form-label text-xs">Prodi</label>
+                                        <div class="input-group">
+                                            <span class="input-icon"><i class="fas fa-graduation-cap text-xs"></i></span>
+                                            <select name="members[<?= $idx ?>][prodi]" x-model="prodi"
+                                                    class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all text-xs bg-white disabled:bg-slate-50 disabled:text-slate-400"
+                                                    :disabled="!jurusan" required>
+                                                <option value="">Pilih Program Studi</option>
+                                                
+                                                <!-- PHP Seed for initial display and validation errors -->
+                                                <?php $currentJurusan = old('members.'.$idx.'.jurusan', $m['jurusan'] ?? ''); ?>
+                                                <?php if (!empty($currentJurusan) && isset($prodiList[$currentJurusan])): ?>
+                                                    <?php foreach ($prodiList[$currentJurusan] as $p): ?>
+                                                        <option value="<?= esc($p) ?>"><?= esc($p) ?></option>
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
+
+                                                <!-- Alpine template for dynamic changes -->
+                                                <template x-for="p in prodiOptions(jurusan)" :key="p">
+                                                    <option :value="p" x-text="p"></option>
+                                                </template>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="form-label text-xs">Semester</label>
+                                        <div class="input-group">
+                                            <span class="input-icon"><i class="fas fa-calendar-alt text-xs"></i></span>
+                                            <select name="members[<?= $idx ?>][semester]"
+                                                    class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all text-xs bg-white" required>
+                                                <option value="">Pilih Semester</option>
+                                                <?php $currSemester = (int) old('members.'.$idx.'.semester', $m['semester'] ?? 0); ?>
+                                                <?php for ($i = 1; $i <= 8; $i++): ?>
+                                                    <option value="<?= $i ?>" <?= $currSemester === $i ? 'selected' : '' ?>><?= $i ?></option>
+                                                <?php endfor; ?>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="form-label text-xs">No. HP</label>
+                                        <div class="input-group">
+                                            <span class="input-icon"><i class="fas fa-phone text-xs"></i></span>
+                                            <input type="tel" name="members[<?= $idx ?>][phone]" value="<?= esc(old('members.'.$idx.'.phone', $m['phone'] ?? '')) ?>" placeholder="08xxxxxxxxxx" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="form-label text-xs">Email</label>
+                                        <div class="input-group">
+                                            <span class="input-icon"><i class="fas fa-envelope text-xs"></i></span>
+                                            <input type="email" name="members[<?= $idx ?>][email]" value="<?= esc(old('members.'.$idx.'.email', $m['email'] ?? '')) ?>" placeholder="email@student.polsri.ac.id" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    <?php endforeach; ?>
+
+                    <!-- Alpine Loop: New Members (Dynamic Interactivity) -->
+                    <template x-for="(m, idx) in newMembers" :key="idx">
+                        <div class="p-4 rounded-xl bg-sky-50/30 border border-sky-100/50 member-row">
+                            <div class="flex items-center justify-between gap-3 mb-4">
+                                <p class="text-sm font-bold text-sky-800">Baru: Anggota <span x-text="<?= $existingCount ?> + idx + 1"></span></p>
+                                <button type="button" class="btn-ghost btn-sm text-rose-600 hover:text-rose-700" @click="removeMember(idx)">
                                     <i class="fas fa-trash-alt mr-1"></i> Hapus
                                 </button>
                             </div>
@@ -133,27 +225,27 @@
                                     <label class="form-label text-xs">Nama</label>
                                     <div class="input-group">
                                         <span class="input-icon"><i class="fas fa-user text-xs"></i></span>
-                                        <input type="text" :name="`members[${idx}][nama]`" x-model="m.nama" placeholder="Nama lengkap" required>
+                                        <input type="text" :name="`members[${<?= $existingCount ?>} + idx][nama]`" x-model="m.nama" placeholder="Nama lengkap" required>
                                     </div>
-                                    <input type="hidden" :name="`members[${idx}][role]`" value="anggota">
+                                    <input type="hidden" :name="`members[${<?= $existingCount ?>} + idx][role]`" value="anggota">
                                 </div>
                                 <div class="form-field">
                                     <label class="form-label text-xs">NIM</label>
                                     <div class="input-group">
                                         <span class="input-icon"><i class="fas fa-id-card text-xs"></i></span>
-                                        <input type="text" :name="`members[${idx}][nim]`" x-model="m.nim" placeholder="Nomor Induk Mahasiswa" required>
+                                        <input type="text" :name="`members[${<?= $existingCount ?>} + idx][nim]`" x-model="m.nim" placeholder="Nomor Induk Mahasiswa" required>
                                     </div>
                                 </div>
                                 <div class="form-field">
                                     <label class="form-label text-xs">Jurusan</label>
                                     <div class="input-group">
                                         <span class="input-icon"><i class="fas fa-building text-xs"></i></span>
-                                        <select :name="`members[${idx}][jurusan]`" x-model="m.jurusan" @change="m.prodi = ''"
+                                        <select :name="`members[${<?= $existingCount ?>} + idx][jurusan]`" x-model="m.jurusan" @change="m.prodi = ''"
                                                 class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all text-xs bg-white" required>
                                             <option value="">Pilih Jurusan</option>
-                                            <?php foreach (array_keys($prodiList) as $j): ?>
-                                                <option value="<?= esc($j) ?>"><?= esc($j) ?></option>
-                                            <?php endforeach; ?>
+                                            <template x-for="j in jurusanList()" :key="j">
+                                                <option :value="j" x-text="j"></option>
+                                            </template>
                                         </select>
                                     </div>
                                 </div>
@@ -161,7 +253,7 @@
                                     <label class="form-label text-xs">Prodi</label>
                                     <div class="input-group">
                                         <span class="input-icon"><i class="fas fa-graduation-cap text-xs"></i></span>
-                                        <select :name="`members[${idx}][prodi]`" x-model="m.prodi" :key="m.jurusan"
+                                        <select :name="`members[${<?= $existingCount ?>} + idx][prodi]`" x-model="m.prodi" :key="m.jurusan"
                                                 class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all text-xs bg-white disabled:bg-slate-50 disabled:text-slate-400"
                                                 :disabled="!m.jurusan" required>
                                             <option value="">Pilih Program Studi</option>
@@ -175,7 +267,7 @@
                                     <label class="form-label text-xs">Semester</label>
                                     <div class="input-group">
                                         <span class="input-icon"><i class="fas fa-calendar-alt text-xs"></i></span>
-                                        <select :name="`members[${idx}][semester]`" x-model="m.semester"
+                                        <select :name="`members[${<?= $existingCount ?>} + idx][semester]`" x-model="m.semester"
                                                 class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all text-xs bg-white" required>
                                             <option value="">Pilih Semester</option>
                                             <?php for ($i = 1; $i <= 8; $i++): ?>
@@ -188,14 +280,14 @@
                                     <label class="form-label text-xs">No. HP</label>
                                     <div class="input-group">
                                         <span class="input-icon"><i class="fas fa-phone text-xs"></i></span>
-                                        <input type="tel" :name="`members[${idx}][phone]`" x-model="m.phone" placeholder="08xxxxxxxxxx" required>
+                                        <input type="tel" :name="`members[${<?= $existingCount ?>} + idx][phone]`" x-model="m.phone" placeholder="08xxxxxxxxxx" required>
                                     </div>
                                 </div>
                                 <div class="form-field">
-                                    <label class="form-label text-xs">Email</label>
+                                    <label class="form-field text-xs">Email</label>
                                     <div class="input-group">
                                         <span class="input-icon"><i class="fas fa-envelope text-xs"></i></span>
-                                        <input type="email" :name="`members[${idx}][email]`" x-model="m.email" placeholder="email@student.polsri.ac.id" required>
+                                        <input type="email" :name="`members[${<?= $existingCount ?>} + idx][email]`" x-model="m.email" placeholder="email@student.polsri.ac.id" required>
                                     </div>
                                 </div>
                             </div>
@@ -361,42 +453,15 @@
 <script>
     function proposalForm() {
         return {
-            members: <?= json_encode(array_values(array_filter($members ?? [], static fn ($m) => ($m['role'] ?? '') === 'anggota'))) ?>,
+            newMembers: [],
             prodiList: <?= json_encode($prodiList) ?>,
+            existingCount: <?= $existingCount ?>,
             
             init() {
-                // Ensure all member objects have complete fields
-                const defaultMember = { nama: '', nim: '', jurusan: '', prodi: '', semester: '', phone: '', email: '' };
-                
-                if (!Array.isArray(this.members) || this.members.length === 0) {
-                    this.members = [
-                        { ...defaultMember },
-                        { ...defaultMember },
-                    ];
-                }
-                
-                // Fill in missing fields for existing members from DB
-                this.members = this.members.map(m => ({
-                    ...defaultMember,
-                    ...m
-                }));
-
-                // Wait for DOM to finish rendering PHP-based Jurusan options
-                this.$nextTick(() => {
-                    this.members.forEach((m, idx) => {
-                        // Re-trigger prodi render by temporarily clearing and restoring jurusan
-                        // or just ensuring the value is set
-                        const jur = m.jurusan;
-                        const prod = m.prodi;
-                        m.jurusan = jur;
-                        m.prodi = prod;
-                    });
-                });
-                
-                if (this.members.length < 2) {
-                    while (this.members.length < 2) {
-                        this.members.push({ ...defaultMember });
-                    }
+                // If this is a new proposal (existingCount === 0), add 2 default member slots
+                if (this.existingCount === 0) {
+                    this.addMember();
+                    this.addMember();
                 }
             },
 
@@ -409,12 +474,14 @@
             },
 
             addMember() {
-                if (this.members.length >= 4) return;
-                this.members.push({ nama: '', nim: '', jurusan: '', prodi: '', semester: '', phone: '', email: '' });
+                if (this.existingCount + this.newMembers.length >= 4) return;
+                this.newMembers.push({ 
+                    nama: '', nim: '', jurusan: '', prodi: '', 
+                    semester: '', phone: '', email: '' 
+                });
             },
             removeMember(idx) {
-                if (this.members.length <= 2) return;
-                this.members.splice(idx, 1);
+                this.newMembers.splice(idx, 1);
             }
         }
     }

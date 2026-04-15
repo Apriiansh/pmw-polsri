@@ -614,9 +614,9 @@ class AdminController extends BaseController
                     'nama'      => $data['nama'] ?? $data['username'],
                     'jurusan'   => $data['jurusan'] ?? '',
                     'prodi'     => $data['prodi'] ?? '',
-                    'expertise' => $data['expertise'] ?? '',
+                    'expertise' => $data['dosen_expertise'] ?? $data['expertise'] ?? '',
                     'phone'     => $data['phone'] ?? '',
-                    'bio'       => $data['bio'] ?? '',
+                    'bio'       => $data['dosen_bio'] ?? $data['bio'] ?? '',
                 ]);
                 break;
 
@@ -627,10 +627,10 @@ class AdminController extends BaseController
                     'nama'      => $data['nama'] ?? $data['username'],
                     'company'   => $data['company'] ?? '',
                     'position'  => $data['position'] ?? '',
-                    'expertise' => $data['expertise'] ?? '',
+                    'expertise' => $data['mentor_expertise'] ?? $data['expertise'] ?? '',
                     'phone'     => $data['phone'] ?? '',
                     'email'     => $data['email_secondary'] ?? '',
-                    'bio'       => $data['bio'] ?? '',
+                    'bio'       => $data['mentor_bio'] ?? $data['bio'] ?? '',
                 ]);
                 break;
 
@@ -642,9 +642,9 @@ class AdminController extends BaseController
                     'nidn'        => $data['nidn'] ?? '',
                     'nip'         => $data['nip'] ?? '',
                     'institution' => $data['institution'] ?? '',
-                    'expertise'   => $data['expertise'] ?? '',
+                    'expertise'   => $data['reviewer_expertise'] ?? $data['expertise'] ?? '',
                     'phone'       => $data['phone_reviewer'] ?? $data['phone'] ?? '', // Handle phone name discrepancy
-                    'bio'         => $data['bio'] ?? '',
+                    'bio'         => $data['reviewer_bio'] ?? $data['bio'] ?? '',
                 ]);
                 break;
 
@@ -706,9 +706,9 @@ class AdminController extends BaseController
                     'nama'      => $data['nama'] ?? $data['username'],
                     'jurusan'   => $data['jurusan'] ?? '',
                     'prodi'     => $data['prodi'] ?? '',
-                    'expertise' => $data['expertise'] ?? '',
+                    'expertise' => $data['dosen_expertise'] ?? $data['expertise'] ?? '',
                     'phone'     => $data['phone'] ?? '',
-                    'bio'       => $data['bio'] ?? '',
+                    'bio'       => $data['dosen_bio'] ?? $data['bio'] ?? '',
                 ];
                 if ($existing) {
                     $lecturerModel->update($existing['id'], $profileData);
@@ -725,10 +725,10 @@ class AdminController extends BaseController
                     'nama'      => $data['nama'] ?? $data['username'],
                     'company'   => $data['company'] ?? '',
                     'position'  => $data['position'] ?? '',
-                    'expertise' => $data['expertise'] ?? '',
+                    'expertise' => $data['mentor_expertise'] ?? $data['expertise'] ?? '',
                     'phone'     => $data['phone'] ?? '',
                     'email'     => $data['email_secondary'] ?? '',
-                    'bio'       => $data['bio'] ?? '',
+                    'bio'       => $data['mentor_bio'] ?? $data['bio'] ?? '',
                 ];
                 if ($existing) {
                     $mentorModel->update($existing['id'], $profileData);
@@ -746,9 +746,9 @@ class AdminController extends BaseController
                     'nidn'        => $data['nidn'] ?? '',
                     'nip'         => $data['nip'] ?? '',
                     'institution' => $data['institution'] ?? '',
-                    'expertise'   => $data['expertise'] ?? '',
+                    'expertise'   => $data['reviewer_expertise'] ?? $data['expertise'] ?? '',
                     'phone'       => $data['phone_reviewer'] ?? $data['phone'] ?? '',
-                    'bio'         => $data['bio'] ?? '',
+                    'bio'         => $data['reviewer_bio'] ?? $data['bio'] ?? '',
                 ];
                 if ($existing) {
                     $reviewerModel->update($existing['id'], $profileData);

@@ -320,12 +320,12 @@
                                         </span>
                                         <select name="jurusan"
                                                 x-model="jurusan"
-                                                @change="$refs.prodiSelect.value = ''"
+                                                @change="prodiValue = ''"
                                                 :required="selectedRole === 'mahasiswa'"
                                                 :disabled="selectedRole !== 'mahasiswa'">
                                             <option value="">Pilih Jurusan</option>
                                             <?php foreach ($jurusanList as $j): ?>
-                                                <option value="<?= $j ?>"><?= $j ?></option>
+                                                <option value="<?= esc($j) ?>"><?= esc($j) ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
@@ -341,13 +341,22 @@
                                             <i class="fas fa-graduation-cap"></i>
                                         </span>
                                         <select name="prodi"
-                                                x-ref="prodiSelect"
                                                 x-model="prodiValue"
                                                 :disabled="!jurusan || selectedRole !== 'mahasiswa'"
                                                 :required="selectedRole === 'mahasiswa'">
                                             <option value="">Pilih Prodi</option>
+                                            
+                                            <!-- PHP Seed for hybrid hydration -->
+                                            <?php if ($jurusanValue = old('jurusan', $profileData['jurusan'] ?? '')): ?>
+                                                <?php if (isset($prodiList[$jurusanValue])): ?>
+                                                    <?php foreach ($prodiList[$jurusanValue] as $p): ?>
+                                                        <option value="<?= esc($p) ?>"><?= esc($p) ?></option>
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+
                                             <template x-for="prodi in prodiOptions" :key="prodi">
-                                                <option :value="prodi" x-text="prodi" :selected="prodi === prodiValue"></option>
+                                                <option :value="prodi" x-text="prodi"></option>
                                             </template>
                                         </select>
                                     </div>
@@ -388,7 +397,7 @@
                                                name="nip"
                                                value="<?= old('nip', $profileData['nip'] ?? '') ?>"
                                                placeholder="Nomor Induk Pegawai"
-                                               :disabled="selectedRole !== 'dosen' && selectedRole !== 'reviewer'">
+                                               :disabled="selectedRole !== 'dosen'">
                                     </div>
                                 </div>
 
@@ -402,10 +411,10 @@
                                             <i class="fas fa-brain"></i>
                                         </span>
                                         <input type="text"
-                                               name="expertise"
-                                               value="<?= esc(old('expertise', $profileData['expertise'] ?? '')) ?>"
-                                               placeholder="Contoh: Kewirausahaan, Digital Marketing"
-                                               :disabled="selectedRole !== 'dosen' && selectedRole !== 'mentor' && selectedRole !== 'reviewer'">
+                                               name="dosen_expertise"
+                                               value="<?= old('dosen_expertise', $profileData['expertise'] ?? '') ?>"
+                                               placeholder="Contoh: Digital Marketing, AI, Pertanian"
+                                               :disabled="selectedRole !== 'dosen'">
                                     </div>
                                 </div>
                             </div>
@@ -422,11 +431,11 @@
                                         </span>
                                         <select name="jurusan"
                                                 x-model="jurusan"
-                                                @change="$refs.prodiSelectDosen.value = ''"
+                                                @change="prodiValue = ''"
                                                 :disabled="selectedRole !== 'dosen'">
                                             <option value="">Pilih Jurusan</option>
                                             <?php foreach ($jurusanList as $j): ?>
-                                                <option value="<?= $j ?>"><?= $j ?></option>
+                                                <option value="<?= esc($j) ?>"><?= esc($j) ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
@@ -442,12 +451,21 @@
                                             <i class="fas fa-graduation-cap"></i>
                                         </span>
                                         <select name="prodi"
-                                                x-ref="prodiSelectDosen"
                                                 x-model="prodiValue"
                                                 :disabled="!jurusan || selectedRole !== 'dosen'">
                                             <option value="">Pilih Prodi</option>
+                                            
+                                            <!-- PHP Seed for hybrid hydration -->
+                                            <?php if ($jurusanValue = old('jurusan', $profileData['jurusan'] ?? '')): ?>
+                                                <?php if (isset($prodiList[$jurusanValue])): ?>
+                                                    <?php foreach ($prodiList[$jurusanValue] as $p): ?>
+                                                        <option value="<?= esc($p) ?>"><?= esc($p) ?></option>
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+
                                             <template x-for="prodi in prodiOptions" :key="prodi">
-                                                <option :value="prodi" x-text="prodi" :selected="prodi === prodiValue"></option>
+                                                <option :value="prodi" x-text="prodi"></option>
                                             </template>
                                         </select>
                                     </div>
@@ -459,11 +477,11 @@
                                 <label class="form-label">
                                     Biografi / Catatan
                                 </label>
-                                 <textarea name="bio"
-                                           rows="3"
-                                           class="form-textarea"
-                                           placeholder="Biografi singkat (optional)"
-                                           :disabled="selectedRole === 'admin' || selectedRole === 'mahasiswa'"><?= esc(old('bio', $profileData['bio'] ?? '')) ?></textarea>
+                                 <textarea name="dosen_bio"
+                                          rows="3"
+                                          class="form-textarea"
+                                          placeholder="Biografi singkat dan catatan tambahan pengelola (optional)"
+                                          :disabled="selectedRole !== 'dosen'"><?= old('dosen_bio', $profileData['bio'] ?? '') ?></textarea>
                             </div>
                         </div>
                     </div>
@@ -519,9 +537,10 @@
                                             <i class="fas fa-brain"></i>
                                         </span>
                                         <input type="text"
-                                               name="expertise"
-                                               value="<?= old('expertise', $profileData['expertise'] ?? '') ?>"
-                                               placeholder="Contoh: Business Development">
+                                               name="mentor_expertise"
+                                               value="<?= old('mentor_expertise', $profileData['expertise'] ?? '') ?>"
+                                               placeholder="Contoh: Business Development"
+                                               :disabled="selectedRole !== 'mentor'">
                                     </div>
                                 </div>
 
@@ -548,10 +567,11 @@
                                 <label class="form-label">
                                     Biografi / Pengalaman
                                 </label>
-                                <textarea name="bio"
+                                <textarea name="mentor_bio"
                                           rows="3"
                                           class="form-textarea"
-                                          placeholder="Pengalaman dan keahlian mentor (optional)"><?= old('bio', $profileData['bio'] ?? '') ?></textarea>
+                                          placeholder="Pengalaman dan keahlian mentor (optional)"
+                                          :disabled="selectedRole !== 'mentor'"><?= old('mentor_bio', $profileData['bio'] ?? '') ?></textarea>
                             </div>
                         </div>
                     </div>
@@ -623,9 +643,10 @@
                                             <i class="fas fa-brain"></i>
                                         </span>
                                         <input type="text"
-                                               name="expertise"
-                                               value="<?= old('expertise', $profileData['expertise'] ?? '') ?>"
-                                               placeholder="Contoh: Evaluasi Bisnis, Teknologi">
+                                               name="reviewer_expertise"
+                                               value="<?= old('reviewer_expertise', $profileData['expertise'] ?? '') ?>"
+                                               placeholder="Contoh: Evaluasi Bisnis, Teknologi"
+                                               :disabled="selectedRole !== 'reviewer'">
                                     </div>
                                 </div>
 
@@ -652,10 +673,11 @@
                                 <label class="form-label">
                                     Biografi / Catatan
                                 </label>
-                                <textarea name="bio"
+                                <textarea name="reviewer_bio"
                                           rows="3"
                                           class="form-textarea"
-                                          placeholder="Biografi dan pengalaman reviewer (optional)"><?= old('bio', $profileData['bio'] ?? '') ?></textarea>
+                                          placeholder="Biografi dan pengalaman reviewer (optional)"
+                                          :disabled="selectedRole !== 'reviewer'"><?= old('reviewer_bio', $profileData['bio'] ?? '') ?></textarea>
                             </div>
                         </div>
                     </div>
@@ -694,6 +716,11 @@
             jurusan: '<?= old('jurusan', $profileData['jurusan'] ?? '') ?>',
             prodiValue: '<?= old('prodi', $profileData['prodi'] ?? '') ?>',
             prodiList: window.pmwProdiList,
+            init() {
+                this.$nextTick(() => {
+                    this.prodiValue = '<?= old('prodi', $profileData['prodi'] ?? '') ?>';
+                });
+            },
             get prodiOptions() {
                 return this.prodiList[this.jurusan] || [];
             },

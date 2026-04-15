@@ -2,7 +2,7 @@
 
 <?= $this->section('content') ?>
 
-<div class="space-y-8">
+<div class="space-y-8" x-data="pmwSystem()">
 
     <!-- ================================================================
          1. PAGE HEADING
@@ -14,32 +14,6 @@
         <p class="section-subtitle"><?= $header_subtitle ?></p>
     </div>
 
-    <!-- Flash Messages -->
-    <?php if (session()->getFlashdata('success')): ?>
-    <div class="animate-stagger delay-100">
-        <div class="card-premium border-l-4 border-l-emerald-500 bg-emerald-50/30 p-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <p class="font-semibold text-emerald-700"><?= session()->getFlashdata('success') ?></p>
-            </div>
-        </div>
-    </div>
-    <?php endif; ?>
-
-    <?php if (session()->getFlashdata('error')): ?>
-    <div class="animate-stagger delay-100">
-        <div class="card-premium border-l-4 border-l-rose-500 bg-rose-50/30 p-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-rose-100 flex items-center justify-center text-rose-600 shrink-0">
-                    <i class="fas fa-exclamation-circle"></i>
-                </div>
-                <p class="font-semibold text-rose-700"><?= session()->getFlashdata('error') ?></p>
-            </div>
-        </div>
-    </div>
-    <?php endif; ?>
 
     <!-- ================================================================
          2. ACTIVE PERIOD CARD
@@ -109,7 +83,10 @@
                             Atur tanggal mulai, selesai, dan deskripsi untuk setiap tahap
                         </p>
                     </div>
-                    <button type="submit" class="btn-primary text-sm py-2 px-4">
+                    <button type="submit" 
+                            class="btn-primary text-sm py-2 px-4 transition-all"
+                            :disabled="!isValid"
+                            :class="!isValid ? 'opacity-50 cursor-not-allowed grayscale' : ''">
                         <i class="fas fa-save mr-2"></i>Simpan Jadwal
                     </button>
                 </div>
@@ -141,7 +118,10 @@
                                         <span class="input-icon"><i class="fas fa-calendar-day"></i></span>
                                         <input type="date"
                                                name="schedules[<?= $schedule['id'] ?>][start_date]"
-                                               value="<?= $schedule['start_date'] ?>">
+                                               value="<?= $schedule['start_date'] ?>"
+                                               @change="validateSchedule(<?= $schedule['phase_number'] ?>)"
+                                               data-phase="<?= $schedule['phase_number'] ?>"
+                                               data-type="start">
                                     </div>
                                 </td>
                                 <td>
@@ -149,7 +129,10 @@
                                         <span class="input-icon"><i class="fas fa-calendar-check"></i></span>
                                         <input type="date"
                                                name="schedules[<?= $schedule['id'] ?>][end_date]"
-                                               value="<?= $schedule['end_date'] ?>">
+                                               value="<?= $schedule['end_date'] ?>"
+                                               @change="validateSchedule(<?= $schedule['phase_number'] ?>)"
+                                               data-phase="<?= $schedule['phase_number'] ?>"
+                                               data-type="end">
                                     </div>
                                 </td>
                                 <td>
@@ -199,16 +182,21 @@
                 <!-- Toggle Button -->
                 <div class="mb-4">
                     <button type="button"
-                            id="toggleCreateForm"
                             class="btn-primary"
-                            onclick="document.getElementById('createPeriodForm').classList.toggle('hidden'); this.querySelector('span').textContent = document.getElementById('createPeriodForm').classList.contains('hidden') ? 'Buat Periode PMW' : 'Tutup Form';">
-                        <i class="fas fa-plus-circle mr-2"></i>
-                        <span><?= old('name') ? 'Tutup Form' : 'Buat Periode PMW' ?></span>
+                            @click="showCreateForm = !showCreateForm">
+                        <i class="fas mr-2 transition-transform duration-300" :class="showCreateForm ? 'fa-times-circle rotate-90' : 'fa-plus-circle'"></i>
+                        <span x-text="showCreateForm ? 'Tutup Form' : 'Buat Periode PMW'">Buat Periode PMW</span>
                     </button>
                 </div>
 
-                <!-- Create New Period Form (Hidden by default, show if validation error) -->
-                <form id="createPeriodForm" action="<?= base_url('admin/pmw-system/period') ?>" method="post" class="mb-8 <?= old('name') ? '' : 'hidden' ?>">
+                <!-- Create New Period Form (Alpine controlled) -->
+                <form id="createPeriodForm"
+                      action="<?= base_url('admin/pmw-system/period') ?>"
+                      method="post"
+                      class="mb-8 p-5 bg-slate-50 rounded-2xl border border-slate-100"
+                      x-show="showCreateForm"
+                      x-collapse
+                      x-cloak>
                     <?= csrf_field() ?>
                     <h4 class="font-display font-bold text-sm text-(--text-heading) mb-4">Buat Periode Baru</h4>
 
@@ -323,141 +311,93 @@
 
 </div><!-- /page wrapper -->
 
-<!-- Toast Notification Container -->
-<div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2 transition-all duration-300 opacity-0 translate-x-full pointer-events-none">
-    <div id="toast" class="bg-rose-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
-        <i class="fas fa-exclamation-circle text-lg"></i>
-        <div>
-            <p id="toast-message" class="font-semibold text-sm"></p>
-        </div>
-    </div>
-</div>
 
-<!-- Schedule Date Validation Script -->
 <script>
-(function() {
-    const form = document.querySelector('form[action*="pmw-system/schedule"]');
-    if (!form) return;
+function pmwSystem() {
+    return {
+        showCreateForm: <?= old('name') ? 'true' : 'false' ?>,
+        isValid: true,
 
-    const submitBtn = form.querySelector('button[type="submit"]');
-    const toastContainer = document.getElementById('toast-container');
-    const toastMessage = document.getElementById('toast-message');
+        init() {
+            this.validateAllSchedules();
+        },
 
-    let toastTimeout;
+        showToast(message) {
+            this.$dispatch('toast-notify', { message: message, type: 'error' });
+        },
 
-    function showToast(message) {
-        toastMessage.textContent = message;
-        toastContainer.classList.remove('opacity-0', 'translate-x-full', 'pointer-events-none');
-        toastContainer.classList.add('opacity-100', 'translate-x-0');
+        validateSchedule(phase) {
+            this.validateAllSchedules();
+        },
 
-        clearTimeout(toastTimeout);
-        toastTimeout = setTimeout(() => {
-            hideToast();
-        }, 5000);
-    }
+        validateAllSchedules() {
+            const inputs = Array.from(document.querySelectorAll('input[data-phase]'));
+            const schedules = {};
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            // Group inputs by phase
+            inputs.forEach(input => {
+                const phase = parseInt(input.dataset.phase);
+                if (!schedules[phase]) schedules[phase] = {};
+                schedules[phase][input.dataset.type] = input;
+            });
 
-    function hideToast() {
-        toastContainer.classList.add('opacity-0', 'translate-x-full', 'pointer-events-none');
-        toastContainer.classList.remove('opacity-100', 'translate-x-0');
-    }
+            const phaseNumbers = Object.keys(schedules).map(Number).sort((a, b) => a - b);
+            let hasError = false;
+            let firstErrorMessage = '';
 
-    function validateDates() {
-        const rows = form.querySelectorAll('tbody tr');
-        const schedules = [];
+            phaseNumbers.forEach((p, index) => {
+                const current = schedules[p];
+                const startVal = current.start.value;
+                const endVal = current.end.value;
 
-        rows.forEach(row => {
-            const startInput = row.querySelector('input[name*="[start_date]"]');
-            const endInput = row.querySelector('input[name*="[end_date]"]');
-            const phaseCell = row.querySelector('td:first-child');
+                // Reset styles
+                current.start.classList.remove('border-rose-500', 'bg-rose-50', 'ring-2', 'ring-rose-200');
+                current.end.classList.remove('border-rose-500', 'bg-rose-50', 'ring-2', 'ring-rose-200');
 
-            if (startInput && endInput && phaseCell) {
-                const phase = parseInt(phaseCell.textContent.trim());
-                schedules.push({
-                    phase: phase,
-                    start: startInput.value,
-                    end: endInput.value,
-                    startInput: startInput,
-                    endInput: endInput
-                });
-            }
-        });
-
-        // Sort by phase number
-        schedules.sort((a, b) => a.phase - b.phase);
-
-        let hasError = false;
-        let errorMessage = '';
-
-        for (let i = 0; i < schedules.length; i++) {
-            const current = schedules[i];
-
-            // Reset styles
-            current.startInput.classList.remove('border-rose-500', 'bg-rose-50');
-            current.endInput.classList.remove('border-rose-500', 'bg-rose-50');
-
-            // Skip if empty
-            if (!current.start || !current.end) continue;
-
-            const currentStart = new Date(current.start);
-            const currentEnd = new Date(current.end);
-
-            // Validate: end >= start (dalam 1 tahap)
-            if (currentEnd < currentStart) {
-                hasError = true;
-                errorMessage = `Tahap ${current.phase}: Tanggal selesai harus lebih besar dari tanggal mulai`;
-                current.startInput.classList.add('border-rose-500', 'bg-rose-50');
-                current.endInput.classList.add('border-rose-500', 'bg-rose-50');
-                break;
-            }
-
-            // Validate: start >= end tahap sebelumnya
-            if (i > 0) {
-                const prev = schedules[i - 1];
-                if (prev.end) {
-                    const prevEnd = new Date(prev.end);
-                    if (currentStart < prevEnd) {
+                if (startVal) {
+                    const start = new Date(startVal);
+                    
+                    // 1. Cannot be in the past (Allowed for Phase 1 for retrospective entry)
+                    if (start < today && p !== 1) {
+                        current.start.classList.add('border-rose-500', 'bg-rose-50', 'ring-2', 'ring-rose-200');
+                        if (!hasError) firstErrorMessage = `Tahap ${p}: Tanggal mulai tidak boleh di masa lalu.`;
                         hasError = true;
-                        errorMessage = `Tahap ${current.phase}: Tanggal mulai harus lebih besar atau sama dengan tanggal selesai Tahap ${prev.phase}`;
-                        current.startInput.classList.add('border-rose-500', 'bg-rose-50');
-                        break;
+                    }
+
+                    // 2. Start must be after previous Phase End
+                    if (index > 0) {
+                        const prev = schedules[phaseNumbers[index - 1]];
+                        if (prev.end.value) {
+                            const prevEnd = new Date(prev.end.value);
+                            if (start < prevEnd) {
+                                current.start.classList.add('border-rose-500', 'bg-rose-50', 'ring-2', 'ring-rose-200');
+                                if (!hasError) firstErrorMessage = `Tahap ${p}: Tanggal mulai harus setelah tanggal selesai Tahap ${phaseNumbers[index - 1]}.`;
+                                hasError = true;
+                            }
+                        }
+                    }
+
+                    if (endVal) {
+                        const end = new Date(endVal);
+                        // 3. End must be after Start
+                        if (end < start) {
+                            current.end.classList.add('border-rose-500', 'bg-rose-50', 'ring-2', 'ring-rose-200');
+                            if (!hasError) firstErrorMessage = `Tahap ${p}: Tanggal selesai harus lebih besar atau sama dengan tanggal mulai.`;
+                            hasError = true;
+                        }
                     }
                 }
+            });
+
+            this.isValid = !hasError;
+            if (hasError) {
+                this.showToast(firstErrorMessage);
             }
         }
-
-        // Toggle submit button
-        if (submitBtn) {
-            submitBtn.disabled = hasError;
-            submitBtn.classList.toggle('opacity-50', hasError);
-            submitBtn.classList.toggle('cursor-not-allowed', hasError);
-        }
-
-        // Show/hide toast
-        if (hasError) {
-            showToast(errorMessage);
-        } else {
-            hideToast();
-        }
-
-        return !hasError;
     }
-
-    // Listen to date changes
-    form.querySelectorAll('input[type="date"]').forEach(input => {
-        input.addEventListener('change', validateDates);
-        input.addEventListener('blur', validateDates);
-    });
-
-    // Validate on form submit
-    form.addEventListener('submit', function(e) {
-        if (!validateDates()) {
-            e.preventDefault();
-        }
-    });
-
-    // Initial validation
-    validateDates();
-})();
+}
 </script>
 
 <?= $this->endSection() ?>

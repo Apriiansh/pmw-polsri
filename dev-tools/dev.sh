@@ -136,9 +136,10 @@ echo -e "\n${BLUE}🚀 Starting Services...${RESET}"
 log "Server: http://localhost:${PORT}"
 echo -e "${YELLOW}Press Ctrl+C to stop everything.${RESET}\n"
 
-# Run Tailwind Watch
-npx @tailwindcss/cli -i "$CSS_INPUT" -o "$CSS_OUTPUT" --watch 2>&1 | \
-    sed "s/^/${BLUE}[tailwind]${RESET} /" &
+# Run Vite Dev Server (Handles both JS & CSS with HMR)
+npm run dev 2>&1 | \
+    sed "s/^/${BLUE}[vite]    ${RESET} /" &
+
 TAILWIND_PID=$!
 
 # Run PHP Spark Serve

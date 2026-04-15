@@ -14,8 +14,15 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <!-- Compiled Tailwind + Custom CSS -->
-    <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
+    <!-- Vite Assets (Alpine.js + Tailwind) -->
+    <?php if (ENVIRONMENT === 'development'): ?>
+        <script type="module" src="http://localhost:5173/@vite/client"></script>
+        <script type="module" src="http://localhost:5173/app/Views/js/app.js"></script>
+        <link rel="stylesheet" href="http://localhost:5173/app/Views/css/input.css">
+    <?php else: ?>
+        <script type="module" src="<?= base_url('build/app.js') ?>"></script>
+        <link rel="stylesheet" href="<?= base_url('build/style.css') ?>">
+    <?php endif; ?>
 
     <!-- Page-specific styles -->
     <?= $this->renderSection('styles') ?>
@@ -516,22 +523,109 @@
     </aside>
 
 
-    <!-- ================================================================
-     GLOBAL SCRIPTS
-================================================================= -->
+    <!-- Centralized Toast Notification System -->
+    <div x-data="toastManager()"
+         @toast-notify.window="add($event.detail)"
+         class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 w-full max-w-sm pointer-events-none">
+        
+        <template x-for="item in items" :key="item.id">
+            <div x-show="item.show"
+                 x-transition:enter="transition ease-out duration-300 transform"
+                 x-transition:enter-start="translate-x-full opacity-0"
+                 x-transition:enter-end="translate-x-0 opacity-100"
+                 x-transition:leave="transition ease-in duration-200 transform"
+                 x-transition:leave-start="translate-x-0 opacity-100"
+                 x-transition:leave-end="translate-x-4 opacity-0"
+                 @click="remove(item.id)"
+                 class="pointer-events-auto bg-white/90 backdrop-blur-md border rounded-2xl shadow-2xl p-4 flex items-center gap-4 group cursor-pointer hover:scale-[1.02] transition-transform"
+                 :class="{
+                    'border-emerald-100 bg-emerald-50/80': item.type === 'success',
+                    'border-rose-100 bg-rose-50/80': item.type === 'error',
+                    'border-sky-100 bg-sky-50/80': item.type === 'info',
+                    'border-amber-100 bg-amber-50/80': item.type === 'warning'
+                 }">
+                
+                <!-- Icon -->
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                     :class="{
+                        'bg-emerald-100 text-emerald-600': item.type === 'success',
+                        'bg-rose-100 text-rose-600': item.type === 'error',
+                        'bg-sky-100 text-sky-600': item.type === 'info',
+                        'bg-amber-100 text-amber-600': item.type === 'warning'
+                     }">
+                    <i class="fas" :class="{
+                        'fa-check-circle': item.type === 'success',
+                        'fa-exclamation-circle': item.type === 'error',
+                        'fa-info-circle': item.type === 'info',
+                        'fa-triangle-exclamation': item.type === 'warning'
+                    }"></i>
+                </div>
 
-    <!-- Alpine.js v3 -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+                <!-- Message -->
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-(--text-heading) leading-tight" x-text="item.message"></p>
+                </div>
 
-    <!-- Mouse-tracking glow for .card-premium -->
+                <!-- Close Button -->
+                <button class="text-slate-300 hover:text-slate-500 transition-colors p-1">
+                    <i class="fas fa-xmark text-xs"></i>
+                </button>
+            </div>
+        </template>
+    </div>
+
     <script>
-        document.addEventListener('mousemove', (e) => {
-            document.querySelectorAll('.card-premium, .card-accent').forEach(card => {
-                const rect = card.getBoundingClientRect();
-                card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-                card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-            });
-        });
+    function toastManager() {
+        return {
+            items: [],
+            
+            init() {
+                // Auto-hydrate from PHP Flash Messages
+                <?php if (session()->getFlashdata('success')): ?>
+                    this.add({ message: "<?= addslashes(session()->getFlashdata('success')) ?>", type: 'success' });
+                <?php endif; ?>
+                
+                <?php if (session()->getFlashdata('error')): ?>
+                    this.add({ message: "<?= addslashes(session()->getFlashdata('error')) ?>", type: 'error' });
+                <?php endif; ?>
+
+                <?php if (session()->getFlashdata('info')): ?>
+                    this.add({ message: "<?= addslashes(session()->getFlashdata('info')) ?>", type: 'info' });
+                <?php endif; ?>
+            },
+
+            add(detail) {
+                const id = Date.now() + Math.random();
+                this.items.push({
+                    id: id,
+                    show: false,
+                    message: detail.message || 'No message provided',
+                    type: detail.type || 'info'
+                });
+
+                // Trigger enter animation
+                this.$nextTick(() => {
+                    const item = this.items.find(i => i.id === id);
+                    if (item) item.show = true;
+                });
+
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    this.remove(id);
+                }, 5000);
+            },
+
+            remove(id) {
+                const item = this.items.find(i => i.id === id);
+                if (item) {
+                    item.show = false;
+                    setTimeout(() => {
+                        this.items = this.items.filter(i => i.id !== id);
+                    }, 300); // Wait for transition
+                }
+            }
+        }
+    }
     </script>
 
     <!-- Page-specific scripts -->

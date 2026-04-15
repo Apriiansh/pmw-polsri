@@ -261,6 +261,16 @@
                         <span id="modal-role-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border mt-2">
                             --
                         </span>
+
+                        <!-- Bio Section (Prominent) -->
+                        <div id="modal-bio-container" class="mt-4 px-6 scale-in hidden">
+                            <div class="relative bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                                <i class="fas fa-quote-left text-sky-200 absolute -top-2 -left-2 text-xl"></i>
+                                <p id="modal-bio" class="text-xs sm:text-sm text-slate-500 italic leading-relaxed pt-1 line-clamp-4 hover:line-clamp-none transition-all cursor-default">
+                                    --
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Two Column Layout -->
@@ -361,6 +371,16 @@ function openUserModal(id, username, email, roleLabel, roleKey, isActive, create
     document.getElementById('modal-role').textContent = roleLabel;
     document.getElementById('modal-created').textContent = createdAt;
 
+    // Set Bio
+    const bioContainer = document.getElementById('modal-bio-container');
+    const bioText = document.getElementById('modal-bio');
+    if (profileData && profileData.bio && profileData.bio.trim() !== '') {
+        bioContainer.classList.remove('hidden');
+        bioText.textContent = profileData.bio;
+    } else {
+        bioContainer.classList.add('hidden');
+    }
+
     // Set status
     const statusEl = document.getElementById('modal-status');
     if (isActive) {
@@ -408,10 +428,11 @@ function openUserModal(id, username, email, roleLabel, roleKey, isActive, create
                 break;
             case 'dosen':
                 html = `
-                    ${renderProfileField('fa-id-badge', 'NIDN', profileData.nidn)}
+                    ${renderProfileField('fa-id-badge', 'NIP/NIDN', profileData.nip || profileData.nidn)}
                     ${renderProfileField('fa-user', 'Nama Lengkap', profileData.nama)}
                     ${renderProfileField('fa-building', 'Jurusan', profileData.jurusan)}
                     ${renderProfileField('fa-graduation-cap', 'Prodi', profileData.prodi)}
+                    ${renderProfileField('fa-star', 'Keahlian', profileData.expertise)}
                     ${renderProfileField('fa-phone', 'No. HP', profileData.phone)}
                     ${profileData.gender ? renderProfileField('fa-venus-mars', 'Gender', profileData.gender === 'L' ? 'Laki-laki' : 'Perempuan') : ''}
                 `;
@@ -420,24 +441,23 @@ function openUserModal(id, username, email, roleLabel, roleKey, isActive, create
                 html = `
                     ${renderProfileField('fa-user', 'Nama Lengkap', profileData.nama)}
                     ${renderProfileField('fa-building', 'Perusahaan', profileData.company)}
-                    ${renderProfileField('fa-phone', 'No. HP', profileData.phone)}
-                    ${renderProfileField('fa-envelope', 'Email', profileData.email)}
                     ${renderProfileField('fa-briefcase', 'Jabatan', profileData.position)}
-                    ${renderProfileField('fa-lightbulb', 'Keahlian', profileData.expertise)}
+                    ${renderProfileField('fa-star', 'Keahlian', profileData.expertise)}
+                    ${renderProfileField('fa-phone', 'No. HP', profileData.phone)}
+                    ${renderProfileField('fa-envelope', 'Email Kantor', profileData.email)}
                 `;
                 break;
             case 'reviewer':
                 html = `
-                    ${renderProfileField('fa-id-badge', 'NIP/NIDN', profileData.nip)}
+                    ${renderProfileField('fa-id-badge', 'NIP/NIDN', profileData.nip || profileData.nidn)}
                     ${renderProfileField('fa-user', 'Nama Lengkap', profileData.nama)}
-                    ${renderProfileField('fa-building', 'Institusi', profileData.institution)}
+                    ${renderProfileField('fa-university', 'Institusi', profileData.institution)}
+                    ${renderProfileField('fa-star', 'Keahlian', profileData.expertise)}
                     ${renderProfileField('fa-phone', 'No. HP', profileData.phone)}
-                    ${renderProfileField('fa-envelope', 'Email', profileData.email)}
-                    ${renderProfileField('fa-star', 'Spesialisasi', profileData.specialization)}
                 `;
                 break;
             default:
-                profileSection.classList.add('hidden');
+                html = '<div class="text-center py-4 text-slate-400 italic">Data profil tidak tersedia</div>';
         }
 
         profileContent.innerHTML = html;
@@ -447,19 +467,18 @@ function openUserModal(id, username, email, roleLabel, roleKey, isActive, create
 
     // Show modal
     document.getElementById('userModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
 }
 
 function renderProfileField(icon, label, value) {
     if (!value) return '';
     return `
-        <div class="flex items-center gap-3 p-3 rounded-xl bg-sky-50/50 border border-sky-100">
-            <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-sky-400 shadow-sm">
+        <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-50/50 border border-slate-100/50">
+            <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-sky-500 shadow-sm shrink-0">
                 <i class="fas ${icon} text-xs"></i>
             </div>
             <div>
-                <p class="text-[10px] text-slate-400 font-semibold uppercase">${label}</p>
-                <p class="text-sm text-slate-700 font-medium">${value}</p>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${label}</p>
+                <p class="text-[13px] text-slate-700 font-medium">${value}</p>
             </div>
         </div>
     `;
