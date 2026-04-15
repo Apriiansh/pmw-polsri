@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers\Mahasiswa\Proposal;
+namespace App\Controllers\Mahasiswa;
 
 use App\Controllers\BaseController;
 use App\Models\LecturerModel;

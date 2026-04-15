@@ -43,6 +43,38 @@
 
             <div class="border-t border-slate-100 my-5"></div>
 
+            <?php if ($proposal && !empty($proposal['catatan'])): ?>
+                <?php
+                $alertClasses = [
+                    'revision' => 'bg-orange-50 border-orange-200 text-orange-800',
+                    'rejected' => 'bg-rose-50 border-rose-200 text-rose-800',
+                    'approved' => 'bg-emerald-50 border-emerald-200 text-emerald-800',
+                ];
+                $alertIcons = [
+                    'revision' => 'fa-circle-exclamation text-orange-500',
+                    'rejected' => 'fa-circle-xmark text-rose-500',
+                    'approved' => 'fa-circle-check text-emerald-500',
+                ];
+                $statusLabel = [
+                    'revision' => 'Perlu Revisi',
+                    'rejected' => 'Proposal Ditolak',
+                    'approved' => 'Pesan dari Admin',
+                ];
+                $class = $alertClasses[$proposal['status']] ?? 'bg-slate-50 border-slate-200 text-slate-800';
+                $icon = $alertIcons[$proposal['status']] ?? 'fa-info-circle text-slate-400';
+                $label = $statusLabel[$proposal['status']] ?? 'Catatan Admin';
+                ?>
+                <div class="p-4 rounded-2xl border <?= $class ?> mb-5 animate-in slide-in-from-top-2 duration-500">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i class="fas <?= $icon ?> text-lg"></i>
+                        <h4 class="font-bold text-sm uppercase tracking-wider"><?= $label ?></h4>
+                    </div>
+                    <div class="text-sm leading-relaxed whitespace-pre-line opacity-90 pl-7">
+                        <?= esc($proposal['catatan']) ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <div class="grid md:grid-cols-2 gap-4">
                 <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
                     <p class="text-xs font-black uppercase tracking-widest text-slate-400">Status Proposal</p>

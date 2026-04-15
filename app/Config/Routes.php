@@ -36,6 +36,13 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('users/toggle-status/(:num)', 'AdminController::toggleUserStatus/$1');
         $routes->get('users/delete/(:num)', 'AdminController::deleteUser/$1');
 
+        // Tahap 2 - Seleksi Administrasi
+        $routes->get('seleksi-administrasi', 'Admin\\ValidationController::seleksiAdministrasi');
+        $routes->get('seleksi-administrasi/(:num)', 'Admin\\ValidationController::detailProposal/$1');
+        $routes->post('seleksi-administrasi/(:num)/validasi', 'Admin\\ValidationController::validasiAdministrasi/$1');
+        $routes->get('seleksi-administrasi/(:num)/hapus', 'Admin\\ValidationController::hapusProposal/$1');
+        $routes->get('seleksi-administrasi/doc/(:num)', 'Admin\\ValidationController::downloadDoc/$1');
+
         $routes->get('cms', 'AdminController::cms');
 
         // PMW System - Master Jadwal
@@ -53,13 +60,18 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
 
     // Mahasiswa Routes
     $routes->group('mahasiswa', ['filter' => 'group:mahasiswa'], static function ($routes) {
-        $routes->get('proposal', 'Mahasiswa\\Proposal\\ProposalController::index');
-        $routes->get('proposal/create', 'Mahasiswa\\Proposal\\ProposalController::create');
-        $routes->get('proposal/edit/(:num)', 'Mahasiswa\\Proposal\\ProposalController::edit/$1');
-        $routes->post('proposal/save', 'Mahasiswa\\Proposal\\ProposalController::save');
-        $routes->post('proposal/upload/(:num)', 'Mahasiswa\\Proposal\\ProposalController::uploadDoc/$1');
-        $routes->post('proposal/submit/(:num)', 'Mahasiswa\\Proposal\\ProposalController::submit/$1');
-        $routes->get('proposal/doc/(:num)', 'Mahasiswa\\Proposal\\ProposalController::downloadDoc/$1');
+        $routes->get('proposal', 'Mahasiswa\\ProposalController::index');
+        $routes->get('proposal/create', 'Mahasiswa\\ProposalController::create');
+        $routes->get('proposal/edit/(:num)', 'Mahasiswa\\ProposalController::edit/$1');
+        $routes->post('proposal/save', 'Mahasiswa\\ProposalController::save');
+        $routes->post('proposal/upload/(:num)', 'Mahasiswa\\ProposalController::uploadDoc/$1');
+        $routes->post('proposal/submit/(:num)', 'Mahasiswa\\ProposalController::submit/$1');
+        $routes->get('proposal/doc/(:num)', 'Mahasiswa\\ProposalController::downloadDoc/$1');
+        // Tahap 3 - Pitching Desk
+        $routes->get('pitching-desk', 'Mahasiswa\\PitchingDeskController::index');
+        $routes->post('pitching-desk/upload-ppt', 'Mahasiswa\\PitchingDeskController::uploadPpt');
+        $routes->post('pitching-desk/upload-video', 'Mahasiswa\\PitchingDeskController::uploadVideo');
+        $routes->post('pitching-desk/update-detail', 'Mahasiswa\\PitchingDeskController::updateDetail');
         $routes->get('mentoring', 'MahasiswaController::mentoring');
         $routes->get('bimbingan', 'MahasiswaController::bimbingan');
         $routes->get('laporan-kemajuan', 'MahasiswaController::laporanKemajuan');

@@ -138,14 +138,19 @@
 
                 if ($mainRole === 'admin') {
                     $navItems[] = ['route' => 'admin/pmw-system', 'icon' => 'fa-calendar-days',  'label' => 'PMW System',       'match' => 'admin/pmw-system'];
+                    // Tahap 2 - Seleksi Administrasi
+                    $navItems[] = ['route' => 'admin/seleksi-administrasi', 'icon' => 'fa-clipboard-list', 'label' => 'Seleksi Administrasi', 'match' => 'admin/seleksi-administrasi'];
                     $navItems[] = ['route' => 'admin/users',    'icon' => 'fa-users-gear',      'label' => 'Manajemen User',   'match' => 'admin/users'];
                     $navItems[] = ['route' => 'admin/cms',      'icon' => 'fa-clapperboard',   'label' => 'Manajemen Konten', 'match' => 'admin/cms'];
                     $navItems[] = ['route' => 'admin/laporan',  'icon' => 'fa-file-contract',   'label' => 'Laporan',          'match' => 'admin/laporan'];
                 }
 
                 if ($mainRole === 'mahasiswa') {
-                    // Proposal - Tahap 1-5 (Pendaftaran - Pitching)
+                    // Proposal - Tahap 1 (Pendaftaran / Pengajuan Proposal)
                     $navItems[] = ['route' => 'mahasiswa/proposal', 'icon' => 'fa-file-invoice', 'label' => 'Proposal Kami', 'match' => 'mahasiswa/proposal'];
+                    
+                    // Pitching Desk - Tahap 3 (Pitching Desk)
+                    $navItems[] = ['route' => 'mahasiswa/pitching-desk', 'icon' => 'fa-chalkboard', 'label' => 'Pitching Desk', 'match' => 'mahasiswa/pitching-desk'];
 
                     // Mentoring - Tahap 6 (Implementasi, Bimbingan & Mentoring)
                     $navItems[] = ['route' => 'mahasiswa/mentoring', 'icon' => 'fa-handshake-angle', 'label' => 'Mentoring', 'match' => 'mahasiswa/mentoring'];

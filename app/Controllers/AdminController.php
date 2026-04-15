@@ -9,6 +9,7 @@ use App\Models\MentorModel;
 use App\Models\ReviewerModel;
 use App\Models\PmwPeriodModel;
 use App\Models\PmwScheduleModel;
+use App\Models\PmwDocumentModel;
 use CodeIgniter\Shield\Models\UserModel;
 use CodeIgniter\Shield\Entities\User;
 

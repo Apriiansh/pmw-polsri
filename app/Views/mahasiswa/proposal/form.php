@@ -76,6 +76,18 @@
             </div>
         </div>
 
+        <?php if (!empty($proposal['catatan'])): ?>
+        <div class="mt-6 p-4 rounded-2xl bg-orange-50 border border-orange-200 animate-in slide-in-from-top-2 duration-500">
+            <div class="flex items-center gap-3 mb-2">
+                <i class="fas fa-circle-exclamation text-orange-500 text-lg"></i>
+                <h4 class="font-bold text-sm text-orange-800 uppercase tracking-wider">Catatan Perbaikan dari Admin</h4>
+            </div>
+            <div class="text-sm text-orange-800 leading-relaxed whitespace-pre-line pl-7 opacity-90">
+                <?= esc($proposal['catatan'] ?? '') ?>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <!-- Proposal Form -->
         <form id="mainProposalForm" action="<?= base_url('mahasiswa/proposal/save') ?>" method="post" enctype="multipart/form-data" class="space-y-8">
             <?= csrf_field() ?>
