@@ -1,7 +1,3 @@
----
-description: 
----
-
 # 📂 SKILL: PMW Data & Document Engine
 
 > **⚠️ PERHATIAN**: Dokumen ini mendeskripsikan **Workflow Manual PMW Polsri** yang telah berjalan secara nyata di kampus _sebelum_ aplikasi ini dikembangkan. Aplikasi Sistem Informasi PMW dibuat untuk **mendigitalkan & memfasilitasi** workflow manual tersebut, bukan menciptakan proses baru.

@@ -123,9 +123,9 @@ class ProposalController extends BaseController
             $members = [];
         }
 
-        $anggota = array_values(array_filter($members, static fn ($m) => is_array($m) && (($m['role'] ?? '') === 'anggota')));
-        if (count($anggota) < 2 || count($anggota) > 4) {
-            return redirect()->back()->withInput()->with('error', 'Jumlah anggota harus 2 sampai 4 orang');
+        $anggota = array_values(array_filter($members, static fn($m) => is_array($m) && (($m['role'] ?? '') === 'anggota')));
+        if (count($anggota) < 3 || count($anggota) > 4) {
+            return redirect()->back()->withInput()->with('error', 'Jumlah anggota harus 3 sampai 4 orang');
         }
 
         $proposalModel = new PmwProposalModel();
@@ -154,6 +154,7 @@ class ProposalController extends BaseController
                 'kategori_usaha' => (string) $this->request->getPost('kategori_usaha'),
                 'nama_usaha'     => (string) $this->request->getPost('nama_usaha'),
                 'kategori_wirausaha' => (string) $this->request->getPost('kategori_wirausaha'),
+                'detail_keterangan'  => (string) $this->request->getPost('detail_keterangan'),
                 'total_rab'      => $this->request->getPost('total_rab') ?: null,
                 'status'         => 'draft',
             ];
@@ -204,6 +205,23 @@ class ProposalController extends BaseController
             }
 
             $db->transCommit();
+
+            // Handle file uploads after successful database transaction 
+            try {
+                $this->handleFileUploads($proposalId);
+            } catch (\Exception $e) {
+                return redirect()->to('mahasiswa/proposal/edit/' . $proposalId)->with('message', 'Draft proposal berhasil disimpan, namun beberapa dokumen gagal diunggah: ' . $e->getMessage());
+            }
+
+            // Check if user wants to finalize submission
+            if ($this->request->getPost('is_final_submit') === '1') {
+                try {
+                    $this->finalizeSubmission($proposalId);
+                    return redirect()->to('mahasiswa/proposal')->with('message', 'Proposal berhasil dikirim final');
+                } catch (\Exception $e) {
+                    return redirect()->to('mahasiswa/proposal/edit/' . $proposalId)->with('error', 'Draft tersimpan, namun gagal mengirim: ' . $e->getMessage());
+                }
+            }
 
             return redirect()->to('mahasiswa/proposal/edit/' . $proposalId)->with('message', 'Draft proposal berhasil disimpan');
         } catch (\Throwable $e) {
@@ -308,6 +326,16 @@ class ProposalController extends BaseController
 
     public function submit(int $id)
     {
+        try {
+            $this->finalizeSubmission($id);
+            return redirect()->to('mahasiswa/proposal')->with('message', 'Proposal berhasil dikirim');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    private function finalizeSubmission(int $id): void
+    {
         $periodModel   = new PmwPeriodModel();
         $scheduleModel = new PmwScheduleModel();
         $proposalModel = new PmwProposalModel();
@@ -315,25 +343,25 @@ class ProposalController extends BaseController
 
         $proposal = $proposalModel->find($id);
         if (! $proposal) {
-            return redirect()->to('mahasiswa/proposal')->with('error', 'Proposal tidak ditemukan');
+            throw new \RuntimeException('Proposal tidak ditemukan');
         }
 
         $this->guardOwner((int) $proposal['leader_user_id']);
 
         $activePeriod = $periodModel->getActive();
         if (! $activePeriod || (int) $activePeriod['id'] !== (int) $proposal['period_id']) {
-            return redirect()->to('mahasiswa/proposal')->with('error', 'Periode aktif tidak sesuai');
+            throw new \RuntimeException('Periode aktif tidak sesuai');
         }
 
         $phase1 = $scheduleModel->getByPeriodAndPhase((int) $activePeriod['id'], self::PHASE_NUMBER_PROPOSAL);
         if (! $this->isPhaseOpen($phase1)) {
-            return redirect()->to('mahasiswa/proposal')->with('error', 'Pengajuan proposal sedang ditutup sesuai jadwal');
+            throw new \RuntimeException('Pengajuan proposal sedang ditutup sesuai jadwal');
         }
 
         foreach (self::REQUIRED_DOC_KEYS as $key) {
             $doc = $documentModel->getProposalDocByKey((int) $proposal['id'], $key);
             if (! $doc) {
-                return redirect()->back()->with('error', 'Dokumen belum lengkap: ' . $key);
+                throw new \RuntimeException('Dokumen belum lengkap: ' . $key);
             }
         }
 
@@ -341,8 +369,6 @@ class ProposalController extends BaseController
             'status'       => 'submitted',
             'submitted_at' => date('Y-m-d H:i:s'),
         ]);
-
-        return redirect()->to('mahasiswa/proposal')->with('message', 'Proposal berhasil dikirim');
     }
 
     public function downloadDoc(int $docId)
@@ -425,6 +451,79 @@ class ProposalController extends BaseController
             'requiredDocKeys' => self::REQUIRED_DOC_KEYS,
             'lecturers'    => $lecturers,
         ];
+    }
+
+    private function handleFileUploads(int $proposalId): void
+    {
+        $documentModel = new PmwDocumentModel();
+        $proposalModel = new PmwProposalModel();
+        $user = auth()->user();
+
+        $proposal = $proposalModel->find($proposalId);
+        $slug = url_title($proposal['nama_usaha'] ?? 'proposal', '-', true);
+
+        // Use a simpler, stable folder name
+        $folderName = "proposal_{$proposalId}";
+        $targetDir = WRITEPATH . 'uploads/pmw/proposals/' . $folderName;
+
+        if (! is_dir($targetDir)) {
+            mkdir($targetDir, 0775, true);
+        }
+
+        foreach (self::REQUIRED_DOC_KEYS as $key) {
+            $file = $this->request->getFile($key);
+
+            if ($file && $file->isValid() && ! $file->hasMoved()) {
+                // Validation
+                if (strtolower((string) $file->getClientExtension()) !== 'pdf') {
+                    throw new \RuntimeException("Format file {$key} harus PDF");
+                }
+                if ($file->getSize() > 5 * 1024 * 1024) {
+                    throw new \RuntimeException("Ukuran file {$key} maksimal 5MB");
+                }
+
+                $existing = $documentModel->getProposalDocByKey($proposalId, $key);
+
+                // Best Practice Naming: slug-key-timestamp.extension
+                $timestamp = date('Ymd_His');
+                $extension = $file->getClientExtension();
+                $newName = "{$slug}-{$key}-{$timestamp}.{$extension}";
+
+                // Move and Update
+                $file->move($targetDir, $newName);
+                $path = 'uploads/pmw/proposals/' . $folderName . '/' . $newName;
+
+                if ($existing) {
+                    // Physical cleanup of the old file
+                    $oldPath = WRITEPATH . $existing['file_path'];
+                    if (is_file($oldPath)) {
+                        @unlink($oldPath);
+                    }
+
+                    $documentModel->update((int) $existing['id'], [
+                        'proposal_id'    => $proposalId,
+                        'uploader_id'    => $user->id,
+                        'type'           => 'proposal',
+                        'doc_key'        => $key,
+                        'file_path'      => $path,
+                        'original_name'  => $file->getClientName(),
+                        'status'         => 'submitted',
+                        'version'        => ((int) ($existing['version'] ?? 1)) + 1,
+                    ]);
+                } else {
+                    $documentModel->insert([
+                        'proposal_id'    => $proposalId,
+                        'uploader_id'    => $user->id,
+                        'type'           => 'proposal',
+                        'doc_key'        => $key,
+                        'file_path'      => $path,
+                        'original_name'  => $file->getClientName(),
+                        'status'         => 'submitted',
+                        'version'        => 1,
+                    ]);
+                }
+            }
+        }
     }
 
     private function isPhaseOpen(?array $phase): bool

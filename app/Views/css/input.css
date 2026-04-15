@@ -186,7 +186,6 @@ h1, h2, h3, h4, h5, .font-display {
               box-shadow 0.4s var(--ease-smooth),
               border-color 0.4s var(--ease-smooth);
   position: relative;
-  overflow: hidden;
 }
 
 .card-premium::before {
@@ -234,7 +233,6 @@ h1, h2, h3, h4, h5, .font-display {
               box-shadow 0.4s var(--ease-smooth),
               border-color 0.4s var(--ease-smooth);
   position: relative;
-  overflow: hidden;
 }
 
 .card-accent::before {
@@ -454,7 +452,8 @@ h1, h2, h3, h4, h5, .font-display {
 }
 
 .input-group input,
-.input-group select {
+.input-group select,
+.input-group textarea {
   flex: 1;
   background: transparent;
   border: none;
@@ -1145,4 +1144,84 @@ h1, h2, h3, h4, h5, .font-display {
 .badge-emerald {
   background-color: #D1FAE5;
   color: #065F46;
+}
+
+/* --- Searchable Dropdown --- */
+.search-select-container {
+  position: relative;
+  width: 100%;
+}
+
+.search-select-container.is-open {
+  z-index: 9999;
+}
+
+.z-lift {
+  z-index: 70 !important;
+}
+
+.search-select-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid rgba(186, 230, 253, 0.8);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl);
+  z-index: 50;
+  max-height: 250px;
+  overflow-y: auto;
+  backdrop-filter: blur(10px);
+  animation: slideDown 0.2s ease-out;
+}
+
+.search-select-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text-body);
+  transition: all 0.2s;
+  border-bottom: 1px solid rgba(241, 245, 249, 0.5);
+}
+
+.search-select-item:last-child {
+  border-bottom: none;
+}
+
+.search-select-item:hover {
+  background-color: var(--color-primary-ring);
+  color: var(--color-primary);
+}
+
+.search-select-item.selected {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.search-select-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--text-placeholder);
+  font-size: 0.875rem;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom Scrollbar for Dropdown */
+.search-select-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+.search-select-dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+.search-select-dropdown::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+.search-select-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

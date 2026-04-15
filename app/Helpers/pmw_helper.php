@@ -111,3 +111,29 @@ if (!function_exists('getProdiByJurusan')) {
         return $prodiList[$jurusan] ?? [];
     }
 }
+
+if (!function_exists('formatIndonesianDate')) {
+    /**
+     * Format date to Indonesian style (e.g. 15 April 2025)
+     * @param string|null $date
+     * @return string
+     */
+    function formatIndonesianDate($date): string
+    {
+        if (!$date || $date === '-' || $date === '0000-00-00') return '-';
+        
+        $months = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
+            4 => 'April', 5 => 'Mei', 6 => 'Juni',
+            7 => 'Juli', 8 => 'Agustus', 9 => 'September',
+            10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+        
+        $timestamp = strtotime($date);
+        $d = date('d', $timestamp);
+        $m = (int)date('m', $timestamp);
+        $y = date('Y', $timestamp);
+        
+        return $d . ' ' . $months[$m] . ' ' . $y;
+    }
+}

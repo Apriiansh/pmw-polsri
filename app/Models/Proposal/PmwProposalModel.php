@@ -18,6 +18,7 @@ class PmwProposalModel extends Model
         'kategori_usaha',
         'nama_usaha',
         'kategori_wirausaha',
+        'detail_keterangan',
         'total_rab',
         'status',
         'submitted_at',
@@ -34,6 +35,7 @@ class PmwProposalModel extends Model
         'kategori_usaha'  => 'permit_empty|max_length[100]',
         'nama_usaha'      => 'permit_empty|max_length[255]',
         'kategori_wirausaha' => 'required|in_list[pemula,berkembang]',
+        'detail_keterangan' => 'permit_empty',
         'total_rab'       => 'permit_empty|decimal',
         'status'          => 'required|in_list[draft,submitted,revision,approved,rejected]',
     ];
