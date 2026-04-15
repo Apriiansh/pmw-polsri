@@ -1,3 +1,7 @@
+---
+trigger: manual
+---
+
 # 📜 PMW MASTER RULES
 Mandatory development standards for the PMW Polsri project.
 

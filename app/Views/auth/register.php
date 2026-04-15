@@ -2,89 +2,47 @@
 
 <?= $this->section('content') ?>
 
+<?php helper('pmw'); ?>
+<?php $prodiList = $prodiList ?? getProdiList(); ?>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('registerForm', () => ({
+            showPass: false,
+            showConfirm: false,
+            nama: '<?= old('nama') ?? '' ?>',
+            nim: '<?= old('nim') ?? '' ?>',
+            username: '',
+            jurusan: '<?= old('jurusan') ?? '' ?>',
+            prodi: '<?= old('prodi') ?? '' ?>',
+            prodiList: <?= json_encode($prodiList) ?>,
+
+            init() {
+                this.generateUsername();
+            },
+
+            generateUsername() {
+                const nama = (this.nama || '').trim().toLowerCase();
+                const nim = (this.nim || '').toString().trim();
+                const parts = nama.split(/\s+/).filter(Boolean).map(p => p.replace(/[^a-z]/g, ''));
+                const middle = (parts.length >= 2 ? parts[1] : (parts.length ? parts[parts.length - 1] : ''));
+                const last4 = nim.slice(-4);
+                this.username = (middle + last4).replace(/[^a-z0-9]/g, '');
+            },
+
+            jurusanList() {
+                return Object.keys(this.prodiList);
+            },
+
+            prodiOptions() {
+                return this.prodiList[this.jurusan] || [];
+            }
+        }));
+    });
+</script>
+
 <section class="min-h-screen bg-linear-to-br from-sky-50 via-white to-yellow-50 py-8 sm:py-12 px-4 flex items-center justify-center pt-20 sm:pt-24"
-    x-data="{ 
-        showPass: false, 
-        showConfirm: false,
-        nama: '<?= old('nama') ?? '' ?>',
-        nim: '<?= old('nim') ?? '' ?>',
-        username: '<?= old('username') ?? '' ?>',
-        generateUsername() {
-            const nama = (this.nama || '').trim().toLowerCase();
-            const nim = (this.nim || '').toString().trim();
-
-            const parts = nama.split(/\s+/).filter(Boolean).map(p => p.replace(/[^a-z]/g, ''));
-            const middle = (parts.length >= 2 ? parts[1] : (parts.length ? parts[parts.length - 1] : ''));
-            const last4 = nim.slice(-4);
-
-            this.username = (middle + last4).replace(/[^a-z0-9]/g, '');
-        },
-        jurusan: '<?= old('jurusan') ?? '' ?>',
-        prodi: '<?= old('prodi') ?? '' ?>',
-        prodiList: {
-            'Teknik Sipil': [
-                'D-III Teknik Sipil',
-                'D-IV Perancangan Jalan dan Jembatan',
-                'D-IV Perancangan Jalan dan Jembatan PSDKU OKU',
-                'D-IV Arsitektur Bangunan Gedung'
-            ],
-            'Teknik Mesin': [
-                'D-III Teknik Mesin',
-                'D-III Pemeliharaan Alat Berat',
-                'D-IV Teknik Mesin Produksi dan Perawatan',
-                'D-IV Teknik Mesin Produksi dan Perawatan PSDKU Kab. Siak Prov. Riau'
-            ],
-            'Teknik Elektro': [
-                'D-III Teknik Listrik',
-                'D-III Teknik Elektronika',
-                'D-III Teknik Telekomunikasi',
-                'D-IV Teknik Elektro',
-                'D-IV Teknik Telekomunikasi',
-                'D-IV Teknologi Rekayasa Instalasi Listrik'
-            ],
-            'Teknik Kimia': [
-                'D-III Teknik Kimia',
-                'D-III Teknik Kimia PSDKU Kab. Siak Prov. Riau',
-                'D-IV Teknologi Kimia Industri',
-                'D-IV Teknik Energi',
-                'S2 Terapan/Magister Terapan: Teknik Energi Terbarukan'
-            ],
-            'Akuntansi': [
-                'D-III Akuntansi',
-                'D-IV Akuntansi Sektor Publik',
-                'D-IV Akuntansi Sektor Publik PSDKU OKU Baturaja',
-                'D-IV Akuntansi Sektor Publik Kab. Siak Prov. Riau'
-            ],
-            'Administrasi Bisnis': [
-                'D-III Administrasi Bisnis',
-                'D-III Administrasi Bisnis PSDKU OKU Baturaja',
-                'D-IV Manajemen Bisnis',
-                'D-IV Bisnis Digital',
-                'D-IV Usaha Perjalanan Wisata',
-                'S2 Pemasaran, Inovasi, dan Teknologi'
-            ],
-            'Teknik Komputer': [
-                'D-III Teknik Komputer',
-                'D-IV Teknologi Informatika Multimedia Digital'
-            ],
-            'Manajemen Informatika': [
-                'D-III Manajemen Informatika',
-                'D-IV Manajemen Informatika'
-            ],
-            'Bahasa dan Pariwisata': [
-                'D-III Bahasa Inggris',
-                'D-IV Bahasa Inggris untuk Komunikasi Bisnis dan Profesional'
-            ],
-            'Rekayasa Teknologi dan Bisnis Pertanian': [
-                'D-III Teknologi Pangan Kampus Banyuasin',
-                'D-IV Teknologi Produksi Tanaman Perkebunan',
-                'D-IV Agribisnis Pangan Kampus Banyuasin',
-                'D-IV Manajemen Agribisnis Kampus Banyuasin',
-                'D-IV Teknologi Akuakultur',
-                'D-IV Teknologi Rekayasa Pangan'
-            ]
-        }
-    }">
+    x-data="registerForm">
     <div class="w-full max-w-2xl">
 
         <!-- Logo -->
@@ -114,7 +72,7 @@
                     </div>
                 <?php endif; ?>
 
-                <form action="<?= base_url('register') ?>" method="post" enctype="multipart/form-data" class="space-y-5 sm:space-y-6" x-init="generateUsername()">
+                <form action="<?= base_url('register') ?>" method="post" enctype="multipart/form-data" class="space-y-5 sm:space-y-6">
                     <?= csrf_field() ?>
 
                     <input type="hidden" name="username" :value="username">
@@ -192,7 +150,7 @@
                             <select name="jurusan" x-model="jurusan" @change="prodi = ''"
                                 class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all bg-white text-sm sm:text-base" required>
                                 <option value="">Pilih Jurusan</option>
-                                <template x-for="(list, j) in prodiList" :key="j">
+                                <template x-for="j in jurusanList()" :key="j">
                                     <option :value="j" x-text="j"></option>
                                 </template>
                             </select>
@@ -208,7 +166,7 @@
                                 class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all bg-white disabled:bg-slate-50 disabled:text-slate-400 text-sm sm:text-base"
                                 :disabled="!jurusan" required>
                                 <option value="">Pilih Program Studi</option>
-                                <template x-for="p in (prodiList[jurusan] || [])" :key="p">
+                                <template x-for="p in prodiOptions()" :key="p">
                                     <option :value="p" x-text="p"></option>
                                 </template>
                             </select>

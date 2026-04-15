@@ -7,6 +7,15 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 
+// Override dengan Custom PMW Auth Routes - MUST BE BEFORE Shield routes to take precedence
+$routes->get('register', 'AuthController::register', ['as' => 'register']);
+$routes->post('register', 'AuthController::attemptRegister');
+$routes->get('login', 'AuthController::login', ['as' => 'login']);
+$routes->post('login', 'AuthController::attemptLogin');
+$routes->get('logout', 'AuthController::logout');
+$routes->post('logout', 'AuthController::logout');
+
+
 // Public Pages
 $routes->get('tentang', 'PublicPages::tentang');
 $routes->get('tahapan', 'PublicPages::tahapan');
@@ -44,7 +53,13 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
 
     // Mahasiswa Routes
     $routes->group('mahasiswa', ['filter' => 'group:mahasiswa'], static function ($routes) {
-        $routes->get('proposal', 'MahasiswaController::proposal');
+        $routes->get('proposal', 'Mahasiswa\\Proposal\\ProposalController::index');
+        $routes->get('proposal/create', 'Mahasiswa\\Proposal\\ProposalController::create');
+        $routes->get('proposal/edit/(:num)', 'Mahasiswa\\Proposal\\ProposalController::edit/$1');
+        $routes->post('proposal/save', 'Mahasiswa\\Proposal\\ProposalController::save');
+        $routes->post('proposal/upload/(:num)', 'Mahasiswa\\Proposal\\ProposalController::uploadDoc/$1');
+        $routes->post('proposal/submit/(:num)', 'Mahasiswa\\Proposal\\ProposalController::submit/$1');
+        $routes->get('proposal/doc/(:num)', 'Mahasiswa\\Proposal\\ProposalController::downloadDoc/$1');
         $routes->get('mentoring', 'MahasiswaController::mentoring');
         $routes->get('bimbingan', 'MahasiswaController::bimbingan');
         $routes->get('laporan-kemajuan', 'MahasiswaController::laporanKemajuan');
@@ -75,11 +90,3 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
 
 // Shield Auth Routes (bawaan)
 service('auth')->routes($routes);
-
-// Override dengan Custom PMW Auth Routes
-$routes->get('register', 'AuthController::register', ['as' => 'register']);
-$routes->post('register', 'AuthController::attemptRegister');
-$routes->get('login', 'AuthController::login', ['as' => 'login']);
-$routes->post('login', 'AuthController::attemptLogin');
-$routes->get('logout', 'AuthController::logout');
-$routes->post('logout', 'AuthController::logout');

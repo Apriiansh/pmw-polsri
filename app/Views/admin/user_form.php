@@ -49,19 +49,29 @@
                 <?= csrf_field() ?>
 
                 <!-- Username -->
-                <div class="form-field">
+                <div class="form-field" x-data="{ usernameValue: '<?= old('username', $user->username ?? '') ?>' }">
                     <label class="form-label">
                         Username <span class="required">*</span>
                     </label>
-                    <div class="input-group <?= session('errors.username') ? 'input-error' : '' ?>">
-                        <span class="input-icon">
-                            <i class="fas fa-user"></i>
-                        </span>
-                        <input type="text"
-                               name="username"
-                               value="<?= old('username', $user->username ?? '') ?>"
-                               placeholder="Masukkan username"
-                               required>
+                    <div class="flex gap-2">
+                        <div class="input-group flex-1 <?= session('errors.username') ? 'input-error' : '' ?>">
+                            <span class="input-icon">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            <input type="text"
+                                   name="username"
+                                   x-model="usernameValue"
+                                   placeholder="Masukkan username"
+                                   required>
+                        </div>
+                        <!-- Generate Username Button -->
+                        <button type="button"
+                                @click="usernameValue = generateUsername()"
+                                class="px-4 py-2.5 bg-slate-100 hover:bg-sky-50 text-slate-500 hover:text-sky-600 rounded-xl border border-slate-200 hover:border-sky-200 transition-all duration-200 flex items-center gap-2 shrink-0"
+                                title="Generate username otomatis">
+                            <i class="fas fa-dice text-sm"></i>
+                            <span class="text-sm font-medium hidden sm:inline">Generate</span>
+                        </button>
                     </div>
                     <?php if (session('errors.username')): ?>
                         <p class="form-error">
@@ -332,11 +342,12 @@
                                         </span>
                                         <select name="prodi"
                                                 x-ref="prodiSelect"
+                                                x-model="prodiValue"
                                                 :disabled="!jurusan || selectedRole !== 'mahasiswa'"
                                                 :required="selectedRole === 'mahasiswa'">
                                             <option value="">Pilih Prodi</option>
                                             <template x-for="prodi in prodiOptions" :key="prodi">
-                                                <option :value="prodi" x-text="prodi"></option>
+                                                <option :value="prodi" x-text="prodi" :selected="prodi === prodiValue"></option>
                                             </template>
                                         </select>
                                     </div>
@@ -392,7 +403,7 @@
                                         </span>
                                         <input type="text"
                                                name="expertise"
-                                               value="<?= old('expertise', $profileData['expertise'] ?? '') ?>"
+                                               value="<?= esc(old('expertise', $profileData['expertise'] ?? '')) ?>"
                                                placeholder="Contoh: Kewirausahaan, Digital Marketing"
                                                :disabled="selectedRole !== 'dosen' && selectedRole !== 'mentor' && selectedRole !== 'reviewer'">
                                     </div>
@@ -432,10 +443,11 @@
                                         </span>
                                         <select name="prodi"
                                                 x-ref="prodiSelectDosen"
+                                                x-model="prodiValue"
                                                 :disabled="!jurusan || selectedRole !== 'dosen'">
                                             <option value="">Pilih Prodi</option>
                                             <template x-for="prodi in prodiOptions" :key="prodi">
-                                                <option :value="prodi" x-text="prodi"></option>
+                                                <option :value="prodi" x-text="prodi" :selected="prodi === prodiValue"></option>
                                             </template>
                                         </select>
                                     </div>
@@ -451,7 +463,7 @@
                                            rows="3"
                                            class="form-textarea"
                                            placeholder="Biografi singkat (optional)"
-                                           :disabled="selectedRole === 'admin' || selectedRole === 'mahasiswa'"><?= old('bio', $profileData['bio'] ?? '') ?></textarea>
+                                           :disabled="selectedRole === 'admin' || selectedRole === 'mahasiswa'"><?= esc(old('bio', $profileData['bio'] ?? '')) ?></textarea>
                             </div>
                         </div>
                     </div>
@@ -680,9 +692,17 @@
             showPassword: false,
             selectedRole: '<?= old('role', isset($userGroups) && !empty($userGroups) ? $userGroups[0] : 'mahasiswa') ?>',
             jurusan: '<?= old('jurusan', $profileData['jurusan'] ?? '') ?>',
+            prodiValue: '<?= old('prodi', $profileData['prodi'] ?? '') ?>',
             prodiList: window.pmwProdiList,
             get prodiOptions() {
                 return this.prodiList[this.jurusan] || [];
+            },
+            generateUsername() {
+                const prefixes = ['user', 'polsri', 'pmw', 'student', 'dosen', 'mentor', 'reviewer', 'admin'];
+                const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+                const randomNum = Math.floor(1000 + Math.random() * 9000);
+                const timestamp = Date.now().toString(36).slice(-2);
+                return prefix + randomNum + timestamp;
             }
         }
     }

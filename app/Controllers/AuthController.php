@@ -3,13 +3,15 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Models\PmwPeriodModel;
+use App\Models\Proposal\PmwProposalModel;
 use CodeIgniter\Shield\Entities\User;
 use CodeIgniter\Shield\Models\UserModel;
 use CodeIgniter\Shield\Exceptions\ValidationException;
 
 class AuthController extends BaseController
 {
-    protected $helpers = ['form', 'url', 'text'];
+    protected $helpers = ['form', 'url', 'text', 'pmw'];
 
     /**
      * Show register form
@@ -21,8 +23,12 @@ class AuthController extends BaseController
             return redirect()->to($this->getRedirectUrlForRole());
         }
 
+        // Ensure helper is loaded
+        helper('pmw');
+
         return view('auth/register', [
             'title' => 'Daftar Akun',
+            'prodiList' => getProdiList(),
         ]);
     }
 
@@ -112,7 +118,7 @@ class AuthController extends BaseController
             $userId = $users->getInsertID();
 
             // Create PMW profile
-            $profileModel = new \App\Models\ProfileModel();
+            $profileModel = new \App\Models\ProfileModel($db);
             $profileData = [
                 'user_id' => $userId,
                 'nama' => $data['nama'],
@@ -126,19 +132,76 @@ class AuthController extends BaseController
             ];
 
             if (!$profileModel->insert($profileData)) {
-                throw new \Exception('Gagal membuat profil mahasiswa: ' . implode(', ', $profileModel->errors()));
+                $errors = json_encode($profileModel->errors());
+                throw new \Exception('Gagal membuat profil mahasiswa: ' . $errors);
+            }
+
+            $periodModel = new \App\Models\PmwPeriodModel($db);
+            $activePeriod = $periodModel->where('is_active', 1)->first();
+
+            $proposalId = null;
+            if ($activePeriod) {
+                $proposalModel = new \App\Models\Proposal\PmwProposalModel($db);
+                $proposalData = [
+                    'period_id' => $activePeriod['id'],
+                    'leader_user_id' => $userId,
+                    'lecturer_id' => null,
+                    'kategori_usaha' => '',
+                    'nama_usaha' => '',
+                    'kategori_wirausaha' => 'pemula',
+                    'status' => 'draft',
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ];
+
+                $proposalId = $proposalModel->insert($proposalData, true);
+                if (!$proposalId) {
+                    $errors = $proposalModel->errors();
+                    throw new \Exception('Gagal membuat draft proposal otomatis: ' . json_encode($errors));
+                }
+
+                // Insert sebagai ketua di proposal_members
+                if (!$db->table('pmw_proposal_members')->insert([
+                    'proposal_id' => $proposalId,
+                    'role' => 'ketua',
+                    'nama' => $data['nama'],
+                    'nim' => $data['nim'],
+                    'jurusan' => $data['jurusan'],
+                    'prodi' => $data['prodi'],
+                    'semester' => $data['semester'] ?? 1,
+                    'phone' => $data['phone'],
+                    'email' => $data['email'],
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ])) {
+                    throw new \Exception('Gagal mendaftarkan anggota (ketua) proposal: ' . json_encode($db->error()));
+                }
             }
 
             // Fetch the saved user and assign group
             $savedUser = $users->findById($userId);
+            if (!$savedUser) {
+                throw new \Exception('Gagal memverifikasi akun yang baru dibuat.');
+            }
+            
             $savedUser->addGroup('mahasiswa');
 
             $db->transComplete();
 
+            if ($db->transStatus() === false) {
+                throw new \Exception('Transaksi database gagal diselesaikan (Rollback).');
+            }
+
             // Auto login with the saved user
             auth()->login($savedUser);
+            // return redirect()->to('/dashboard')->with('message', 'Registrasi berhasil! Selamat datang di PMW Polsri.');          
+            
+            // Redirect ke form edit proposal jika berhasil buat draft
+            $redirectAfter = $proposalId 
+                ? "mahasiswa/proposal/edit/$proposalId" 
+                : 'mahasiswa/proposal';
 
-            return redirect()->to('/dashboard')->with('message', 'Registrasi berhasil! Selamat datang di PMW Polsri.');
+            return redirect()->to($redirectAfter)->with('message', 'Registrasi berhasil! Lengkapi proposal kamu.');
         } catch (ValidationException $e) {
             $db->transRollback();
             // Delete uploaded foto if error
@@ -178,7 +241,7 @@ class AuthController extends BaseController
     {
         // Reverted to standard email-based login as requested
         $validation = $this->validate([
-            'email'    => 'required|valid_email',
+            'email' => 'required|valid_email',
             'password' => 'required',
         ]);
 
@@ -186,23 +249,18 @@ class AuthController extends BaseController
             return redirect()->back()->withInput()->with('error', 'Silakan masukkan email yang valid dan password.');
         }
 
-        $email    = $this->request->getPost('email');
+        $email = $this->request->getPost('email');
         $password = $this->request->getPost('password');
         $remember = (bool) $this->request->getPost('remember');
 
         // Attempt to login
-        $result = auth()->attempt([
-            'email'    => $email,
+        $result = auth()->remember($remember)->attempt([
+            'email' => $email,
             'password' => $password,
         ]);
 
-        if (! $result->isOK()) {
+        if (!$result->isOK()) {
             return redirect()->back()->withInput()->with('error', $result->reason());
-        }
-
-        // Handle remember me
-        if ($remember) {
-            auth()->user()->rememberMe();
         }
 
         // Role-based redirect
@@ -217,7 +275,7 @@ class AuthController extends BaseController
     private function getRedirectUrlForRole(): string
     {
         $user = auth()->user();
-        
+
         if (!$user) {
             return 'dashboard';
         }
@@ -226,12 +284,12 @@ class AuthController extends BaseController
         $role = $groups[0] ?? 'mahasiswa';
 
         return match ($role) {
-            'admin'     => 'admin/users',
+            'admin' => 'admin/users',
             'mahasiswa' => 'mahasiswa/proposal',
-            'dosen'     => 'dosen/monitoring',
-            'mentor'    => 'mentor/monitoring',
-            'reviewer'  => 'reviewer/penilaian-proposal',
-            default     => 'dashboard',
+            'dosen' => 'dosen/monitoring',
+            'mentor' => 'mentor/monitoring',
+            'reviewer' => 'reviewer/penilaian-proposal',
+            default => 'dashboard',
         };
     }
 
@@ -244,14 +302,14 @@ class AuthController extends BaseController
         if (auth()->loggedIn()) {
             // Get authenticator instance
             $authenticator = auth('session')->getAuthenticator();
-            
+
             // Perform logout
             $authenticator->logout();
         }
-        
+
         // Clear all session data
         session()->destroy();
-        
+
         // Redirect ke login page dengan pesan
         return redirect()->to('/login')->with('message', 'Anda telah keluar.');
     }

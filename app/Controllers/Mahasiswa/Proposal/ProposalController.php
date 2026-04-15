@@ -1,0 +1,456 @@
+<?php
+
+namespace App\Controllers\Mahasiswa\Proposal;
+
+use App\Controllers\BaseController;
+use App\Models\LecturerModel;
+use App\Models\ProfileModel;
+use App\Models\PmwDocumentModel;
+use App\Models\PmwPeriodModel;
+use App\Models\Proposal\PmwProposalMemberModel;
+use App\Models\Proposal\PmwProposalModel;
+use App\Models\PmwScheduleModel;
+use CodeIgniter\HTTP\ResponseInterface;
+use CodeIgniter\Exceptions\PageNotFoundException;
+
+class ProposalController extends BaseController
+{
+    private const PHASE_NUMBER_PROPOSAL = 1;
+
+    private const REQUIRED_DOC_KEYS = [
+        'proposal_utama',
+        'biodata',
+        'surat_pernyataan_ketua',
+        'surat_kesediaan_dosen',
+        'ktm',
+    ];
+
+    public function index()
+    {
+        $periodModel   = new PmwPeriodModel();
+        $scheduleModel = new PmwScheduleModel();
+        $proposalModel = new PmwProposalModel();
+
+        $activePeriod = $periodModel->getActive();
+        $phase1 = null;
+        $isPhaseOpen = false;
+
+        if ($activePeriod) {
+            $phase1 = $scheduleModel->getByPeriodAndPhase((int) $activePeriod['id'], self::PHASE_NUMBER_PROPOSAL);
+            $isPhaseOpen = $this->isPhaseOpen($phase1);
+        }
+
+        $user = auth()->user();
+        $proposal = null;
+        if ($activePeriod && $user) {
+            $proposal = $proposalModel->findByPeriodAndLeader((int) $activePeriod['id'], (int) $user->id);
+        }
+
+        // Jika sudah ada draft/proposal, langsung ke form edit
+        if ($proposal) {
+            return redirect()->to("mahasiswa/proposal/edit/{$proposal['id']}");
+        }
+
+        return view('mahasiswa/proposal/index', [
+            'title'        => 'Proposal Kami',
+            'activePeriod' => $activePeriod,
+            'phase1'       => $phase1,
+            'isPhaseOpen'  => $isPhaseOpen,
+            'proposal'     => $proposal,
+        ]);
+    }
+
+    public function create()
+    {
+        $periodModel  = new PmwPeriodModel();
+        $proposalModel = new PmwProposalModel();
+        $activePeriod = $periodModel->getActive();
+        $user = auth()->user();
+
+        // Cegah duplikat: jika sudah punya proposal, redirect ke edit
+        if ($activePeriod && $user) {
+            $existing = $proposalModel->findByPeriodAndLeader((int) $activePeriod['id'], (int) $user->id);
+            if ($existing) {
+                return redirect()->to("mahasiswa/proposal/edit/{$existing['id']}");
+            }
+        }
+
+        $ctx = $this->buildFormContext(null);
+        return view('mahasiswa/proposal/form', $ctx);
+    }
+
+    public function edit(int $id)
+    {
+        $proposalModel = new PmwProposalModel();
+        $proposal = $proposalModel->find($id);
+        if (! $proposal) {
+            return redirect()->to('mahasiswa/proposal')->with('error', 'Proposal tidak ditemukan');
+        }
+
+        $this->guardOwner((int) $proposal['leader_user_id']);
+
+        $ctx = $this->buildFormContext($proposal);
+        return view('mahasiswa/proposal/form', $ctx);
+    }
+
+    public function save()
+    {
+        $user = auth()->user();
+        if (! $user) {
+            return redirect()->to('login');
+        }
+
+        $periodModel = new PmwPeriodModel();
+        $activePeriod = $periodModel->getActive();
+        if (! $activePeriod) {
+            return redirect()->back()->withInput()->with('error', 'Tidak ada periode PMW yang aktif');
+        }
+
+        $rules = [
+            'lecturer_id'    => 'required|integer',
+            'kategori_usaha' => 'required|max_length[100]',
+            'nama_usaha'     => 'required|max_length[255]',
+            'kategori_wirausaha' => 'required|in_list[pemula,berkembang]',
+            'total_rab'      => 'permit_empty|decimal',
+        ];
+
+        if (! $this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $members = $this->request->getPost('members');
+        if (! is_array($members)) {
+            $members = [];
+        }
+
+        $anggota = array_values(array_filter($members, static fn ($m) => is_array($m) && (($m['role'] ?? '') === 'anggota')));
+        if (count($anggota) < 2 || count($anggota) > 4) {
+            return redirect()->back()->withInput()->with('error', 'Jumlah anggota harus 2 sampai 4 orang');
+        }
+
+        $proposalModel = new PmwProposalModel();
+        $memberModel   = new PmwProposalMemberModel();
+        $profileModel  = new ProfileModel();
+
+        // Validasi: ambil data ketua tim dari user yang sedang login
+        $profile = $profileModel->where('user_id', $user->id)->first();
+        if (! $profile) {
+            return redirect()->back()->withInput()->with('error', 'Profil mahasiswa tidak ditemukan. Lengkapi profil terlebih dahulu.');
+        }
+
+        // Hanya ketua tim yang boleh membuat/mengedit proposal untuk timnya
+        // (diverifikasi via leader_user_id yang selalu diisi dari auth()->user()->id)
+
+        $db = \Config\Database::connect();
+        $db->transBegin();
+
+        try {
+            $existing = $proposalModel->findByPeriodAndLeader((int) $activePeriod['id'], (int) $user->id);
+
+            $proposalData = [
+                'period_id'      => (int) $activePeriod['id'],
+                'leader_user_id' => (int) $user->id, // Ketua tim = user yang login
+                'lecturer_id'    => (int) $this->request->getPost('lecturer_id'),
+                'kategori_usaha' => (string) $this->request->getPost('kategori_usaha'),
+                'nama_usaha'     => (string) $this->request->getPost('nama_usaha'),
+                'kategori_wirausaha' => (string) $this->request->getPost('kategori_wirausaha'),
+                'total_rab'      => $this->request->getPost('total_rab') ?: null,
+                'status'         => 'draft',
+            ];
+
+            if ($existing) {
+                $proposalId = (int) $existing['id'];
+                // Pastikan hanya ketua tim yang bisa update
+                if ((int) $existing['leader_user_id'] !== (int) $user->id) {
+                    throw new \RuntimeException('Anda tidak memiliki akses untuk mengubah proposal ini');
+                }
+                if (! $proposalModel->update($proposalId, $proposalData)) {
+                    throw new \RuntimeException('Gagal menyimpan proposal');
+                }
+                // Hapus semua member lama, akan diganti dengan data terbaru
+                $memberModel->where('proposal_id', $proposalId)->delete();
+            } else {
+                $proposalId = (int) $proposalModel->insert($proposalData, true);
+                if (! $proposalId) {
+                    throw new \RuntimeException('Gagal membuat proposal');
+                }
+            }
+
+            // Simpan data Ketua Tim ke pmw_proposal_members (ambil dari profile user login)
+            $memberModel->insert([
+                'proposal_id' => $proposalId,
+                'role'        => 'ketua',
+                'nama'        => $profile['nama'] ?? ($user->username ?? 'Ketua'),
+                'nim'         => $profile['nim'] ?? null,
+                'jurusan'     => $profile['jurusan'] ?? null,
+                'prodi'       => $profile['prodi'] ?? null,
+                'semester'    => $profile['semester'] ?? null,
+                'phone'       => $profile['phone'] ?? null,
+                'email'       => $user->getEmail(),
+            ]);
+
+            foreach ($anggota as $m) {
+                $memberModel->insert([
+                    'proposal_id' => $proposalId,
+                    'role'        => 'anggota',
+                    'nama'        => (string) ($m['nama'] ?? ''),
+                    'nim'         => (string) ($m['nim'] ?? ''),
+                    'jurusan'     => (string) ($m['jurusan'] ?? ''),
+                    'prodi'       => (string) ($m['prodi'] ?? ''),
+                    'semester'    => (int) ($m['semester'] ?? 0),
+                    'phone'       => (string) ($m['phone'] ?? ''),
+                    'email'       => (string) ($m['email'] ?? ''),
+                ]);
+            }
+
+            $db->transCommit();
+
+            return redirect()->to('mahasiswa/proposal/edit/' . $proposalId)->with('message', 'Draft proposal berhasil disimpan');
+        } catch (\Throwable $e) {
+            $db->transRollback();
+            return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    public function uploadDoc(int $proposalId)
+    {
+        $proposalModel = new PmwProposalModel();
+        $proposal = $proposalModel->find($proposalId);
+        if (! $proposal) {
+            return redirect()->back()->with('error', 'Proposal tidak ditemukan');
+        }
+
+        $this->guardOwner((int) $proposal['leader_user_id']);
+
+        $docKey = (string) $this->request->getPost('doc_key');
+        if (! in_array($docKey, self::REQUIRED_DOC_KEYS, true)) {
+            return redirect()->back()->with('error', 'Tipe dokumen tidak valid');
+        }
+
+        $file = $this->request->getFile('file');
+        if (! $file || ! $file->isValid()) {
+            return redirect()->back()->with('error', 'File tidak valid');
+        }
+
+        if (strtolower((string) $file->getClientExtension()) !== 'pdf') {
+            return redirect()->back()->with('error', 'Format file harus PDF');
+        }
+
+        if ($file->getSize() > 5 * 1024 * 1024) {
+            return redirect()->back()->with('error', 'Ukuran file maksimal 5MB');
+        }
+
+        $user = auth()->user();
+
+        $documentModel = new PmwDocumentModel();
+        $existing = $documentModel->getProposalDocByKey($proposalId, $docKey);
+
+        $newName = $file->getRandomName();
+        $targetDir = WRITEPATH . 'uploads/pmw/proposals/' . $proposalId;
+
+        if (! is_dir($targetDir)) {
+            mkdir($targetDir, 0775, true);
+        }
+
+        $file->move($targetDir, $newName);
+        $path = 'uploads/pmw/proposals/' . $proposalId . '/' . $newName;
+
+        $db = \Config\Database::connect();
+        $db->transBegin();
+
+        try {
+            if ($existing) {
+                $documentModel->update((int) $existing['id'], [
+                    'proposal_id'    => $proposalId,
+                    'uploader_id'    => $user->id,
+                    'type'           => 'proposal',
+                    'doc_key'        => $docKey,
+                    'file_path'      => $path,
+                    'original_name'  => $file->getClientName(),
+                    'status'         => 'submitted',
+                    'version'        => ((int) ($existing['version'] ?? 1)) + 1,
+                ]);
+            } else {
+                $documentModel->insert([
+                    'team_id'        => null,
+                    'proposal_id'    => $proposalId,
+                    'uploader_id'    => $user->id,
+                    'type'           => 'proposal',
+                    'doc_key'        => $docKey,
+                    'file_path'      => $path,
+                    'original_name'  => $file->getClientName(),
+                    'status'         => 'submitted',
+                    'version'        => 1,
+                ]);
+            }
+
+            $db->transCommit();
+
+            if ($existing && ! empty($existing['file_path'])) {
+                $oldAbs = WRITEPATH . $existing['file_path'];
+                if (is_file($oldAbs)) {
+                    unlink($oldAbs);
+                }
+            }
+
+            return redirect()->back()->with('message', 'Dokumen berhasil diupload');
+        } catch (\Throwable $e) {
+            $db->transRollback();
+
+            $abs = WRITEPATH . $path;
+            if (is_file($abs)) {
+                unlink($abs);
+            }
+
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    public function submit(int $id)
+    {
+        $periodModel   = new PmwPeriodModel();
+        $scheduleModel = new PmwScheduleModel();
+        $proposalModel = new PmwProposalModel();
+        $documentModel = new PmwDocumentModel();
+
+        $proposal = $proposalModel->find($id);
+        if (! $proposal) {
+            return redirect()->to('mahasiswa/proposal')->with('error', 'Proposal tidak ditemukan');
+        }
+
+        $this->guardOwner((int) $proposal['leader_user_id']);
+
+        $activePeriod = $periodModel->getActive();
+        if (! $activePeriod || (int) $activePeriod['id'] !== (int) $proposal['period_id']) {
+            return redirect()->to('mahasiswa/proposal')->with('error', 'Periode aktif tidak sesuai');
+        }
+
+        $phase1 = $scheduleModel->getByPeriodAndPhase((int) $activePeriod['id'], self::PHASE_NUMBER_PROPOSAL);
+        if (! $this->isPhaseOpen($phase1)) {
+            return redirect()->to('mahasiswa/proposal')->with('error', 'Pengajuan proposal sedang ditutup sesuai jadwal');
+        }
+
+        foreach (self::REQUIRED_DOC_KEYS as $key) {
+            $doc = $documentModel->getProposalDocByKey((int) $proposal['id'], $key);
+            if (! $doc) {
+                return redirect()->back()->with('error', 'Dokumen belum lengkap: ' . $key);
+            }
+        }
+
+        $proposalModel->update((int) $proposal['id'], [
+            'status'       => 'submitted',
+            'submitted_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        return redirect()->to('mahasiswa/proposal')->with('message', 'Proposal berhasil dikirim');
+    }
+
+    public function downloadDoc(int $docId)
+    {
+        $documentModel = new PmwDocumentModel();
+        $proposalModel = new PmwProposalModel();
+
+        $doc = $documentModel->find($docId);
+        if (! $doc || empty($doc['proposal_id'])) {
+            return redirect()->to('mahasiswa/proposal')->with('error', 'Dokumen tidak ditemukan');
+        }
+
+        $proposal = $proposalModel->find((int) $doc['proposal_id']);
+        if (! $proposal) {
+            return redirect()->to('mahasiswa/proposal')->with('error', 'Proposal tidak ditemukan');
+        }
+
+        $this->guardOwner((int) $proposal['leader_user_id']);
+
+        $abs = WRITEPATH . $doc['file_path'];
+        if (! is_file($abs)) {
+            return redirect()->back()->with('error', 'File tidak ditemukan');
+        }
+
+        return $this->response->download($abs, null)->setFileName($doc['original_name'] ?? basename($abs));
+    }
+
+    private function buildFormContext(?array $proposal): array
+    {
+        $periodModel   = new PmwPeriodModel();
+        $scheduleModel = new PmwScheduleModel();
+        $memberModel   = new PmwProposalMemberModel();
+        $documentModel = new PmwDocumentModel();
+        $lecturerModel = new LecturerModel();
+        $profileModel  = new ProfileModel();
+
+        $activePeriod = $periodModel->getActive();
+        $phase1 = null;
+        $isPhaseOpen = false;
+        if ($activePeriod) {
+            $phase1 = $scheduleModel->getByPeriodAndPhase((int) $activePeriod['id'], self::PHASE_NUMBER_PROPOSAL);
+            $isPhaseOpen = $this->isPhaseOpen($phase1);
+        }
+
+        $user = auth()->user();
+        $profile = null;
+        if ($user) {
+            $profile = $profileModel->where('user_id', (int) $user->id)->first();
+            // Debug: log if profile not found
+            if (!$profile) {
+                log_message('warning', 'ProposalController: Profile not found for user_id=' . $user->id);
+            }
+        }
+
+        $members = [];
+        $docsByKey = [];
+
+        if ($proposal) {
+            $members = $memberModel->getByProposalId((int) $proposal['id']);
+            $docs = $documentModel->getProposalDocs((int) $proposal['id']);
+            foreach ($docs as $d) {
+                if (! empty($d['doc_key'])) {
+                    $docsByKey[$d['doc_key']] = $d;
+                }
+            }
+        }
+
+        $lecturers = $lecturerModel->orderBy('nama', 'ASC')->findAll();
+
+        return [
+            'title'        => 'Proposal Kami',
+            'activePeriod' => $activePeriod,
+            'phase1'       => $phase1,
+            'isPhaseOpen'  => $isPhaseOpen,
+            'proposal'     => $proposal,
+            'isEdit'       => $proposal !== null,
+            'profile'      => $profile,
+            'members'      => $members,
+            'docsByKey'    => $docsByKey,
+            'requiredDocKeys' => self::REQUIRED_DOC_KEYS,
+            'lecturers'    => $lecturers,
+        ];
+    }
+
+    private function isPhaseOpen(?array $phase): bool
+    {
+        if (! $phase) {
+            return false;
+        }
+
+        if (empty($phase['is_active'])) {
+            return false;
+        }
+
+        if (empty($phase['start_date']) || empty($phase['end_date'])) {
+            return false;
+        }
+
+        $today = date('Y-m-d');
+
+        return $today >= $phase['start_date'] && $today <= $phase['end_date'];
+    }
+
+    private function guardOwner(int $leaderUserId): void
+    {
+        $user = auth()->user();
+        if (! $user || (int) $user->id !== $leaderUserId) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+    }
+}

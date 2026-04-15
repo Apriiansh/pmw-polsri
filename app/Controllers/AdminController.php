@@ -14,91 +14,7 @@ use CodeIgniter\Shield\Entities\User;
 
 class AdminController extends BaseController
 {
-    protected $helpers = ['form', 'url', 'text'];
-
-    // Jurusan list for mahasiswa and dosen
-    protected $jurusanList = [
-        'Teknik Sipil',
-        'Teknik Mesin',
-        'Teknik Elektro',
-        'Teknik Kimia',
-        'Akuntansi',
-        'Administrasi Bisnis',
-        'Teknik Komputer',
-        'Manajemen Informatika',
-        'Bahasa dan Pariwisata',
-        'Rekayasa Teknologi dan Bisnis Pertanian',
-    ];
-
-    /**
-     * Get prodi list based on jurusan
-     */
-    private function getProdiList(): array
-    {
-        return [
-            'Teknik Sipil' => [
-                'D-III Teknik Sipil',
-                'D-IV Perancangan Jalan dan Jembatan',
-                'D-IV Perancangan Jalan dan Jembatan PSDKU OKU',
-                'D-IV Arsitektur Bangunan Gedung',
-            ],
-            'Teknik Mesin' => [
-                'D-III Teknik Mesin',
-                'D-III Pemeliharaan Alat Berat',
-                'D-IV Teknik Mesin Produksi dan Perawatan',
-                'D-IV Teknik Mesin Produksi dan Perawatan PSDKU Kab. Siak Prov. Riau',
-            ],
-            'Teknik Elektro' => [
-                'D-III Teknik Listrik',
-                'D-III Teknik Elektronika',
-                'D-III Teknik Telekomunikasi',
-                'D-IV Teknik Elektro',
-                'D-IV Teknik Telekomunikasi',
-                'D-IV Teknologi Rekayasa Instalasi Listrik',
-            ],
-            'Teknik Kimia' => [
-                'D-III Teknik Kimia',
-                'D-III Teknik Kimia PSDKU Kab. Siak Prov. Riau',
-                'D-IV Teknologi Kimia Industri',
-                'D-IV Teknik Energi',
-                'S2 Terapan/Magister Terapan: Teknik Energi Terbarukan',
-            ],
-            'Akuntansi' => [
-                'D-III Akuntansi',
-                'D-IV Akuntansi Sektor Publik',
-                'D-IV Akuntansi Sektor Publik PSDKU OKU Baturaja',
-                'D-IV Akuntansi Sektor Publik Kab. Siak Prov. Riau',
-            ],
-            'Administrasi Bisnis' => [
-                'D-III Administrasi Bisnis',
-                'D-III Administrasi Bisnis PSDKU OKU Baturaja',
-                'D-IV Manajemen Bisnis',
-                'D-IV Bisnis Digital',
-                'D-IV Usaha Perjalanan Wisata',
-                'S2 Pemasaran, Inovasi, dan Teknologi',
-            ],
-            'Teknik Komputer' => [
-                'D-III Teknik Komputer',
-                'D-IV Teknologi Informatika Multimedia Digital',
-            ],
-            'Manajemen Informatika' => [
-                'D-III Manajemen Informatika',
-                'D-IV Manajemen Informatika',
-            ],
-            'Bahasa dan Pariwisata' => [
-                'D-III Bahasa Inggris',
-                'D-IV Bahasa Inggris untuk Komunikasi Bisnis dan Profesional',
-            ],
-            'Rekayasa Teknologi dan Bisnis Pertanian' => [
-                'D-III Teknologi Pangan Kampus Banyuasin',
-                'D-IV Teknologi Produksi Tanaman Perkebunan',
-                'D-IV Agribisnis Pangan Kampus Banyuasin',
-                'D-IV Manajemen Agribisnis Kampus Banyuasin',
-                'D-IV Teknologi Akuakultur',
-                'D-IV Teknologi Rekayasa Pangan',
-            ],
-        ];
-    }
+    protected $helpers = ['form', 'url', 'text', 'pmw'];
 
     /**
      * User list page
@@ -156,8 +72,8 @@ class AdminController extends BaseController
             'header_title'    => 'Tambah User Baru',
             'header_subtitle' => 'Buat akun pengguna baru dengan role spesifik',
             'roles'           => $this->getAvailableRoles(),
-            'jurusanList'     => $this->jurusanList,
-            'prodiList'       => $this->getProdiList(),
+            'jurusanList'     => getJurusanList(),
+            'prodiList'       => getProdiList(),
         ];
 
         return view('admin/user_form', $data);
@@ -207,8 +123,8 @@ class AdminController extends BaseController
             'roles'           => $this->getAvailableRoles(),
             'userGroups'      => $userGroups,
             'profileData'     => $profileData,
-            'jurusanList'     => $this->jurusanList,
-            'prodiList'       => $this->getProdiList(),
+            'jurusanList'     => getJurusanList(),
+            'prodiList'       => getProdiList(),
         ];
 
         return view('admin/user_form', $data);
@@ -368,7 +284,7 @@ class AdminController extends BaseController
     }
 
     /**
-     * Delete user
+     * Delete user and all related auth data
      */
     public function deleteUser($id)
     {
@@ -384,9 +300,41 @@ class AdminController extends BaseController
             return redirect()->to('admin/users')->with('error', 'Tidak bisa menghapus diri sendiri');
         }
 
-        $userModel->delete($id);
+        $db = \Config\Database::connect();
+        $db->transStart();
 
-        return redirect()->to('admin/users')->with('success', 'User berhasil dihapus');
+        try {
+            // Get user roles before deletion
+            $groups = $user->getGroups();
+            $mainRole = $groups[0] ?? null;
+
+            // Delete role-specific profile
+            if ($mainRole) {
+                $this->deleteOldProfile($user->id, $mainRole);
+            }
+
+            // Delete auth identities (password, email, etc.)
+            $db->table('auth_identities')->where('user_id', $user->id)->delete();
+
+            // Delete auth groups (roles)
+            $db->table('auth_groups_users')->where('user_id', $user->id)->delete();
+
+            // Delete auth permissions
+            $db->table('auth_permissions_users')->where('user_id', $user->id)->delete();
+
+            // Delete remember tokens
+            $db->table('auth_remember_tokens')->where('user_id', $user->id)->delete();
+
+            // Delete user
+            $userModel->delete($user->id);
+
+            $db->transComplete();
+
+            return redirect()->to('admin/users')->with('success', 'User berhasil dihapus');
+        } catch (\Exception $e) {
+            $db->transRollback();
+            return redirect()->to('admin/users')->with('error', 'Gagal menghapus user: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -637,8 +585,6 @@ class AdminController extends BaseController
     {
         return view('dashboard/placeholder', ['title' => 'Laporan PMW - Rekap Data']);
     }
-
-
 
     /**
      * Create role-specific profile

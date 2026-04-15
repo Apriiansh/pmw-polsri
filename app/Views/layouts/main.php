@@ -337,20 +337,67 @@
                     <!-- Divider -->
                     <div class="h-8 w-px bg-slate-100 mx-1"></div>
 
-                    <!-- User Profile Dropdown Placeholder -->
-                    <div class="flex items-center gap-3 pl-1 cursor-pointer group">
-                        <!-- Name & role (desktop only) -->
-                        <div class="hidden lg:block text-right">
-                            <p class="text-sm font-bold text-(--text-heading) group-hover:text-sky-500 transition-colors leading-tight">
-                                <?= esc($displayName) ?>
-                            </p>
-                            <p class="text-[10px] text-(--text-muted) uppercase font-black tracking-widest mt-0.5">
-                                <?= esc($displayRole) ?>
-                            </p>
-                        </div>
-                        <!-- Avatar -->
-                        <div class="w-10 h-10 rounded-xl bg-linear-to-tr from-sky-500 to-sky-400 flex items-center justify-center text-white font-display font-bold text-sm shadow-md shadow-sky-200 group-hover:scale-105 transition-transform duration-300">
-                            <?= esc($initials) ?>
+                    <!-- User Profile Dropdown -->
+                    <div class="relative" x-data="{ isUserMenuOpen: false }" @click.outside="isUserMenuOpen = false">
+                        <button
+                            @click="isUserMenuOpen = !isUserMenuOpen"
+                            class="flex items-center gap-3 pl-1 cursor-pointer group focus:outline-none">
+                            <!-- Name & role (desktop only) -->
+                            <div class="hidden lg:block text-right">
+                                <p class="text-sm font-bold text-(--text-heading) group-hover:text-sky-500 transition-colors leading-tight">
+                                    <?= esc($displayName) ?>
+                                </p>
+                                <p class="text-[10px] text-(--text-muted) uppercase font-black tracking-widest mt-0.5">
+                                    <?= esc($displayRole) ?>
+                                </p>
+                            </div>
+                            <!-- Avatar -->
+                            <div class="w-10 h-10 rounded-xl bg-linear-to-tr from-sky-500 to-sky-400 flex items-center justify-center text-white font-display font-bold text-sm shadow-md shadow-sky-200 group-hover:scale-105 transition-transform duration-300">
+                                <?= esc($initials) ?>
+                            </div>
+                            <!-- Dropdown arrow -->
+                            <i class="fas fa-chevron-down text-xs text-slate-400 group-hover:text-sky-500 transition-all duration-200"
+                               :class="isUserMenuOpen ? 'rotate-180' : ''"></i>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div
+                            x-show="isUserMenuOpen"
+                            x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+                            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
+                            class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl shadow-slate-200/50 border border-sky-100 py-2 z-50"
+                            x-cloak>
+
+                            <!-- User Info Header -->
+                            <div class="px-4 py-3 border-b border-sky-50">
+                                <p class="text-sm font-bold text-(--text-heading)"><?= esc($displayName) ?></p>
+                                <p class="text-xs text-(--text-muted)"><?= esc($displayRole) ?></p>
+                            </div>
+
+                            <!-- Menu Items -->
+                            <div class="py-1">
+                                <!-- Account Settings -->
+                                <a href="<?= base_url('profile') ?>" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-sky-50 hover:text-sky-600 transition-colors">
+                                    <i class="fas fa-user-gear w-5 text-center text-slate-400"></i>
+                                    <span>Pengaturan Akun</span>
+                                </a>
+                            </div>
+
+                            <!-- Divider -->
+                            <div class="border-t border-sky-50 my-1"></div>
+
+                            <!-- Logout -->
+                            <form action="<?= base_url('logout') ?>" method="post" class="px-2 py-1">
+                                <?= csrf_field() ?>
+                                <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-rose-600 hover:bg-rose-50 transition-colors">
+                                    <i class="fas fa-right-from-bracket w-5 text-center"></i>
+                                    <span>Logout</span>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>

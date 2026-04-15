@@ -76,7 +76,7 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
                     <a href="<?= base_url('login') ?>" class="btn-ghost text-sm">
                         Masuk
                     </a>
-                    <a href="<?= base_url('daftar') ?>" class="btn-primary text-sm">
+                    <a href="<?= base_url('register') ?>" class="btn-primary text-sm">
                         <i class="fas fa-rocket mr-2"></i>
                         Daftar PMW
                     </a>
@@ -133,7 +133,7 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
                         <i class="fas fa-sign-in-alt w-6"></i>
                         <span>Masuk</span>
                     </a>
-                    <a href="<?= base_url('daftar') ?>" class="btn-primary w-full justify-center text-center">
+                    <a href="<?= base_url('register') ?>" class="btn-primary w-full justify-center text-center">
                         <i class="fas fa-rocket mr-2"></i>
                         Daftar PMW
                     </a>
@@ -290,7 +290,7 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
                         'bg-rose-500 text-white': n.type === 'error',
                         'bg-sky-500 text-white': n.type === 'info'
                     }"
-                    class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+                    class="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
                 >
                     <i class="fas" :class="{
                         'fa-check text-sm': n.type === 'success',
