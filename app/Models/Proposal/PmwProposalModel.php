@@ -19,9 +19,14 @@ class PmwProposalModel extends Model
         'nama_usaha',
         'kategori_wirausaha',
         'detail_keterangan',
+        'video_url',
         'total_rab',
         'status',
         'catatan',
+        'pitching_dosen_status',
+        'pitching_admin_status',
+        'pitching_dosen_catatan',
+        'pitching_admin_catatan',
         'submitted_at',
     ];
 
@@ -37,9 +42,14 @@ class PmwProposalModel extends Model
         'nama_usaha'      => 'permit_empty|max_length[255]',
         'kategori_wirausaha' => 'required|in_list[pemula,berkembang]',
         'detail_keterangan' => 'permit_empty',
+        'video_url'       => 'permit_empty|valid_url|max_length[255]',
         'total_rab'       => 'permit_empty|decimal',
         'status'          => 'required|in_list[draft,submitted,revision,approved,rejected]',
         'catatan'         => 'permit_empty|string',
+        'pitching_dosen_status' => 'required|in_list[pending,approved,rejected,revision]',
+        'pitching_admin_status' => 'required|in_list[pending,approved,rejected,revision]',
+        'pitching_dosen_catatan' => 'permit_empty|string',
+        'pitching_admin_catatan' => 'permit_empty|string',
     ];
 
     public function findByPeriodAndLeader(int $periodId, int $leaderUserId): ?array
@@ -115,5 +125,72 @@ class PmwProposalModel extends Model
         $builder->where('p.id', $id);
         
         return $builder->get()->getRowArray();
+    }
+    
+    /**
+     * Get proposals for a specific lecturer (Phase 3 Validation)
+     */
+    public function getProposalsForLecturerPitching(int $lecturerUserId, ?string $statusFilter = null): array
+    {
+        $db = \Config\Database::connect();
+        
+        $builder = $db->table('pmw_proposals p');
+        $builder->select([
+            'p.*',
+            'pr.nama as ketua_nama',
+            'pr.nim as ketua_nim',
+            'l.nama as dosen_nama',
+            'per.name as period_name',
+            'per.year as period_year',
+            '(SELECT id FROM pmw_documents WHERE proposal_id = p.id AND doc_key = "pitching_ppt" LIMIT 1) as pitching_ppt_id'
+        ]);
+        $builder->join('pmw_profiles pr', 'pr.user_id = p.leader_user_id', 'left');
+        $builder->join('pmw_lecturers l', 'l.id = p.lecturer_id', 'left');
+        $builder->join('pmw_periods per', 'per.id = p.period_id', 'left');
+        
+        $builder->where('l.user_id', $lecturerUserId);
+        $builder->where('p.status', 'approved'); // Only proposals that passed Phase 2
+        
+        if ($statusFilter) {
+            $builder->where('p.pitching_dosen_status', $statusFilter);
+        }
+        
+        $builder->orderBy('p.updated_at', 'DESC');
+        
+        return $builder->get()->getResultArray();
+    }
+
+    /**
+     * Get proposals for Admin (Phase 3 Validation)
+     * Only shows proposals already approved by their respective lecturers
+     */
+    public function getProposalsForAdminPitching(?string $statusFilter = null): array
+    {
+        $db = \Config\Database::connect();
+        
+        $builder = $db->table('pmw_proposals p');
+        $builder->select([
+            'p.*',
+            'pr.nama as ketua_nama',
+            'pr.nim as ketua_nim',
+            'l.nama as dosen_nama',
+            'per.name as period_name',
+            'per.year as period_year',
+            '(SELECT id FROM pmw_documents WHERE proposal_id = p.id AND doc_key = "pitching_ppt" LIMIT 1) as pitching_ppt_id'
+        ]);
+        $builder->join('pmw_profiles pr', 'pr.user_id = p.leader_user_id', 'left');
+        $builder->join('pmw_lecturers l', 'l.id = p.lecturer_id', 'left');
+        $builder->join('pmw_periods per', 'per.id = p.period_id', 'left');
+        
+        $builder->where('p.status', 'approved');
+        $builder->where('p.pitching_dosen_status', 'approved'); 
+        
+        if ($statusFilter) {
+            $builder->where('p.pitching_admin_status', $statusFilter);
+        }
+        
+        $builder->orderBy('p.updated_at', 'DESC');
+        
+        return $builder->get()->getResultArray();
     }
 }

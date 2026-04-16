@@ -30,14 +30,12 @@ class PmwDocumentModel extends Model
     public function getProposalDocs(int $proposalId): array
     {
         return $this->where('proposal_id', $proposalId)
-            ->where('type', 'proposal')
             ->findAll();
     }
 
     public function getProposalDocByKey(int $proposalId, string $docKey): ?array
     {
         return $this->where('proposal_id', $proposalId)
-            ->where('type', 'proposal')
             ->where('doc_key', $docKey)
             ->first();
     }

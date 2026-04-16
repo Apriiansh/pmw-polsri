@@ -137,3 +137,27 @@ if (!function_exists('formatIndonesianDate')) {
         return $d . ' ' . $months[$m] . ' ' . $y;
     }
 }
+
+if (!function_exists('get_video_embed_url')) {
+    /**
+     * Convert YouTube or Google Drive links to embed URLs
+     * @param string|null $url
+     * @return string|null
+     */
+    function get_video_embed_url($url): ?string
+    {
+        if (empty($url)) return null;
+
+        // YouTube
+        if (preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $url, $match)) {
+            return "https://www.youtube.com/embed/" . $match[1];
+        }
+
+        // Google Drive
+        if (preg_match('/drive\.google\.com\/file\/d\/([^\/\?]+)/', $url, $match)) {
+            return "https://drive.google.com/file/d/" . $match[1] . "/preview";
+        }
+
+        return null;
+    }
+}

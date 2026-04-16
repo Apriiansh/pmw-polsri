@@ -85,17 +85,27 @@ class PitchingDeskController extends BaseController
 
         $file = $this->request->getFile('ppt_file');
         if (!$file || !$file->isValid()) {
-            return $this->response->setJSON(['success' => false, 'message' => 'File tidak valid']);
+            $errorMsg = $file ? $file->getErrorString() . ' (' . $file->getError() . ')' : 'File tidak terlampir';
+            return $this->response->setJSON(['success' => false, 'message' => 'File tidak valid: ' . $errorMsg]);
         }
 
         // Validate file
-        $allowedTypes = ['application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'];
-        if (!in_array($file->getMimeType(), $allowedTypes) && !in_array($file->getClientExtension(), ['ppt', 'pptx'])) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Format file harus PPT atau PPTX']);
+        $allowedTypes = [
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'application/pdf',
+            'application/zip',
+            'application/octet-stream'
+        ];
+        $clientMime = $file->getMimeType();
+        $clientExt = strtolower($file->getClientExtension());
+
+        if (!in_array($clientExt, ['ppt', 'pptx', 'pdf']) && !in_array($clientMime, $allowedTypes)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Format file harus PPT, PPTX, atau PDF']);
         }
 
-        if ($file->getSize() > 20 * 1024 * 1024) { // 20MB max
-            return $this->response->setJSON(['success' => false, 'message' => 'Ukuran file maksimal 20MB']);
+        if ($file->getSize() > 10 * 1024 * 1024) { // 10MB max
+            return $this->response->setJSON(['success' => false, 'message' => 'Ukuran file maksimal 10MB']);
         }
 
         // Upload file
@@ -145,13 +155,12 @@ class PitchingDeskController extends BaseController
     }
 
     /**
-     * Upload Video Usaha (only for Berkembang)
+     * Update Video URL (only for Berkembang)
      */
-    public function uploadVideo()
+    public function updateVideoUrl()
     {
         $user = auth()->user();
         $proposalModel = new PmwProposalModel();
-        $documentModel = new PmwDocumentModel();
 
         $proposal = $proposalModel->where('leader_user_id', $user->id)
             ->where('status', 'approved')
@@ -165,65 +174,29 @@ class PitchingDeskController extends BaseController
             return $this->response->setJSON(['success' => false, 'message' => 'Hanya untuk kategori Berkembang']);
         }
 
-        $file = $this->request->getFile('video_file');
-        if (!$file || !$file->isValid()) {
-            return $this->response->setJSON(['success' => false, 'message' => 'File tidak valid']);
+        $videoUrl = $this->request->getPost('video_url');
+
+        if (empty($videoUrl)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Link video tidak boleh kosong']);
         }
 
-        // Validate video file
-        $allowedExts = ['mp4', 'mov', 'avi', 'mkv', 'webm'];
-        if (!in_array(strtolower($file->getClientExtension()), $allowedExts)) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Format video harus MP4, MOV, AVI, MKV, atau WEBM']);
+        // Basic domain validation (YouTube or Google Drive)
+        $isYoutube = strpos($videoUrl, 'youtube.com') !== false || strpos($videoUrl, 'youtu.be') !== false;
+        $isGDrive = strpos($videoUrl, 'drive.google.com') !== false || strpos($videoUrl, 'google.com/drive') !== false || strpos($videoUrl, 'drive.google.com/file/') !== false;
+
+        if (!$isYoutube && !$isGDrive) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Link harus berupa YouTube atau Google Drive']);
         }
 
-        if ($file->getSize() > 100 * 1024 * 1024) { // 100MB max
-            return $this->response->setJSON(['success' => false, 'message' => 'Ukuran video maksimal 100MB']);
-        }
+        $proposalModel->update($proposal['id'], [
+            'video_url' => $videoUrl,
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
 
-        // Upload file
-        $newName = $file->getRandomName();
-        $uploadPath = 'uploads/proposals/' . $proposal['id'] . '/pitching';
-
-        if (!is_dir(WRITEPATH . $uploadPath)) {
-            mkdir(WRITEPATH . $uploadPath, 0755, true);
-        }
-
-        if ($file->move(WRITEPATH . $uploadPath, $newName)) {
-            // Remove old video if exists
-            $existingDoc = $documentModel->where('proposal_id', $proposal['id'])
-                ->where('doc_key', 'pitching_video')
-                ->first();
-            if ($existingDoc && !empty($existingDoc['file_path'])) {
-                $oldPath = WRITEPATH . $existingDoc['file_path'];
-                if (is_file($oldPath)) {
-                    unlink($oldPath);
-                }
-            }
-
-            // Save document record
-            $docData = [
-                'proposal_id'   => $proposal['id'],
-                'doc_key'       => 'pitching_video',
-                'original_name' => $file->getClientName(),
-                'file_path'     => $uploadPath . '/' . $newName,
-                'type'          => 'pitching',
-                'created_at'    => date('Y-m-d H:i:s'),
-            ];
-
-            if ($existingDoc) {
-                $documentModel->update($existingDoc['id'], $docData);
-            } else {
-                $documentModel->insert($docData);
-            }
-
-            return $this->response->setJSON([
-                'success' => true,
-                'message' => 'Video berhasil diunggah',
-                'filename' => $file->getClientName()
-            ]);
-        }
-
-        return $this->response->setJSON(['success' => false, 'message' => 'Gagal mengunggah file']);
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Link video berhasil disimpan'
+        ]);
     }
 
     /**

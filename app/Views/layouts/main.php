@@ -140,6 +140,7 @@
                     $navItems[] = ['route' => 'admin/pmw-system', 'icon' => 'fa-calendar-days',  'label' => 'PMW System',       'match' => 'admin/pmw-system'];
                     // Tahap 2 - Seleksi Administrasi
                     $navItems[] = ['route' => 'admin/seleksi-administrasi', 'icon' => 'fa-clipboard-list', 'label' => 'Seleksi Administrasi', 'match' => 'admin/seleksi-administrasi'];
+                    $navItems[] = ['route' => 'admin/pitching-desk', 'icon' => 'fa-award', 'label' => 'Validasi Pitching', 'match' => 'admin/pitching-desk'];
                     $navItems[] = ['route' => 'admin/users',    'icon' => 'fa-users-gear',      'label' => 'Manajemen User',   'match' => 'admin/users'];
                     $navItems[] = ['route' => 'admin/cms',      'icon' => 'fa-clapperboard',   'label' => 'Manajemen Konten', 'match' => 'admin/cms'];
                     $navItems[] = ['route' => 'admin/laporan',  'icon' => 'fa-file-contract',   'label' => 'Laporan',          'match' => 'admin/laporan'];
@@ -148,7 +149,7 @@
                 if ($mainRole === 'mahasiswa') {
                     // Proposal - Tahap 1 (Pendaftaran / Pengajuan Proposal)
                     $navItems[] = ['route' => 'mahasiswa/proposal', 'icon' => 'fa-file-invoice', 'label' => 'Proposal Kami', 'match' => 'mahasiswa/proposal'];
-                    
+
                     // Pitching Desk - Tahap 3 (Pitching Desk)
                     $navItems[] = ['route' => 'mahasiswa/pitching-desk', 'icon' => 'fa-chalkboard', 'label' => 'Pitching Desk', 'match' => 'mahasiswa/pitching-desk'];
 
@@ -173,6 +174,8 @@
                 }
 
                 if ($mainRole === 'dosen') {
+                    // Validasi Pitching Desk (Dosen Pendamping)
+                    $navItems[] = ['route' => 'dosen/pitching-desk', 'icon' => 'fa-chalkboard-user', 'label' => 'Validasi Pitching', 'match' => 'dosen/pitching-desk'];
                     // Monitoring Tim - Tahap 6-8 (Implementasi & Monev)
                     $navItems[] = ['route' => 'dosen/monitoring', 'icon' => 'fa-users-viewfinder', 'label' => 'Monitoring Tim', 'match' => 'dosen/monitoring'];
                     // Validasi Logbook - Tahap 6 (Bimbingan)
@@ -369,7 +372,7 @@
                             </div>
                             <!-- Dropdown arrow -->
                             <i class="fas fa-chevron-down text-xs text-slate-400 group-hover:text-sky-500 transition-all duration-200"
-                               :class="isUserMenuOpen ? 'rotate-180' : ''"></i>
+                                :class="isUserMenuOpen ? 'rotate-180' : ''"></i>
                         </button>
 
                         <!-- Dropdown Menu -->
@@ -530,29 +533,29 @@
 
     <!-- Centralized Toast Notification System -->
     <div x-data="toastManager()"
-         @toast-notify.window="add($event.detail)"
-         class="fixed top-6 right-6 z-[9999] flex flex-col gap-3 w-full max-w-sm pointer-events-none">
-        
+        @toast-notify.window="add($event.detail)"
+        class="fixed top-6 right-6 z-9999 flex flex-col gap-3 w-full max-w-sm pointer-events-none">
+
         <template x-for="item in items" :key="item.id">
             <div x-show="item.show"
-                 x-transition:enter="transition ease-out duration-300 transform"
-                 x-transition:enter-start="translate-x-full opacity-0"
-                 x-transition:enter-end="translate-x-0 opacity-100"
-                 x-transition:leave="transition ease-in duration-200 transform"
-                 x-transition:leave-start="translate-x-0 opacity-100"
-                 x-transition:leave-end="translate-x-4 opacity-0"
-                 @click="remove(item.id)"
-                 class="pointer-events-auto bg-white/90 backdrop-blur-md border rounded-2xl shadow-2xl p-4 flex items-center gap-4 group cursor-pointer hover:scale-[1.02] transition-transform"
-                 :class="{
+                x-transition:enter="transition ease-out duration-300 transform"
+                x-transition:enter-start="translate-x-full opacity-0"
+                x-transition:enter-end="translate-x-0 opacity-100"
+                x-transition:leave="transition ease-in duration-200 transform"
+                x-transition:leave-start="translate-x-0 opacity-100"
+                x-transition:leave-end="translate-x-4 opacity-0"
+                @click="remove(item.id)"
+                class="pointer-events-auto bg-white/90 backdrop-blur-md border rounded-2xl shadow-2xl p-4 flex items-center gap-4 group cursor-pointer hover:scale-[1.02] transition-transform"
+                :class="{
                     'border-emerald-100 bg-emerald-50/80': item.type === 'success',
                     'border-rose-100 bg-rose-50/80': item.type === 'error',
                     'border-sky-100 bg-sky-50/80': item.type === 'info',
                     'border-amber-100 bg-amber-50/80': item.type === 'warning'
                  }">
-                
+
                 <!-- Icon -->
                 <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                     :class="{
+                    :class="{
                         'bg-emerald-100 text-emerald-600': item.type === 'success',
                         'bg-rose-100 text-rose-600': item.type === 'error',
                         'bg-sky-100 text-sky-600': item.type === 'info',
@@ -580,57 +583,66 @@
     </div>
 
     <script>
-    function toastManager() {
-        return {
-            items: [],
-            
-            init() {
-                // Auto-hydrate from PHP Flash Messages
-                <?php if (session()->getFlashdata('success')): ?>
-                    this.add({ message: "<?= addslashes(session()->getFlashdata('success')) ?>", type: 'success' });
-                <?php endif; ?>
-                
-                <?php if (session()->getFlashdata('error')): ?>
-                    this.add({ message: "<?= addslashes(session()->getFlashdata('error')) ?>", type: 'error' });
-                <?php endif; ?>
+        function toastManager() {
+            return {
+                items: [],
 
-                <?php if (session()->getFlashdata('info')): ?>
-                    this.add({ message: "<?= addslashes(session()->getFlashdata('info')) ?>", type: 'info' });
-                <?php endif; ?>
-            },
+                init() {
+                    // Auto-hydrate from PHP Flash Messages
+                    <?php if (session()->getFlashdata('success')): ?>
+                        this.add({
+                            message: "<?= addslashes(session()->getFlashdata('success')) ?>",
+                            type: 'success'
+                        });
+                    <?php endif; ?>
 
-            add(detail) {
-                const id = Date.now() + Math.random();
-                this.items.push({
-                    id: id,
-                    show: false,
-                    message: detail.message || 'No message provided',
-                    type: detail.type || 'info'
-                });
+                    <?php if (session()->getFlashdata('error')): ?>
+                        this.add({
+                            message: "<?= addslashes(session()->getFlashdata('error')) ?>",
+                            type: 'error'
+                        });
+                    <?php endif; ?>
 
-                // Trigger enter animation
-                this.$nextTick(() => {
-                    const item = this.items.find(i => i.id === id);
-                    if (item) item.show = true;
-                });
+                    <?php if (session()->getFlashdata('info')): ?>
+                        this.add({
+                            message: "<?= addslashes(session()->getFlashdata('info')) ?>",
+                            type: 'info'
+                        });
+                    <?php endif; ?>
+                },
 
-                // Auto remove after 5 seconds
-                setTimeout(() => {
-                    this.remove(id);
-                }, 5000);
-            },
+                add(detail) {
+                    const id = Date.now() + Math.random();
+                    this.items.push({
+                        id: id,
+                        show: false,
+                        message: detail.message || 'No message provided',
+                        type: detail.type || 'info'
+                    });
 
-            remove(id) {
-                const item = this.items.find(i => i.id === id);
-                if (item) {
-                    item.show = false;
+                    // Trigger enter animation
+                    this.$nextTick(() => {
+                        const item = this.items.find(i => i.id === id);
+                        if (item) item.show = true;
+                    });
+
+                    // Auto remove after 5 seconds
                     setTimeout(() => {
-                        this.items = this.items.filter(i => i.id !== id);
-                    }, 300); // Wait for transition
+                        this.remove(id);
+                    }, 5000);
+                },
+
+                remove(id) {
+                    const item = this.items.find(i => i.id === id);
+                    if (item) {
+                        item.show = false;
+                        setTimeout(() => {
+                            this.items = this.items.filter(i => i.id !== id);
+                        }, 300); // Wait for transition
+                    }
                 }
             }
         }
-    }
     </script>
 
     <!-- Page-specific scripts -->

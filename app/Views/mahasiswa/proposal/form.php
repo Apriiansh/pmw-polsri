@@ -76,7 +76,7 @@
             </div>
         </div>
 
-        <?php if (!empty($proposal['catatan'])): ?>
+        <?php if (!empty($proposal['catatan']) && $proposal['status'] === 'revision'): ?>
         <div class="mt-6 p-4 rounded-2xl bg-orange-50 border border-orange-200 animate-in slide-in-from-top-2 duration-500">
             <div class="flex items-center gap-3 mb-2">
                 <i class="fas fa-circle-exclamation text-orange-500 text-lg"></i>

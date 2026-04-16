@@ -280,17 +280,8 @@ class AuthController extends BaseController
             return 'dashboard';
         }
 
-        $groups = $user->getGroups();
-        $role = $groups[0] ?? 'mahasiswa';
-
-        return match ($role) {
-            'admin' => 'admin/users',
-            'mahasiswa' => 'mahasiswa/proposal',
-            'dosen' => 'dosen/monitoring',
-            'mentor' => 'mentor/monitoring',
-            'reviewer' => 'reviewer/penilaian-proposal',
-            default => 'dashboard',
-        };
+        // All roles redirect to dashboard after login
+        return 'dashboard';
     }
 
     /**

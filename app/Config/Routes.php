@@ -56,6 +56,11 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('laporan', 'AdminController::laporan');
         // Legacy alias
         $routes->get('rekap', 'AdminController::laporan');
+
+        // Tahap 3 - Pitching Desk Validation
+        $routes->get('pitching-desk', 'Admin\\PitchingDeskController::index');
+        $routes->get('pitching-desk/(:num)', 'Admin\\PitchingDeskController::detail/$1');
+        $routes->post('pitching-desk/(:num)/validate', 'Admin\\PitchingDeskController::validateAction/$1');
     });
 
     // Mahasiswa Routes
@@ -70,7 +75,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         // Tahap 3 - Pitching Desk
         $routes->get('pitching-desk', 'Mahasiswa\\PitchingDeskController::index');
         $routes->post('pitching-desk/upload-ppt', 'Mahasiswa\\PitchingDeskController::uploadPpt');
-        $routes->post('pitching-desk/upload-video', 'Mahasiswa\\PitchingDeskController::uploadVideo');
+        $routes->post('pitching-desk/update-video-url', 'Mahasiswa\\PitchingDeskController::updateVideoUrl');
         $routes->post('pitching-desk/update-detail', 'Mahasiswa\\PitchingDeskController::updateDetail');
         $routes->get('mentoring', 'MahasiswaController::mentoring');
         $routes->get('bimbingan', 'MahasiswaController::bimbingan');
@@ -88,6 +93,12 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
     $routes->group('dosen', ['filter' => 'group:dosen'], static function ($routes) {
         $routes->get('monitoring', 'DosenController::monitoring');
         $routes->get('validasi', 'DosenController::validasi');
+        
+        // Tahap 3 - Pitching Desk Validation
+        $routes->get('pitching-desk', 'Dosen\\PitchingDeskController::index');
+        $routes->get('pitching-desk/(:num)', 'Dosen\\PitchingDeskController::detail/$1');
+        $routes->post('pitching-desk/(:num)/validate', 'Dosen\\PitchingDeskController::validateAction/$1');
+        $routes->get('pitching-desk/doc/(:num)', 'Admin\\ValidationController::downloadDoc/$1');
     });
 
     // Mentor Routes

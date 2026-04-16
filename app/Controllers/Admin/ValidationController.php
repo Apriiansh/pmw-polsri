@@ -31,7 +31,7 @@ class ValidationController extends BaseController
             'rejected'  => count(array_filter($allProposals, fn($p) => $p['status'] === 'rejected')),
         ];
 
-        return view('admin/seleksi_administrasi', [
+        return view('admin/administrasi/seleksi', [
             'title'           => 'Seleksi Administrasi | PMW Polsri',
             'header_title'    => 'Seleksi Administrasi',
             'header_subtitle' => 'Tahap 2 - Validasi kelengkapan dokumen proposal',
@@ -52,7 +52,7 @@ class ValidationController extends BaseController
 
         $proposal = $proposalModel->getProposalForValidation($id);
         if (!$proposal) {
-            return redirect()->to('admin/seleksi-administrasi')->with('error', 'Proposal tidak ditemukan');
+            return redirect()->to('admin/administrasi/seleksi')->with('error', 'Proposal tidak ditemukan');
         }
 
         $members = $memberModel->getByProposalId($id);
@@ -82,7 +82,7 @@ class ValidationController extends BaseController
             'ktm' => 'Kartu Tanda Mahasiswa (KTM)',
         ];
 
-        return view('admin/seleksi_administrasi_detail', [
+        return view('admin/administrasi/seleksi_detail', [
             'title'           => 'Detail Proposal | PMW Polsri',
             'header_title'    => 'Detail Proposal',
             'header_subtitle' => 'Validasi kelengkapan dokumen',
@@ -102,7 +102,7 @@ class ValidationController extends BaseController
         $proposal = $proposalModel->find($id);
         
         if (!$proposal) {
-            return redirect()->to('admin/seleksi-administrasi')->with('error', 'Proposal tidak ditemukan');
+            return redirect()->to('admin/administrasi/seleksi')->with('error', 'Proposal tidak ditemukan');
         }
 
         $newStatus = $this->request->getPost('status');
@@ -143,7 +143,7 @@ class ValidationController extends BaseController
             'rejected' => 'ditolak',
         ];
 
-        return redirect()->to('admin/seleksi-administrasi')
+        return redirect()->to('admin/administrasi/seleksi')
             ->with('message', "Proposal berhasil {$statusText[$newStatus]}");
     }
 
@@ -156,7 +156,7 @@ class ValidationController extends BaseController
         $proposal = $proposalModel->find($id);
         
         if (!$proposal) {
-            return redirect()->to('admin/seleksi-administrasi')->with('error', 'Proposal tidak ditemukan');
+            return redirect()->to('admin/administrasi/seleksi')->with('error', 'Proposal tidak ditemukan');
         }
 
         if ($proposal['status'] !== 'rejected') {
@@ -184,7 +184,7 @@ class ValidationController extends BaseController
 
             $db->transComplete();
 
-            return redirect()->to('admin/seleksi-administrasi')->with('message', 'Proposal berhasil dihapus');
+            return redirect()->to('admin/administrasi/seleksi')->with('message', 'Proposal berhasil dihapus');
         } catch (\Exception $e) {
             $db->transRollback();
             return redirect()->back()->with('error', 'Gagal menghapus proposal: ' . $e->getMessage());
@@ -206,6 +206,15 @@ class ValidationController extends BaseController
         $absPath = WRITEPATH . $doc['file_path'];
         if (!is_file($absPath)) {
             return redirect()->back()->with('error', 'File tidak ditemukan di server');
+        }
+
+        // Handle inline preview
+        if ($this->request->getGet('inline')) {
+            $mimeType = mime_content_type($absPath);
+            return $this->response
+                ->setHeader('Content-Type', $mimeType)
+                ->setHeader('Content-Disposition', 'inline; filename="' . esc($doc['original_name'], 'url') . '"')
+                ->setBody(file_get_contents($absPath));
         }
 
         return $this->response->download($absPath, null)

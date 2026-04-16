@@ -139,7 +139,7 @@ Reviewers don't just "move a status", they provide a `ScoringEntity` that linked
 ## 📋 DIGITAL vs MANUAL MAPPING
 
 Berikut detail fitur aplikasi yang menggantikan/mendukung proses manual:
-
+w
 ### Tahap 1-2: Pendaftaran & Administrasi
 
 | Manual (Sebelumnya)                | Digital (Aplikasi Ini)                                                    |

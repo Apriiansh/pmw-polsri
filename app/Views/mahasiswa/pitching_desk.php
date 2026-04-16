@@ -64,9 +64,79 @@
     </div>
 
     <!-- ================================================================
-         3. PROPOSAL INFO CARD
+         3. VALIDATION PROGRESS TRACKER
     ================================================================= -->
     <div class="card-premium overflow-hidden animate-stagger delay-200">
+        <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60">
+            <h3 class="font-display text-base font-bold text-(--text-heading)">
+                <i class="fas fa-tasks text-teal-500 mr-2"></i>
+                Progres Validasi
+            </h3>
+        </div>
+        <div class="p-5 sm:p-7">
+            <div class="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-0">
+                <!-- Connector Line (Desktop) -->
+                <div class="hidden md:block absolute top-6 left-0 w-full h-0.5 bg-slate-100 -z-0"></div>
+
+                <?php
+                $steps = [
+                    [
+                        'label'  => 'Validasi Dosen',
+                        'status' => $proposal['pitching_dosen_status'],
+                        'note'   => $proposal['pitching_dosen_catatan'],
+                        'icon'   => 'fa-user-tie'
+                    ],
+                    [
+                        'label'  => 'Validasi Admin',
+                        'status' => $proposal['pitching_admin_status'],
+                        'note'   => $proposal['pitching_admin_catatan'],
+                        'icon'   => 'fa-award'
+                    ]
+                ];
+
+                $stepColors = [
+                    'pending'  => ['bg' => 'bg-amber-500', 'text' => 'text-amber-500', 'light' => 'bg-amber-50', 'icon' => 'fa-clock'],
+                    'approved' => ['bg' => 'bg-emerald-500', 'text' => 'text-emerald-500', 'light' => 'bg-emerald-50', 'icon' => 'fa-check'],
+                    'revision' => ['bg' => 'bg-orange-500', 'text' => 'text-orange-500', 'light' => 'bg-orange-50', 'icon' => 'fa-rotate'],
+                    'rejected' => ['bg' => 'bg-rose-500', 'text' => 'text-rose-500', 'light' => 'bg-rose-50', 'icon' => 'fa-xmark']
+                ];
+                ?>
+
+                <?php foreach ($steps as $index => $step): 
+                    $color = $stepColors[$step['status']] ?? $stepColors['pending'];
+                ?>
+                <div class="relative z-10 flex flex-row md:flex-col items-center gap-4 md:gap-2 flex-1 w-full md:w-auto">
+                    <div class="w-12 h-12 rounded-2xl <?= $color['bg'] ?> text-white flex items-center justify-center shadow-lg shadow-<?= explode('-', $color['bg'])[1] ?>-100">
+                        <i class="fas <?= $step['icon'] ?> text-lg"></i>
+                    </div>
+                    <div class="text-left md:text-center mt-1">
+                        <p class="text-xs font-black uppercase tracking-tighter text-slate-400"><?= $step['label'] ?></p>
+                        <div class="flex items-center gap-1.5 md:justify-center mt-1">
+                            <span class="text-[10px] font-black <?= $color['text'] ?> uppercase italic"><?= strtoupper($step['status']) ?></span>
+                            <i class="fas <?= $color['icon'] ?> text-[10px] <?= $color['text'] ?>"></i>
+                        </div>
+                    </div>
+                    
+                    <?php if ($step['note']): ?>
+                    <div class="md:absolute md:top-24 md:left-1/2 md:-translate-x-1/2 w-full md:w-48 p-3 rounded-xl <?= $color['light'] ?> border border-<?= explode('-', $color['text'])[1] ?>-100 text-[10px] text-slate-600 italic">
+                        "<?= esc($step['note']) ?>"
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            
+            <div class="mt-8 md:mt-24 pt-6 border-t border-slate-50 text-[11px] text-slate-400 text-center">
+                <i class="fas fa-info-circle mr-1"></i>
+                Proposal Anda harus disetujui oleh Dosen Pendamping terlebih dahulu sebelum dapat divalidasi oleh Admin.
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         4. PROPOSAL INFO CARD
+    ================================================================= -->
+    <div class="card-premium overflow-hidden animate-stagger delay-300">
         <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60">
             <h3 class="font-display text-base font-bold text-(--text-heading)">
                 <i class="fas fa-file-invoice text-sky-500 mr-2"></i>
@@ -140,23 +210,25 @@
                             <p class="text-xs text-slate-500 mt-1">
                                 <span x-text="pptFilename || 'Belum ada file terpilih'"></span>
                             </p>
-                            <?php if ($pptDoc): ?>
-                            <button type="button" @click="downloadFile('ppt')" class="text-xs font-bold text-sky-600 hover:text-sky-700 inline-flex items-center gap-1 mt-2">
-                                <i class="fas fa-download text-[10px]"></i> Download File
-                            </button>
-                            <?php endif; ?>
+                            <div class="flex items-center gap-3 mt-2" x-show="pptStatus === 'uploaded'">
+                                <?php if ($pptDoc): ?>
+                                <button type="button" @click="downloadFile('ppt')" class="text-xs font-bold text-sky-600 hover:text-sky-700 inline-flex items-center gap-1">
+                                    <i class="fas fa-download text-[10px]"></i> Download
+                                </button>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                     <div class="flex flex-col items-end gap-2">
                         <?php if ($isPhaseOpen): ?>
                         <label class="relative cursor-pointer">
                             <span class="btn-outline btn-sm inline-flex items-center gap-2 bg-white">
-                                <i class="fas fa-folder-open"></i>
+                                 <i class="fas fa-folder-open"></i>
                                 Pilih File
                             </span>
-                            <input type="file" name="ppt_file" accept=".ppt,.pptx,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation" class="hidden" @change="handlePptUpload($event)">
+                            <input type="file" name="ppt_file" accept=".ppt,.pptx,.pdf,application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation" class="hidden" @change="handlePptUpload($event)">
                         </label>
-                        <p class="text-[10px] text-slate-400">PPT/PPTX, Maks 20MB</p>
+                        <p class="text-[10px] text-slate-400">PPT, PPTX, atau PDF (Maks 10MB)</p>
                         <?php else: ?>
                         <p class="text-xs text-rose-600 flex items-center gap-1 font-bold">
                             <i class="fas fa-lock"></i> Upload ditutup
@@ -183,57 +255,50 @@
         <div class="p-5 sm:p-7 space-y-6">
 
             <!-- Video Upload -->
-            <div class="p-4 rounded-xl bg-white border border-slate-100 transition-all hover:border-violet-100 group">
-                <div class="flex items-start justify-between gap-4 flex-wrap">
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center text-violet-500 shrink-0">
-                            <i class="fas fa-video text-lg"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-bold text-slate-800">Video Usaha</p>
-                            <p class="text-xs text-slate-500 mt-0.5">Video profil usaha Anda (max 3 menit)</p>
-                            <div class="flex items-center gap-2 mt-1">
-                                <template x-if="videoStatus === 'uploaded'">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">
-                                        <i class="fas fa-check-circle mr-1"></i> Tersimpan
-                                    </span>
-                                </template>
-                                <template x-if="videoStatus === 'uploading'">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 animate-pulse">
-                                        <i class="fas fa-spinner fa-spin mr-1"></i> Mengunggah...
-                                    </span>
-                                </template>
-                                <template x-if="videoStatus === 'missing'">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700">
-                                        <i class="fas fa-exclamation-triangle mr-1"></i> Belum Ada
-                                    </span>
-                                </template>
+             <div class="p-4 rounded-xl bg-white border border-slate-100 transition-all hover:border-violet-100 group">
+                <div class="flex items-start gap-4 flex-wrap">
+                    <div class="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center text-violet-500 shrink-0">
+                        <i class="fas fa-link text-lg"></i>
+                    </div>
+                    <div class="flex-1 min-w-[280px]">
+                        <p class="text-sm font-bold text-slate-800">Link Video Usaha</p>
+                        <p class="text-xs text-slate-500 mt-0.5 mb-3">Masukkan link YouTube atau Google Drive (Pastikan akses publik/anyone with link)</p>
+                        
+                        <div class="flex items-center gap-2">
+                            <div class="relative flex-1">
+                                <i class="fas fa-video absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input type="url" 
+                                       x-model="videoUrl" 
+                                       class="form-input pl-9 pr-4 py-2 text-sm w-full" 
+                                       placeholder="https://www.youtube.com/watch?v=... atau https://drive.google.com/..."
+                                       :disabled="!<?= $isPhaseOpen ? 'true' : 'false' ?> || isSavingVideo">
                             </div>
-                            <p class="text-xs text-slate-500 mt-1">
-                                <span x-text="videoFilename || 'Belum ada file terpilih'"></span>
-                            </p>
-                            <?php if ($videoDoc): ?>
-                            <button type="button" @click="downloadFile('video')" class="text-xs font-bold text-sky-600 hover:text-sky-700 inline-flex items-center gap-1 mt-2">
-                                <i class="fas fa-download text-[10px]"></i> Download Video
+                            <?php if ($isPhaseOpen): ?>
+                            <button type="button" 
+                                    @click="saveVideoUrl()" 
+                                    class="btn-primary py-2 px-4 text-sm shrink-0"
+                                    :disabled="isSavingVideo">
+                                <i class="fas fa-save" :class="isSavingVideo ? 'fa-spinner fa-spin' : ''"></i>
+                                <span class="hidden sm:inline ml-1" x-text="isSavingVideo ? 'Menyimpan...' : 'Simpan Link'"></span>
                             </button>
                             <?php endif; ?>
                         </div>
-                    </div>
-                    <div class="flex flex-col items-end gap-2">
-                        <?php if ($isPhaseOpen): ?>
-                        <label class="relative cursor-pointer">
-                            <span class="btn-outline btn-sm inline-flex items-center gap-2 bg-white border-violet-200 text-violet-600 hover:bg-violet-50">
-                                <i class="fas fa-folder-open"></i>
-                                Pilih Video
-                            </span>
-                            <input type="file" name="video_file" accept="video/*,.mp4,.mov,.avi,.mkv,.webm" class="hidden" @change="handleVideoUpload($event)">
-                        </label>
-                        <p class="text-[10px] text-slate-400">MP4/MOV/AVI/MKV/WEBM, Maks 100MB</p>
-                        <?php else: ?>
-                        <p class="text-xs text-rose-600 flex items-center gap-1 font-bold">
-                            <i class="fas fa-lock"></i> Upload ditutup
-                        </p>
-                        <?php endif; ?>
+
+                        <div class="flex items-center gap-2 mt-3" x-show="videoUrl">
+                            <template x-if="videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-100">
+                                    <i class="fab fa-youtube mr-1"></i> YouTube
+                                </span>
+                            </template>
+                            <template x-if="videoUrl.includes('drive.google.com') || videoUrl.includes('google.com/drive')">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100">
+                                    <i class="fab fa-google-drive mr-1"></i> Google Drive
+                                </span>
+                            </template>
+                            <a :href="videoUrl" target="_blank" class="text-[10px] font-bold text-sky-600 hover:sky-700 flex items-center gap-1">
+                                <i class="fas fa-external-link-alt text-[9px]"></i> Buka Link
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -271,12 +336,12 @@
                 <div class="flex items-center gap-3 mt-3">
                     <div class="flex items-center gap-1 text-[10px] font-bold" :class="pptStatus === 'uploaded' ? 'text-emerald-600' : 'text-slate-400'">
                         <i class="fas" :class="pptStatus === 'uploaded' ? 'fa-check-circle' : 'fa-circle'"></i>
-                        PPT Terunggah
+                        PPT/PDF Terunggah
                     </div>
                     <?php if ($isBerkembang): ?>
-                    <div class="flex items-center gap-1 text-[10px] font-bold" :class="videoStatus === 'uploaded' ? 'text-emerald-600' : 'text-slate-400'">
-                        <i class="fas" :class="videoStatus === 'uploaded' ? 'fa-check-circle' : 'fa-circle'"></i>
-                        Video Terunggah
+                    <div class="flex items-center gap-1 text-[10px] font-bold" :class="videoUrl ? 'text-emerald-600' : 'text-slate-400'">
+                        <i class="fas" :class="videoUrl ? 'fa-check-circle' : 'fa-circle'"></i>
+                        Link Video Tersimpan
                     </div>
                     <?php endif; ?>
                 </div>
@@ -316,15 +381,15 @@ function pitchingDeskForm() {
     return {
         pptStatus: '<?= $pptDoc ? 'uploaded' : 'missing' ?>',
         pptFilename: <?= json_encode($pptDoc['original_name'] ?? '') ?>,
-        videoStatus: '<?= $videoDoc ? 'uploaded' : 'missing' ?>',
-        videoFilename: <?= json_encode($videoDoc['original_name'] ?? '') ?>,
+        videoUrl: <?= json_encode($proposal['video_url'] ?? '') ?>,
         detailKeterangan: <?= json_encode($proposal['detail_keterangan'] ?? '') ?>,
         isSavingDetail: false,
+        isSavingVideo: false,
 
         get isComplete() {
             const pptReady = this.pptStatus === 'uploaded';
             <?php if ($isBerkembang): ?>
-            const videoReady = this.videoStatus === 'uploaded';
+            const videoReady = !!this.videoUrl;
             return pptReady && videoReady;
             <?php else: ?>
             return pptReady;
@@ -336,15 +401,15 @@ function pitchingDeskForm() {
             if (!file) return;
 
             // Validate file size
-            if (file.size > 20 * 1024 * 1024) {
-                Swal.fire('Error', 'Ukuran file maksimal 20MB', 'error');
+            if (file.size > 10 * 1024 * 1024) {
+                Swal.fire('Error', 'Ukuran file maksimal 10MB', 'error');
                 return;
             }
 
             // Validate extension
             const ext = file.name.split('.').pop().toLowerCase();
-            if (!['ppt', 'pptx'].includes(ext)) {
-                Swal.fire('Error', 'Format file harus PPT atau PPTX', 'error');
+            if (!['ppt', 'pptx', 'pdf'].includes(ext)) {
+                Swal.fire('Error', 'Format file harus PPT, PPTX, atau PDF', 'error');
                 return;
             }
 
@@ -377,49 +442,44 @@ function pitchingDeskForm() {
             });
         },
 
-        handleVideoUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            // Validate file size
-            if (file.size > 100 * 1024 * 1024) {
-                Swal.fire('Error', 'Ukuran video maksimal 100MB', 'error');
+        saveVideoUrl() {
+            if (!this.videoUrl) {
+                Swal.fire('Error', 'Link video tidak boleh kosong', 'error');
                 return;
             }
 
-            // Validate extension
-            const ext = file.name.split('.').pop().toLowerCase();
-            if (!['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(ext)) {
-                Swal.fire('Error', 'Format video harus MP4, MOV, AVI, MKV, atau WEBM', 'error');
+            // Basic domain check
+            const isYoutube = this.videoUrl.includes('youtube.com') || this.videoUrl.includes('youtu.be');
+            const isGDrive = this.videoUrl.includes('drive.google.com') || this.videoUrl.includes('google.com/drive');
+
+            if (!isYoutube && !isGDrive) {
+                Swal.fire('Error', 'Hanya diperbolehkan link YouTube atau Google Drive', 'error');
                 return;
             }
 
-            this.videoStatus = 'uploading';
+            this.isSavingVideo = true;
 
-            const formData = new FormData();
-            formData.append('video_file', file);
-
-            fetch('<?= base_url('mahasiswa/pitching-desk/upload-video') ?>', {
+            fetch('<?= base_url('mahasiswa/pitching-desk/update-video-url') ?>', {
                 method: 'POST',
-                body: formData,
                 headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
                     'X-Requested-With': 'XMLHttpRequest'
-                }
+                },
+                body: 'video_url=' + encodeURIComponent(this.videoUrl)
             })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    this.videoStatus = 'uploaded';
-                    this.videoFilename = data.filename;
                     Swal.fire('Berhasil!', data.message, 'success');
                 } else {
-                    this.videoStatus = 'missing';
                     Swal.fire('Error', data.message, 'error');
                 }
             })
             .catch(() => {
-                this.videoStatus = 'missing';
-                Swal.fire('Error', 'Gagal mengunggah video', 'error');
+                Swal.fire('Error', 'Gagal menyimpan link video', 'error');
+            })
+            .finally(() => {
+                this.isSavingVideo = false;
             });
         },
 

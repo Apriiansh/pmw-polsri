@@ -47,3 +47,22 @@ Options -Indexes
 # Disable server signature start
 ServerSignature Off
 # Disable server signature end
+
+# PHP Configuration Overrides
+<IfModule mod_php.c>
+    php_value upload_max_filesize 50M
+    php_value post_max_size 55M
+    php_value memory_limit 128M
+</IfModule>
+
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 50M
+    php_value post_max_size 55M
+    php_value memory_limit 128M
+</IfModule>
+
+<IfModule mod_php8.c>
+    php_value upload_max_filesize 50M
+    php_value post_max_size 55M
+    php_value memory_limit 128M
+</IfModule>

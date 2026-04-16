@@ -1,187 +1,107 @@
-# 📂 SKILL: PMW Data & Document Engine
+---
+project: PMW Polsri
+type: Workflow Engine
+status: Active
+last_updated: 2026-04-16
+---
 
-> **⚠️ PERHATIAN**: Dokumen ini mendeskripsikan **Workflow Manual PMW Polsri** yang telah berjalan secara nyata di kampus _sebelum_ aplikasi ini dikembangkan. Aplikasi Sistem Informasi PMW dibuat untuk **mendigitalkan & memfasilitasi** workflow manual tersebut, bukan menciptakan proses baru.
+# 🚀 PMW DATA & DOCUMENT ENGINE
+
+> [!IMPORTANT]
+> Dokumen ini mendeskripsikan **Workflow Manual PMW Polsri** yang telah berjalan secara nyata di kampus sebelum aplikasi ini dikembangkan. Aplikasi ini berfungsi sebagai **Digital Layer** yang memfasilitasi, mengamankan, dan mengotomatisasi proses manual tersebut tanpa mengubah esensi bisnisnya.
 
 ---
 
-## 🔄 WORKFLOW MANUAL PMW (Real-World Process)
+## 🔄 OVERVIEW: THE 10-STAGE JOURNEY
 
-Berikut adalah **10 tahapan** Program Mahasiswa Wirausaha Polsri yang dilaksanakan **secara manual/offline** setiap tahunnya:
+Siklus hidup Program Mahasiswa Wirausaha (PMW) dibagi menjadi 11 tahapan krusial (10 tahap proses + 1 tahap penutupan).
 
-| Tahap | Nama Kegiatan (Manual)                  | Pelaku (Offline)           | Bagaimana Aplikasi Membantu                                                                                                        |
-| ----- | --------------------------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| 1     | **Pendaftaran & Submit Proposal**       | Mahasiswa → UPAPKK (Admin) | Upload proposal digital, input tim mentah, tracking status                                                                         |
-| 2     | **Seleksi Administrasi**                | UPAPKK (Admin) + Reviewer  | Checklist kelengkapan, flagging dokumen                                                                                            |
-| 3     | **Pitching Desk**                       | Reviewer + Mahasiswa       | **2 Kategori:** Pemula (Pitching Deck → Approve Dosen → Approve UPAKKK) & Berkembang (Pitching Deck + Video Usaha → Approve Dosen) |
-| 4     | **Wawancara Perjanjian**                | Dosen/Mentor + Mahasiswa   | Record hasil wawancara, MoU digital                                                                                                |
-| 5     | **Pengumuman Tahap I & Pembekalan**     | Admin                      | Broadcast pengumuman, materi pembekalan                                                                                            |
-| 6     | **Implementasi, Bimbingan & Mentoring** | Mahasiswa + Dosen + Mentor | Log bimbingan (Dosen) & Log mentoring (Praktisi), absensi digital, laporan progress                                                |
-| 7     | **Monev Tahap 1 (Bazaar)**              | Reviewer + UPAPKK (Admin)  | Upload foto kegiatan, laporan awal                                                                                                 |
-| 8     | **Monev Tahap 2 (Site Visit)**          | Dosen/Mentor + Reviewer    | Checklist kunjungan, laporan akhir                                                                                                 |
-| 9     | **Pengumuman Tahap II**                 | UPAPKK (Admin)             | Notifikasi penerima dana tahap 2                                                                                                   |
-| 10    | **Laporan Akhir & Penutupan**           | Mahasiswa                  | Submit dokumen final                                                                                                               |
-| 11    | **Awarding & Expo**                     | Semua pihak                | Dokumentasi akhir, sertifikat digital                                                                                              |
+| Tahap | Aktivitas Manual | Transformasi Digital | Status |
+| :--- | :--- | :--- | :--- |
+| **1** | Pendaftaran & Submit Proposal | Form Registrasi Digital, Tracking Status | ✅ Implemented |
+| **2** | Seleksi Administrasi | Automated Checklist & Admin Flagging | ✅ Implemented |
+| **3** | **Pitching Desk** | Dual-Category Upload & Peer Review | ✅ Implemented |
+| **4** | Wawancara Perjanjian | Digital MoU & Record Hasil Wawancara | 🚧 In Progress |
+| **5** | Pengumuman Tahap I | Multi-Channel Notifications (In-App/Email) | ✅ Implemented |
+| **6** | Mentoring & Bimbingan | Log/Journal Digital & Absensi Verifikatif | ✅ Implemented |
+| **7** | Monev Tahap 1 (Bazaar) | Evidence-Based Upload (Photos/Reports) | 📅 Planned |
+| **8** | Monev Tahap 2 (Site Visit) | Digital Checklist with Field Verification | 📅 Planned |
+| **9** | Pengumuman Tahap II | Final Funding Status Notifications | 📅 Planned |
+| **10** | Laporan Akhir | Final Document Submission & Archiving | 📅 Planned |
+| **11** | Awarding & Expo | Digital Certificates & Showcase Repository | 📅 Planned |
 
 ---
 
-## 🎯 TAHAP 3 DETAIL: PITCHING DESK WORKFLOW
+## 🎯 DEEP DIVE: TAHAP 3 (PITCHING DESK)
 
-Setelah seleksi administrasi, peserta memasuki **Tahap Pitching Desk** dengan pembagian **2 Kategori Wirausaha**:
+Tahap ini adalah filter krusial yang membedakan perlakuan terhadap profil usaha mahasiswa.
 
-### 📊 Alur Pitching Desk
-
-```
-┌─────────────────────┐
-│ Seleksi Pitching    │
-│ Desk (Tahap 3)      │
-└─────────┬───────────┘
-          │
-          ▼
-┌─────────────────────┐
-│   Kategori          │
-│   Wirausaha         │
-└─────────┬───────────┘
-          │
-    ┌─────┴─────┐
-    │           │
-    ▼           ▼
-┌─────────┐ ┌───────────┐
-│ PEMULA  │ │BERKEMBANG │
-└────┬────┘ └─────┬─────┘
-     │            │
-     ▼            ▼
-┌─────────┐ ┌──────────────────────────┐
-│Upload   │ │Upload Pitching Deck      │
-│Pitching │ │+                         │
-│Deck     │ │Upload Video Usaha        │
-└────┬────┘ │+ Detail Keterangan Usaha │
-     │      └─────────────┬────────────┘
-     │                    │
-     ▼                    ▼
-┌──────────┐          ┌─────────────┐
-│Approve   │          │Approve      │
-│Dosen     │          │Dosen        │
-│Pendamping│          │Pendamping   │
-└────┬─────┘          └─────────────┘
-     │                  │
-     ▼                  ▼
-┌──────────┐          ┌─────────────┐
-│Approve   │          │Approve      │
-│UPAKKK    │          │UPAKKK       │
-└──────────┘          └─────────────┘
+### 📊 Business Logic Flow
+```mermaid
+graph TD
+    A[Seleksi Administrasi Lolos] --> B{Kategori Wirausaha}
+    
+    subgraph "Kategori Pemula"
+    B -->|Pemula| C[Upload Pitching Deck PDF/PPT]
+    C --> D[Validasi Dosen Pendamping]
+    D --> E[Validasi Akhir UPAKKK]
+    end
+    
+    subgraph "Kategori Berkembang"
+    B -->|Berkembang| F[Upload Pitching Deck PDF/PPT]
+    F --> G[Lampirkan Link Video Usaha]
+    G --> H[Detail Keterangan Usaha]
+    H --> I[Validasi Dosen Pendamping]
+    end
+    
+    E --> J[Lanjut Tahap 4]
+    I --> J
 ```
 
-### 📋 Perbedaan Kategori
+### 📋 Requirement Matrix per Kategori
 
-| Aspek               | **Pemula**                                    | **Berkembang**                                  |
-| ------------------- | --------------------------------------------- | ----------------------------------------------- |
-| **Definisi**        | Usaha baru yang belum berjalan atau < 1 tahun | Usaha yang sudah berjalan ≥ 1 tahun             |
-| **Dokumen Wajib**   | Pitching Deck (PDF/PPT)                       | Pitching Deck + Video Usaha + Detail Keterangan |
-| **Approval Flow**   | Dosen Pendamping → UPAKKK                     | Dosen Pendamping (1 level)                      |
-| **Fokus Penilaian** | Konsep & Potensi                              | Performa & Pertumbuhan                          |
-
-### 🔐 Digital Implementation
-
-**Aplikasi mendukung dengan:**
-
-- **Kategori Selection**: Mahasiswa memilih kategori saat submit pitching
-- **Upload Management**: Upload deck (wajib) + video (khusus Berkembang)
-- **Approval Tracking**: Status "Pending Review → Approved by Dosen → Approved by UPAKKK" (Pemula) atau "Pending → Approved" (Berkembang)
-- **Reviewer Assignment**: Reviewer berbeda untuk tiap kategori
+| Aspek | Pemula | Berkembang |
+| :--- | :--- | :--- |
+| **Threshold** | Usaha baru/ide (< 1 tahun) | Usaha berjalan (≥ 1 tahun) |
+| **Wajib Upload** | Pitching Deck | Deck + Video Link + Detail Bisnis |
+| **Approval Path** | **2-Level**: Dosen -> UPAKKK | **1-Level**: Dosen Pendamping |
+| **Fokus Utama** | Validasi Ide & Potensi | Validasi Progress & Growth |
 
 ---
 
-## 🎯 CORE PRINCIPLES (Digital Implementation)
+## 👥 ROLE & PERMISSION ENGINE
 
-Aplikasi ini dibangun berdasarkan prinsip:
+Sistem harus secara ketat membedakan hak akses berdasarkan workflow nyata.
 
-1. **Document-Centric Access**: Hanya role yang berhak yang dapat akses dokumen tertentu (Reviewer → Proposal, Admin → Semua Nota)
-2. **Contextual Submission**: Mahasiswa hanya bisa upload dokumen tertentu sesuai fase saat ini (tidak bisa upload Laporan Akhir di tahap awal)
-3. **Presence & Mentoring**: Sistem "Double-Verification" — Mahasiswa catat bimbingan, Dosen/Mentor verifikasi/absen
-4. **Data Privacy**: Dokumen keuangan (Nota) di-isolate, hanya Admin yang bisa akses untuk audit
-
----
-
-## 👥 ROLE-BASED DATA MATRIX (Digital Permissions)
-
-Berikut pemetaan **hak akses dalam aplikasi** berdasarkan workflow manual di atas:
-
-| Role                   | Upload                                                            | View                                  | Verify                            |
-| ---------------------- | ----------------------------------------------------------------- | ------------------------------------- | --------------------------------- |
-| **Mahasiswa**          | Proposal, Laporan (Awal/Akhir), Dokumen Mentoring, Nota Pendanaan | Status & Panduan                      | —                                 |
-| **Admin**              | Buku Panduan, Pengumuman, Jadwal                                  | Seluruh Laporan & Nota (audit)        | Validasi Administrasi             |
-| **Reviewer**           | —                                                                 | Uploadan Mahasiswa (Proposal/Laporan) | **Nilai Kelayakan** (Layak/Tidak) |
-| **Mentor** (Eksternal) | —                                                                 | Uploadan Mahasiswa, Data Dosen        | **Validasi Mentoring**            |
-| **Dosen** (Internal)   | —                                                                 | Progres Mahasiswa Bimbingannya        | **Validasi Bimbingan**            |
-
-> **Note**: **Bimbingan** dilakukan oleh Dosen Pendamping (Internal Polsri), sedangkan **Mentoring** dilakukan oleh Mentor/Praktisi (Eksternal). Keduanya memiliki log terpisah di sidebar Mahasiswa.
-> **Admin**: UPAPKK bertindak sebagai Admin dengan otoritas penuh dan akses verifikasi administrasi.
-
-## IMPLEMENTATION PATTERNS
-
-### 1. Document Secure Serving
-
-All documents in `writable/uploads/` are served via `DocumentController::download($id)` which checks:
-
-- Is the user the owner (Mahasiswa)?
-- Is the user an Admin/Reviewer/Mentor assigned to this student?
-
-### 2. Bimbingan Presence Logic
-
-`MentoringService` handles the "Absensi" logic where Mentor/Dosen records presence which then updates the Mahasiswa's mentoring documentation status.
-
-### 3. Reviewer Decision Flow
-
-Reviewers don't just "move a status", they provide a `ScoringEntity` that linked to a specific Proposal version, providing auditability on WHY a student was deemed "Layak".
+### 🛡️ Access Control Matrix
+| Role | Action: Upload | Action: Verify | Insight: View |
+| :--- | :--- | :--- | :--- |
+| **Mahasiswa** | Proposal, Laporan, Nota | - | Progress Status & Feedback |
+| **Admin** | Pengumuman, Jadwal | Administrasi & UPAKKK Approval | Full Audit Access (All Docs) |
+| **Reviewer** | - | Scoring & Kelayakan | Submitted Proposals |
+| **Dosen** | - | Log Bimbingan | Managed Students Progress |
+| **Mentor** | - | Log Mentoring | Managed Students Progress |
 
 ---
 
-## 📋 DIGITAL vs MANUAL MAPPING
+## 🛠️ IMPLEMENTATION PATTERNS
 
-Berikut detail fitur aplikasi yang menggantikan/mendukung proses manual:
+### 1. Unified Document Security
+Setiap akses ke dokumen tidak boleh melalui URL `public/`. Dokumen dilayani via `DocumentController` dengan validasi kepemilikan.
+*   **Path**: `app/Controllers/DocumentController.php`
+*   **Logic**: `isOwner() || isAdmin() || isAssignedReviewer()`
 
-### Tahap 1-2: Pendaftaran & Administrasi
+### 2. Dual-Mentoring Logic
+Sistem memisahkan **Bimbingan** (Akademik/Dosen) dan **Mentoring** (Praktisi/Eksternal).
+*   **Log Bimbingan**: Fokus pada administrasi dan kesesuaian panduan.
+*   **Log Mentoring**: Fokus pada implementasi bisnis nyata di lapangan.
 
-| Manual (Sebelumnya)                | Digital (Aplikasi Ini)                                                    |
-| ---------------------------------- | ------------------------------------------------------------------------- |
-| Mahasiswa antri ke sekretariat PMW | Upload proposal & Registrasi Profil Lengkap (Nama, NIM, Semester, Gender) |
-| Admin cek kelengkapan berkas fisik | Dashboard cek kelengkapan digital & Validasi Data Profil                  |
-| Stempel & tanda tangan manual      | Status tracking real-time & Digital Records                               |
-
-### Tahap 3: Pitching Desk (2 Kategori)
-
-| Manual (Sebelumnya)                | Digital (Aplikasi Ini)                                    |
-| ---------------------------------- | --------------------------------------------------------- |
-| Pitching: Presentasi di ruangan    | Jadwal pitching, upload pitching deck                     |
-| **Pemula**: Pitching deck saja     | Form upload deck, approval Dosen → UPAKKK                 |
-| **Berkembang**: Deck + video usaha | Upload deck + video + detail keterangan, 1-level approval |
-| Penilaian: Kertas scoring manual   | Form scoring digital dengan rubrik per kategori           |
-| Feedback: Lisan/catatan kertas     | Komentar tertulis terstruktur                             |
-
-### Tahap 7: Mentoring (Fase Terpanjang)
-
-| Manual (Sebelumnya)                | Digital (Aplikasi Ini)              |
-| ---------------------------------- | ----------------------------------- |
-| Mahasiswa catat pertemuan di buku  | Log bimbingan digital               |
-| Dosen/Mentor tanda tangan buku     | Verifikasi digital dengan timestamp |
-| Cek progress: Tanya via WA/telepon | Dashboard progres real-time         |
-
-### Tahap 8-9: Monitoring & Evaluasi
-
-| Manual (Sebelumnya)          | Digital (Aplikasi Ini)                 |
-| ---------------------------- | -------------------------------------- |
-| Bazaar: Foto + laporan fisik | Upload foto kegiatan + laporan PDF     |
-| Site visit: Checklist kertas | Checklist digital dengan GPS/timestamp |
-| Monev: Rapat evaluator       | Scoring terpusat dengan history        |
-
-### Tahap 10-11: Penyelesaian
-
-| Manual (Sebelumnya)                 | Digital (Aplikasi Ini)    |
-| ----------------------------------- | ------------------------- |
-| Pengumuman: Papan pengumuman kampus | Notifikasi in-app + email |
-| Sertifikat: Cetak fisik             | Download sertifikat PDF   |
-| Dokumentasi: Arsip kertas           | Arsip digital terstruktur |
+### 3. Context-Aware UI
+Input field dan tombol aksi hanya muncul berdasarkan:
+1.  **Fase Aktif** (Misal: Tombol upload LPJ tidak muncul di Fase Pendaftaran).
+2.  **Kategori Wirausaha** (Misal: Input Video URL hanya muncul untuk 'Berkembang').
 
 ---
 
-> **💡 Inti Aplikasi**: Aplikasi ini **bukan** menciptakan workflow baru, melainkan **mendigitalkan 11 tahapan yang sudah ada** agar lebih efisien, transparan, dan teraudit.
+## 💡 THE CORE PHILOSOPHY
+Aplikasi ini dirancang sebagai **Single Source of Truth** untuk UPAPKK Polsri. Setiap langkah digital meninggalkan jejak (audit trail) yang menggantikan tumpukan berkas fisik di sekretariat, memastikan proses seleksi yang lebih transparan dan akuntabel.
