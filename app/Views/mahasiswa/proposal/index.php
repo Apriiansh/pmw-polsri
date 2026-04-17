@@ -1,7 +1,14 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
-<div class="space-y-6 animate-stagger">
+<div class="space-y-6 animate-stagger" x-data="{
+    handleMouseMove(e) {
+        const card = e.currentTarget;
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+        card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+    }
+}">
     <div class="max-w-5xl mx-auto">
         <div class="flex items-center justify-between gap-4 flex-wrap">
             <div>
@@ -21,7 +28,7 @@
             <?php endif; ?>
         </div>
 
-        <div class="card-premium p-5 sm:p-7 mt-6">
+        <div class="card-premium p-5 sm:p-7 mt-6" @mousemove="handleMouseMove">
             <div class="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                     <p class="text-xs font-black uppercase tracking-widest text-slate-400">Periode Aktif</p>

@@ -334,6 +334,88 @@ class ProposalController extends BaseController
         }
     }
 
+    public function reset(int $id)
+    {
+        $proposalModel = new PmwProposalModel();
+        $proposal = $proposalModel->find($id);
+
+        if (!$proposal) {
+            return redirect()->to('mahasiswa/proposal')->with('error', 'Proposal tidak ditemukan');
+        }
+
+        try {
+            $this->guardOwner((int)$proposal['leader_user_id']);
+        } catch (\Exception $e) {
+            return redirect()->to('mahasiswa/proposal')->with('error', 'Akses ditolak');
+        }
+
+        // Only allowed if rejected (as per user request)
+        if ($proposal['status'] !== 'rejected') {
+            return redirect()->back()->with('error', 'Hanya proposal yang ditolak yang dapat dibuat ulang.');
+        }
+
+        $db = \Config\Database::connect();
+        $db->transBegin();
+
+        try {
+            // 1. Delete Documents (and physical files)
+            $documentModel = new PmwDocumentModel();
+            $docs = $documentModel->where('proposal_id', $id)->findAll();
+            foreach ($docs as $doc) {
+                if (!empty($doc['file_path'])) {
+                    $abs = WRITEPATH . $doc['file_path'];
+                    if (is_file($abs)) {
+                        @unlink($abs);
+                    }
+                }
+                $documentModel->delete($doc['id']);
+            }
+
+            // 2. Delete Physical Folder if empty or generally cleanup
+            $folderName = "proposal_{$id}";
+            $targetDir = WRITEPATH . 'uploads/pmw/proposals/' . $folderName;
+            if (is_dir($targetDir)) {
+                $this->deleteDirectory($targetDir);
+            }
+
+            // 3. Delete Members
+            $memberModel = new PmwProposalMemberModel();
+            $memberModel->where('proposal_id', $id)->delete();
+
+            // 4. Delete Proposal
+            $proposalModel->delete($id);
+
+            $db->transCommit();
+            return redirect()->to('mahasiswa/proposal/create')->with('message', 'Proposal berhasil dihapus. Silakan buat proposal baru.');
+        } catch (\Throwable $e) {
+            $db->transRollback();
+            return redirect()->back()->with('error', 'Gagal mereset proposal: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Helper to recursively delete a directory
+     */
+    private function deleteDirectory(string $dir): bool
+    {
+        if (!file_exists($dir)) {
+            return true;
+        }
+        if (!is_dir($dir)) {
+            return unlink($dir);
+        }
+        foreach (scandir($dir) as $item) {
+            if ($item == '.' || $item == '..') {
+                continue;
+            }
+            if (!$this->deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) {
+                return false;
+            }
+        }
+        return rmdir($dir);
+    }
+
+
     private function finalizeSubmission(int $id): void
     {
         $periodModel   = new PmwPeriodModel();

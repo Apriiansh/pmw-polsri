@@ -60,7 +60,7 @@ class AdminController extends BaseController
             'users'           => $users,
         ];
 
-        return view('admin/users', $data);
+        return view('admin/users/manage', $data);
     }
 
     /**
@@ -77,7 +77,7 @@ class AdminController extends BaseController
             'prodiList'       => getProdiList(),
         ];
 
-        return view('admin/user_form', $data);
+        return view('admin/users/form', $data);
     }
 
     /**
@@ -128,7 +128,7 @@ class AdminController extends BaseController
             'prodiList'       => getProdiList(),
         ];
 
-        return view('admin/user_form', $data);
+        return view('admin/users/form', $data);
     }
 
     /**
@@ -191,7 +191,7 @@ class AdminController extends BaseController
                 return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan sistem saat menyimpan data.');
             }
 
-            return redirect()->to('admin/users')->with('success', 'User berhasil ditambahkan');
+            return redirect()->to('admin/users/manage')->with('success', 'User berhasil ditambahkan');
         } catch (\Exception $e) {
             $db->transRollback();
             return redirect()->back()->withInput()->with('error', 'Error: ' . $e->getMessage());
@@ -207,7 +207,7 @@ class AdminController extends BaseController
         $user = $userModel->findById($id);
 
         if (!$user) {
-            return redirect()->to('admin/users')->with('error', 'User tidak ditemukan');
+            return redirect()->to('admin/users/manage')->with('error', 'User tidak ditemukan');
         }
 
         $role = $this->request->getPost('role');
@@ -277,7 +277,7 @@ class AdminController extends BaseController
                 return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan sistem saat mengupdate data.');
             }
 
-            return redirect()->to('admin/users')->with('success', 'User berhasil diupdate');
+            return redirect()->to('admin/users/manage')->with('success', 'User berhasil diupdate');
         } catch (\Exception $e) {
             $db->transRollback();
             return redirect()->back()->withInput()->with('error', 'Error: ' . $e->getMessage());
@@ -293,12 +293,12 @@ class AdminController extends BaseController
         $user = $userModel->findById($id);
 
         if (!$user) {
-            return redirect()->to('admin/users')->with('error', 'User tidak ditemukan');
+            return redirect()->to('admin/users/manage')->with('error', 'User tidak ditemukan');
         }
 
         // Prevent self-deletion
         if ($user->id === auth()->user()->id) {
-            return redirect()->to('admin/users')->with('error', 'Tidak bisa menghapus diri sendiri');
+            return redirect()->to('admin/users/manage')->with('error', 'Tidak bisa menghapus diri sendiri');
         }
 
         $db = \Config\Database::connect();
@@ -331,10 +331,10 @@ class AdminController extends BaseController
 
             $db->transComplete();
 
-            return redirect()->to('admin/users')->with('success', 'User berhasil dihapus');
+            return redirect()->to('admin/users/manage')->with('success', 'User berhasil dihapus');
         } catch (\Exception $e) {
             $db->transRollback();
-            return redirect()->to('admin/users')->with('error', 'Gagal menghapus user: ' . $e->getMessage());
+            return redirect()->to('admin/users/manage')->with('error', 'Gagal menghapus user: ' . $e->getMessage());
         }
     }
 
@@ -347,19 +347,19 @@ class AdminController extends BaseController
         $user = $userModel->findById($id);
 
         if (!$user) {
-            return redirect()->to('admin/users')->with('error', 'User tidak ditemukan');
+            return redirect()->to('admin/users/manage')->with('error', 'User tidak ditemukan');
         }
 
         // Prevent self-deactivation
         if ($user->id === auth()->user()->id) {
-            return redirect()->to('admin/users')->with('error', 'Tidak bisa mengubah status diri sendiri');
+            return redirect()->to('admin/users/manage')->with('error', 'Tidak bisa mengubah status diri sendiri');
         }
 
         $newStatus = !$user->active;
         $userModel->update($id, ['active' => $newStatus]);
 
         $message = $newStatus ? 'User berhasil diaktifkan' : 'User berhasil dinonaktifkan';
-        return redirect()->to('admin/users')->with('success', $message);
+        return redirect()->to('admin/users/manage')->with('success', $message);
     }
 
     /**
@@ -480,6 +480,7 @@ class AdminController extends BaseController
         try {
             foreach ($schedules as $scheduleId => $scheduleData) {
                 $updateData = [
+                    'phase_name'  => $scheduleData['phase_name'] ?: null,
                     'start_date'  => $scheduleData['start_date'] ?: null,
                     'end_date'    => $scheduleData['end_date'] ?: null,
                     'description' => $scheduleData['description'] ?: null,

@@ -39,11 +39,22 @@
     x-data="{
         isSidebarOpen: localStorage.getItem('sidebarOpen') !== 'false',
         isMobileMenuOpen: false,
+        openDropdown: null,
         toggleSidebar() {
             this.isSidebarOpen = !this.isSidebarOpen;
             localStorage.setItem('sidebarOpen', this.isSidebarOpen);
         }
-    }">
+    }"
+    x-init="
+        // Auto-open active dropdowns on load
+        $nextTick(() => {
+            const activeChild = document.querySelector('.sidebar-item-child.active');
+            if (activeChild) {
+                const parent = activeChild.closest('[data-dropdown-id]');
+                if (parent) openDropdown = parent.getAttribute('data-dropdown-id');
+            }
+        })
+    ">
 
     <div class="flex h-screen overflow-hidden bg-(--surface-page)">
 
@@ -51,11 +62,11 @@
          SIDEBAR
     ================================================================= -->
         <aside
-            class="bg-white border-r border-sky-100 flex flex-col z-30 shrink-0 transition-all duration-300 ease-smooth"
+            class="bg-white border-r border-sky-100 flex flex-col relative z-30 shrink-0 transition-all duration-300 ease-smooth"
             :class="isSidebarOpen ? 'w-72' : 'w-[72px]'">
 
-            <!-- Logo -->
-            <div class="h-20 flex items-center px-4 border-b border-sky-50 shrink-0 overflow-hidden" :class="isSidebarOpen ? 'justify-between' : 'justify-center'">
+            <!-- Logo Header -->
+            <div class="h-20 flex items-center px-4 border-b border-sky-50 shrink-0 relative" :class="isSidebarOpen ? 'justify-between' : 'justify-center'">
 
                 <!-- Logo icon + Text -->
                 <div class="flex items-center gap-3 min-w-0">
@@ -78,12 +89,13 @@
                     </div>
                 </div>
 
-                <!-- Toggle button (only shows on desktop) -->
+                <!-- Floating Toggle Button (Desktop only) -->
                 <button
-                    x-show="isSidebarOpen"
                     @click="toggleSidebar()"
-                    class="hidden md:flex w-8 h-8 items-center justify-center rounded-lg text-slate-400 hover:bg-sky-50 hover:text-sky-500 transition-all duration-200 shrink-0">
-                    <i class="fas fa-chevron-left text-xs"></i>
+                    class="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 items-center justify-center rounded-full bg-white border border-sky-100 text-slate-400 hover:text-sky-500 shadow-md hover:shadow-lg transition-all duration-300 z-50 group/toggle"
+                    :class="isSidebarOpen ? '' : 'rotate-180'"
+                    title="Toggle Sidebar">
+                    <i class="fas fa-chevron-left text-[10px] transition-transform group-hover/toggle:-translate-x-0.5"></i>
                 </button>
             </div>
 
@@ -138,20 +150,40 @@
 
                 if ($mainRole === 'admin') {
                     $navItems[] = ['route' => 'admin/pmw-system', 'icon' => 'fa-calendar-days',  'label' => 'PMW System',       'match' => 'admin/pmw-system'];
-                    // Tahap 2 - Seleksi Administrasi
-                    $navItems[] = ['route' => 'admin/seleksi-administrasi', 'icon' => 'fa-clipboard-list', 'label' => 'Seleksi Administrasi', 'match' => 'admin/seleksi-administrasi'];
-                    $navItems[] = ['route' => 'admin/pitching-desk', 'icon' => 'fa-award', 'label' => 'Validasi Pitching', 'match' => 'admin/pitching-desk'];
-                    $navItems[] = ['route' => 'admin/users',    'icon' => 'fa-users-gear',      'label' => 'Manajemen User',   'match' => 'admin/users'];
+
+                    // Tahap Seleksi - Grouped
+                    $navItems[] = [
+                        'label' => 'Seleksi & Validasi',
+                        'icon'  => 'fa-clipboard-check',
+                        'id'    => 'seleksi',
+                        'children' => [
+                            ['route' => 'admin/seleksi-administrasi', 'label' => 'Administrasi', 'match' => 'admin/seleksi-administrasi'],
+                            ['route' => 'admin/pitching-desk',        'label' => 'Pitching',     'match' => 'admin/pitching-desk'],
+                            ['route' => 'admin/perjanjian',           'label' => 'Perjanjian',   'match' => 'admin/perjanjian'],
+                        ]
+                    ];
+
+                    $navItems[] = ['route' => 'admin/pengumuman', 'icon' => 'fa-bullhorn',  'label' => 'Pengumuman',       'match' => 'admin/pengumuman'];
+
+                    $navItems[] = ['route' => 'admin/users/',    'icon' => 'fa-users-gear',      'label' => 'Manajemen User',   'match' => 'admin/users'];
                     $navItems[] = ['route' => 'admin/cms',      'icon' => 'fa-clapperboard',   'label' => 'Manajemen Konten', 'match' => 'admin/cms'];
                     $navItems[] = ['route' => 'admin/laporan',  'icon' => 'fa-file-contract',   'label' => 'Laporan',          'match' => 'admin/laporan'];
                 }
 
                 if ($mainRole === 'mahasiswa') {
-                    // Proposal - Tahap 1 (Pendaftaran / Pengajuan Proposal)
-                    $navItems[] = ['route' => 'mahasiswa/proposal', 'icon' => 'fa-file-invoice', 'label' => 'Proposal Kami', 'match' => 'mahasiswa/proposal'];
+                    // Group: Proposal & Administrasi
+                    $navItems[] = [
+                        'label' => 'Proposal & Administrasi',
+                        'icon' => 'fa-folder-tree',
+                        'children' => [
+                            ['route' => 'mahasiswa/proposal', 'icon' => 'fa-file-invoice', 'label' => 'Proposal', 'match' => 'mahasiswa/proposal'],
+                            ['route' => 'mahasiswa/pitching-desk', 'icon' => 'fa-chalkboard', 'label' => 'Pitching Desk', 'match' => 'mahasiswa/pitching-desk'],
+                            ['route' => 'mahasiswa/perjanjian', 'icon' => 'fa-file-signature', 'label' => 'Perjanjian', 'match' => 'mahasiswa/perjanjian'],
+                        ]
+                    ];
 
-                    // Pitching Desk - Tahap 3 (Pitching Desk)
-                    $navItems[] = ['route' => 'mahasiswa/pitching-desk', 'icon' => 'fa-chalkboard', 'label' => 'Pitching Desk', 'match' => 'mahasiswa/pitching-desk'];
+                    // Pengumuman Tahap I - Tahap 5
+                    $navItems[] = ['route' => 'mahasiswa/pengumuman', 'icon' => 'fa-bullhorn', 'label' => 'Pengumuman', 'match' => 'mahasiswa/pengumuman'];
 
                     // Mentoring - Tahap 6 (Implementasi, Bimbingan & Mentoring)
                     $navItems[] = ['route' => 'mahasiswa/mentoring', 'icon' => 'fa-handshake-angle', 'label' => 'Mentoring', 'match' => 'mahasiswa/mentoring'];
@@ -164,6 +196,10 @@
 
                     // Laporan Akhir - Tahap 10-11 (Laporan Akhir & Awarding)
                     $navItems[] = ['route' => 'mahasiswa/laporan-akhir', 'icon' => 'fa-box-archive', 'label' => 'Laporan Akhir', 'match' => 'mahasiswa/laporan-akhir'];
+
+                    
+                    // Pembekalan - Tahap 6
+                    $navItems[] = ['route' => 'mahasiswa/pembekalan', 'icon' => 'fa-chalkboard-user', 'label' => 'Pembekalan', 'match' => 'mahasiswa/pembekalan'];
                 }
 
                 if ($mainRole === 'reviewer') {
@@ -190,35 +226,99 @@
                 }
 
                 $currentUrl = current_url();
+                $currentPath = trim((string) parse_url($currentUrl, PHP_URL_PATH), '/');
 
                 foreach ($navItems as $item):
-                    $isActive = strpos($currentUrl, base_url($item['match'])) !== false;
-                    $activeClass = $isActive ? 'sidebar-item active' : 'sidebar-item';
+                    if (isset($item['children'])) {
+                        // Dropdown Parent
+                        $isAnyChildActive = false;
+                        foreach ($item['children'] as $child) {
+                            if (strpos($currentPath, trim($child['match'], '/')) !== false) {
+                                $isAnyChildActive = true;
+                                break;
+                            }
+                        }
+                        $dropdownId = $item['id'] ?? str_replace(' ', '-', strtolower($item['label']));
                 ?>
-                    <a
-                        href="<?= base_url($item['route']) ?>"
-                        class="<?= $activeClass ?> group/item"
-                        :class="isSidebarOpen ? 'px-3 justify-start' : 'px-0 justify-center'"
-                        title="<?= $item['label'] ?>">
-                        <!-- Icon -->
-                        <span class="sidebar-item-icon transition-transform duration-300 group-hover/item:scale-110">
-                            <i class="fas <?= $item['icon'] ?>"></i>
-                        </span>
+                        <div class="space-y-1" data-dropdown-id="<?= $dropdownId ?>">
+                            <button
+                                @click="isSidebarOpen ? (openDropdown = (openDropdown === '<?= $dropdownId ?>' ? null : '<?= $dropdownId ?>')) : toggleSidebar()"
+                                class="sidebar-item w-full group/item"
+                                :class="isSidebarOpen ? 'px-3 justify-start' : 'px-0 justify-center'"
+                                title="<?= $item['label'] ?>">
+                                <span class="sidebar-item-icon transition-transform duration-300 group-hover/item:scale-110 <?= $isAnyChildActive ? 'text-sky-500' : '' ?>">
+                                    <i class="fas <?= $item['icon'] ?>"></i>
+                                </span>
+                                <span
+                                    class="text-sm font-medium whitespace-nowrap transition-all duration-300 ease-smooth <?= $isAnyChildActive ? 'text-slate-800' : '' ?>"
+                                    :class="isSidebarOpen ? 'opacity-100 max-w-[200px] translate-x-0 ml-3' : 'opacity-0 max-w-0 -translate-x-4 ml-0 overflow-hidden'">
+                                    <?= $item['label'] ?>
+                                </span>
+                                <i
+                                    x-show="isSidebarOpen"
+                                    class="fas fa-chevron-down text-[10px] ml-auto transition-transform duration-300 text-slate-300"
+                                    :class="openDropdown === '<?= $dropdownId ?>' ? 'rotate-180' : ''"></i>
+                            </button>
 
-                        <!-- Label (hidden when collapsed) -->
-                        <span
-                            class="text-sm font-medium whitespace-nowrap transition-all duration-300 ease-smooth"
-                            :class="isSidebarOpen ? 'opacity-100 max-w-[200px] translate-x-0 ml-3' : 'opacity-0 max-w-0 -translate-x-4 ml-0 overflow-hidden'">
-                            <?= $item['label'] ?>
-                        </span>
+                            <!-- Submenu Container -->
+                            <div
+                                x-show="isSidebarOpen && openDropdown === '<?= $dropdownId ?>'"
+                                x-collapse
+                                class="relative ml-8 border-l border-slate-100 space-y-0.5 overflow-hidden"
+                                x-cloak>
+                                <?php foreach ($item['children'] as $index => $child):
+                                    $isChildActive = strpos($currentPath, trim($child['match'], '/')) !== false;
+                                ?>
+                                    <a
+                                        href="<?= base_url($child['route']) ?>"
+                                        class="sidebar-item-child <?= $isChildActive ? 'active' : '' ?> flex items-center py-2 px-3 text-xs font-medium text-slate-500 hover:text-sky-600 transition-all duration-200 group/child"
+                                        style="transition-delay: <?= $index * 30 ?>ms">
 
-                        <!-- Tooltip for collapsed state -->
-                        <template x-if="!isSidebarOpen">
-                            <div class="absolute left-16 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 translate-x-2 group-hover/item:translate-x-0 transition-all pointer-events-none z-50 whitespace-nowrap font-bold uppercase tracking-widest">
-                                <?= $item['label'] ?>
+                                        <!-- Active Indicator (Sliding Bar) -->
+                                        <div class="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-0 bg-sky-500 rounded-full transition-all duration-300 <?= $isChildActive ? 'h-3/5' : 'group-hover/child:h-1/4 group-hover/child:bg-slate-300' ?>"></div>
+
+                                        <span class="ml-1 transition-transform duration-200 group-hover/child:translate-x-1">
+                                            <?= $child['label'] ?>
+                                        </span>
+
+                                        <?php if ($isChildActive): ?>
+                                            <i class="fas fa-circle text-[4px] text-sky-500 ml-auto animate-pulse"></i>
+                                        <?php endif; ?>
+                                    </a>
+                                <?php endforeach; ?>
                             </div>
-                        </template>
-                    </a>
+                        </div>
+
+                    <?php } else {
+                        // Regular Item
+                        $isActive = strpos($currentPath, trim($item['match'], '/')) !== false;
+                        $activeClass = $isActive ? 'sidebar-item active' : 'sidebar-item';
+                    ?>
+                        <a
+                            href="<?= base_url($item['route']) ?>"
+                            class="<?= $activeClass ?> group/item"
+                            :class="isSidebarOpen ? 'px-3 justify-start' : 'px-0 justify-center'"
+                            title="<?= $item['label'] ?>">
+                            <!-- Icon -->
+                            <span class="sidebar-item-icon transition-transform duration-300 group-hover/item:scale-110">
+                                <i class="fas <?= $item['icon'] ?>"></i>
+                            </span>
+
+                            <!-- Label (hidden when collapsed) -->
+                            <span
+                                class="text-sm font-medium whitespace-nowrap transition-all duration-300 ease-smooth"
+                                :class="isSidebarOpen ? 'opacity-100 max-w-[200px] translate-x-0 ml-3' : 'opacity-0 max-w-0 -translate-x-4 ml-0 overflow-hidden'">
+                                <?= $item['label'] ?>
+                            </span>
+
+                            <!-- Tooltip for collapsed state -->
+                            <template x-if="!isSidebarOpen">
+                                <div class="absolute left-16 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 translate-x-2 group-hover/item:translate-x-0 transition-all pointer-events-none z-50 whitespace-nowrap font-bold uppercase tracking-widest">
+                                    <?= $item['label'] ?>
+                                </div>
+                            </template>
+                        </a>
+                    <?php } ?>
                 <?php endforeach; ?>
 
                 <!-- Divider -->
@@ -239,7 +339,7 @@
                 ];
 
                 foreach ($bottomItems as $item):
-                    $isActive = strpos($currentUrl, base_url($item['match'])) !== false;
+                    $isActive = strpos($currentPath, trim($item['match'], '/')) !== false;
                     $activeClass = $isActive ? 'sidebar-item active' : 'sidebar-item';
                 ?>
                     <a
@@ -262,9 +362,8 @@
             <!-- Bottom: User Profile -->
             <div class="p-3 border-t border-sky-50 shrink-0">
                 <div
-                    class="flex items-center gap-3 p-3 rounded-xl bg-sky-50/50 cursor-pointer group hover:bg-sky-100/80 transition-all duration-300 overflow-hidden relative"
-                    :class="isSidebarOpen ? 'justify-start' : 'justify-center'"
-                    @click="!isSidebarOpen && toggleSidebar()">
+                    class="flex items-center gap-3 p-3 rounded-xl bg-sky-50/50 group transition-all duration-300 overflow-hidden relative"
+                    :class="isSidebarOpen ? 'justify-start' : 'justify-center'">
                     <!-- Avatar -->
                     <div class="w-9 h-9 rounded-xl bg-linear-to-tr from-sky-500 to-sky-400 flex items-center justify-center text-white font-display font-bold text-xs shadow-sm shadow-sky-200 shrink-0 group-hover:scale-105 transition-transform">
                         <?= esc($initials) ?>
@@ -290,11 +389,6 @@
                                 <i class="fas fa-right-from-bracket text-[10px]"></i>
                             </button>
                         </form>
-                    </div>
-
-                    <!-- Expand icon for collapsed state -->
-                    <div x-show="!isSidebarOpen" class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-sky-50/90 transition-opacity">
-                        <i class="fas fa-angles-right text-sky-500 text-xs"></i>
                     </div>
                 </div>
             </div>
@@ -488,13 +582,45 @@
         <!-- Mobile Navigation -->
         <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
             <?php foreach ($navItems as $item):
-                $isActive = strpos($currentUrl, base_url($item['match'])) !== false;
-                $activeClass = $isActive ? 'bg-sky-50 text-sky-600 border-sky-200' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700';
+                if (isset($item['children'])) {
+                    $isAnyChildActive = false;
+                    foreach ($item['children'] as $child) {
+                        if (strpos($currentUrl, base_url($child['match'])) !== false) {
+                            $isAnyChildActive = true;
+                            break;
+                        }
+                    }
+                    $dropdownId = ($item['id'] ?? str_replace(' ', '-', strtolower($item['label']))) . '_mobile';
             ?>
-                <a href="<?= base_url($item['route']) ?>" class="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors <?= $activeClass ?>">
-                    <i class="fas <?= $item['icon'] ?> w-5 text-center"></i>
-                    <?= $item['label'] ?>
-                </a>
+                    <div x-data="{ isOpen: <?= $isAnyChildActive ? 'true' : 'false' ?> }" class="space-y-1">
+                        <button
+                            @click="isOpen = !isOpen"
+                            class="w-full flex items-center justify-between px-3 py-3 rounded-xl text-sm font-medium transition-colors <?= $isAnyChildActive ? 'bg-sky-50 text-sky-600' : 'text-slate-500 hover:bg-slate-50' ?>">
+                            <div class="flex items-center gap-3">
+                                <i class="fas <?= $item['icon'] ?> w-5 text-center"></i>
+                                <?= $item['label'] ?>
+                            </div>
+                            <i class="fas fa-chevron-down text-[10px] transition-transform duration-300" :class="isOpen ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="isOpen" x-collapse class="pl-11 space-y-1">
+                            <?php foreach ($item['children'] as $child):
+                                $isChildActive = strpos($currentUrl, base_url($child['match'])) !== false;
+                            ?>
+                                <a href="<?= base_url($child['route']) ?>" class="block py-2 text-sm <?= $isChildActive ? 'text-sky-600 font-bold' : 'text-slate-500 hover:text-slate-700' ?>">
+                                    <?= $child['label'] ?>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php } else {
+                    $isActive = strpos($currentUrl, base_url($item['match'])) !== false;
+                    $activeClass = $isActive ? 'bg-sky-50 text-sky-600 border-sky-200' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700';
+                ?>
+                    <a href="<?= base_url($item['route']) ?>" class="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors <?= $activeClass ?>">
+                        <i class="fas <?= $item['icon'] ?> w-5 text-center"></i>
+                        <?= $item['label'] ?>
+                    </a>
+                <?php } ?>
             <?php endforeach; ?>
 
             <div class="pt-4 mt-4 border-t border-sky-50">
@@ -513,23 +639,22 @@
         <!-- Mobile User Profile -->
         <div class="p-4 border-t border-sky-50 shrink-0">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-linear-to-tr from-sky-500 to-sky-400 flex items-center justify-center text-white font-display font-bold text-sm">
-                    <?= strtoupper(substr(auth()->user()->username ?? 'G', 0, 2)) ?>
+                <div class="w-10 h-10 rounded-xl bg-linear-to-tr from-sky-500 to-sky-400 flex items-center justify-center text-white font-display font-bold text-sm shadow-sm shadow-sky-200">
+                    <?= esc($initials) ?>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold text-(--text-heading) truncate"><?= esc(auth()->user()->username ?? 'Guest') ?></p>
-                    <p class="text-xs text-(--text-muted) uppercase font-black tracking-widest"><?= auth()->user() ? esc(auth()->user()->getGroups()[0] ?? 'User') : 'Visitor' ?></p>
+                    <p class="text-sm font-bold text-(--text-heading) truncate"><?= esc($displayName) ?></p>
+                    <p class="text-[10px] text-(--text-muted) uppercase font-black tracking-widest truncate"><?= esc($displayRole) ?></p>
                 </div>
                 <form action="<?= base_url('logout') ?>" method="post">
                     <?= csrf_field() ?>
-                    <button type="submit" class="text-slate-300 hover:text-rose-400 transition-colors">
+                    <button type="submit" class="text-slate-300 hover:text-rose-500 transition-colors">
                         <i class="fas fa-right-from-bracket"></i>
                     </button>
                 </form>
             </div>
         </div>
     </aside>
-
 
     <!-- Centralized Toast Notification System -->
     <div x-data="toastManager()"

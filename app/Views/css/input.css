@@ -677,6 +677,33 @@ h1, h2, h3, h4, h5, .font-display {
   white-space: nowrap;
 }
 
+/* --- SIDEBAR DROPDOWN & CHILD ITEMS --- */
+.sidebar-item-child {
+  position: relative;
+  transition: all 0.3s var(--ease-smooth);
+  border-radius: var(--radius-sm);
+  margin-left: -1px; /* Align with parent border */
+}
+
+.sidebar-item-child:hover {
+  background: linear-gradient(90deg, var(--color-primary-glow) 0%, transparent 100%);
+}
+
+.sidebar-item-child.active {
+  background: linear-gradient(90deg, rgba(14, 165, 233, 0.08) 0%, transparent 100%);
+  color: var(--color-primary) !important;
+  font-weight: 700;
+}
+
+.sidebar-item-child.active div {
+  box-shadow: 0 0 10px rgba(14, 165, 233, 0.4);
+}
+
+/* Dropdown arrow rotation is handled by Alpine.js transform classes */
+[x-collapse] {
+  transition: all 0.3s var(--ease-smooth);
+}
+
 .sidebar-item:hover {
   background-color: var(--surface-hover);
   color: var(--text-heading);

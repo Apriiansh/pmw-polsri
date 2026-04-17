@@ -61,6 +61,20 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('pitching-desk', 'Admin\\PitchingDeskController::index');
         $routes->get('pitching-desk/(:num)', 'Admin\\PitchingDeskController::detail/$1');
         $routes->post('pitching-desk/(:num)/validate', 'Admin\\PitchingDeskController::validateAction/$1');
+
+        // Tahap 4 - Wawancara Perjanjian (Perjanjian Implementasi)
+        $routes->get('perjanjian', 'Admin\\WawancaraController::index');
+        $routes->get('perjanjian/(:num)', 'Admin\\WawancaraController::detail/$1');
+        $routes->post('perjanjian/(:num)/validate', 'Admin\\WawancaraController::validateAction/$1');
+        $routes->get('perjanjian/doc/(:num)', 'Admin\\WawancaraController::downloadDoc/$1');
+
+        // Tahap 5 - Pengumuman Kelolosan Dana Tahap I
+        $routes->get('pengumuman', 'Admin\\AnnouncementController::index');
+        $routes->post('pengumuman/(:num)/save', 'Admin\\AnnouncementController::save/$1');
+        $routes->post('pengumuman/(:num)/publish', 'Admin\\AnnouncementController::publish/$1');
+        $routes->post('pengumuman/(:num)/upload-sk', 'Admin\\AnnouncementController::uploadSk/$1');
+        $routes->post('pengumuman/(:num)/delete-sk', 'Admin\\AnnouncementController::deleteSk/$1');
+        $routes->get('pengumuman/(:num)/sk', 'Admin\\AnnouncementController::downloadSk/$1');
     });
 
     // Mahasiswa Routes
@@ -72,6 +86,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->post('proposal/upload/(:num)', 'Mahasiswa\\ProposalController::uploadDoc/$1');
         $routes->post('proposal/submit/(:num)', 'Mahasiswa\\ProposalController::submit/$1');
         $routes->get('proposal/doc/(:num)', 'Mahasiswa\\ProposalController::downloadDoc/$1');
+        $routes->get('proposal/reset/(:num)', 'Mahasiswa\\ProposalController::reset/$1');
         // Tahap 3 - Pitching Desk
         $routes->get('pitching-desk', 'Mahasiswa\\PitchingDeskController::index');
         $routes->post('pitching-desk/upload-ppt', 'Mahasiswa\\PitchingDeskController::uploadPpt');
@@ -81,6 +96,24 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('bimbingan', 'MahasiswaController::bimbingan');
         $routes->get('laporan-kemajuan', 'MahasiswaController::laporanKemajuan');
         $routes->get('laporan-akhir', 'MahasiswaController::laporanAkhir');
+
+        // Tahap 4 - Perjanjian Implementasi
+        $routes->get('perjanjian', 'Mahasiswa\\WawancaraController::index');
+        $routes->post('perjanjian/upload', 'Mahasiswa\\WawancaraController::upload');
+        $routes->get('perjanjian/doc/(:num)', 'Mahasiswa\\WawancaraController::downloadDoc/$1');
+
+        // Tahap 5 - Pengumuman Kelolosan Dana Tahap I
+        $routes->get('pengumuman', 'Mahasiswa\\AnnouncementController::index');
+        $routes->get('pengumuman/sk', 'Mahasiswa\\AnnouncementController::downloadSk');
+        $routes->get('pengumuman/rekening', 'Mahasiswa\\AnnouncementController::bankAccount');
+        $routes->post('pengumuman/rekening/save', 'Mahasiswa\\AnnouncementController::saveBankAccount');
+        $routes->get('pengumuman/rekening/download', 'Mahasiswa\\AnnouncementController::downloadBankBook');
+
+        // Tahap 6 - Pembekalan
+        $routes->get('pembekalan', 'Mahasiswa\\TrainingController::index');
+        $routes->post('pembekalan/save', 'Mahasiswa\\TrainingController::save');
+        $routes->post('pembekalan/photo/(:num)/delete', 'Mahasiswa\\TrainingController::deletePhoto/$1');
+        $routes->get('pembekalan/photo/(:num)', 'Mahasiswa\\TrainingController::downloadPhoto/$1');
     });
 
     // Reviewer Routes

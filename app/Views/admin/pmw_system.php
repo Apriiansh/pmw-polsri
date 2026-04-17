@@ -84,9 +84,7 @@
                             </p>
                         </div>
                         <button type="submit"
-                            class="btn-primary text-sm py-2 px-4 transition-all"
-                            :disabled="!isValid"
-                            :class="!isValid ? 'opacity-50 cursor-not-allowed grayscale' : ''">
+                            class="btn-primary text-sm py-2 px-4 transition-all">
                             <i class="fas fa-save mr-2"></i>Simpan Jadwal
                         </button>
                     </div>
@@ -97,9 +95,9 @@
                             <thead>
                                 <tr>
                                     <th class="w-12 text-center">No</th>
-                                    <th>Nama Tahap</th>
-                                    <th class="w-40">Tanggal Mulai</th>
-                                    <th class="w-40">Tanggal Selesai</th>
+                                    <th class="min-w-[200px]">Nama Tahap</th>
+                                    <th class="w-44">Tanggal Mulai</th>
+                                    <th class="w-44">Tanggal Selesai</th>
                                     <th>Deskripsi</th>
                                     <th class="w-20 text-center">Aktif</th>
                                 </tr>
@@ -111,17 +109,20 @@
                                             <?= $schedule['phase_number'] ?>
                                         </td>
                                         <td>
-                                            <p class="font-semibold text-(--text-heading)"><?= esc($schedule['phase_name']) ?></p>
+                                            <div class="space-y-2">
+                                                <input type="text"
+                                                    name="schedules[<?= $schedule['id'] ?>][phase_name]"
+                                                    value="<?= esc($schedule['phase_name']) ?>"
+                                                    class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none text-sm font-semibold text-(--text-heading)"
+                                                    placeholder="Nama tahap...">
+                                            </div>
                                         </td>
                                         <td>
                                             <div class="input-group">
                                                 <span class="input-icon"><i class="fas fa-calendar-day"></i></span>
                                                 <input type="date"
                                                     name="schedules[<?= $schedule['id'] ?>][start_date]"
-                                                    value="<?= $schedule['start_date'] ?>"
-                                                    @change="validateSchedule(<?= $schedule['phase_number'] ?>)"
-                                                    data-phase="<?= $schedule['phase_number'] ?>"
-                                                    data-type="start">
+                                                    value="<?= $schedule['start_date'] ?>">
                                             </div>
                                         </td>
                                         <td>
@@ -129,16 +130,13 @@
                                                 <span class="input-icon"><i class="fas fa-calendar-check"></i></span>
                                                 <input type="date"
                                                     name="schedules[<?= $schedule['id'] ?>][end_date]"
-                                                    value="<?= $schedule['end_date'] ?>"
-                                                    @change="validateSchedule(<?= $schedule['phase_number'] ?>)"
-                                                    data-phase="<?= $schedule['phase_number'] ?>"
-                                                    data-type="end">
+                                                    value="<?= $schedule['end_date'] ?>">
                                             </div>
                                         </td>
                                         <td>
                                             <textarea name="schedules[<?= $schedule['id'] ?>][description]"
                                                 rows="2"
-                                                class="form-textarea"
+                                                class="form-textarea w-full min-w-[200px]"
                                                 placeholder="Deskripsi tahap..."><?= esc($schedule['description']) ?></textarea>
                                         </td>
                                         <td class="text-center">
@@ -319,88 +317,7 @@
             isValid: true,
 
             init() {
-                this.validateAllSchedules();
-            },
-
-            showToast(message) {
-                this.$dispatch('toast-notify', {
-                    message: message,
-                    type: 'error'
-                });
-            },
-
-            validateSchedule(phase) {
-                this.validateAllSchedules();
-            },
-
-            validateAllSchedules() {
-                const inputs = Array.from(document.querySelectorAll('input[data-phase]'));
-                const schedules = {};
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-
-                // Group inputs by phase
-                inputs.forEach(input => {
-                    const phase = parseInt(input.dataset.phase);
-                    if (!schedules[phase]) schedules[phase] = {};
-                    schedules[phase][input.dataset.type] = input;
-                });
-
-                const phaseNumbers = Object.keys(schedules).map(Number).sort((a, b) => a - b);
-                let hasError = false;
-                let firstErrorMessage = '';
-
-                phaseNumbers.forEach((p, index) => {
-                    const current = schedules[p];
-                    const startVal = current.start.value;
-                    const endVal = current.end.value;
-
-                    // Reset styles
-                    current.start.classList.remove('border-rose-500', 'bg-rose-50', 'ring-2', 'ring-rose-200');
-                    current.end.classList.remove('border-rose-500', 'bg-rose-50', 'ring-2', 'ring-rose-200');
-
-                    if (startVal) {
-                        const start = new Date(startVal);
-
-                        // 1. Cannot be in the past (Allowed for Phase 1 for retrospective entry)
-                        if (start < today && p !== 1) {
-                            current.start.classList.add('border-rose-500', 'bg-rose-50', 'ring-2', 'ring-rose-200');
-                            if (!hasError) firstErrorMessage = `Tahap ${p}: Tanggal mulai tidak boleh di masa lalu.`;
-                            hasError = true;
-                        }
-
-                        // 2. Start must be after previous Phase End
-                        if (index > 0) {
-                            const prev = schedules[phaseNumbers[index - 1]];
-                            if (prev.end.value) {
-                                const prevEnd = new Date(prev.end.value);
-                                if (start < prevEnd) {
-                                    current.start.classList.add('border-rose-500', 'bg-rose-50', 'ring-2', 'ring-rose-200');
-                                    if (!hasError) firstErrorMessage = `Tahap ${p}: Tanggal mulai harus setelah tanggal selesai Tahap ${phaseNumbers[index - 1]}.`;
-                                    hasError = true;
-                                }
-                            }
-                        }
-
-                        if (endVal) {
-                            const end = new Date(endVal);
-                            // 3. End must be after Start
-                            if (end < start) {
-                                current.end.classList.add('border-rose-500', 'bg-rose-50', 'ring-2', 'ring-rose-200');
-                                if (!hasError) firstErrorMessage = `Tahap ${p}: Tanggal selesai harus lebih besar atau sama dengan tanggal mulai.`;
-                                hasError = true;
-                            }
-                        }
-                    }
-                });
-
-                // this.isValid = !hasError;
-                this.isValid = true; // FORCE VALID FOR TESTING
-                /* 
-                if (hasError) {
-                    this.showToast(firstErrorMessage);
-                }
-                */
+                // Validation removed for flexibility
             }
         }
     }

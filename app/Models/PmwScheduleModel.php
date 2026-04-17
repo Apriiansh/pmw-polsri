@@ -28,7 +28,7 @@ class PmwScheduleModel extends Model
 
     protected $validationRules    = [
         'period_id'    => 'required|integer',
-        'phase_number' => 'required|integer|greater_than[0]|less_than[12]',
+        'phase_number' => 'required|integer|greater_than[0]|less_than[13]',
         'phase_name'   => 'required|max_length[100]',
         'start_date'   => 'permit_empty|valid_date',
         'end_date'     => 'permit_empty|valid_date',
@@ -41,7 +41,7 @@ class PmwScheduleModel extends Model
         'phase_number' => [
             'required'    => 'Nomor tahap wajib diisi',
             'greater_than' => 'Nomor tahap tidak valid',
-            'less_than'    => 'Nomor tahap tidak valid (max 11)',
+            'less_than'    => 'Nomor tahap tidak valid (max 12)',
         ],
         'phase_name' => [
             'required'   => 'Nama tahap wajib diisi',
@@ -79,13 +79,14 @@ class PmwScheduleModel extends Model
             2  => 'Seleksi Administrasi',
             3  => 'Pitching Desk',
             4  => 'Wawancara Perjanjian',
-            5  => 'Pengumuman Tahap I & Pembekalan',
-            6  => 'Implementasi, Bimbingan & Mentoring',
-            7  => 'Monev Tahap 1 (Bazaar)',
-            8  => 'Monev Tahap 2 (Site Visit)',
-            9  => 'Pengumuman Tahap II',
-            10 => 'Laporan Akhir & Penutupan',
-            11 => 'Awarding & Expo',
+            5  => 'Pengumuman Kelolosan Dana PMW Tahap I',
+            6  => 'Pembekalan',
+            7  => 'Implementasi, Bimbingan & Mentoring',
+            8  => 'Monev Tahap 1 (Bazaar)',
+            9  => 'Monev Tahap 2 (Site Visit)',
+            10 => 'Pengumuman Tahap II',
+            11 => 'Laporan Akhir & Penutupan',
+            12 => 'Awarding & Expo',
         ];
 
         foreach ($defaultPhases as $number => $name) {

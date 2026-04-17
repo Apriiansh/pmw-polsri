@@ -14,13 +14,14 @@ Berikut adalah **10 tahapan** Program Mahasiswa Wirausaha Polsri yang dilaksanak
 | 2     | **Seleksi Administrasi**                | UPAPKK (Admin) + Reviewer  | Checklist kelengkapan, flagging dokumen                                                                                            |
 | 3     | **Pitching Desk**                       | Reviewer + Mahasiswa       | **2 Kategori:** Pemula (Pitching Deck → Approve Dosen → Approve UPAKKK) & Berkembang (Pitching Deck + Video Usaha → Approve Dosen) |
 | 4     | **Wawancara Perjanjian**                | Dosen/Mentor + Mahasiswa   | Record hasil wawancara, MoU digital                                                                                                |
-| 5     | **Pengumuman Tahap I & Pembekalan**     | Admin                      | Broadcast pengumuman, materi pembekalan                                                                                            |
-| 6     | **Implementasi, Bimbingan & Mentoring** | Mahasiswa + Dosen + Mentor | Log bimbingan (Dosen) & Log mentoring (Praktisi), absensi digital, laporan progress                                                |
-| 7     | **Monev Tahap 1 (Bazaar)**              | Reviewer + UPAPKK (Admin)  | Upload foto kegiatan, laporan awal                                                                                                 |
-| 8     | **Monev Tahap 2 (Site Visit)**          | Dosen/Mentor + Reviewer    | Checklist kunjungan, laporan akhir                                                                                                 |
-| 9     | **Pengumuman Tahap II**                 | UPAPKK (Admin)             | Notifikasi penerima dana tahap 2                                                                                                   |
-| 10    | **Laporan Akhir & Penutupan**           | Mahasiswa                  | Submit dokumen final                                                                                                               |
-| 11    | **Awarding & Expo**                     | Semua pihak                | Dokumentasi akhir, sertifikat digital                                                                                              |
+| 5     | **Pengumuman Kelolosan Dana PMW Tahap I** | Admin                      | Pengumuman lolos, upload SK Direktur, info jadwal pembekalan                                                                        |
+| 6     | **Pembekalan**                          | Mahasiswa + Admin          | Input ringkasan pembekalan, upload foto kegiatan                                                                                   |
+| 7     | **Implementasi, Bimbingan & Mentoring** | Mahasiswa + Dosen + Mentor | Log bimbingan (Dosen) & Log mentoring (Praktisi), absensi digital, laporan progress                                                |
+| 8     | **Monev Tahap 1 (Bazaar)**              | Reviewer + UPAPKK (Admin)  | Upload foto kegiatan, laporan awal                                                                                                 |
+| 9     | **Monev Tahap 2 (Site Visit)**          | Dosen/Mentor + Reviewer    | Checklist kunjungan, laporan akhir                                                                                                 |
+| 10    | **Pengumuman Tahap II**                 | UPAPKK (Admin)             | Notifikasi penerima dana tahap 2                                                                                                   |
+| 11    | **Laporan Akhir & Penutupan**           | Mahasiswa                  | Submit dokumen final                                                                                                               |
+| 12    | **Awarding & Expo**                     | Semua pihak                | Dokumentasi akhir, sertifikat digital                                                                                              |
 
 ---
 

@@ -2,7 +2,14 @@
 
 <?= $this->section('content') ?>
 
-<div class="space-y-8">
+<div class="space-y-8" x-data="{
+    handleMouseMove(e) {
+        const card = e.currentTarget;
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+        card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+    }
+}">
 
     <!-- ================================================================
          1. PAGE HEADING
@@ -29,7 +36,7 @@
         ];
         ?>
         <?php foreach ($statItems as $index => $stat): ?>
-        <div class="card-premium p-3 sm:p-5 flex items-center gap-3 sm:gap-4 animate-stagger delay-<?= ($index + 1) * 100 ?>">
+        <div class="card-premium p-3 sm:p-5 flex items-center gap-3 sm:gap-4 animate-stagger delay-<?= ($index + 1) * 100 ?>" @mousemove="handleMouseMove">
             <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl <?= $stat['bg'] ?> flex items-center justify-center shrink-0">
                 <i class="fas <?= $stat['icon'] ?> text-lg sm:text-xl <?= $stat['icon_color'] ?>"></i>
             </div>
@@ -66,7 +73,7 @@
     <!-- ================================================================
          4. PROPOSALS TABLE
     ================================================================= -->
-    <div class="card-premium overflow-hidden animate-stagger delay-500">
+    <div class="card-premium overflow-hidden animate-stagger delay-500" @mousemove="handleMouseMove">
         
         <div class="px-4 sm:px-7 py-4 sm:py-5 border-b border-sky-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/60">
             <div>

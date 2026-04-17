@@ -27,6 +27,8 @@ class PmwProposalModel extends Model
         'pitching_admin_status',
         'pitching_dosen_catatan',
         'pitching_admin_catatan',
+        'wawancara_status',
+        'wawancara_catatan',
         'submitted_at',
     ];
 
@@ -50,12 +52,16 @@ class PmwProposalModel extends Model
         'pitching_admin_status' => 'required|in_list[pending,approved,rejected,revision]',
         'pitching_dosen_catatan' => 'permit_empty|string',
         'pitching_admin_catatan' => 'permit_empty|string',
+        'wawancara_status' => 'required|in_list[pending,approved,rejected,revision]',
+        'wawancara_catatan' => 'permit_empty|string',
     ];
 
     public function findByPeriodAndLeader(int $periodId, int $leaderUserId): ?array
     {
-        return $this->where('period_id', $periodId)
-            ->where('leader_user_id', $leaderUserId)
+        return $this->select('pmw_proposals.*, pm.nama as ketua_nama, pm.nim as ketua_nim')
+            ->join('pmw_proposal_members pm', 'pm.proposal_id = pmw_proposals.id AND pm.role = "ketua"', 'left')
+            ->where('pmw_proposals.period_id', $periodId)
+            ->where('pmw_proposals.leader_user_id', $leaderUserId)
             ->first();
     }
 
@@ -69,18 +75,18 @@ class PmwProposalModel extends Model
         $builder = $db->table('pmw_proposals p');
         $builder->select([
             'p.*',
-            'pr.nama as ketua_nama',
-            'pr.nim as ketua_nim',
-            'pr.jurusan as ketua_jurusan',
-            'pr.prodi as ketua_prodi',
+            'pm.nama as ketua_nama',
+            'pm.nim as ketua_nim',
+            'pm.jurusan as ketua_jurusan',
+            'pm.prodi as ketua_prodi',
             'l.nama as dosen_nama',
             'l.nip as dosen_nip',
             'per.name as period_name',
             'per.year as period_year',
-            '(SELECT COUNT(*) FROM pmw_proposal_members pm WHERE pm.proposal_id = p.id) as member_count',
+            '(SELECT COUNT(*) FROM pmw_proposal_members pm2 WHERE pm2.proposal_id = p.id) as member_count',
             '(SELECT COUNT(*) FROM pmw_documents d WHERE d.proposal_id = p.id AND d.type = "proposal") as doc_count',
         ]);
-        $builder->join('pmw_profiles pr', 'pr.user_id = p.leader_user_id', 'left');
+        $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
         $builder->join('pmw_lecturers l', 'l.id = p.lecturer_id', 'left');
         $builder->join('pmw_periods per', 'per.id = p.period_id', 'left');
         
@@ -104,12 +110,12 @@ class PmwProposalModel extends Model
         $builder = $db->table('pmw_proposals p');
         $builder->select([
             'p.*',
-            'pr.nama as ketua_nama',
-            'pr.nim as ketua_nim',
-            'pr.jurusan as ketua_jurusan',
-            'pr.prodi as ketua_prodi',
-            'pr.phone as ketua_phone',
-            'a.secret as ketua_email',
+            'pm.nama as ketua_nama',
+            'pm.nim as ketua_nim',
+            'pm.jurusan as ketua_jurusan',
+            'pm.prodi as ketua_prodi',
+            'pm.phone as ketua_phone',
+            'pm.email as ketua_email',
             'l.nama as dosen_nama',
             'l.nip as dosen_nip',
             'l.jurusan as dosen_jurusan',
@@ -118,10 +124,9 @@ class PmwProposalModel extends Model
             'per.name as period_name',
             'per.year as period_year',
         ]);
-        $builder->join('pmw_profiles pr', 'pr.user_id = p.leader_user_id', 'left');
+        $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
         $builder->join('pmw_lecturers l', 'l.id = p.lecturer_id', 'left');
         $builder->join('pmw_periods per', 'per.id = p.period_id', 'left');
-        $builder->join('auth_identities a', 'a.user_id = p.leader_user_id AND a.type = "email_password"', 'left');
         $builder->where('p.id', $id);
         
         return $builder->get()->getRowArray();
@@ -137,14 +142,14 @@ class PmwProposalModel extends Model
         $builder = $db->table('pmw_proposals p');
         $builder->select([
             'p.*',
-            'pr.nama as ketua_nama',
-            'pr.nim as ketua_nim',
+            'pm.nama as ketua_nama',
+            'pm.nim as ketua_nim',
             'l.nama as dosen_nama',
             'per.name as period_name',
             'per.year as period_year',
             '(SELECT id FROM pmw_documents WHERE proposal_id = p.id AND doc_key = "pitching_ppt" LIMIT 1) as pitching_ppt_id'
         ]);
-        $builder->join('pmw_profiles pr', 'pr.user_id = p.leader_user_id', 'left');
+        $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
         $builder->join('pmw_lecturers l', 'l.id = p.lecturer_id', 'left');
         $builder->join('pmw_periods per', 'per.id = p.period_id', 'left');
         
@@ -171,14 +176,14 @@ class PmwProposalModel extends Model
         $builder = $db->table('pmw_proposals p');
         $builder->select([
             'p.*',
-            'pr.nama as ketua_nama',
-            'pr.nim as ketua_nim',
+            'pm.nama as ketua_nama',
+            'pm.nim as ketua_nim',
             'l.nama as dosen_nama',
             'per.name as period_name',
             'per.year as period_year',
             '(SELECT id FROM pmw_documents WHERE proposal_id = p.id AND doc_key = "pitching_ppt" LIMIT 1) as pitching_ppt_id'
         ]);
-        $builder->join('pmw_profiles pr', 'pr.user_id = p.leader_user_id', 'left');
+        $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
         $builder->join('pmw_lecturers l', 'l.id = p.lecturer_id', 'left');
         $builder->join('pmw_periods per', 'per.id = p.period_id', 'left');
         

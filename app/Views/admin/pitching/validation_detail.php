@@ -2,7 +2,14 @@
 
 <?= $this->section('content') ?>
 
-<div class="space-y-8">
+<div class="space-y-8" x-data="{
+    handleMouseMove(e) {
+        const card = e.currentTarget;
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+        card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+    }
+}">
 
     <!-- ================================================================
          1. PAGE HEADING
@@ -45,7 +52,7 @@
     <!-- ================================================================
          2. PROPOSAL INFO CARD
     ================================================================= -->
-    <div class="card-premium overflow-hidden animate-stagger delay-100">
+    <div class="card-premium overflow-hidden animate-stagger delay-100" @mousemove="handleMouseMove">
         <div class="px-5 sm:px-7 py-4 sm:py-5 border-b border-sky-50 bg-white/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
                 <h3 class="font-display text-base font-bold text-(--text-heading)">
@@ -95,7 +102,7 @@
     ================================================================= -->
     <div class="grid lg:grid-cols-2 gap-6 animate-stagger delay-200">
         <!-- Tim Proposal -->
-        <div class="card-premium overflow-hidden">
+        <div class="card-premium overflow-hidden" @mousemove="handleMouseMove">
             <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60">
                 <h3 class="font-display text-base font-bold text-(--text-heading)">
                     <i class="fas fa-users text-teal-500 mr-2"></i>
@@ -127,7 +134,7 @@
         </div>
 
         <!-- Dosen Pendamping -->
-        <div class="card-premium overflow-hidden">
+        <div class="card-premium overflow-hidden" @mousemove="handleMouseMove">
             <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60">
                 <h3 class="font-display text-base font-bold text-(--text-heading)">
                     <i class="fas fa-chalkboard-user text-violet-500 mr-2"></i>
@@ -173,7 +180,7 @@
     ================================================================= -->
     <div class="grid lg:grid-cols-3 gap-6 animate-stagger delay-300">
         <!-- Video Player -->
-        <div class="lg:col-span-2 card-premium overflow-hidden">
+        <div class="lg:col-span-2 card-premium overflow-hidden" @mousemove="handleMouseMove">
             <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60">
                 <h3 class="font-display text-base font-bold text-(--text-heading)">
                     <i class="fas fa-play-circle text-sky-500 mr-2"></i>
@@ -211,7 +218,7 @@
         </div>
 
         <!-- PPT / PDF Card -->
-        <div class="card-premium overflow-hidden">
+        <div class="card-premium overflow-hidden" @mousemove="handleMouseMove">
             <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60 flex items-center justify-between">
                 <h3 class="font-display text-base font-bold text-(--text-heading)">
                     <i class="fas fa-file-powerpoint text-orange-500 mr-2"></i>
@@ -253,7 +260,7 @@
     <!-- ================================================================
          5. LECTURER FEEDBACK
     ================================================================= -->
-    <div class="card-premium overflow-hidden animate-stagger delay-400 border-l-4 border-l-emerald-500 bg-emerald-50/30">
+    <div class="card-premium overflow-hidden animate-stagger delay-400 border-l-4 border-l-emerald-500 bg-emerald-50/30" @mousemove="handleMouseMove">
         <div class="px-5 sm:px-7 py-4 border-b border-emerald-100 bg-white/60">
             <h3 class="font-display text-base font-bold text-(--text-heading)">
                 <i class="fas fa-comments text-emerald-500 mr-2"></i>
@@ -284,7 +291,7 @@
     <!-- ================================================================
          6. VALIDATION FORM
     ================================================================= -->
-    <div class="card-premium overflow-hidden animate-stagger delay-500 border-l-4 border-l-sky-500">
+    <div class="card-premium overflow-hidden animate-stagger delay-500 border-l-4 border-l-sky-500" @mousemove="handleMouseMove">
         <div class="px-5 sm:px-7 py-4 sm:py-5 border-b border-sky-50 bg-white/60">
             <h3 class="font-display text-base font-bold text-(--text-heading)">
                 <i class="fas fa-clipboard-check text-sky-500 mr-2"></i>

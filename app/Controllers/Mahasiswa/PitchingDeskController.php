@@ -30,9 +30,11 @@ class PitchingDeskController extends BaseController
         // Get active period
         $activePeriod = $periodModel->getActive();
 
-        // Get proposal with status approved for this user
-        $proposal = $proposalModel->where('leader_user_id', $user->id)
-            ->where('status', 'approved')
+        // Get proposal with status approved for this user, including leader name from members table
+        $proposal = $proposalModel->select('pmw_proposals.*, pm.nama as ketua_nama')
+            ->join('pmw_proposal_members pm', 'pm.proposal_id = pmw_proposals.id AND pm.role = "ketua"', 'left')
+            ->where('pmw_proposals.leader_user_id', $user->id)
+            ->where('pmw_proposals.status', 'approved')
             ->first();
 
         // Check phase schedule
@@ -75,8 +77,10 @@ class PitchingDeskController extends BaseController
         $proposalModel = new PmwProposalModel();
         $documentModel = new PmwDocumentModel();
 
-        $proposal = $proposalModel->where('leader_user_id', $user->id)
-            ->where('status', 'approved')
+        $proposal = $proposalModel->select('pmw_proposals.*, pm.nama as ketua_nama')
+            ->join('pmw_proposal_members pm', 'pm.proposal_id = pmw_proposals.id AND pm.role = "ketua"', 'left')
+            ->where('pmw_proposals.leader_user_id', $user->id)
+            ->where('pmw_proposals.status', 'approved')
             ->first();
 
         if (!$proposal) {
@@ -162,8 +166,10 @@ class PitchingDeskController extends BaseController
         $user = auth()->user();
         $proposalModel = new PmwProposalModel();
 
-        $proposal = $proposalModel->where('leader_user_id', $user->id)
-            ->where('status', 'approved')
+        $proposal = $proposalModel->select('pmw_proposals.*, pm.nama as ketua_nama')
+            ->join('pmw_proposal_members pm', 'pm.proposal_id = pmw_proposals.id AND pm.role = "ketua"', 'left')
+            ->where('pmw_proposals.leader_user_id', $user->id)
+            ->where('pmw_proposals.status', 'approved')
             ->first();
 
         if (!$proposal) {
@@ -207,8 +213,10 @@ class PitchingDeskController extends BaseController
         $user = auth()->user();
         $proposalModel = new PmwProposalModel();
 
-        $proposal = $proposalModel->where('leader_user_id', $user->id)
-            ->where('status', 'approved')
+        $proposal = $proposalModel->select('pmw_proposals.*, pm.nama as ketua_nama')
+            ->join('pmw_proposal_members pm', 'pm.proposal_id = pmw_proposals.id AND pm.role = "ketua"', 'left')
+            ->where('pmw_proposals.leader_user_id', $user->id)
+            ->where('pmw_proposals.status', 'approved')
             ->first();
 
         if (!$proposal) {
