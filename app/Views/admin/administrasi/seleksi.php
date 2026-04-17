@@ -46,23 +46,23 @@
          3. FILTER TABS
     ================================================================= -->
     <div class="flex flex-wrap gap-2 animate-stagger delay-300">
-        <a href="<?= base_url('admin/seleksi-administrasi') ?>" 
+        <a href="<?= base_url('admin/administrasi/seleksi') ?>" 
            class="btn-outline btn-sm <?= !$statusFilter ? 'bg-sky-500 text-white border-sky-500 hover:bg-sky-600' : '' ?>">
             Semua
         </a>
-        <a href="<?= base_url('admin/seleksi-administrasi?status=submitted') ?>" 
+        <a href="<?= base_url('admin/administrasi/seleksi?status=submitted') ?>" 
            class="btn-outline btn-sm <?= $statusFilter === 'submitted' ? 'bg-yellow-500 text-white border-yellow-500 hover:bg-yellow-600' : '' ?>">
             <i class="fas fa-clock mr-1"></i> Menunggu
         </a>
-        <a href="<?= base_url('admin/seleksi-administrasi?status=revision') ?>" 
+        <a href="<?= base_url('admin/administrasi/seleksi?status=revision') ?>" 
            class="btn-outline btn-sm <?= $statusFilter === 'revision' ? 'bg-orange-500 text-white border-orange-500 hover:bg-orange-600' : '' ?>">
             <i class="fas fa-rotate mr-1"></i> Revisi
         </a>
-        <a href="<?= base_url('admin/seleksi-administrasi?status=approved') ?>" 
+        <a href="<?= base_url('admin/administrasi/seleksi?status=approved') ?>" 
            class="btn-outline btn-sm <?= $statusFilter === 'approved' ? 'bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-600' : '' ?>">
             <i class="fas fa-check mr-1"></i> Disetujui
         </a>
-        <a href="<?= base_url('admin/seleksi-administrasi?status=rejected') ?>" 
+        <a href="<?= base_url('admin/administrasi/seleksi?status=rejected') ?>" 
            class="btn-outline btn-sm <?= $statusFilter === 'rejected' ? 'bg-rose-500 text-white border-rose-500 hover:bg-rose-600' : '' ?>">
             <i class="fas fa-xmark mr-1"></i> Ditolak
         </a>
@@ -202,14 +202,14 @@
                         <td class="text-right whitespace-nowrap">
                             <div class="flex items-center justify-end gap-1.5 sm:gap-2">
                                 <!-- Detail -->
-                                <a href="<?= base_url('admin/seleksi-administrasi/' . $proposal['id']) ?>"
+                                <a href="<?= base_url('admin/administrasi/seleksi/' . $proposal['id']) ?>"
                                    class="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg bg-violet-50 text-violet-500 hover:bg-violet-500 hover:text-white transition-all"
                                    title="Detail & Validasi">
                                     <i class="fas fa-eye text-[11px] sm:text-xs"></i>
                                 </a>
                                 <!-- Validasi (hanya submitted/revision) -->
                                 <?php if (in_array($proposal['status'], ['submitted', 'revision'])): ?>
-                                <a href="<?= base_url('admin/seleksi-administrasi/' . $proposal['id']) ?>"
+                                <a href="<?= base_url('admin/administrasi/seleksi/' . $proposal['id']) ?>"
                                    class="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg bg-sky-50 text-sky-500 hover:bg-sky-500 hover:text-white transition-all"
                                    title="Validasi">
                                     <i class="fas fa-clipboard-check text-[11px] sm:text-xs"></i>
@@ -217,7 +217,7 @@
                                 <?php endif; ?>
                                 <!-- Hapus (hanya rejected) -->
                                 <?php if ($proposal['status'] === 'rejected'): ?>
-                                <a href="<?= base_url('admin/seleksi-administrasi/' . $proposal['id'] . '/hapus') ?>" 
+                                <a href="<?= base_url('admin/administrasi/seleksi/' . $proposal['id'] . '/hapus') ?>" 
                                    class="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all"
                                    title="Hapus Proposal"
                                    onclick="return confirm('Yakin ingin menghapus proposal ini secara permanen?')">

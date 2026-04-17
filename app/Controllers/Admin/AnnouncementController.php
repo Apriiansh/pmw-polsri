@@ -125,8 +125,26 @@ class AnnouncementController extends BaseController
     public function publish(int $announcementId)
     {
         $service = new PmwAnnouncementService();
+        $selectionService = new \App\Services\PmwSelectionService();
+        $notifModel = new \App\Models\NotificationModel();
 
         if ($service->publishAnnouncement($announcementId)) {
+            // Get announcement to find the period
+            $announcement = $service->getAnnouncementById($announcementId);
+            
+            if ($announcement) {
+                // Broadcast to all teams that passed Stage 1 (Wawancara) in this period
+                $teams = $selectionService->getPassedStage1Teams((int)$announcement->period_id);
+                
+                $db = \Config\Database::connect();
+                foreach ($teams as $team) {
+                    $prop = $db->table('pmw_proposals')->select('leader_user_id')->where('id', $team['id'])->get()->getRow();
+                    if ($prop) {
+                        $notifModel->createAnnouncementPublishedNotification((int)$prop->leader_user_id);
+                    }
+                }
+            }
+
             return redirect()->back()->with('success', 'Pengumuman berhasil dipublish.');
         }
 

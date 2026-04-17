@@ -37,11 +37,14 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('users/delete/(:num)', 'AdminController::deleteUser/$1');
 
         // Tahap 2 - Seleksi Administrasi
-        $routes->get('seleksi-administrasi', 'Admin\\ValidationController::seleksiAdministrasi');
-        $routes->get('seleksi-administrasi/(:num)', 'Admin\\ValidationController::detailProposal/$1');
-        $routes->post('seleksi-administrasi/(:num)/validasi', 'Admin\\ValidationController::validasiAdministrasi/$1');
-        $routes->get('seleksi-administrasi/(:num)/hapus', 'Admin\\ValidationController::hapusProposal/$1');
-        $routes->get('seleksi-administrasi/doc/(:num)', 'Admin\\ValidationController::downloadDoc/$1');
+        $routes->get('validasi', 'Admin\\ValidationController::seleksiAdministrasi'); // Alias for notifications
+        $routes->group('administrasi', static function ($routes) {
+            $routes->get('seleksi', 'Admin\\ValidationController::seleksiAdministrasi');
+            $routes->get('seleksi/(:num)', 'Admin\\ValidationController::detailProposal/$1');
+            $routes->post('seleksi/(:num)/validasi', 'Admin\\ValidationController::validasiAdministrasi/$1');
+            $routes->get('seleksi/(:num)/hapus', 'Admin\\ValidationController::hapusProposal/$1');
+            $routes->get('seleksi/doc/(:num)', 'Admin\\ValidationController::downloadDoc/$1');
+        });
 
         $routes->get('cms', 'AdminController::cms');
 
@@ -165,6 +168,13 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->post('guidance/schedule', 'Mentor\\GuidanceController::createSchedule');
         $routes->post('guidance/verify/(:num)', 'Mentor\\GuidanceController::verify/$1');
         $routes->get('guidance/file/(:any)', 'Mentor\\GuidanceController::viewFile/$1');
+
+    // Notifications Routes - All authenticated users
+    $routes->get('notifications', 'NotificationsController::index');
+    $routes->post('notifications/mark-read/(:num)', 'NotificationsController::markAsRead/$1');
+    $routes->post('notifications/mark-all-read', 'NotificationsController::markAllAsRead');
+    $routes->get('notifications/unread-count', 'NotificationsController::unreadCount');
+    $routes->get('notifications/recent', 'NotificationsController::recent');
 
     // Dev Tools
     $routes->get('dev/ui', 'Dev\UI::index');

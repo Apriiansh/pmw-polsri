@@ -7,12 +7,13 @@ use App\Models\LecturerModel;
 use App\Models\ProfileModel;
 use App\Models\PmwDocumentModel;
 use App\Models\PmwPeriodModel;
+use App\Models\PmwScheduleModel;
 use App\Models\Proposal\PmwProposalMemberModel;
 use App\Models\Proposal\PmwProposalModel;
-use App\Models\PmwScheduleModel;
 use App\Models\Proposal\PmwProposalAssignmentModel;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\Exceptions\PageNotFoundException;
+use App\Models\NotificationModel;
 
 class ProposalController extends BaseController
 {
@@ -28,6 +29,8 @@ class ProposalController extends BaseController
 
     public function index()
     {
+        $this->checkAndFlashNotifications();
+
         $periodModel   = new PmwPeriodModel();
         $scheduleModel = new PmwScheduleModel();
         $proposalModel = new PmwProposalModel();
@@ -61,6 +64,33 @@ class ProposalController extends BaseController
         ]);
     }
 
+    /**
+     * Check for unread notifications and flash as toast messages
+     */
+    private function checkAndFlashNotifications(): void
+    {
+        $user = auth()->user();
+        if (!$user) return;
+
+        $notificationModel = new NotificationModel();
+        $unread = $notificationModel->getUnread((int) $user->id, 3);
+
+        foreach ($unread as $notif) {
+            $type = match ($notif['type']) {
+                'proposal_approved' => 'success',
+                'proposal_rejected' => 'error',
+                'proposal_revision' => 'warning',
+                default => 'info',
+            };
+
+            // Flash as toast notification
+            session()->setFlashdata($type, $notif['message']);
+
+            // Mark as read so it won't show again
+            $notificationModel->markAsRead((int) $notif['id']);
+        }
+    }
+
     public function create()
     {
         $periodModel  = new PmwPeriodModel();
@@ -82,6 +112,8 @@ class ProposalController extends BaseController
 
     public function edit(int $id)
     {
+        $this->checkAndFlashNotifications();
+
         $proposalModel = new PmwProposalModel();
         $proposal = $proposalModel->find($id);
         if (! $proposal) {
@@ -473,6 +505,19 @@ class ProposalController extends BaseController
             'status'       => 'submitted',
             'submitted_at' => date('Y-m-d H:i:s'),
         ]);
+
+        // Create notification for admins
+        $notificationModel = new NotificationModel();
+        $memberModel = new PmwProposalMemberModel();
+        $ketua = $memberModel->where('proposal_id', $id)
+                             ->where('role', 'ketua')
+                             ->first();
+
+        $notificationModel->createProposalNotification(
+            $id,
+            $proposal['nama_usaha'] ?? 'Tanpa Nama',
+            $ketua['nama'] ?? 'Ketua Tim'
+        );
     }
 
     public function downloadDoc(int $docId)

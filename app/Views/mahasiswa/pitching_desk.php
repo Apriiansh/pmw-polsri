@@ -63,6 +63,46 @@
             </div>
         </div>
 
+        <!-- ================================================================
+             Notification Alert (New Module)
+        ================================================================= -->
+        <?php 
+        $hasDosenNote = !empty($proposal['pitching_dosen_catatan']) && $proposal['pitching_dosen_status'] !== 'approved' && $proposal['pitching_dosen_status'] !== 'pending';
+        $hasAdminNote = !empty($proposal['pitching_admin_catatan']) && $proposal['pitching_admin_status'] !== 'approved' && $proposal['pitching_admin_status'] !== 'pending';
+        
+        if ($hasDosenNote || $hasAdminNote): 
+            $note = $hasAdminNote ? $proposal['pitching_admin_catatan'] : $proposal['pitching_dosen_catatan'];
+            $status = $hasAdminNote ? $proposal['pitching_admin_status'] : $proposal['pitching_dosen_status'];
+            $source = $hasAdminNote ? 'Admin/UPAPKK' : 'Dosen Pendamping';
+            
+            $alertClasses = [
+                'revision' => 'bg-orange-50 border-orange-200 text-orange-800',
+                'rejected' => 'bg-rose-50 border-rose-200 text-rose-800',
+            ];
+            $alertIcons = [
+                'revision' => 'fa-circle-exclamation text-orange-500',
+                'rejected' => 'fa-circle-xmark text-rose-500',
+            ];
+            
+            $colorClass = $alertClasses[$status] ?? 'bg-slate-50 border-slate-200 text-slate-800';
+            $icon = $alertIcons[$status] ?? 'fa-info-circle text-slate-400';
+        ?>
+            <div class="p-5 rounded-2xl border <?= $colorClass ?> animate-in slide-in-from-top-2 duration-500 shadow-sm mb-6">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-full bg-white/50 flex items-center justify-center shadow-sm text-neutral-600">
+                        <i class="fas <?= $icon ?> text-lg"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-black text-xs uppercase tracking-widest opacity-80">Pesan dari <?= $source ?></h4>
+                        <p class="text-[10px] font-bold uppercase"><?= $status === 'revision' ? 'Perlu Perbaikan' : 'Pitching Ditolak' ?></p>
+                    </div>
+                </div>
+                <div class="text-sm leading-relaxed whitespace-pre-line bg-white/30 p-4 rounded-xl border border-white/20 italic text-slate-700">
+                    "<?= esc($note) ?>"
+                </div>
+            </div>
+        <?php endif; ?>
+
         <?php $isLocked = ($proposal['pitching_admin_status'] === 'approved'); ?>
 
         <?php if ($proposal['pitching_dosen_status'] === 'approved' && $proposal['pitching_admin_status'] === 'approved'): ?>
@@ -109,26 +149,29 @@
                         <div class="hidden md:block absolute top-6 left-0 w-full h-0.5 bg-slate-100 -z-0"></div>
 
                         <?php
+                        $isComplete = ($pptDoc && (!$isBerkembang || !empty($proposal['video_url'])));
+
                         $steps = [
                             [
                                 'label'  => 'Validasi Dosen',
-                                'status' => $proposal['pitching_dosen_status'],
+                                'status' => (!$pptDoc ? 'empty' : $proposal['pitching_dosen_status']),
                                 'note'   => $proposal['pitching_dosen_catatan'],
                                 'icon'   => 'fa-user-tie'
                             ],
                             [
                                 'label'  => 'Validasi UPAPKK',
-                                'status' => $proposal['pitching_admin_status'],
+                                'status' => (!$pptDoc ? 'empty' : $proposal['pitching_admin_status']),
                                 'note'   => $proposal['pitching_admin_catatan'],
                                 'icon'   => 'fa-award'
                             ]
                         ];
 
                         $stepColors = [
-                            'pending'  => ['bg' => 'bg-amber-500', 'text' => 'text-amber-500', 'light' => 'bg-amber-50', 'icon' => 'fa-clock'],
-                            'approved' => ['bg' => 'bg-emerald-500', 'text' => 'text-emerald-500', 'light' => 'bg-emerald-50', 'icon' => 'fa-check'],
-                            'revision' => ['bg' => 'bg-orange-500', 'text' => 'text-orange-500', 'light' => 'bg-orange-50', 'icon' => 'fa-rotate'],
-                            'rejected' => ['bg' => 'bg-rose-500', 'text' => 'text-rose-500', 'light' => 'bg-rose-50', 'icon' => 'fa-xmark']
+                            'pending'  => ['bg' => 'bg-amber-500', 'text' => 'text-amber-500', 'light' => 'bg-amber-50', 'icon' => 'fa-clock', 'label' => 'PENDING'],
+                            'approved' => ['bg' => 'bg-emerald-500', 'text' => 'text-emerald-500', 'light' => 'bg-emerald-50', 'icon' => 'fa-check', 'label' => 'DISETUJUI'],
+                            'revision' => ['bg' => 'bg-orange-500', 'text' => 'text-orange-500', 'light' => 'bg-orange-50', 'icon' => 'fa-rotate', 'label' => 'REVISI'],
+                            'rejected' => ['bg' => 'bg-rose-500', 'text' => 'text-rose-500', 'light' => 'bg-rose-50', 'icon' => 'fa-xmark', 'label' => 'DITOLAK'],
+                            'empty'    => ['bg' => 'bg-slate-300', 'text' => 'text-slate-400', 'light' => 'bg-slate-50', 'icon' => 'fa-minus', 'label' => 'BELUM UPLOAD']
                         ];
                         ?>
 
@@ -142,7 +185,7 @@
                                 <div class="text-left md:text-center mt-1">
                                     <p class="text-xs font-black uppercase tracking-tighter text-slate-400"><?= $step['label'] ?></p>
                                     <div class="flex items-center gap-1.5 md:justify-center mt-1">
-                                        <span class="text-[10px] font-black <?= $color['text'] ?> uppercase italic"><?= strtoupper($step['status']) ?></span>
+                                        <span class="text-[10px] font-black <?= $color['text'] ?> uppercase italic"><?= $color['label'] ?></span>
                                         <i class="fas <?= $color['icon'] ?> text-[10px] <?= $color['text'] ?>"></i>
                                     </div>
                                 </div>

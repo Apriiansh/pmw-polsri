@@ -4,6 +4,7 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Models\PmwDocumentModel;
+use App\Models\NotificationModel;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class ValidationController extends BaseController
@@ -134,8 +135,15 @@ class ValidationController extends BaseController
             return redirect()->back()->with('error', 'Gagal memperbarui status proposal');
         }
 
-        // TODO: Send notification to mahasiswa
-        // TODO: Log catatan for mahasiswa to see
+        // Send notification to mahasiswa
+        $notificationModel = new NotificationModel();
+        $notificationModel->createValidationResultNotification(
+            (int) $proposal['leader_user_id'],
+            $id,
+            $proposal['nama_usaha'] ?? 'Tanpa Nama',
+            $newStatus,
+            $catatan
+        );
 
         $statusText = [
             'approved' => 'disetujui',
@@ -144,7 +152,7 @@ class ValidationController extends BaseController
         ];
 
         return redirect()->to('admin/administrasi/seleksi')
-            ->with('message', "Proposal berhasil {$statusText[$newStatus]}");
+            ->with('success', "Proposal berhasil {$statusText[$newStatus]}");
     }
 
     /**

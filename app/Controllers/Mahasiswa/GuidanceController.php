@@ -89,12 +89,22 @@ class GuidanceController extends BaseController
             return $this->response->setStatusCode(404)->setBody('Berkas tidak ditemukan.');
         }
 
-        // TODO: Add security check to ensure student belongs to the team
+        $scheduleModel = new PmwGuidanceScheduleModel();
+        $schedule = $scheduleModel->find(is_array($logbook) ? ($logbook['schedule_id'] ?? 0) : $logbook->schedule_id);
+        
+        if (!$schedule) {
+            return $this->response->setStatusCode(404)->setBody('Jadwal tidak ditemukan.');
+        }
+
+        $proposal = $this->proposalModel->find(is_array($schedule) ? ($schedule['proposal_id'] ?? 0) : $schedule->proposal_id);
+        if (!$proposal || (int)($proposal['leader_user_id'] ?? 0) !== (int)auth()->id()) {
+            return $this->response->setStatusCode(403)->setBody('Akses ditolak.');
+        }
         
         $filePath = '';
-        if ($type === 'photo') $filePath = $logbook->photo_activity;
-        elseif ($type === 'assignment') $filePath = $logbook->assignment_file;
-        elseif ($type === 'nota') $filePath = $logbook->nota_file;
+        if ($type === 'photo') $filePath = $logbook['photo_activity'] ?? $logbook->photo_activity;
+        elseif ($type === 'assignment') $filePath = $logbook['assignment_file'] ?? $logbook->assignment_file;
+        elseif ($type === 'nota') $filePath = $logbook['nota_file'] ?? $logbook->nota_file;
 
         if (empty($filePath)) {
             return $this->response->setStatusCode(404)->setBody('Berkas tidak ditemukan.');

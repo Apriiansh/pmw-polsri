@@ -145,7 +145,7 @@ class ImplementasiController extends BaseController
     public function verify(int $proposalId): ResponseInterface
     {
         $selectionModel = new \App\Models\Selection\PmwSelectionImplementasiModel();
-        
+
         $exists = $selectionModel->where('proposal_id', $proposalId)->first();
         if (!$exists) {
             return redirect()->to('admin/implementasi')->with('error', 'Data implementasi tidak ditemukan');
@@ -170,6 +170,13 @@ class ImplementasiController extends BaseController
                 'revision' => 'direvisi',
                 'rejected' => 'ditolak',
             ][$status];
+
+            // Send Notification
+            $proposal = $this->proposalModel->find($proposalId);
+            if ($proposal) {
+                $notifModel = new \App\Models\NotificationModel();
+                $notifModel->createImplementasiVerificationNotification($proposalId, (int)$proposal['leader_user_id'], $status, $catatan);
+            }
 
             return redirect()->to('admin/implementasi')
                 ->with('success', "Validasi implementasi berhasil {$statusText}");

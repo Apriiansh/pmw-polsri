@@ -157,7 +157,7 @@
                         'icon'  => 'fa-clipboard-check',
                         'id'    => 'seleksi',
                         'children' => [
-                            ['route' => 'admin/seleksi-administrasi', 'label' => 'Administrasi', 'match' => 'admin/seleksi-administrasi'],
+                            ['route' => 'admin/administrasi/seleksi', 'label' => 'Administrasi', 'match' => 'admin/administrasi/seleksi'],
                             ['route' => 'admin/pitching-desk',        'label' => 'Pitching',     'match' => 'admin/pitching-desk'],
                             ['route' => 'admin/perjanjian',           'label' => 'Perjanjian',   'match' => 'admin/perjanjian'],
                         ]
@@ -444,11 +444,93 @@
 
                     <!-- Actions -->
                     <div class="flex items-center gap-1 md:gap-2">
-                        <!-- Notification Bell -->
-                        <button class="relative w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-sky-500 hover:bg-sky-50 border border-transparent hover:border-sky-100 transition-all duration-300 group">
-                            <i class="fas fa-bell text-base"></i>
-                            <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 border-2 border-white rounded-full"></span>
-                        </button>
+                        <!-- Notification Bell Dropdown -->
+                        <?php
+                        $notificationModel = new \App\Models\NotificationModel();
+                        $notifUser = auth()->user();
+                        $isAdmin = $notifUser->inGroup('admin');
+                        $notifUserId = $isAdmin ? null : (int) $notifUser->id;
+                        $unreadCount = $notificationModel->countUnread($notifUserId);
+                        $notifications = $notificationModel->getUnread($notifUserId, 5);
+                        ?>
+                        <div class="relative" x-data="{ isNotifOpen: false }" @click.outside="isNotifOpen = false">
+                            <button @click="isNotifOpen = !isNotifOpen"
+                                class="relative w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-sky-500 hover:bg-sky-50 border border-transparent hover:border-sky-100 transition-all duration-300 group">
+                                <i class="fas fa-bell text-base"></i>
+                                <?php if ($unreadCount > 0): ?>
+                                    <span class="absolute -top-1 -right-1 flex h-5 w-5">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                        <span class="relative inline-flex h-5 w-5 bg-rose-500 text-white text-[10px] font-black items-center justify-center rounded-full border-2 border-white shadow-sm">
+                                            <?= $unreadCount > 9 ? '9+' : $unreadCount ?>
+                                        </span>
+                                    </span>
+                                <?php endif; ?>
+                            </button>
+
+                            <!-- Notification Dropdown -->
+                            <div x-show="isNotifOpen"
+                                x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+                                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                x-transition:leave="transition ease-in duration-150"
+                                x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
+                                class="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl shadow-slate-200/50 border border-sky-100 py-2 z-50"
+                                x-cloak>
+
+                                <!-- Header -->
+                                <div class="px-4 py-3 border-b border-sky-50 flex items-center justify-between">
+                                    <p class="text-sm font-bold text-(--text-heading)">Notifikasi</p>
+                                    <?php if ($unreadCount > 0): ?>
+                                        <span class="px-2 py-0.5 bg-rose-100 text-rose-700 text-[10px] font-black rounded-full">
+                                            <?= $unreadCount ?> baru
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+
+                                <!-- Notification List -->
+                                <div class="max-h-72 overflow-y-auto">
+                                    <?php if (empty($notifications)): ?>
+                                        <div class="px-4 py-6 text-center text-slate-400">
+                                            <i class="fas fa-bell-slash text-2xl mb-2"></i>
+                                            <p class="text-xs">Tidak ada notifikasi baru</p>
+                                        </div>
+                                    <?php else: ?>
+                                        <?php foreach ($notifications as $notif): ?>
+                                            <a href="<?= base_url($notif['link'] ?? '#') ?>?notif=<?= $notif['id'] ?>"
+                                               class="flex items-start gap-3 px-4 py-3 hover:bg-sky-50 transition-colors border-b border-slate-50 last:border-0">
+                                                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0
+                                                    <?= $notif['type'] === 'proposal_submitted' ? 'bg-emerald-100 text-emerald-600' : 'bg-sky-100 text-sky-600' ?>">
+                                                    <i class="fas <?= $notif['type'] === 'proposal_submitted' ? 'fa-file-import' : 'fa-info' ?> text-xs"></i>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-xs font-bold text-(--text-heading) leading-tight truncate">
+                                                        <?= esc($notif['title']) ?>
+                                                    </p>
+                                                    <p class="text-[11px] text-slate-500 leading-snug line-clamp-2">
+                                                        <?= esc($notif['message']) ?>
+                                                    </p>
+                                                    <p class="text-[10px] text-slate-400 mt-1">
+                                                        <?= time_elapsed_string($notif['created_at']) ?>
+                                                    </p>
+                                                </div>
+                                                <?php if (!$notif['is_read']): ?>
+                                                    <span class="w-2 h-2 bg-sky-500 rounded-full shrink-0 mt-1"></span>
+                                                <?php endif; ?>
+                                            </a>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </div>
+
+                                <!-- Footer -->
+                                <div class="border-t border-sky-50 px-4 py-2">
+                                    <a href="<?= base_url('notifications') ?>" class="text-xs font-semibold text-sky-600 hover:text-sky-700 flex items-center justify-center gap-1 py-1">
+                                        Lihat Semua
+                                        <i class="fas fa-arrow-right text-[10px]"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Divider -->
@@ -665,7 +747,7 @@
     </aside>
 
     <!-- Centralized Toast Notification System -->
-    <div x-data="toastManager()"
+    <div x-data="toastManager(<?= htmlspecialchars(json_encode($notifications), ENT_QUOTES, 'UTF-8') ?>)"
         @toast-notify.window="add($event.detail)"
         class="fixed top-6 right-6 z-9999 flex flex-col gap-3 w-full max-w-sm pointer-events-none">
 
@@ -677,7 +759,7 @@
                 x-transition:leave="transition ease-in duration-200 transform"
                 x-transition:leave-start="translate-x-0 opacity-100"
                 x-transition:leave-end="translate-x-4 opacity-0"
-                @click="remove(item.id)"
+                @click="item.link ? window.location.href = item.link : remove(item.id)"
                 class="pointer-events-auto bg-white/90 backdrop-blur-md border rounded-2xl shadow-2xl p-4 flex items-center gap-4 group cursor-pointer hover:scale-[1.02] transition-transform"
                 :class="{
                     'border-emerald-100 bg-emerald-50/80': item.type === 'success',
@@ -716,12 +798,13 @@
     </div>
 
     <script>
-        function toastManager() {
+        function toastManager(dbNotifs = []) {
             return {
                 items: [],
+                dbNotifs: dbNotifs,
 
                 init() {
-                    // Auto-hydrate from PHP Flash Messages
+                    // 1. Auto-hydrate from PHP Flash Messages
                     <?php if (session()->getFlashdata('success')): ?>
                         this.add({
                             message: "<?= addslashes(session()->getFlashdata('success')) ?>",
@@ -742,6 +825,39 @@
                             type: 'info'
                         });
                     <?php endif; ?>
+
+                    <?php if (session()->getFlashdata('warning')): ?>
+                        this.add({
+                            message: "<?= addslashes(session()->getFlashdata('warning')) ?>",
+                            type: 'warning'
+                        });
+                    <?php endif; ?>
+
+                    // 2. Handle Database Notifications
+                    if (this.dbNotifs.length > 0) {
+                        const lastNotifiedId = parseInt(localStorage.getItem('pmw_last_notified_id') || '0');
+                        let maxId = lastNotifiedId;
+
+                        this.dbNotifs.forEach(notif => {
+                            if (notif.id > lastNotifiedId) {
+                                // Map notification type to toast type
+                                let toastType = 'info';
+                                if (notif.type.includes('approved')) toastType = 'success';
+                                if (notif.type.includes('rejected')) toastType = 'error';
+                                if (notif.type.includes('revision')) toastType = 'warning';
+
+                                this.add({
+                                    message: `${notif.title}: ${notif.message}`,
+                                    type: toastType,
+                                    link: notif.link ? `<?= base_url() ?>${notif.link}?notif=${notif.id}` : null
+                                });
+
+                                if (notif.id > maxId) maxId = notif.id;
+                            }
+                        });
+
+                        localStorage.setItem('pmw_last_notified_id', maxId.toString());
+                    }
                 },
 
                 add(detail) {
@@ -750,7 +866,8 @@
                         id: id,
                         show: false,
                         message: detail.message || 'No message provided',
-                        type: detail.type || 'info'
+                        type: detail.type || 'info',
+                        link: detail.link || null
                     });
 
                     // Trigger enter animation

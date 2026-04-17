@@ -58,6 +58,14 @@ class GuidanceController extends BaseController
             
             $this->guidanceService->createSchedule(auth()->id(), $data);
             
+            // Send Notification
+            $proposal = $this->proposalModel->find($data['proposal_id']);
+            if ($proposal) {
+                $notifModel = new \App\Models\NotificationModel();
+                $timeStr = ($data['schedule_date'] ?? '') . ' ' . ($data['schedule_time'] ?? '');
+                $notifModel->createGuidanceScheduleNotification((int)$proposal['leader_user_id'], $timeStr, 'Lokasi sesuai kesepakatan');
+            }
+            
             return redirect()->back()->with('success', 'Jadwal bimbingan berhasil dibuat.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
@@ -75,6 +83,21 @@ class GuidanceController extends BaseController
             
             $this->guidanceService->verifyLogbook($logbookId, $status, $note);
             
+            // Send Notification
+            $db = \Config\Database::connect();
+            $logbook = $db->table('pmw_guidance_logbooks gl')
+                ->select('gl.status, gs.schedule_date, p.leader_user_id')
+                ->join('pmw_guidance_schedules gs', 'gs.id = gl.schedule_id')
+                ->join('pmw_proposals p', 'p.id = gs.proposal_id')
+                ->where('gl.id', $logbookId)
+                ->get()
+                ->getRow();
+
+            if ($logbook) {
+                $notifModel = new \App\Models\NotificationModel();
+                $notifModel->createGuidanceVerificationNotification((int)$logbook->leader_user_id, $logbook->schedule_date, $status === 'approved' ? 'verified' : 'pending');
+            }
+
             return redirect()->back()->with('success', 'Verifikasi bimbingan berhasil disimpan.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());

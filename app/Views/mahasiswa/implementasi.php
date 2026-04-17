@@ -176,10 +176,9 @@
                         <?php endif; ?>
                     </div>
 
-                    <?php if ($canEdit): ?>
                         <div class="flex items-center gap-1 shrink-0">
-                            <button @click="openEditItem(<?= is_object($item) ? $item->id : $item['id'] ?>, '<?= esc(is_object($item) ? $item->item_title : $item['item_title']) ?>', `<?= esc((is_object($item) ? $item->item_description : ($item['item_description'] ?? '')) ?: '') ?>`, <?= is_object($item) ? $item->price : $item['price'] ?>)"
-                                class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:bg-sky-50 hover:text-sky-600 transition-all">
+                            <button @click="openEditItem(<?= is_object($item) ? $item->id : $item['id'] ?>, <?= htmlspecialchars(json_encode(is_object($item) ? $item->item_title : $item['item_title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode((is_object($item) ? $item->item_description : ($item['item_description'] ?? '')) ?: ''), ENT_QUOTES, 'UTF-8') ?>, <?= is_object($item) ? $item->price : $item['price'] ?>)"
+                                class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:bg-sky-50 hover:text-sky-600 border border-transparent hover:border-sky-100 transition-all bg-white shadow-sm hover:shadow-sky-100">
                                 <i class="fas fa-pen-to-square text-sm"></i>
                             </button>
                             <button @click="deleteItem(<?= is_object($item) ? $item->id : $item['id'] ?>)"
@@ -187,7 +186,6 @@
                                     <i class="fas fa-trash-can text-sm"></i>
                                 </button>
                             </div>
-                        <?php endif; ?>
                     </div>
 
                     <!-- Photos Section -->

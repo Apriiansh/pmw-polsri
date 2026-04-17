@@ -165,6 +165,11 @@ class WawancaraController extends BaseController
             }
 
             $db->transCommit();
+
+            // Send Notification
+            $notifModel = new \App\Models\NotificationModel();
+            $notifModel->createWawancaraValidationNotification($id, (int)$proposal['leader_user_id'], $status, $catatan);
+
             return redirect()->to('admin/perjanjian')->with('message', 'Validasi perjanjian berhasil disimpan');
         } catch (\Exception $e) {
             $db->transRollback();

@@ -44,7 +44,7 @@ class TrainingController extends BaseController
         $isPhaseOpen = $phaseAccess->isPhaseOpen($phase);
 
         $user = auth()->user();
-        $isPassed = ($user) ? $selectionService->leaderPassedStage1((int) $activePeriod['id'], (int) $user->id) : false;
+        $isPassed = ($user) ? $selectionService->leaderPassedWawancara((int) $activePeriod['id'], (int) $user->id) : false;
 
         $proposal = null;
         $trainingReport = null;
@@ -96,9 +96,9 @@ class TrainingController extends BaseController
             return redirect()->back()->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        $isPassed = $selectionService->leaderPassedStage1((int) $activePeriod['id'], (int) $user->id);
+        $isPassed = $selectionService->leaderPassedWawancara((int) $activePeriod['id'], (int) $user->id);
         if (!$isPassed) {
-            return redirect()->back()->with('error', 'Anda belum lolos Tahap I.');
+            return redirect()->back()->with('error', 'Anda belum lolos seleksi tahap wawancara/pitching.');
         }
 
         $proposal = $proposalModel->findByPeriodAndLeader((int) $activePeriod['id'], (int) $user->id);
@@ -151,7 +151,7 @@ class TrainingController extends BaseController
             return $this->response->setJSON(['success' => false, 'message' => 'Silakan login terlebih dahulu.']);
         }
 
-        $isPassed = $selectionService->leaderPassedStage1((int) $activePeriod['id'], (int) $user->id);
+        $isPassed = $selectionService->leaderPassedAdministrasi((int) $activePeriod['id'], (int) $user->id);
         if (!$isPassed) {
             return $this->response->setJSON(['success' => false, 'message' => 'Akses ditolak.']);
         }
@@ -186,7 +186,7 @@ class TrainingController extends BaseController
             return redirect()->back()->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        $isPassed = $selectionService->leaderPassedStage1((int) $activePeriod['id'], (int) $user->id);
+        $isPassed = $selectionService->leaderPassedWawancara((int) $activePeriod['id'], (int) $user->id);
         if (!$isPassed) {
             return redirect()->back()->with('error', 'Akses ditolak.');
         }

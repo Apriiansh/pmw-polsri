@@ -6,7 +6,27 @@ use Config\Database;
 
 class PmwSelectionService
 {
-    public function leaderPassedStage1(int $periodId, int $leaderUserId): bool
+    /**
+     * Check if team leader passed Administrasi (Stage 1)
+     */
+    public function leaderPassedAdministrasi(int $periodId, int $leaderUserId): bool
+    {
+        $db = Database::connect();
+
+        $row = $db->table('pmw_proposals p')
+            ->select('p.status')
+            ->where('p.period_id', $periodId)
+            ->where('p.leader_user_id', $leaderUserId)
+            ->get()
+            ->getRowArray();
+
+        return ($row && ($row['status'] ?? null) === 'approved');
+    }
+
+    /**
+     * Check if team leader passed Wawancara (Stage 2)
+     */
+    public function leaderPassedWawancara(int $periodId, int $leaderUserId): bool
     {
         $db = Database::connect();
 

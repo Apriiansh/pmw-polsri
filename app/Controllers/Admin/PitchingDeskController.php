@@ -51,7 +51,7 @@ class PitchingDeskController extends BaseController
         
         $proposal = $proposalModel->getProposalForValidation($id);
         
-        if (!$proposal || $proposal['dosen_status'] !== 'approved') {
+        if (!$proposal || $proposal['pitching_dosen_status'] !== 'approved') {
             return redirect()->to('admin/pitching-desk')->with('error', 'Proposal belum divalidasi dosen atau tidak ditemukan');
         }
 
@@ -83,7 +83,7 @@ class PitchingDeskController extends BaseController
         
         $proposal = $proposalModel->getProposalForValidation($id);
         
-        if (!$proposal || $proposal['dosen_status'] !== 'approved') {
+        if (!$proposal || $proposal['pitching_dosen_status'] !== 'approved') {
             return redirect()->to('admin/pitching-desk')->with('error', 'Akses ditolak');
         }
 
@@ -101,6 +101,16 @@ class PitchingDeskController extends BaseController
         ];
 
         if ($selectionModel->where('proposal_id', $id)->set($updateData)->update()) {
+            // Send notification to mahasiswa
+            $notifModel = new \App\Models\NotificationModel();
+            $notifModel->createPitchingValidationNotification(
+                (int) $proposal['leader_user_id'],
+                $id,
+                $proposal['nama_usaha'] ?? 'Tanpa Nama',
+                $status,
+                $catatan
+            );
+
             return redirect()->to('admin/pitching-desk')->with('message', 'Validasi final berhasil disimpan');
         }
 

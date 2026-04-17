@@ -96,6 +96,70 @@
             </div>
         </div>
     </div>
+ 
+    <!-- ================================================================
+         NEW: KELENGKAPAN PITCHING SUMMARY
+    ================================================================= -->
+    <div class="card-premium overflow-hidden animate-stagger delay-150" @mousemove="handleMouseMove">
+        <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-slate-50/50 flex items-center justify-between">
+            <h3 class="font-display text-base font-bold text-(--text-heading)">
+                <i class="fas fa-tasks text-emerald-500 mr-2"></i>
+                Kelengkapan Pitching
+            </h3>
+            <?php
+            $hasPpt = isset($docsByKey['pitching_ppt']);
+            $hasVideo = !empty($proposal['video_url']);
+            $isBerkembang = $proposal['kategori_wirausaha'] === 'berkembang';
+            $isComplete = $hasPpt && (!$isBerkembang || $hasVideo);
+            ?>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black <?= $isComplete ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white' ?> shadow-sm">
+                <i class="fas <?= $isComplete ? 'fa-check-double' : 'fa-exclamation-triangle' ?>"></i>
+                <?= $isComplete ? 'LENGKAP' : 'BELUM LENGKAP' ?>
+            </span>
+        </div>
+        <div class="p-5 sm:p-7">
+            <div class="grid sm:grid-cols-2 lg:grid-cols-<?= $isBerkembang ? '3' : '2' ?> gap-4">
+                <!-- PPT Status -->
+                <div class="p-4 rounded-2xl border <?= $hasPpt ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100' ?> flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl <?= $hasPpt ? 'bg-emerald-500' : 'bg-rose-500' ?> text-white flex items-center justify-center shrink-0">
+                        <i class="fas fa-file-powerpoint text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-widest opacity-60 <?= $hasPpt ? 'text-emerald-800' : 'text-rose-800' ?>">PPT Presentasi</p>
+                        <p class="text-sm font-bold <?= $hasPpt ? 'text-emerald-900' : 'text-rose-900' ?>">
+                            <?= $hasPpt ? 'Sudah Diunggah' : 'Belum Ada' ?>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Video Status (Optional/Conditional) -->
+                <?php if ($isBerkembang): ?>
+                <div class="p-4 rounded-2xl border <?= $hasVideo ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100' ?> flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl <?= $hasVideo ? 'bg-emerald-500' : 'bg-rose-500' ?> text-white flex items-center justify-center shrink-0">
+                        <i class="fas fa-video text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-widest opacity-60 <?= $hasVideo ? 'text-emerald-800' : 'text-rose-800' ?>">Link Video</p>
+                        <p class="text-sm font-bold <?= $hasVideo ? 'text-emerald-900' : 'text-rose-900' ?>">
+                            <?= $hasVideo ? 'Tersedia' : 'Belum Ada' ?>
+                        </p>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <!-- Dosen Status -->
+                <div class="p-4 rounded-2xl border bg-emerald-50 border-emerald-100 flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                        <i class="fas fa-user-check text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-widest opacity-60 text-emerald-800">Validasi Dosen</p>
+                        <p class="text-sm font-bold text-emerald-900">SUDAH LOLOS</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- ================================================================
          3. TEAM & DOSEN INFO
