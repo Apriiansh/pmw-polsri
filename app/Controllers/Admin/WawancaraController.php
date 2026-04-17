@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\Proposal\PmwProposalModel;
 use App\Models\Proposal\PmwProposalMemberModel;
 use App\Models\PmwDocumentModel;
+use App\Models\MentorModel;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class WawancaraController extends BaseController
@@ -18,41 +19,48 @@ class WawancaraController extends BaseController
     public function index()
     {
         $db = \Config\Database::connect();
-
         $statusFilter = $this->request->getGet('status');
 
-        // Custom query to get proposals in Phase 4
+        // Custom query to get proposals in Phase 4 (Wawancara/Perjanjian)
         $builder = $db->table('pmw_proposals p');
         $builder->select([
             'p.*',
             'pm.nama as ketua_nama',
             'pm.nim as ketua_nim',
             'l.nama as dosen_nama',
+            'm.nama as mentor_nama',
             'per.name as period_name',
             'per.year as period_year',
+            'sw.admin_status as wawancara_status',
             '(SELECT id FROM pmw_documents WHERE proposal_id = p.id AND doc_key = "bukti_perjanjian" LIMIT 1) as bukti_perjanjian_id'
         ]);
         $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
-        $builder->join('pmw_lecturers l', 'l.id = p.lecturer_id', 'left');
+        $builder->join('pmw_proposal_assignments pa', 'pa.proposal_id = p.id', 'left');
+        $builder->join('pmw_lecturers l', 'l.id = pa.lecturer_id', 'left');
+        $builder->join('pmw_mentors m', 'm.id = pa.mentor_id', 'left');
         $builder->join('pmw_periods per', 'per.id = p.period_id', 'left');
+        $builder->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left');
+        $builder->join('pmw_selection_wawancara sw', 'sw.proposal_id = p.id', 'left');
 
         // Filter: Must be approved in Pitching Desk
-        $builder->where('p.pitching_dosen_status', 'approved');
-        $builder->where('p.pitching_admin_status', 'approved');
+        $builder->where('sp.dosen_status', 'approved');
+        $builder->where('sp.admin_status', 'approved');
 
         if ($statusFilter) {
-            $builder->where('p.wawancara_status', $statusFilter);
+            $builder->where('sw.admin_status', $statusFilter);
         }
 
         $builder->orderBy('p.updated_at', 'DESC');
         $proposals = $builder->get()->getResultArray();
 
         // Stats
-        $statsBuilder = $db->table('pmw_proposals');
-        $statsBuilder->select('wawancara_status, COUNT(*) as count');
-        $statsBuilder->where('pitching_dosen_status', 'approved');
-        $statsBuilder->where('pitching_admin_status', 'approved');
-        $statsBuilder->groupBy('wawancara_status');
+        $statsBuilder = $db->table('pmw_proposals p');
+        $statsBuilder->select('sw.admin_status as status, COUNT(*) as count');
+        $statsBuilder->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left');
+        $statsBuilder->join('pmw_selection_wawancara sw', 'sw.proposal_id = p.id', 'left');
+        $statsBuilder->where('sp.dosen_status', 'approved');
+        $statsBuilder->where('sp.admin_status', 'approved');
+        $statsBuilder->groupBy('sw.admin_status');
         $rawStats = $statsBuilder->get()->getResultArray();
 
         $stats = [
@@ -64,7 +72,8 @@ class WawancaraController extends BaseController
         ];
 
         foreach ($rawStats as $rs) {
-            $stats[$rs['wawancara_status']] = (int)$rs['count'];
+            $key = $rs['status'] ?? 'pending';
+            $stats[$key] = (int)$rs['count'];
             $stats['total'] += (int)$rs['count'];
         }
 
@@ -82,8 +91,8 @@ class WawancaraController extends BaseController
     public function detail(int $id)
     {
         $proposalModel = new PmwProposalModel();
-        $memberModel = new PmwProposalMemberModel();
-        $documentModel = new PmwDocumentModel();
+        $memberModel = new \App\Models\Proposal\PmwProposalMemberModel();
+        $documentModel = new \App\Models\PmwDocumentModel();
 
         $proposal = $proposalModel->getProposalForValidation($id);
 
@@ -101,11 +110,15 @@ class WawancaraController extends BaseController
             }
         }
 
+        $mentorModel = new \App\Models\MentorModel();
+        $mentors = $mentorModel->findAll();
+
         return view('admin/perjanjian/detail', [
             'title'     => 'Detail Perjanjian Implementasi | PMW Polsri',
             'proposal'  => $proposal,
             'members'   => $members,
             'docsByKey' => $docsByKey,
+            'mentors'   => $mentors,
         ]);
     }
 
@@ -115,7 +128,10 @@ class WawancaraController extends BaseController
     public function validateAction(int $id)
     {
         $proposalModel = new PmwProposalModel();
-        $proposal = $proposalModel->find($id);
+        $assignmentModel = new \App\Models\Proposal\PmwProposalAssignmentModel();
+        $selectionWawancaraModel = new \App\Models\Selection\PmwSelectionWawancaraModel();
+        
+        $proposal = $proposalModel->getProposalForValidation($id);
 
         if (!$proposal || $proposal['pitching_admin_status'] !== 'approved') {
             return redirect()->to('admin/perjanjian')->with('error', 'Akses ditolak');
@@ -123,22 +139,37 @@ class WawancaraController extends BaseController
 
         $status = $this->request->getPost('status');
         $catatan = $this->request->getPost('catatan');
+        $mentorId = $this->request->getPost('mentor_id');
 
         if (!in_array($status, ['approved', 'rejected', 'revision'])) {
             return redirect()->back()->with('error', 'Status tidak valid');
         }
 
-        $updateData = [
-            'wawancara_status'  => $status,
-            'wawancara_catatan' => $catatan ?: null,
-            'updated_at'        => date('Y-m-d H:i:s'),
-        ];
+        $db = \Config\Database::connect();
+        $db->transBegin();
 
-        if ($proposalModel->update($id, $updateData)) {
+        try {
+            // Update Wawancara Selection
+            $selectionWawancaraModel->where('proposal_id', $id)->set([
+                'admin_status'  => $status,
+                'admin_catatan' => $catatan ?: null,
+                'updated_at'    => date('Y-m-d H:i:s'),
+            ])->update();
+
+            // Update Mentor Assignment
+            if ($mentorId) {
+                $assignmentModel->where('proposal_id', $id)->set([
+                    'mentor_id' => $mentorId,
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ])->update();
+            }
+
+            $db->transCommit();
             return redirect()->to('admin/perjanjian')->with('message', 'Validasi perjanjian berhasil disimpan');
+        } catch (\Exception $e) {
+            $db->transRollback();
+            return redirect()->back()->with('error', 'Gagal menyimpan validasi: ' . $e->getMessage());
         }
-
-        return redirect()->back()->with('error', 'Gagal menyimpan validasi');
     }
 
     /**

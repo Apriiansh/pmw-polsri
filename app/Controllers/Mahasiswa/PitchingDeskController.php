@@ -30,9 +30,17 @@ class PitchingDeskController extends BaseController
         // Get active period
         $activePeriod = $periodModel->getActive();
 
-        // Get proposal with status approved for this user, including leader name from members table
-        $proposal = $proposalModel->select('pmw_proposals.*, pm.nama as ketua_nama')
+        // Get proposal with status approved for this user, including leader name and selection statuses
+        $proposal = $proposalModel->select([
+                'pmw_proposals.*', 
+                'pm.nama as ketua_nama',
+                'sp.dosen_status as pitching_dosen_status',
+                'sp.admin_status as pitching_admin_status',
+                'sp.dosen_catatan as pitching_dosen_catatan',
+                'sp.admin_catatan as pitching_admin_catatan'
+            ])
             ->join('pmw_proposal_members pm', 'pm.proposal_id = pmw_proposals.id AND pm.role = "ketua"', 'left')
+            ->join('pmw_selection_pitching sp', 'sp.proposal_id = pmw_proposals.id', 'left')
             ->where('pmw_proposals.leader_user_id', $user->id)
             ->where('pmw_proposals.status', 'approved')
             ->first();

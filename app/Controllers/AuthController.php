@@ -145,7 +145,6 @@ class AuthController extends BaseController
                 $proposalData = [
                     'period_id' => $activePeriod['id'],
                     'leader_user_id' => $userId,
-                    'lecturer_id' => null,
                     'kategori_usaha' => '',
                     'nama_usaha' => '',
                     'kategori_wirausaha' => 'pemula',

@@ -26,10 +26,10 @@ class PitchingDeskController extends BaseController
         $allProposals = $proposalModel->getProposalsForAdminPitching();
         $stats = [
             'total'     => count($allProposals),
-            'pending'   => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'pending')),
-            'approved'  => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'approved')),
-            'revision'  => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'revision')),
-            'rejected'  => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'rejected')),
+            'pending'   => count(array_filter($allProposals, fn($p) => $p['admin_status'] === 'pending')),
+            'approved'  => count(array_filter($allProposals, fn($p) => $p['admin_status'] === 'approved')),
+            'revision'  => count(array_filter($allProposals, fn($p) => $p['admin_status'] === 'revision')),
+            'rejected'  => count(array_filter($allProposals, fn($p) => $p['admin_status'] === 'rejected')),
         ];
 
         return view('admin/pitching/validation', [
@@ -46,12 +46,12 @@ class PitchingDeskController extends BaseController
     public function detail(int $id)
     {
         $proposalModel = new PmwProposalModel();
-        $memberModel = new PmwProposalMemberModel();
-        $documentModel = new PmwDocumentModel();
+        $memberModel = new \App\Models\Proposal\PmwProposalMemberModel();
+        $documentModel = new \App\Models\PmwDocumentModel();
         
         $proposal = $proposalModel->getProposalForValidation($id);
         
-        if (!$proposal || $proposal['pitching_dosen_status'] !== 'approved') {
+        if (!$proposal || $proposal['dosen_status'] !== 'approved') {
             return redirect()->to('admin/pitching-desk')->with('error', 'Proposal belum divalidasi dosen atau tidak ditemukan');
         }
 
@@ -79,9 +79,11 @@ class PitchingDeskController extends BaseController
     public function validateAction(int $id)
     {
         $proposalModel = new PmwProposalModel();
-        $proposal = $proposalModel->find($id);
+        $selectionModel = new \App\Models\Selection\PmwSelectionPitchingModel();
         
-        if (!$proposal || $proposal['pitching_dosen_status'] !== 'approved') {
+        $proposal = $proposalModel->getProposalForValidation($id);
+        
+        if (!$proposal || $proposal['dosen_status'] !== 'approved') {
             return redirect()->to('admin/pitching-desk')->with('error', 'Akses ditolak');
         }
 
@@ -93,12 +95,12 @@ class PitchingDeskController extends BaseController
         }
 
         $updateData = [
-            'pitching_admin_status'  => $status,
-            'pitching_admin_catatan' => $catatan ?: null,
-            'updated_at'             => date('Y-m-d H:i:s'),
+            'admin_status'  => $status,
+            'admin_catatan' => $catatan ?: null,
+            'updated_at'    => date('Y-m-d H:i:s'),
         ];
 
-        if ($proposalModel->update($id, $updateData)) {
+        if ($selectionModel->where('proposal_id', $id)->set($updateData)->update()) {
             return redirect()->to('admin/pitching-desk')->with('message', 'Validasi final berhasil disimpan');
         }
 

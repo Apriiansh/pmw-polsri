@@ -3,6 +3,7 @@
 /** @var array $proposal */
 /** @var array $members */
 /** @var array $docsByKey */
+/** @var array $mentors */
 ?>
 <?= $this->extend('layouts/main') ?>
 
@@ -80,6 +81,10 @@
                 <div>
                     <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Total Dana Disetujui</p>
                     <p class="text-sm font-bold text-emerald-600">Rp <?= number_format($proposal['total_rab'], 0, ',', '.') ?></p>
+                </div>
+                <div>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Mentor (Praktisi)</p>
+                    <p class="text-sm font-bold text-sky-600"><?= esc($proposal['mentor_nama'] ?? 'Belum Ditentukan') ?></p>
                 </div>
                 <div>
                     <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Status Pitching Desk</p>
@@ -165,6 +170,25 @@
                     <form action="<?= base_url('admin/perjanjian/' . $proposal['id'] . '/validate') ?>" method="post">
                         <?= csrf_field() ?>
                         <div class="p-5 space-y-6">
+                            <!-- Mentor Selection -->
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Pilih Mentor Praktisi</label>
+                                <div class="input-group py-2 group focus-within:ring-4 focus-within:ring-sky-100 transition-all">
+                                    <div class="input-icon text-slate-400 group-focus-within:text-sky-500">
+                                        <i class="fas fa-user-tie text-base"></i>
+                                    </div>
+                                    <select name="mentor_id" class="text-xs bg-transparent border-none focus:ring-0 w-full" required>
+                                        <option value="">-- Pilih Mentor --</option>
+                                        <?php foreach ($mentors as $mentor): ?>
+                                            <option value="<?= $mentor['id'] ?>" <?= (int)$proposal['mentor_id'] === (int)$mentor['id'] ? 'selected' : '' ?>>
+                                                <?= esc($mentor['nama']) ?> - <?= esc($mentor['company']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <p class="text-[9px] text-slate-400">Mentor akan mendampingi tim selama masa implementasi.</p>
+                            </div>
+
                             <!-- Status Radio Cards -->
                             <div class="space-y-3">
                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Hasil Verifikasi Berkas</label>

@@ -7,6 +7,7 @@ use App\Models\Proposal\PmwProposalModel;
 use App\Models\PmwScheduleModel;
 use App\Models\PmwPeriodModel;
 use App\Models\PmwDocumentModel;
+use App\Services\PmwSelectionService;
 use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\HTTP\IncomingRequest;
 
@@ -22,12 +23,16 @@ class WawancaraController extends BaseController
     protected $proposalModel;
     protected $scheduleModel;
     protected $periodModel;
+    protected $documentModel;
+    protected $selectionService;
 
     public function __construct()
     {
-        $this->proposalModel = new PmwProposalModel();
-        $this->scheduleModel = new PmwScheduleModel();
-        $this->periodModel   = new PmwPeriodModel();
+        $this->proposalModel    = new PmwProposalModel();
+        $this->scheduleModel    = new PmwScheduleModel();
+        $this->periodModel      = new PmwPeriodModel();
+        $this->documentModel    = new PmwDocumentModel();
+        $this->selectionService = new PmwSelectionService();
     }
 
     public function index()
@@ -62,11 +67,7 @@ class WawancaraController extends BaseController
         $isPhaseOpen = $this->isPhaseOpen($phase);
 
         // Get documents
-        $db = \Config\Database::connect();
-        $docs = $db->table('pmw_documents')
-            ->where('proposal_id', $proposal['id'])
-            ->get()
-            ->getResultArray();
+        $docs = $this->documentModel->getProposalDocs($proposal['id']);
 
         $docsByKey = [];
         foreach ($docs as $doc) {
@@ -125,7 +126,6 @@ class WawancaraController extends BaseController
             return $this->fail('File harus berformat PDF.');
         }
 
-        $documentModel = new PmwDocumentModel();
         $docKey = 'bukti_perjanjian';
         
         // Use standard directory structure: uploads/pmw/proposals/proposal_{id}
@@ -146,7 +146,7 @@ class WawancaraController extends BaseController
             $path = $targetDir . '/' . $newName;
 
             // Upsert document record
-            $existingDoc = $documentModel->where([
+            $existingDoc = $this->documentModel->where([
                 'proposal_id' => $proposalId,
                 'type'        => 'perjanjian',
                 'doc_key'     => $docKey
@@ -159,14 +159,14 @@ class WawancaraController extends BaseController
                     @unlink($oldPath);
                 }
 
-                $documentModel->update($existingDoc['id'], [
+                $this->documentModel->update($existingDoc['id'], [
                     'file_path'     => $path,
                     'original_name' => $file->getClientName(),
                     'status'        => 'submitted',
                     'version'       => ($existingDoc['version'] ?? 1) + 1
                 ]);
             } else {
-                $documentModel->insert([
+                $this->documentModel->insert([
                     'proposal_id'   => $proposalId,
                     'uploader_id'   => $user->id,
                     'type'          => 'perjanjian',
@@ -178,10 +178,8 @@ class WawancaraController extends BaseController
                 ]);
             }
 
-            // Update proposal status
-            $this->proposalModel->update($proposalId, [
-                'wawancara_status' => 'pending'
-            ]);
+            // Update wawancara selection status
+            $this->selectionService->updateWawancaraStatus($proposalId, 'pending');
 
             return $this->respond([
                 'success'  => true,

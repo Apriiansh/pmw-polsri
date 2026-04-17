@@ -85,6 +85,7 @@
                         <th>Tim / Usaha</th>
                         <th>Ketua</th>
                         <th>Dosen Pembimbing</th>
+                        <th>Mentor (Praktisi)</th>
                         <th class="text-center">Berkas PDF</th>
                         <th>Status Admin</th>
                         <th class="text-right">Aksi</th>
@@ -119,6 +120,13 @@
                         </td>
                         <td>
                             <div class="text-[13px] font-semibold text-slate-600"><?= esc($proposal['dosen_nama']) ?></div>
+                        </td>
+                        <td>
+                            <?php if ($proposal['mentor_nama']): ?>
+                                <div class="text-[13px] font-semibold text-sky-600"><?= esc($proposal['mentor_nama']) ?></div>
+                            <?php else: ?>
+                                <div class="text-[11px] text-slate-300 italic">Belum Dipilih</div>
+                            <?php endif; ?>
                         </td>
                         <td class="text-center">
                             <?php if ($proposal['bukti_perjanjian_id']): ?>

@@ -82,9 +82,12 @@ class PitchingDeskController extends BaseController
     public function validateAction(int $id)
     {
         $proposalModel = new PmwProposalModel();
+        $selectionModel = new \App\Models\Selection\PmwSelectionPitchingModel();
+        
         $lecturer = (new \App\Models\LecturerModel())->where('user_id', auth()->id())->first();
 
-        $proposal = $proposalModel->find($id);
+        // Security check: ensure this lecturer is assigned to this proposal via assignments table
+        $proposal = $proposalModel->getProposalForValidation($id);
         if (!$proposal || $proposal['lecturer_id'] != $lecturer['id']) {
             return redirect()->to('dosen/pitching-desk')->with('error', 'Akses ditolak');
         }
@@ -97,17 +100,18 @@ class PitchingDeskController extends BaseController
         }
 
         $updateData = [
-            'pitching_dosen_status'  => $status,
-            'pitching_dosen_catatan' => $catatan ?: null,
-            'updated_at'             => date('Y-m-d H:i:s'),
+            'dosen_status'  => $status,
+            'dosen_catatan' => $catatan ?: null,
+            'updated_at'    => date('Y-m-d H:i:s'),
         ];
 
         // If lecturer approves, set admin status to pending if it was previously something else
         if ($status === 'approved') {
-            $updateData['pitching_admin_status'] = 'pending';
+            $updateData['admin_status'] = 'pending';
         }
 
-        if ($proposalModel->update($id, $updateData)) {
+        // Update selection pitching table
+        if ($selectionModel->where('proposal_id', $id)->set($updateData)->update()) {
             return redirect()->to('dosen/pitching-desk')->with('message', 'Proposal berhasil divalidasi');
         }
 

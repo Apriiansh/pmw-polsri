@@ -164,6 +164,7 @@
                     ];
 
                     $navItems[] = ['route' => 'admin/pengumuman', 'icon' => 'fa-bullhorn',  'label' => 'Pengumuman',       'match' => 'admin/pengumuman'];
+                    $navItems[] = ['route' => 'admin/implementasi', 'icon' => 'fa-clipboard-check',  'label' => 'Validasi Implementasi',       'match' => 'admin/implementasi'];
 
                     $navItems[] = ['route' => 'admin/users/',    'icon' => 'fa-users-gear',      'label' => 'Manajemen User',   'match' => 'admin/users'];
                     $navItems[] = ['route' => 'admin/cms',      'icon' => 'fa-clapperboard',   'label' => 'Manajemen Konten', 'match' => 'admin/cms'];
@@ -183,14 +184,22 @@
                     ];
 
                     // Pengumuman Tahap I - Tahap 5
-                    $navItems[] = ['route' => 'mahasiswa/pengumuman', 'icon' => 'fa-bullhorn', 'label' => 'Pengumuman', 'match' => 'mahasiswa/pengumuman'];
+                    $navItems[] = ['route' => 'mahasiswa/pengumuman', 'icon' => 'fa-bullhorn', 'label' => 'Dana Thp I & Data Rekening', 'match' => 'mahasiswa/pengumuman'];
 
-                    // Mentoring - Tahap 6 (Implementasi, Bimbingan & Mentoring)
-                    $navItems[] = ['route' => 'mahasiswa/mentoring', 'icon' => 'fa-handshake-angle', 'label' => 'Mentoring', 'match' => 'mahasiswa/mentoring'];
+                    // Pembekalan - Tahap 6
+                    $navItems[] = ['route' => 'mahasiswa/pembekalan', 'icon' => 'fa-chalkboard-user', 'label' => 'Pembekalan', 'match' => 'mahasiswa/pembekalan'];
 
+                    // Implementasi List Perjanjian - Tahap 7
+                    $navItems[] = ['route' => 'mahasiswa/implementasi', 'icon' => 'fa-list-check', 'label' => 'Implementasi', 'match' => 'mahasiswa/implementasi'];
+                
                     // Bimbingan - Tahap 6 (Implementasi, Bimbingan & Mentoring)
                     $navItems[] = ['route' => 'mahasiswa/bimbingan', 'icon' => 'fa-chalkboard-user', 'label' => 'Bimbingan', 'match' => 'mahasiswa/bimbingan'];
 
+                    
+                      // Mentoring - Tahap 6 (Implementasi, Bimbingan & Mentoring)
+                    $navItems[] = ['route' => 'mahasiswa/mentoring', 'icon' => 'fa-handshake-angle', 'label' => 'Mentoring', 'match' => 'mahasiswa/mentoring'];
+
+                  
                     // Laporan Kemajuan - Tahap 7-8 (Monev 1 & 2)
                     $navItems[] = ['route' => 'mahasiswa/laporan-kemajuan', 'icon' => 'fa-chart-pie', 'label' => 'Laporan Kemajuan', 'match' => 'mahasiswa/laporan-kemajuan'];
 
@@ -198,9 +207,8 @@
                     $navItems[] = ['route' => 'mahasiswa/laporan-akhir', 'icon' => 'fa-box-archive', 'label' => 'Laporan Akhir', 'match' => 'mahasiswa/laporan-akhir'];
 
                     
-                    // Pembekalan - Tahap 6
-                    $navItems[] = ['route' => 'mahasiswa/pembekalan', 'icon' => 'fa-chalkboard-user', 'label' => 'Pembekalan', 'match' => 'mahasiswa/pembekalan'];
-                }
+                   
+                    }
 
                 if ($mainRole === 'reviewer') {
                     // Penilaian Proposal - Tahap 2-3 (Seleksi Administrasi & Pitching Desk)

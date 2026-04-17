@@ -17,7 +17,7 @@
         <div class="card-premium p-5 flex flex-col justify-between" @mousemove="handleMouseMove">
             <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Periode</p>
             <p class="text-base font-bold text-slate-800 mt-1">
-                <?= $activePeriod ? esc($activePeriod['name']) . ' ' . esc($activePeriod['year']) : '-' ?>
+                <?= $activePeriod ? esc($activePeriod['name']) . ' - ' . esc($activePeriod['year']) : '-' ?>
             </p>
             <div class="mt-4 pt-4 border-t border-slate-50">
                 <p class="text-[11px] font-bold text-slate-500 italic">Tahap 5</p>
@@ -49,6 +49,34 @@
         </div>
     </div>
 
+    <?php if ($isPassed && $proposal): ?>
+    <!-- ================================================================
+         TIM ASSIGNMENT (DOSEN & MENTOR)
+    ================================================================= -->
+    <div class="grid md:grid-cols-2 gap-6 animate-stagger delay-125">
+        <div class="card-premium p-5 flex items-center gap-4" @mousemove="handleMouseMove">
+            <div class="w-12 h-12 rounded-2xl bg-sky-50 flex items-center justify-center shrink-0">
+                <i class="fas fa-chalkboard-teacher text-xl text-sky-500"></i>
+            </div>
+            <div class="min-w-0">
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Dosen Pendamping</p>
+                <h4 class="text-sm font-bold text-slate-800 truncate"><?= esc($proposal['dosen_nama'] ?? 'Belum Ditunjuk') ?></h4>
+                <p class="text-[11px] text-slate-500">Internal Polsri</p>
+            </div>
+        </div>
+        <div class="card-premium p-5 flex items-center gap-4" @mousemove="handleMouseMove">
+            <div class="w-12 h-12 rounded-2xl bg-violet-50 flex items-center justify-center shrink-0">
+                <i class="fas fa-user-tie text-xl text-violet-500"></i>
+            </div>
+            <div class="min-w-0">
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Mentor Praktisi</p>
+                <h4 class="text-sm font-bold text-slate-800 truncate"><?= esc($proposal['mentor_nama'] ?? 'Belum Ditunjuk') ?></h4>
+                <p class="text-[11px] text-slate-500">Eksternal / Praktisi</p>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <?php if ($isPassed && $isPhaseOpen): ?>
     <div class="grid md:grid-cols-1 gap-6 animate-stagger delay-150">
         <div class="card-premium p-5 border-l-4 <?= ($hasBankData ?? false) ? 'border-l-emerald-500' : 'border-l-amber-500' ?>" @mousemove="handleMouseMove">
@@ -76,58 +104,7 @@
     </div>
     <?php endif; ?>
 
-    <div class="grid lg:grid-cols-2 gap-6 animate-stagger delay-200">
-
-        <div class="card-premium overflow-hidden" @mousemove="handleMouseMove">
-            <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60">
-                <h3 class="font-display text-base font-bold text-(--text-heading)">Hasil Seleksi Tahap I</h3>
-                <p class="text-[11px] text-(--text-muted) font-semibold mt-0.5">Daftar tim yang lolos (berdasarkan validasi Tahap 4)</p>
-            </div>
-            <div class="p-5 sm:p-7">
-                <div class="overflow-x-auto">
-                    <table class="pmw-table">
-                        <thead>
-                            <tr>
-                                <th>Tim/Usaha</th>
-                                <th>Ketua</th>
-                                <th>Prodi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($passedTeams as $t): ?>
-                            <tr>
-                                <td>
-                                    <div class="font-display font-bold text-(--text-heading) text-[13px]">
-                                        <?= esc($t['nama_usaha'] ?: 'Tim #' . $t['id']) ?>
-                                    </div>
-                                    <div class="text-[10px] text-slate-400 uppercase font-black tracking-wider"><?= esc($t['kategori_wirausaha'] ?? '-') ?></div>
-                                </td>
-                                <td>
-                                    <div class="text-[13px] font-semibold text-slate-600"><?= esc($t['ketua_nama'] ?? '-') ?></div>
-                                    <div class="text-[11px] text-slate-400"><?= esc($t['ketua_nim'] ?? '-') ?></div>
-                                </td>
-                                <td>
-                                    <div class="text-[13px] font-semibold text-slate-600"><?= esc($t['ketua_prodi'] ?? '-') ?></div>
-                                    <div class="text-[11px] text-slate-400"><?= esc($t['ketua_jurusan'] ?? '-') ?></div>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-
-                            <?php if (empty($passedTeams)): ?>
-                            <tr>
-                                <td colspan="3" class="text-center py-10">
-                                    <div class="text-(--text-muted)">
-                                        <i class="fas fa-inbox text-4xl mb-3 opacity-30"></i>
-                                        <p class="text-sm">Belum ada tim yang dinyatakan lolos.</p>
-                                    </div>
-                                </td>
-                            </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+    <div class=" animate-stagger delay-200">
 
         <div class="card-premium overflow-hidden" @mousemove="handleMouseMove">
             <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60">
@@ -154,7 +131,7 @@
                         <div>
                             <h4 class="text-base font-black text-slate-800"><?= esc($announcement->title ?? 'Pengumuman') ?></h4>
                             <?php if (!empty($announcement->content)): ?>
-                                <p class="text-[12px] text-slate-600 mt-1 leading-relaxed"><?= nl2br(esc($announcement->content)) ?></p>
+                                <p class="text-[12px] text-slate-600 mt-1 leading-relaxed"><?= nl2br(esc((string) $announcement->content)) ?></p>
                             <?php endif; ?>
                         </div>
 
@@ -183,7 +160,7 @@
                                     <p class="text-[12px] text-sky-600 mt-1"><strong>Lokasi:</strong> <?= esc($announcement->training_location) ?></p>
                                 <?php endif; ?>
                                 <?php if (!empty($announcement->training_details)): ?>
-                                    <p class="text-[12px] text-sky-600 mt-2"><?= nl2br(esc($announcement->training_details)) ?></p>
+                                    <p class="text-[12px] text-sky-600 mt-2"><?= nl2br(esc((string) $announcement->training_details)) ?></p>
                                 <?php endif; ?>
                             </div>
                         <?php endif; ?>

@@ -50,7 +50,7 @@
 
             <div class="flex items-center gap-3">
                 <?php if (!$isLocked): ?>
-                    <button type="submit" form="mainProposalForm" class="btn-accent py-2.5 px-6 shadow-sm hover:shadow-md transition-all flex items-center gap-2">
+                    <button type="submit" form="mainProposalForm" formnovalidate class="btn-accent py-2.5 px-6 shadow-sm hover:shadow-md transition-all flex items-center gap-2">
                         <i class="fas fa-save"></i>
                         <span>Simpan Draft</span>
                     </button>
@@ -163,21 +163,36 @@
                         <div class="hidden md:block absolute top-6 left-0 w-full h-0.5 bg-slate-100 -z-0"></div>
 
                         <?php
-                        $step1Status = in_array($currentStatus, ['submitted', 'approved', 'rejected', 'revision']) ? 'approved' : 'pending';
+                        $statusMeta = [
+                            'draft'     => ['label' => 'Sedang Disusun', 'status' => 'pending'],
+                            'submitted' => ['label' => 'Dalam Antrean', 'status' => 'submitted'],
+                            ' revision' => ['label' => 'Perlu Revisi', 'status' => 'revision'],
+                            'approved'  => ['label' => 'Disetujui', 'status' => 'approved'],
+                            'rejected'  => ['label' => 'Ditolak', 'status' => 'rejected'],
+                        ];
 
-                        $steps = [
-                            [
-                                'label'  => 'Pengajuan',
-                                'status' => $step1Status,
-                                'icon'   => 'fa-file-signature',
-                                'note'   => null
-                            ],
-                            [
-                                'label'  => 'Validasi UPAPKK',
-                                'status' => ($currentStatus === 'draft') ? 'pending' : $currentStatus,
-                                'icon'   => 'fa-award',
-                                'note'   => ($currentStatus === 'revision') ? $proposal['catatan'] : null
-                            ]
+                        $meta = $statusMeta[$currentStatus] ?? $statusMeta['draft'];
+                        
+                        $steps = [];
+                        
+                        // Step 1: Pengajuan (Only show if still in draft/preparation phase)
+                        if ($currentStatus === 'draft') {
+                            $steps[] = [
+                                'label'         => 'Pengajuan',
+                                'display_label' => 'Sedang Disusun',
+                                'status'        => 'pending',
+                                'icon'          => 'fa-file-signature',
+                                'note'          => null
+                            ];
+                        }
+
+                        // Step 2: Validasi (Always show, reflects current progress)
+                        $steps[] = [
+                            'label'         => 'Validasi UPAPKK',
+                            'display_label' => $meta['label'],
+                            'status'        => $meta['status'],
+                            'icon'          => 'fa-award',
+                            'note'          => ($currentStatus === 'revision') ? $proposal['catatan'] : null
                         ];
 
                         $stepColors = [
@@ -199,7 +214,7 @@
                                 <div class="text-left md:text-center mt-1">
                                     <p class="text-xs font-black uppercase tracking-tighter text-slate-400"><?= $step['label'] ?></p>
                                     <div class="flex items-center gap-1.5 md:justify-center mt-1">
-                                        <span class="text-[10px] font-black <?= $color['text'] ?> uppercase italic"><?= strtoupper($step['status']) ?></span>
+                                        <span class="text-[10px] font-black <?= $color['text'] ?> uppercase italic"><?= $step['display_label'] ?></span>
                                         <i class="fas <?= ($color['icon'] ?? 'fa-circle') ?> text-[10px] <?= $color['text'] ?>"></i>
                                     </div>
                                 </div>
@@ -236,7 +251,7 @@
                 <div class="flex items-center justify-between gap-4 flex-wrap">
                     <div>
                         <h3 class="font-display text-base font-bold text-slate-800">1) Identitas Tim</h3>
-                        <p class="text-xs text-slate-500 mt-1">Ketua otomatis dari akun kamu, tambah 2–4 anggota.</p>
+                        <p class="text-xs text-slate-500 mt-1">Ketua otomatis dari akun kamu, tambah 3–4 anggota (Total tim 4-5 orang).</p>
                     </div>
                 </div>
 
@@ -310,7 +325,9 @@
                 <div class="flex items-center justify-between gap-4 flex-wrap">
                     <p class="text-xs text-slate-500">Wajib 3–4 anggota.</p>
                     <?php if (!$isLocked): ?>
-                        <button type="button" class="btn-outline inline-flex items-center gap-2" @click="addMember()" :disabled="<?= $existingCount ?> + newMembers.length >= 4">
+                        <button type="button" class="btn-outline inline-flex items-center gap-2"
+                            x-show="(existingCount + newMembers.length) < 4"
+                            @click="addMember()">
                             <i class="fas fa-user-plus"></i>
                             Tambah Anggota
                         </button>
@@ -332,7 +349,9 @@
                             <div class="flex items-center justify-between gap-3 mb-4">
                                 <p class="text-sm font-bold text-slate-800">Anggota <span x-text="<?= $idx + 1 ?>"></span></p>
                                 <?php if (!$isLocked): ?>
-                                    <button type="button" class="btn-ghost btn-sm text-rose-600 hover:text-rose-700" @click="show = false">
+                                    <button type="button" class="btn-ghost btn-sm text-rose-600 hover:text-rose-700"
+                                        x-show="(existingCount + newMembers.length) > 3"
+                                        @click="show = false">
                                         <i class="fas fa-trash-alt mr-1"></i> Hapus
                                     </button>
                                 <?php endif; ?>
@@ -349,10 +368,10 @@
                                         <input type="hidden" name="members[<?= $idx ?>][role]" value="anggota">
                                     </div>
                                     <div class="form-field">
-                                        <label class="form-label text-xs">NIM</label>
+                                        <label class="form-label text-xs">NIM <span class="text-[10px] opacity-70">(12 Digit)</span></label>
                                         <div class="input-group">
                                             <span class="input-icon"><i class="fas fa-id-card text-xs"></i></span>
-                                            <input type="text" name="members[<?= $idx ?>][nim]" value="<?= esc(old('members.' . $idx . '.nim', $m['nim'] ?? '')) ?>" placeholder="Nomor Induk Mahasiswa" <?= $isLocked ? 'disabled' : '' ?> required>
+                                            <input type="text" name="members[<?= $idx ?>][nim]" value="<?= esc(old('members.' . $idx . '.nim', $m['nim'] ?? '')) ?>" placeholder="Nomor Induk Mahasiswa" maxlength="12" <?= $isLocked ? 'disabled' : '' ?> required>
                                         </div>
                                     </div>
                                     <div class="form-field">
@@ -407,10 +426,10 @@
                                         </div>
                                     </div>
                                     <div class="form-field">
-                                        <label class="form-label text-xs">No. HP</label>
+                                        <label class="form-label text-xs">No. HP <span class="text-[10px] opacity-70">(10-13 Digit)</span></label>
                                         <div class="input-group">
                                             <span class="input-icon"><i class="fas fa-phone text-xs"></i></span>
-                                            <input type="tel" name="members[<?= $idx ?>][phone]" value="<?= esc(old('members.' . $idx . '.phone', $m['phone'] ?? '')) ?>" placeholder="08xxxxxxxxxx" <?= $isLocked ? 'disabled' : '' ?> required>
+                                            <input type="tel" name="members[<?= $idx ?>][phone]" value="<?= esc(old('members.' . $idx . '.phone', $m['phone'] ?? '')) ?>" placeholder="08xxxxxxxxxx" maxlength="13" <?= $isLocked ? 'disabled' : '' ?> required>
                                         </div>
                                     </div>
                                     <div class="form-field">
@@ -430,7 +449,9 @@
                         <div class="p-4 rounded-xl bg-sky-50/30 border border-sky-100/50 member-row">
                             <div class="flex items-center justify-between gap-3 mb-4">
                                 <p class="text-sm font-bold text-sky-800">Baru: Anggota <span x-text="<?= $existingCount ?> + idx + 1"></span></p>
-                                <button type="button" class="btn-ghost btn-sm text-rose-600 hover:text-rose-700" @click="removeMember(idx)">
+                                <button type="button" class="btn-ghost btn-sm text-rose-600 hover:text-rose-700"
+                                    x-show="(existingCount + newMembers.length) > 3"
+                                    @click="removeMember(idx)">
                                     <i class="fas fa-trash-alt mr-1"></i> Hapus
                                 </button>
                             </div>
@@ -439,22 +460,22 @@
                                     <label class="form-label text-xs">Nama</label>
                                     <div class="input-group">
                                         <span class="input-icon"><i class="fas fa-user text-xs"></i></span>
-                                        <input type="text" :name="`members[${<?= $existingCount ?>} + idx][nama]`" x-model="m.nama" placeholder="Nama lengkap" required>
+                                        <input type="text" :name="`members[${<?= $existingCount ?> + idx}][nama]`" x-model="m.nama" placeholder="Nama lengkap" required>
                                     </div>
-                                    <input type="hidden" :name="`members[${<?= $existingCount ?>} + idx][role]`" value="anggota">
+                                    <input type="hidden" :name="`members[${<?= $existingCount ?> + idx}][role]`" value="anggota">
                                 </div>
                                 <div class="form-field">
-                                    <label class="form-label text-xs">NIM</label>
+                                    <label class="form-label text-xs">NIM <span class="text-[10px] opacity-70">(12 Digit)</span></label>
                                     <div class="input-group">
                                         <span class="input-icon"><i class="fas fa-id-card text-xs"></i></span>
-                                        <input type="text" :name="`members[${<?= $existingCount ?>} + idx][nim]`" x-model="m.nim" placeholder="Nomor Induk Mahasiswa" required>
+                                        <input type="text" :name="`members[${<?= $existingCount ?> + idx}][nim]`" x-model="m.nim" placeholder="Nomor Induk Mahasiswa" maxlength="12" required>
                                     </div>
                                 </div>
                                 <div class="form-field">
                                     <label class="form-label text-xs">Jurusan</label>
                                     <div class="input-group">
                                         <span class="input-icon"><i class="fas fa-building text-xs"></i></span>
-                                        <select :name="`members[${<?= $existingCount ?>} + idx][jurusan]`" x-model="m.jurusan" @change="m.prodi = ''"
+                                        <select :name="`members[${<?= $existingCount ?> + idx}][jurusan]`" x-model="m.jurusan" @change="m.prodi = ''"
                                             class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all text-xs bg-white" required>
                                             <option value="">Pilih Jurusan</option>
                                             <template x-for="j in jurusanList()" :key="j">
@@ -467,7 +488,7 @@
                                     <label class="form-label text-xs">Prodi</label>
                                     <div class="input-group">
                                         <span class="input-icon"><i class="fas fa-graduation-cap text-xs"></i></span>
-                                        <select :name="`members[${<?= $existingCount ?>} + idx][prodi]`" x-model="m.prodi" :key="m.jurusan"
+                                        <select :name="`members[${<?= $existingCount ?> + idx}][prodi]`" x-model="m.prodi" :key="m.jurusan"
                                             class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all text-xs bg-white disabled:bg-slate-50 disabled:text-slate-400"
                                             :disabled="!m.jurusan" required>
                                             <option value="">Pilih Program Studi</option>
@@ -481,7 +502,7 @@
                                     <label class="form-label text-xs">Semester</label>
                                     <div class="input-group">
                                         <span class="input-icon"><i class="fas fa-calendar-alt text-xs"></i></span>
-                                        <select :name="`members[${<?= $existingCount ?>} + idx][semester]`" x-model="m.semester"
+                                        <select :name="`members[${<?= $existingCount ?> + idx}][semester]`" x-model="m.semester"
                                             class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all text-xs bg-white" required>
                                             <option value="">Pilih Semester</option>
                                             <?php for ($i = 1; $i <= 8; $i++): ?>
@@ -491,17 +512,17 @@
                                     </div>
                                 </div>
                                 <div class="form-field">
-                                    <label class="form-label text-xs">No. HP</label>
+                                    <label class="form-label text-xs">No. HP <span class="text-[10px] opacity-70">(10-13 Digit)</span></label>
                                     <div class="input-group">
                                         <span class="input-icon"><i class="fas fa-phone text-xs"></i></span>
-                                        <input type="tel" :name="`members[${<?= $existingCount ?>} + idx][phone]`" x-model="m.phone" placeholder="08xxxxxxxxxx" required>
+                                        <input type="tel" :name="`members[${<?= $existingCount ?> + idx}][phone]`" x-model="m.phone" placeholder="08xxxxxxxxxx" maxlength="13" required>
                                     </div>
                                 </div>
                                 <div class="form-field">
-                                    <label class="form-field text-xs">Email</label>
+                                    <label class="form-label text-xs">Email</label>
                                     <div class="input-group">
                                         <span class="input-icon"><i class="fas fa-envelope text-xs"></i></span>
-                                        <input type="email" :name="`members[${<?= $existingCount ?>} + idx][email]`" x-model="m.email" placeholder="email@student.polsri.ac.id" required>
+                                        <input type="email" :name="`members[${<?= $existingCount ?> + idx}][email]`" x-model="m.email" placeholder="email@student.polsri.ac.id" required>
                                     </div>
                                 </div>
                             </div>
@@ -510,224 +531,224 @@
                 </div>
             </div>
 
-            <!-- Section 2: Profil Usaha -->
-            <div class="card-premium p-5 sm:p-7 space-y-6" @mousemove="handleMouseMove">
-                <h3 class="font-display text-base font-bold text-slate-800">2) Profil Usaha</h3>
+    <!-- Section 2: Profil Usaha -->
+    <div class="card-premium p-5 sm:p-7 space-y-6" @mousemove="handleMouseMove">
+        <h3 class="font-display text-base font-bold text-slate-800">2) Profil Usaha</h3>
 
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="form-field">
-                        <label class="form-label">
-                            Kategori Usaha <span class="required">*</span>
-                        </label>
-                        <div class="input-group">
-                            <span class="input-icon"><i class="fas fa-tags"></i></span>
-                            <select name="kategori_usaha" x-model="formData.kategori_usaha" <?= $isLocked ? 'disabled' : '' ?> required>
-                                <?php $kategori = old('kategori_usaha', $proposal['kategori_usaha'] ?? ''); ?>
-                                <option value="">Pilih Kategori</option>
-                                <option value="F&B" <?= $kategori === 'F&B' ? 'selected' : '' ?>>Makanan & Minuman (F&B)</option>
-                                <option value="Jasa" <?= $kategori === 'Jasa' ? 'selected' : '' ?>>Jasa & Perdagangan</option>
-                                <option value="Teknologi" <?= $kategori === 'Teknologi' ? 'selected' : '' ?>>Teknologi Terapan</option>
-                                <option value="Kreatif" <?= $kategori === 'Kreatif' ? 'selected' : '' ?>>Industri Kreatif</option>
-                                <option value="Budidaya" <?= $kategori === 'Budidaya' ? 'selected' : '' ?>>Budi Daya</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-field">
-                        <label class="form-label">
-                            Nama Usaha/Produk <span class="required">*</span>
-                        </label>
-                        <div class="input-group">
-                            <span class="input-icon"><i class="fas fa-store"></i></span>
-                            <input type="text" name="nama_usaha" x-model="formData.nama_usaha" value="<?= esc(old('nama_usaha', $proposal['nama_usaha'] ?? '')) ?>" placeholder="Nama usaha atau produk" <?= $isLocked ? 'disabled' : '' ?> required>
-                        </div>
-                    </div>
-
-                    <div class="form-field">
-                        <label class="form-label">
-                            Kategori Wirausaha <span class="required">*</span>
-                        </label>
-                        <div class="input-group">
-                            <span class="input-icon"><i class="fas fa-layer-group"></i></span>
-                            <select name="kategori_wirausaha" x-model="formData.kategori_wirausaha" <?= $isLocked ? 'disabled' : '' ?> required>
-                                <?php $kategoriWirausaha = old('kategori_wirausaha', $proposal['kategori_wirausaha'] ?? 'pemula'); ?>
-                                <option value="pemula" <?= $kategoriWirausaha === 'pemula' ? 'selected' : '' ?>>Pemula</option>
-                                <option value="berkembang" <?= $kategoriWirausaha === 'berkembang' ? 'selected' : '' ?>>Berkembang</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-field">
-                        <label class="form-label">
-                            Total RAB (Rp)
-                        </label>
-                        <div class="input-group">
-                            <span class="input-icon"><i class="fas fa-money-bill-wave"></i></span>
-                            <input type="number" name="total_rab" x-model="formData.total_rab" value="<?= esc(old('total_rab', $proposal['total_rab'] ?? '')) ?>" placeholder="0.00" min="0" step="0.01" <?= $isLocked ? 'disabled' : '' ?>>
-                        </div>
-                    </div>
-
-                    <!-- Detail Keterangan -->
-                    <div class="form-field md:col-span-2">
-                        <label class="form-label">
-                            Detail Keterangan Usaha / Ide Bisnis
-                        </label>
-                        <div class="input-group">
-                            <span class="input-icon self-start mt-3"><i class="fas fa-align-left text-xs"></i></span>
-                            <textarea name="detail_keterangan" x-model="formData.detail_keterangan" rows="4"
-                                class="w-full py-2.5 outline-none resize-none bg-transparent" <?= $isLocked ? 'disabled' : '' ?>
-                                placeholder="Jelaskan secara singkat mengenai detil usaha atau ide bisnis Anda..."><?= esc(old('detail_keterangan', $proposal['detail_keterangan'] ?? '')) ?></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-between pt-4 border-t border-sky-50">
-                    <p class="text-[10px] text-slate-400 italic">* Kolom bertanda merah wajib diisi</p>
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="form-field">
+                <label class="form-label">
+                    Kategori Usaha <span class="required">*</span>
+                </label>
+                <div class="input-group">
+                    <span class="input-icon"><i class="fas fa-tags"></i></span>
+                    <select name="kategori_usaha" x-model="formData.kategori_usaha" <?= $isLocked ? 'disabled' : '' ?> required>
+                        <?php $kategori = old('kategori_usaha', $proposal['kategori_usaha'] ?? ''); ?>
+                        <option value="">Pilih Kategori</option>
+                        <option value="F&B" <?= $kategori === 'F&B' ? 'selected' : '' ?>>Makanan & Minuman (F&B)</option>
+                        <option value="Jasa" <?= $kategori === 'Jasa' ? 'selected' : '' ?>>Jasa & Perdagangan</option>
+                        <option value="Teknologi" <?= $kategori === 'Teknologi' ? 'selected' : '' ?>>Teknologi Terapan</option>
+                        <option value="Kreatif" <?= $kategori === 'Kreatif' ? 'selected' : '' ?>>Industri Kreatif</option>
+                        <option value="Budidaya" <?= $kategori === 'Budidaya' ? 'selected' : '' ?>>Budi Daya</option>
+                    </select>
                 </div>
             </div>
 
-            <!-- Section 3: Dokumen -->
-            <div class="card-premium p-5 sm:p-7 space-y-6" @mousemove="handleMouseMove">
-                <h3 class="font-display text-base font-bold text-slate-800">3) Unggah Dokumen (PDF, max 5MB)</h3>
+            <div class="form-field">
+                <label class="form-label">
+                    Nama Usaha/Produk <span class="required">*</span>
+                </label>
+                <div class="input-group">
+                    <span class="input-icon"><i class="fas fa-store"></i></span>
+                    <input type="text" name="nama_usaha" x-model="formData.nama_usaha" value="<?= esc(old('nama_usaha', $proposal['nama_usaha'] ?? '')) ?>" placeholder="Nama usaha atau produk" <?= $isLocked ? 'disabled' : '' ?> required>
+                </div>
+            </div>
 
-                <?php if (!$proposal): ?>
-                    <div class="p-4 rounded-xl bg-sky-50 border border-sky-100">
-                        <p class="text-sm text-slate-600 flex items-center gap-2">
-                            <i class="fas fa-info-circle text-sky-500"></i>
-                            Simpan draft terlebih dahulu untuk membuka fitur unggah dokumen.
-                        </p>
-                    </div>
-                <?php else: ?>
-                    <div class="space-y-4">
-                        <?php
-                        $labels = [
-                            'proposal_utama' => 'Dokumen Proposal Utama',
-                            'biodata' => 'Lampiran Biodata',
-                            'surat_pernyataan_ketua' => 'Surat Pernyataan Ketua',
-                            'surat_kesediaan_dosen' => 'Surat Kesediaan Dosen Pendamping',
-                            'ktm' => 'Scan KTM (gabungan)',
-                        ];
-                        $icons = [
-                            'proposal_utama' => 'fa-file-alt',
-                            'biodata' => 'fa-id-card',
-                            'surat_pernyataan_ketua' => 'fa-signature',
-                            'surat_kesediaan_dosen' => 'fa-user-check',
-                            'ktm' => 'fa-id-badge',
-                        ];
-                        ?>
-                        <?php foreach ($requiredDocKeys as $key): ?>
-                            <?php $doc = $docsByKey[$key] ?? null; ?>
-                            <div class="p-4 rounded-xl bg-white border border-slate-100 transition-all hover:border-sky-100 group">
-                                <div class="flex items-start justify-between gap-4 flex-wrap">
-                                    <div class="flex items-start gap-4">
-                                        <div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 shrink-0 group-hover:bg-sky-50 group-hover:text-sky-500 transition-colors">
-                                            <i class="fas <?= $icons[$key] ?? 'fa-file' ?> text-lg"></i>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-bold text-slate-800"><?= esc($labels[$key] ?? $key) ?></p>
+            <div class="form-field">
+                <label class="form-label">
+                    Kategori Wirausaha <span class="required">*</span>
+                </label>
+                <div class="input-group">
+                    <span class="input-icon"><i class="fas fa-layer-group"></i></span>
+                    <select name="kategori_wirausaha" x-model="formData.kategori_wirausaha" <?= $isLocked ? 'disabled' : '' ?> required>
+                        <?php $kategoriWirausaha = old('kategori_wirausaha', $proposal['kategori_wirausaha'] ?? 'pemula'); ?>
+                        <option value="pemula" <?= $kategoriWirausaha === 'pemula' ? 'selected' : '' ?>>Pemula</option>
+                        <option value="berkembang" <?= $kategoriWirausaha === 'berkembang' ? 'selected' : '' ?>>Berkembang</option>
+                    </select>
+                </div>
+            </div>
 
-                                            <!-- Status Badge -->
-                                            <div class="flex items-center gap-2 mt-1">
-                                                <template x-if="docStatus['<?= $key ?>'] === 'uploaded'">
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">
-                                                        <i class="fas fa-check-circle mr-1"></i> Tersimpan
-                                                    </span>
-                                                </template>
-                                                <template x-if="docStatus['<?= $key ?>'] === 'selected'">
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 animate-pulse">
-                                                        <i class="fas fa-clock mr-1"></i> Siap Unggah
-                                                    </span>
-                                                </template>
-                                                <template x-if="docStatus['<?= $key ?>'] === 'missing'">
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700">
-                                                        <i class="fas fa-exclamation-triangle mr-1"></i> Belum Ada
-                                                    </span>
-                                                </template>
-                                            </div>
+            <div class="form-field">
+                <label class="form-label">
+                    Total RAB (Rp)
+                </label>
+                <div class="input-group">
+                    <span class="input-icon"><i class="fas fa-money-bill-wave"></i></span>
+                    <input type="number" name="total_rab" x-model="formData.total_rab" value="<?= esc(old('total_rab', $proposal['total_rab'] ?? '')) ?>" placeholder="0.00" min="0" step="0.01" <?= $isLocked ? 'disabled' : '' ?>>
+                </div>
+            </div>
 
-                                            <p class="text-xs text-slate-500 mt-1">
-                                                <span x-text="docFilename['<?= $key ?>'] || 'Belum ada file terpilih'"></span>
-                                            </p>
+            <!-- Detail Keterangan -->
+            <div class="form-field md:col-span-2">
+                <label class="form-label">
+                    Detail Keterangan Usaha / Ide Bisnis
+                </label>
+                <div class="input-group">
+                    <span class="input-icon self-start mt-3"><i class="fas fa-align-left text-xs"></i></span>
+                    <textarea name="detail_keterangan" x-model="formData.detail_keterangan" rows="4"
+                        class="w-full py-2.5 outline-none resize-none bg-transparent" <?= $isLocked ? 'disabled' : '' ?>
+                        placeholder="Jelaskan secara singkat mengenai detil usaha atau ide bisnis Anda..."><?= esc(old('detail_keterangan', $proposal['detail_keterangan'] ?? '')) ?></textarea>
+                </div>
+            </div>
+        </div>
 
-                                            <?php if ($doc): ?>
-                                                <a class="text-xs font-bold text-sky-600 hover:text-sky-700 inline-flex items-center gap-1 mt-2" href="<?= base_url('mahasiswa/proposal/doc/' . $doc['id']) ?>">
-                                                    <i class="fas fa-download text-[10px]"></i> Download Draft File
-                                                </a>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
+        <div class="flex items-center justify-between pt-4 border-t border-sky-50">
+            <p class="text-[10px] text-slate-400 italic">* Kolom bertanda merah wajib diisi</p>
+        </div>
+    </div>
 
-                                    <div class="flex flex-col items-end gap-2">
-                                        <?php if (!$isLocked): ?>
-                                            <label class="relative cursor-pointer">
-                                                <span class="btn-outline btn-sm inline-flex items-center gap-2 bg-white">
-                                                    <i class="fas fa-folder-open"></i>
-                                                    Pilih File
-                                                </span>
-                                                <input type="file" name="<?= esc($key) ?>"
-                                                    accept="application/pdf"
-                                                    class="hidden"
-                                                    @change="handleFileChange($event, '<?= $key ?>')">
-                                            </label>
-                                            <p class="text-[10px] text-slate-400">PDF, Maks 5MB</p>
-                                        <?php else: ?>
-                                            <div class="text-[10px] text-slate-400 font-bold flex items-center gap-1">
-                                                <i class="fas fa-lock text-[8px]"></i>
-                                                Terkunci
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
+    <!-- Section 3: Dokumen -->
+    <div class="card-premium p-5 sm:p-7 space-y-6" @mousemove="handleMouseMove">
+        <h3 class="font-display text-base font-bold text-slate-800">3) Unggah Dokumen (PDF, max 5MB)</h3>
+
+        <?php if (!$proposal): ?>
+            <div class="p-4 rounded-xl bg-sky-50 border border-sky-100">
+                <p class="text-sm text-slate-600 flex items-center gap-2">
+                    <i class="fas fa-info-circle text-sky-500"></i>
+                    Simpan draft terlebih dahulu untuk membuka fitur unggah dokumen.
+                </p>
+            </div>
+        <?php else: ?>
+            <div class="space-y-4">
+                <?php
+                $labels = [
+                    'proposal_utama' => 'Dokumen Proposal Utama',
+                    'biodata' => 'Lampiran Biodata',
+                    'surat_pernyataan_ketua' => 'Surat Pernyataan Ketua',
+                    'surat_kesediaan_dosen' => 'Surat Kesediaan Dosen Pendamping',
+                    'ktm' => 'Scan KTM (gabungan)',
+                ];
+                $icons = [
+                    'proposal_utama' => 'fa-file-alt',
+                    'biodata' => 'fa-id-card',
+                    'surat_pernyataan_ketua' => 'fa-signature',
+                    'surat_kesediaan_dosen' => 'fa-user-check',
+                    'ktm' => 'fa-id-badge',
+                ];
+                ?>
+                <?php foreach ($requiredDocKeys as $key): ?>
+                    <?php $doc = $docsByKey[$key] ?? null; ?>
+                    <div class="p-4 rounded-xl bg-white border border-slate-100 transition-all hover:border-sky-100 group">
+                        <div class="flex items-start justify-between gap-4 flex-wrap">
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 shrink-0 group-hover:bg-sky-50 group-hover:text-sky-500 transition-colors">
+                                    <i class="fas <?= $icons[$key] ?? 'fa-file' ?> text-lg"></i>
                                 </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-800"><?= esc($labels[$key] ?? $key) ?></p>
 
-                    <div class="pt-8 border-t border-sky-50">
-                        <div class="flex flex-col md:flex-row items-center justify-between gap-6 p-6 rounded-2xl bg-slate-50 border border-slate-100">
-                            <div class="space-y-1">
-                                <h4 class="text-sm font-black text-slate-800 uppercase tracking-tight">Kirim Proposal Final</h4>
-                                <p class="text-xs text-slate-500">Pastikan semua data dan dokumen sudah benar. Proposal dapat diubah kembali selama jadwal pendaftaran belum berakhir.</p>
-
-                                <div class="flex items-center gap-3 mt-3">
-                                    <div class="flex items-center gap-1 text-[10px] font-bold" :class="isFormComplete ? 'text-emerald-600' : 'text-slate-400'">
-                                        <i class="fas" :class="isFormComplete ? 'fa-check-circle' : 'fa-circle'"></i>
-                                        Data Lengkap
-                                    </div>
-                                    <div class="flex items-center gap-1 text-[10px] font-bold" :class="allDocsReady ? 'text-emerald-600' : 'text-slate-400'">
-                                        <i class="fas" :class="allDocsReady ? 'fa-check-circle' : 'fa-circle'"></i>
-                                        Dokumen Lengkap
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <?php if ($isLocked): ?>
-                                        <div class="px-6 py-3 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-600 font-bold text-sm flex items-center gap-2">
-                                            <i class="fas fa-check-circle"></i>
-                                            Finalisasi Selesai
-                                        </div>
-                                    <?php elseif ($isPhaseOpen): ?>
-                                        <button type="button"
-                                            class="btn-primary py-3 px-8 shadow-lg shadow-sky-200 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed group"
-                                            :disabled="!isFormComplete || !allDocsReady"
-                                            @click="confirmSubmit()">
-                                            <span class="flex items-center gap-2">
-                                                <i class="fas fa-paper-plane group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
-                                                Kirim Proposal Sekarang
+                                    <!-- Status Badge -->
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <template x-if="docStatus['<?= $key ?>'] === 'uploaded'">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">
+                                                <i class="fas fa-check-circle mr-1"></i> Tersimpan
                                             </span>
-                                        </button>
-                                    <?php else: ?>
-                                        <p class="text-xs text-rose-600 flex items-center justify-end gap-1 font-bold">
-                                            <i class="fas fa-lock"></i> Pengiriman ditutup
-                                        </p>
+                                        </template>
+                                        <template x-if="docStatus['<?= $key ?>'] === 'selected'">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 animate-pulse">
+                                                <i class="fas fa-clock mr-1"></i> Siap Unggah
+                                            </span>
+                                        </template>
+                                        <template x-if="docStatus['<?= $key ?>'] === 'missing'">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700">
+                                                <i class="fas fa-exclamation-triangle mr-1"></i> Belum Ada
+                                            </span>
+                                        </template>
+                                    </div>
+
+                                    <p class="text-xs text-slate-500 mt-1">
+                                        <span x-text="docFilename['<?= $key ?>'] || 'Belum ada file terpilih'"></span>
+                                    </p>
+
+                                    <?php if ($doc): ?>
+                                        <a class="text-xs font-bold text-sky-600 hover:text-sky-700 inline-flex items-center gap-1 mt-2" href="<?= base_url('mahasiswa/proposal/doc/' . $doc['id']) ?>">
+                                            <i class="fas fa-download text-[10px]"></i> Download Draft File
+                                        </a>
                                     <?php endif; ?>
                                 </div>
                             </div>
+
+                            <div class="flex flex-col items-end gap-2">
+                                <?php if (!$isLocked): ?>
+                                    <label class="relative cursor-pointer">
+                                        <span class="btn-outline btn-sm inline-flex items-center gap-2 bg-white">
+                                            <i class="fas fa-folder-open"></i>
+                                            Pilih File
+                                        </span>
+                                        <input type="file" name="<?= esc($key) ?>"
+                                            accept="application/pdf"
+                                            class="hidden"
+                                            @change="handleFileChange($event, '<?= $key ?>')">
+                                    </label>
+                                    <p class="text-[10px] text-slate-400">PDF, Maks 5MB</p>
+                                <?php else: ?>
+                                    <div class="text-[10px] text-slate-400 font-bold flex items-center gap-1">
+                                        <i class="fas fa-lock text-[8px]"></i>
+                                        Terkunci
+                                    </div>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
-                <?php endif; ?>
+                <?php endforeach; ?>
             </div>
-        </form>
 
+            <div class="pt-8 border-t border-sky-50">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6 p-6 rounded-2xl bg-slate-50 border border-slate-100">
+                    <div class="space-y-1">
+                        <h4 class="text-sm font-black text-slate-800 uppercase tracking-tight">Kirim Proposal Final</h4>
+                        <p class="text-xs text-slate-500">Pastikan semua data dan dokumen sudah benar. Proposal dapat diubah kembali selama jadwal pendaftaran belum berakhir.</p>
+
+                        <div class="flex items-center gap-3 mt-3">
+                            <div class="flex items-center gap-1 text-[10px] font-bold" :class="isFormComplete ? 'text-emerald-600' : 'text-slate-400'">
+                                <i class="fas" :class="isFormComplete ? 'fa-check-circle' : 'fa-circle'"></i>
+                                Data Lengkap
+                            </div>
+                            <div class="flex items-center gap-1 text-[10px] font-bold" :class="allDocsReady ? 'text-emerald-600' : 'text-slate-400'">
+                                <i class="fas" :class="allDocsReady ? 'fa-check-circle' : 'fa-circle'"></i>
+                                Dokumen Lengkap
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <?php if ($isLocked): ?>
+                                <div class="px-6 py-3 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-600 font-bold text-sm flex items-center gap-2">
+                                    <i class="fas fa-check-circle"></i>
+                                    Finalisasi Selesai
+                                </div>
+                            <?php elseif ($isPhaseOpen): ?>
+                                <button type="button"
+                                    class="btn-primary py-3 px-8 shadow-lg shadow-sky-200 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed group"
+                                    :disabled="!isFormComplete || !allDocsReady"
+                                    @click="confirmSubmit()">
+                                    <span class="flex items-center gap-2">
+                                        <i class="fas fa-paper-plane group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                                        Kirim Proposal Sekarang
+                                    </span>
+                                </button>
+                            <?php else: ?>
+                                <p class="text-xs text-rose-600 flex items-center justify-end gap-1 font-bold">
+                                    <i class="fas fa-lock"></i> Pengiriman ditutup
+                                </p>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
+    </form>
+
+</div>
 </div>
 
 <?= $this->endSection() ?>
@@ -794,17 +815,22 @@
             },
 
             init() {
-                if (this.existingCount === 0) {
+                // Ensure at least 3 members (total) are visible
+                let currentTotal = this.existingCount + this.newMembers.length;
+                while (currentTotal < 3) {
                     this.addMember();
-                    this.addMember();
+                    currentTotal++;
                 }
             },
 
             // Computed-like getters for completeness
             get isFormComplete() {
-                const totalMembers = this.existingCount + this.newMembers.length;
+                // Get number of existing members that are NOT hidden
+                const activeExisting = document.querySelectorAll('#mainProposalForm .member-row:not([style*="display: none"])').length - this.newMembers.length;
+                const totalMembers = activeExisting + this.newMembers.length;
+
                 const membersValid = totalMembers >= 3 && totalMembers <= 4;
-                const fieldsValid = this.formData.lecturer_id && this.formData.kategori_usaha && this.formData.nama_usaha;
+                const fieldsValid = this.formData.lecturer_id && this.formData.kategori_usaha && this.formData.nama_usaha && this.formData.kategori_wirausaha;
 
                 return membersValid && fieldsValid;
             },

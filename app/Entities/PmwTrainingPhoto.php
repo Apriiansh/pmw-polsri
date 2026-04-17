@@ -6,7 +6,7 @@ use CodeIgniter\Entity\Entity;
 
 class PmwTrainingPhoto extends Entity
 {
-    protected $dates = ['created_at'];
+    protected $dates = ['created_at', 'updated_at'];
     protected $casts = [
         'id'            => 'integer',
         'report_id'     => 'integer',

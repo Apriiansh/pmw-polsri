@@ -10,14 +10,15 @@ class PmwSelectionService
     {
         $db = Database::connect();
 
-        $row = $db->table('pmw_proposals')
-            ->select('wawancara_status')
-            ->where('period_id', $periodId)
-            ->where('leader_user_id', $leaderUserId)
+        $row = $db->table('pmw_proposals p')
+            ->select('sw.admin_status')
+            ->join('pmw_selection_wawancara sw', 'sw.proposal_id = p.id', 'inner')
+            ->where('p.period_id', $periodId)
+            ->where('p.leader_user_id', $leaderUserId)
             ->get()
             ->getRowArray();
 
-        return ($row && ($row['wawancara_status'] ?? null) === 'approved');
+        return ($row && ($row['admin_status'] ?? null) === 'approved');
     }
 
     public function getPassedStage1Teams(int $periodId): array
@@ -29,17 +30,30 @@ class PmwSelectionService
             'p.id',
             'p.nama_usaha',
             'p.kategori_wirausaha',
-            'p.wawancara_status',
+            'sw.admin_status as wawancara_status',
             'pm.nama as ketua_nama',
             'pm.nim as ketua_nim',
             'pm.jurusan as ketua_jurusan',
             'pm.prodi as ketua_prodi',
         ]);
         $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
+        $builder->join('pmw_selection_wawancara sw', 'sw.proposal_id = p.id', 'inner');
         $builder->where('p.period_id', $periodId);
-        $builder->where('p.wawancara_status', 'approved');
+        $builder->where('sw.admin_status', 'approved');
         $builder->orderBy('p.nama_usaha', 'ASC');
 
         return $builder->get()->getResultArray();
+    }
+
+    public function updateWawancaraStatus(int $proposalId, string $status): bool
+    {
+        $db = Database::connect();
+
+        return $db->table('pmw_selection_wawancara')
+            ->where('proposal_id', $proposalId)
+            ->update([
+                'admin_status' => $status,
+                'updated_at'   => date('Y-m-d H:i:s')
+            ]);
     }
 }
