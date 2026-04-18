@@ -51,6 +51,27 @@ class ActivityController extends BaseController
             ->orderBy('activity_date', 'DESC')
             ->findAll();
 
+        // Fetch photos for each schedule
+        $photoModel = new PmwActivityLogbookPhotoModel();
+        foreach ($schedules as $schedule) {
+            $tempPhotos = [];
+            if ($schedule->id) {
+                // We don't have logbook_id here directly, but we can find it via schedule_id
+                $logbookModel = new PmwActivityLogbookModel();
+                $logbook = $logbookModel->where('schedule_id', $schedule->id)->first();
+                if ($logbook) {
+                    $photos = $photoModel->where('logbook_id', $logbook->id)
+                                         ->where('uploader_role', 'admin')
+                                         ->findAll();
+                    foreach ($photos as $p) {
+                        $p->url = base_url('admin/kegiatan/gallery/' . $p->id);
+                        $tempPhotos[] = $p;
+                    }
+                }
+            }
+            $schedule->photos = $tempPhotos;
+        }
+
         // Stats
         $stats = [
             'total'     => count($schedules),
@@ -108,7 +129,11 @@ class ActivityController extends BaseController
 
         if ($logbook) {
             $photoModel = new PmwActivityLogbookPhotoModel();
-            $logbook->gallery = $photoModel->getByLogbook((int)$logbook->id);
+            $allPhotos  = $photoModel->getByLogbook((int)$logbook->id);
+            
+            $logbook->gallery = array_filter($allPhotos, fn($p) => $p->uploader_role === 'student');
+            $logbook->admin_monitoring_photos    = array_filter($allPhotos, fn($p) => $p->uploader_role === 'admin');
+            $logbook->reviewer_monitoring_photos = array_filter($allPhotos, fn($p) => $p->uploader_role === 'reviewer');
         }
 
         return view('admin/activity/detail', [
@@ -159,9 +184,9 @@ class ActivityController extends BaseController
             $data = [
                 'summary' => $this->request->getPost('summary'),
             ];
-            $photo = $this->request->getFile('photo');
+            $photos = $this->request->getFiles()['photos'] ?? [];
 
-            $this->activityService->submitReview($scheduleId, auth()->id(), $data, $photo);
+            $this->activityService->submitReview($scheduleId, auth()->id(), $data, $photos);
 
             return redirect()->back()->with('success', 'Monitoring kunjungan berhasil disimpan.');
         } catch (\Exception $e) {
@@ -288,10 +313,11 @@ class ActivityController extends BaseController
         }
 
         $filePath = match ($type) {
-            'photo'     => $logbook->photo_activity,
-            'supervisor' => $logbook->photo_supervisor_visit,
-            'reviewer'   => $logbook->reviewer_photo,
-            default     => ''
+            'photo'            => $logbook->photo_activity,
+            'supervisor'       => $logbook->photo_supervisor_visit,
+            'reviewer'         => $logbook->reviewer_photo,
+            'admin_monitoring' => $logbook->admin_photo,
+            default           => ''
         };
 
         if (empty($filePath)) {

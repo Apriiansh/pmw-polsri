@@ -8,7 +8,7 @@
         id: '',
         nama_usaha: '',
         summary: '',
-        photo_url: ''
+        photos: []
     },
     handleMouseMove(e) {
         const card = e.currentTarget;
@@ -117,7 +117,7 @@
                                         id: '<?= $schedule->id ?>', 
                                         nama_usaha: '<?= esc($schedule->nama_usaha) ?>',
                                         summary: '<?= esc($schedule->reviewer_summary ?? '') ?>',
-                                        photo_url: '<?= $schedule->reviewer_photo ? base_url('reviewer/kegiatan/file/reviewer/' . $schedule->id) : '' ?>'
+                                        photos: <?= htmlspecialchars(json_encode($schedule->photos ?? [])) ?>
                                     })" class="btn-outline btn-xs bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-500 hover:text-white transition-all">
                                         <i class="fas fa-map-location-dot mr-1"></i> Monitoring
                                     </button>
@@ -166,27 +166,31 @@
                         <label class="text-[10px] text-slate-400 font-black uppercase tracking-widest block">Foto Dokumentasi Lapangan</label>
                         
                         <div class="relative">
-                            <template x-if="monitoringData.photo_url">
-                                <div class="aspect-video rounded-2xl overflow-hidden border-4 border-white shadow-lg relative group">
-                                    <img :src="monitoringData.photo_url" class="w-full h-full object-cover">
-                                    <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
-                                        <i class="fas fa-search-plus text-2xl"></i>
-                                    </div>
+                            <template x-if="monitoringData.photos && monitoringData.photos.length > 0">
+                                <div class="grid grid-cols-2 gap-3">
+                                    <template x-for="photo in monitoringData.photos" :key="photo.id">
+                                        <div class="aspect-square rounded-xl overflow-hidden border-2 border-white shadow-md relative group">
+                                            <img :src="photo.url" class="w-full h-full object-cover">
+                                            <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
+                                                <i class="fas fa-search-plus text-lg"></i>
+                                            </div>
+                                        </div>
+                                    </template>
                                 </div>
                             </template>
                             
-                            <template x-if="!monitoringData.photo_url">
+                            <template x-if="!monitoringData.photos || monitoringData.photos.length === 0">
                                 <div class="aspect-video rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-300">
-                                    <i class="fas fa-image text-4xl mb-2"></i>
-                                    <p class="text-[10px] font-bold uppercase tracking-widest">Belum Ada Foto</p>
+                                    <i class="fas fa-images text-4xl mb-2"></i>
+                                    <p class="text-[10px] font-bold uppercase tracking-widest">Belum Ada Dokumentasi</p>
                                 </div>
                             </template>
                         </div>
 
                         <div class="form-field mt-6">
-                            <label class="form-label text-[11px]">Upload Foto Rill Baru</label>
-                            <input type="file" name="photo" class="input-field py-2.5 text-xs bg-slate-50" accept="image/*">
-                            <p class="text-[9px] text-slate-400 mt-2 italic">* Format: JPG, PNG, WEBP. Maks 2MB.</p>
+                            <label class="form-label text-[11px]">Upload Foto Dokumentasi (Multiple)</label>
+                            <input type="file" name="photos[]" class="input-field py-2.5 text-xs bg-slate-50" accept="image/*" multiple>
+                            <p class="text-[9px] text-slate-400 mt-2 italic">* Pilih satu atau lebih foto rill di lapangan.</p>
                         </div>
                     </div>
 

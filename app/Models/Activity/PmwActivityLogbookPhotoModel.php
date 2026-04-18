@@ -14,6 +14,7 @@ class PmwActivityLogbookPhotoModel extends Model
     protected $protectFields    = true;
     protected $allowedFields    = [
         'logbook_id',
+        'uploader_role',
         'file_path',
         'original_name',
     ];
@@ -23,10 +24,14 @@ class PmwActivityLogbookPhotoModel extends Model
     protected $updatedField  = 'updated_at';
 
     /**
-     * Get photos by logbook ID
+     * Get photos by logbook ID and optionally role
      */
-    public function getByLogbook(int $logbookId): array
+    public function getByLogbook(int $logbookId, ?string $role = null): array
     {
-        return $this->where('logbook_id', $logbookId)->findAll();
+        $builder = $this->where('logbook_id', $logbookId);
+        if ($role) {
+            $builder->where('uploader_role', $role);
+        }
+        return $builder->findAll();
     }
 }

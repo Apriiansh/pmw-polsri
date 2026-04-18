@@ -62,19 +62,33 @@
                 <!-- Left: Photo -->
                 <div class="space-y-4">
                     <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Foto Dokumentasi Lapangan</p>
-                    <?php if ($logbook && $logbook->reviewer_photo): ?>
-                    <div class="aspect-video rounded-2xl overflow-hidden border-4 border-white shadow-lg group relative cursor-pointer" onclick="window.open('<?= base_url('reviewer/kegiatan/file/reviewer/' . $logbook->id) ?>', '_blank')">
-                        <img src="<?= base_url('reviewer/kegiatan/file/reviewer/' . $logbook->id) ?>" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
-                            <i class="fas fa-search-plus text-3xl"></i>
-                        </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <?php if (!empty($logbook->reviewer_monitoring_photos)): ?>
+                            <?php foreach ($logbook->reviewer_monitoring_photos as $photo): ?>
+                            <div class="aspect-video rounded-xl overflow-hidden border-2 border-white shadow-sm group relative cursor-pointer" 
+                                 onclick="window.open('<?= base_url('reviewer/kegiatan/gallery/' . $photo->id) ?>', '_blank')">
+                                <img src="<?= base_url('reviewer/kegiatan/gallery/' . $photo->id) ?>" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
+                                    <i class="fas fa-search-plus text-xl"></i>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        <?php elseif ($logbook->reviewer_photo): ?>
+                            <!-- Legacy support -->
+                            <div class="aspect-video rounded-xl overflow-hidden border-2 border-white shadow-sm group relative cursor-pointer" 
+                                 onclick="window.open('<?= base_url('reviewer/kegiatan/file/reviewer/' . $logbook->id) ?>', '_blank')">
+                                <img src="<?= base_url('reviewer/kegiatan/file/reviewer/' . $logbook->id) ?>" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
+                                    <i class="fas fa-search-plus text-xl"></i>
+                                </div>
+                            </div>
+                        <?php else: ?>
+                            <div class="col-span-full aspect-video rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-300">
+                                <i class="fas fa-image text-3xl mb-2"></i>
+                                <p class="text-[10px] font-bold uppercase tracking-widest">Belum Ada Foto</p>
+                            </div>
+                        <?php endif; ?>
                     </div>
-                    <?php else: ?>
-                    <div class="aspect-video rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-300">
-                        <i class="fas fa-image text-3xl mb-2"></i>
-                        <p class="text-[10px] font-bold uppercase tracking-widest">Belum Ada Foto</p>
-                    </div>
-                    <?php endif; ?>
                 </div>
 
                 <!-- Right: Summary -->
@@ -121,22 +135,22 @@
                     <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
                         <?php if (!empty($logbook->gallery)): ?>
                             <?php foreach ($logbook->gallery as $photo): ?>
-                                <div class="aspect-square rounded-2xl overflow-hidden border-2 border-slate-100 bg-slate-50 group relative shadow-sm">
+                                <div class="aspect-square rounded-2xl overflow-hidden border-2 border-slate-100 bg-slate-50 group relative shadow-sm cursor-pointer"
+                                     onclick="openImageModal('<?= base_url('reviewer/kegiatan/gallery/' . $photo->id) ?>')">
                                     <img src="<?= base_url('reviewer/kegiatan/gallery/' . $photo->id) ?>" class="w-full h-full object-cover">
-                                    <a href="<?= base_url('reviewer/kegiatan/gallery/' . $photo->id) ?>" target="_blank" 
-                                       class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
+                                    <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
                                         <i class="fas fa-expand text-xl"></i>
-                                    </a>
+                                    </div>
                                 </div>
                             <?php endforeach; ?>
                         <?php elseif ($logbook->photo_activity): ?>
                              <!-- Legacy support -->
-                             <div class="aspect-square rounded-2xl overflow-hidden border-2 border-slate-100 bg-slate-50 group relative shadow-sm">
+                                <div class="aspect-square rounded-2xl overflow-hidden border-2 border-slate-100 bg-slate-50 group relative shadow-sm cursor-pointer"
+                                     onclick="openImageModal('<?= base_url('reviewer/kegiatan/file/photo/' . $logbook->id) ?>')">
                                     <img src="<?= base_url('reviewer/kegiatan/file/photo/' . $logbook->id) ?>" class="w-full h-full object-cover">
-                                    <a href="<?= base_url('reviewer/kegiatan/file/photo/' . $logbook->id) ?>" target="_blank" 
-                                       class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
+                                    <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
                                         <i class="fas fa-expand text-xl"></i>
-                                    </a>
+                                    </div>
                                 </div>
                         <?php else: ?>
                             <div class="col-span-full py-10 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400">
@@ -150,12 +164,12 @@
                 <div class="space-y-2 col-span-2 md:col-span-1">
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Foto Kunjungan Dosen</label>
                     <?php if ($logbook->photo_supervisor_visit): ?>
-                        <div class="aspect-video rounded-2xl overflow-hidden border border-slate-100 group relative">
+                        <div class="aspect-video rounded-2xl overflow-hidden border border-slate-100 group relative cursor-pointer"
+                             onclick="openImageModal('<?= base_url('reviewer/kegiatan/file/supervisor/' . $logbook->id) ?>')">
                             <img src="<?= base_url('reviewer/kegiatan/file/supervisor/' . $logbook->id) ?>" class="w-full h-full object-cover">
-                            <a href="<?= base_url('reviewer/kegiatan/file/supervisor/' . $logbook->id) ?>" target="_blank" 
-                               class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
+                            <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
                                 <i class="fas fa-expand text-2xl"></i>
-                            </a>
+                            </div>
                         </div>
                     <?php else: ?>
                         <div class="aspect-video rounded-2xl bg-slate-50 border border-dashed border-slate-200 flex items-center justify-center text-slate-400 text-[11px]">Foto belum ada</div>
@@ -167,5 +181,34 @@
     <?php endif; ?>
 
 </div>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md" onclick="closeImageModal()">
+        <div class="relative max-w-5xl w-full flex items-center justify-center animate-modal" @click.stop>
+            <button onclick="closeImageModal()" class="absolute -top-12 right-0 text-white hover:text-rose-400 transition-colors">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+            <img id="modalImage" src="" class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl border-4 border-white/10 object-contain bg-slate-800">
+        </div>
+    </div>
+
+    <script>
+    function openImageModal(src) {
+        const modal = document.getElementById('imageModal');
+        const img = document.getElementById('modalImage');
+        img.src = src;
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeImageModal() {
+        document.getElementById('imageModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', (e) => { 
+        if (e.key === 'Escape') closeImageModal();
+    });
+    </script>
 
 <?= $this->endSection() ?>

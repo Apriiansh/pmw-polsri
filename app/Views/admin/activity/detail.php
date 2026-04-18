@@ -122,7 +122,7 @@
                 </div>
             </div>
 
-            <!-- 2. Unified Media Documentation -->
+            <!-- 2. Unified Media Documentation (Student) -->
             <div class="card-premium overflow-hidden" @mousemove="handleMouseMove">
                 <div class="px-5 py-4 border-b border-sky-50 bg-white/60">
                     <h3 class="font-display text-sm font-bold text-(--text-heading)">
@@ -169,11 +169,74 @@
                             </div>
                         </div>
                         <?php endif; ?>
+                    </div>
+                </div>
+            </div>
 
-                        <?php if (empty($logbook->gallery) && !$logbook->photo_activity): ?>
-                            <div class="col-span-full py-12 text-center bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
-                                <i class="fas fa-images text-slate-300 text-3xl mb-2"></i>
-                                <p class="text-xs text-slate-400 font-medium">Tidak ada foto dokumentasi</p>
+            <!-- 3. Monitoring Lapangan (Admin) -->
+            <div class="card-premium overflow-hidden border-l-4 border-l-sky-500" @mousemove="handleMouseMove">
+                <div class="px-5 py-4 border-b border-sky-50 bg-white/60 flex items-center justify-between">
+                    <h3 class="font-display text-sm font-bold text-(--text-heading)">
+                        <i class="fas fa-user-shield text-sky-500 mr-2"></i>
+                        Dokumentasi Monitoring (Admin)
+                    </h3>
+                    <?php if ($logbook->admin_at): ?>
+                        <span class="text-[9px] font-bold text-slate-400 uppercase"><?= date('d M Y H:i', strtotime($logbook->admin_at)) ?></span>
+                    <?php endif; ?>
+                </div>
+                <div class="p-5 space-y-4">
+                    <?php if ($logbook->admin_summary): ?>
+                        <div class="p-4 rounded-xl bg-sky-50 border border-sky-100 text-slate-700 text-xs leading-relaxed italic">
+                            <?= nl2br(esc($logbook->admin_summary)) ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <?php if (!empty($logbook->admin_monitoring_photos)): ?>
+                            <?php foreach ($logbook->admin_monitoring_photos as $photo): ?>
+                            <div class="aspect-square rounded-xl overflow-hidden border-2 border-white shadow-sm group relative cursor-pointer"
+                                 onclick="openImageModal('<?= base_url('admin/kegiatan/gallery/' . $photo->id) ?>')">
+                                <img src="<?= base_url('admin/kegiatan/gallery/' . $photo->id) ?>" class="w-full h-full object-cover">
+                            </div>
+                            <?php endforeach; ?>
+                        <?php elseif (!$logbook->admin_summary): ?>
+                            <div class="col-span-full py-6 text-center bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
+                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Belum Ada Monitoring Admin</p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Monitoring Lapangan (Reviewer) -->
+            <div class="card-premium overflow-hidden border-l-4 border-l-emerald-500" @mousemove="handleMouseMove">
+                <div class="px-5 py-4 border-b border-emerald-50 bg-white/60 flex items-center justify-between">
+                    <h3 class="font-display text-sm font-bold text-(--text-heading)">
+                        <i class="fas fa-user-check text-emerald-500 mr-2"></i>
+                        Dokumentasi Monitoring (Reviewer)
+                    </h3>
+                    <?php if ($logbook->reviewer_at): ?>
+                        <span class="text-[9px] font-bold text-slate-400 uppercase"><?= date('d M Y H:i', strtotime($logbook->reviewer_at)) ?></span>
+                    <?php endif; ?>
+                </div>
+                <div class="p-5 space-y-4">
+                    <?php if ($logbook->reviewer_summary): ?>
+                        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-100 text-slate-700 text-xs leading-relaxed italic">
+                            <?= nl2br(esc($logbook->reviewer_summary)) ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <?php if (!empty($logbook->reviewer_monitoring_photos)): ?>
+                            <?php foreach ($logbook->reviewer_monitoring_photos as $photo): ?>
+                            <div class="aspect-square rounded-xl overflow-hidden border-2 border-white shadow-sm group relative cursor-pointer"
+                                 onclick="openImageModal('<?= base_url('admin/kegiatan/gallery/' . $photo->id) ?>')">
+                                <img src="<?= base_url('admin/kegiatan/gallery/' . $photo->id) ?>" class="w-full h-full object-cover">
+                            </div>
+                            <?php endforeach; ?>
+                        <?php elseif (!$logbook->reviewer_summary): ?>
+                            <div class="col-span-full py-6 text-center bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
+                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Belum Ada Monitoring Reviewer</p>
                             </div>
                         <?php endif; ?>
                     </div>

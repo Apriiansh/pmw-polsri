@@ -32,6 +32,9 @@ class PmwActivityLogbookModel extends Model
         'mentor_verified_at',
         'admin_note',
         'admin_verified_at',
+        'admin_summary',
+        'admin_photo',
+        'admin_at',
     ];
 
     protected $useTimestamps = true;

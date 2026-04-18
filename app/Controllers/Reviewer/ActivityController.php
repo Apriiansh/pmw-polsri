@@ -29,6 +29,26 @@ class ActivityController extends BaseController
     {
         $scheduleModel = new PmwActivityScheduleModel();
         $schedules     = $scheduleModel->getAllSchedulesWithProposal();
+        
+        // Fetch photos for each schedule
+        $photoModel = new PmwActivityLogbookPhotoModel();
+        foreach ($schedules as $schedule) {
+            $tempPhotos = [];
+            if ($schedule->id) {
+                $logbookModel = new PmwActivityLogbookModel();
+                $logbook = $logbookModel->where('schedule_id', $schedule->id)->first();
+                if ($logbook) {
+                    $photos = $photoModel->where('logbook_id', $logbook->id)
+                                         ->where('uploader_role', 'reviewer')
+                                         ->findAll();
+                    foreach ($photos as $p) {
+                        $p->url = base_url('reviewer/kegiatan/gallery/' . $p->id);
+                        $tempPhotos[] = $p;
+                    }
+                }
+            }
+            $schedule->photos = $tempPhotos;
+        }
 
         return view('reviewer/activity/index', [
             'title'     => 'Monitoring Kegiatan | PMW Polsri',
@@ -51,7 +71,12 @@ class ActivityController extends BaseController
 
         if ($logbook) {
             $photoModel = new PmwActivityLogbookPhotoModel();
-            $logbook->gallery = $photoModel->getByLogbook((int)$logbook->id);
+            $allPhotos  = $photoModel->getByLogbook((int)$logbook->id);
+            
+            $logbook->gallery = array_filter($allPhotos, fn($p) => $p->uploader_role === 'student');
+            $logbook->reviewer_monitoring_photos = array_filter($allPhotos, fn($p) => $p->uploader_role === 'reviewer');
+            // Hide admin photos from reviewer
+            $logbook->admin_monitoring_photos = [];
         }
 
         return view('reviewer/activity/detail', [
@@ -68,9 +93,9 @@ class ActivityController extends BaseController
             $data = [
                 'summary' => $this->request->getPost('summary'),
             ];
-            $photo = $this->request->getFile('photo');
+            $photos = $this->request->getFiles()['photos'] ?? [];
 
-            $this->activityService->submitReview($scheduleId, auth()->id(), $data, $photo);
+            $this->activityService->submitReview($scheduleId, auth()->id(), $data, $photos);
 
             return redirect()->back()->with('success', 'Monitoring kunjungan berhasil disimpan.');
         } catch (\Exception $e) {

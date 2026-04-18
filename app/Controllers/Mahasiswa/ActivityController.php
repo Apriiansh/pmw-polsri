@@ -58,9 +58,19 @@ class ActivityController extends BaseController
         foreach ($schedules as $schedule) {
             $schedule->logbook = $logbookModel->getBySchedule($schedule->id);
             if ($schedule->logbook) {
-                $schedule->logbook->gallery = $photoModel->getByLogbook((int)$schedule->logbook->id);
-            } else {
-                $schedule->logbook_gallery = [];
+                $allPhotos = $photoModel->getByLogbook((int)$schedule->logbook->id);
+                
+                // Categorize photos
+                $schedule->logbook->gallery = array_filter($allPhotos, fn($p) => $p->uploader_role === 'student');
+                $schedule->logbook->admin_photos = array_filter($allPhotos, fn($p) => $p->uploader_role === 'admin');
+                $schedule->logbook->reviewer_photos = array_filter($allPhotos, fn($p) => $p->uploader_role === 'reviewer');
+                
+                // Add URLs for display
+                foreach (['admin_photos', 'reviewer_photos'] as $key) {
+                    foreach ($schedule->logbook->$key as $p) {
+                        $p->url = base_url('mahasiswa/kegiatan/gallery/' . $p->id);
+                    }
+                }
             }
         }
 

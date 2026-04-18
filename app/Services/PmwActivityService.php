@@ -312,8 +312,8 @@ class PmwActivityService
             $this->photoModel->delete($photo->id);
         }
 
-        // 2. Delete Single Files
-        $fileFields = ['photo_activity', 'photo_supervisor_visit', 'reviewer_photo'];
+        // 2. Delete Single Files (Legacy/Internal)
+        $fileFields = ['photo_activity', 'photo_supervisor_visit', 'reviewer_photo', 'admin_photo'];
         foreach ($fileFields as $field) {
             if (!empty($logbook->$field)) {
                 $path = WRITEPATH . 'uploads/' . $logbook->$field;
@@ -322,44 +322,76 @@ class PmwActivityService
                 }
             }
         }
+
+        // 3. Delete Multiple Photos (Gallery)
+        $photoModel = new PmwActivityLogbookPhotoModel();
+        $photos     = $photoModel->getByLogbook($logbook->id);
+        foreach ($photos as $photo) {
+            $path = WRITEPATH . 'uploads/' . $photo->file_path;
+            if (is_file($path)) {
+                unlink($path);
+            }
+        }
+        $photoModel->where('logbook_id', $logbook->id)->delete();
     }
 
     /**
      * Submit visit documentation (by Admin or Reviewer)
      */
-    public function submitReview(int $scheduleId, int $userId, array $data, ?object $photo): bool
+    public function submitReview(int $scheduleId, int $userId, array $data, ?array $photos): bool
     {
         $logbook = $this->logbookModel->getBySchedule($scheduleId);
         
-        $updateData = [
-            'reviewer_summary' => $data['summary'],
-            'reviewer_id'      => $userId,
-            'reviewer_at'      => date('Y-m-d H:i:s'),
-        ];
+        // Ensure logbook exists or create one (draft)
+        if (!$logbook) {
+            $logbookId = $this->logbookModel->insert([
+                'schedule_id' => $scheduleId,
+                'status'      => 'draft',
+            ]);
+            $logbook = $this->logbookModel->find($logbookId);
+        }
 
-        // Handle Photo Upload
-        if ($photo && $photo->isValid() && !$photo->hasMoved()) {
-            // Delete old if exists
-            if ($logbook && !empty($logbook->reviewer_photo)) {
-                $oldPath = WRITEPATH . 'uploads/' . $logbook->reviewer_photo;
-                if (is_file($oldPath)) {
-                    unlink($oldPath);
+        // Determine role based on current auth user
+        $role = auth()->user()->inGroup('admin', 'superadmin') ? 'admin' : 'reviewer';
+        
+        $updateData = [];
+        if ($role === 'admin') {
+            $updateData = [
+                'admin_summary' => $data['summary'],
+                'admin_at'      => date('Y-m-d H:i:s'),
+            ];
+            $uploadPath = 'activity/admin';
+        } else {
+            $updateData = [
+                'reviewer_summary' => $data['summary'],
+                'reviewer_id'      => $userId,
+                'reviewer_at'      => date('Y-m-d H:i:s'),
+            ];
+            $uploadPath = 'activity/reviewer';
+        }
+
+        // Update Logbook Text Data
+        $this->logbookModel->update($logbook->id, $updateData);
+
+        // Handle Multiple Photos Upload
+        if (!empty($photos)) {
+            $photoModel = new PmwActivityLogbookPhotoModel();
+            foreach ($photos as $photo) {
+                if ($photo->isValid() && !$photo->hasMoved()) {
+                    $newName = $photo->getRandomName();
+                    $photo->move(WRITEPATH . 'uploads/' . $uploadPath, $newName);
+                    
+                    $photoModel->insert([
+                        'logbook_id'    => $logbook->id,
+                        'uploader_role' => $role,
+                        'file_path'     => $uploadPath . '/' . $newName,
+                        'original_name' => $photo->getClientName(),
+                    ]);
                 }
             }
-            $newName = $photo->getRandomName();
-            $photo->move(WRITEPATH . 'uploads/activity/reviewer', $newName);
-            $updateData['reviewer_photo'] = 'activity/reviewer/' . $newName;
         }
 
-        if ($logbook) {
-            return $this->logbookModel->update($logbook->id, $updateData);
-        } else {
-            // If student hasn't even created a draft, we create the logbook entry for them
-            // to store the reviewer documentation.
-            $updateData['schedule_id'] = $scheduleId;
-            $updateData['status']      = 'draft'; // Stays in draft until student fills it
-            return $this->logbookModel->insert($updateData);
-        }
+        return true;
     }
 
     /**

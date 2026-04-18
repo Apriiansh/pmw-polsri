@@ -3,6 +3,12 @@
 <?= $this->section('content') ?>
 
 <div class="space-y-8 max-w-6xl mx-auto" x-data="{
+    showImageModal: false,
+    modalImageUrl: '',
+    openImageModal(url) {
+        this.modalImageUrl = url;
+        this.showImageModal = true;
+    },
     handleMouseMove(e) {
         const card = e.currentTarget;
         const rect = card.getBoundingClientRect();
@@ -253,43 +259,82 @@
                         </div>
 
                         <!-- Feedback Bento (span 12) -->
-                        <?php if ($logbook && ($logbook->dosen_note || $logbook->mentor_note || $logbook->reviewer_at)): ?>
+                        <?php if ($logbook && ($logbook->dosen_note || $logbook->mentor_note || $logbook->reviewer_at || $logbook->admin_at)): ?>
                             <div class="md:col-span-12 card-premium p-6 bg-slate-50/30" @mousemove="handleMouseMove">
-                                <div class="flex items-center gap-2 mb-4">
+                                <div class="flex items-center gap-2 mb-6">
                                     <i class="fas fa-comment-dots text-sky-500"></i>
-                                    <label class="form-label mb-0">Feedback Verifikator</label>
+                                    <label class="form-label mb-0 uppercase tracking-widest text-[10px]">Feedback & Monitoring Lapangan</label>
                                 </div>
-                                <div class="grid md:grid-cols-3 gap-6">
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                    <!-- 1. Dosen Note -->
                                     <?php if ($logbook->dosen_note): ?>
-                                        <div class="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm relative">
-                                            <p class="text-xs text-slate-600 italic leading-relaxed">"<?= esc($logbook->dosen_note) ?>"</p>
-                                            <div class="mt-3 flex items-center gap-2">
+                                        <div class="space-y-3">
+                                            <div class="flex items-center gap-2">
                                                 <div class="w-1.5 h-1.5 rounded-full bg-violet-400"></div>
                                                 <span class="text-[9px] font-black text-violet-500 uppercase tracking-widest">Dosen Pendamping</span>
                                             </div>
-                                        </div>
-                                    <?php endif; ?>
-                                    <?php if ($logbook->mentor_note): ?>
-                                        <div class="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm relative">
-                                            <p class="text-xs text-slate-600 italic leading-relaxed">"<?= esc($logbook->mentor_note) ?>"</p>
-                                            <div class="mt-3 flex items-center gap-2">
-                                                <div class="w-1.5 h-1.5 rounded-full bg-indigo-400"></div>
-                                                <span class="text-[9px] font-black text-indigo-500 uppercase tracking-widest">Mentor Bisnis</span>
+                                            <div class="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm min-h-[100px]">
+                                                <p class="text-[10px] text-slate-600 italic leading-relaxed">"<?= esc($logbook->dosen_note) ?>"</p>
                                             </div>
                                         </div>
                                     <?php endif; ?>
+
+                                    <!-- 2. Mentor Note -->
+                                    <?php if ($logbook->mentor_note): ?>
+                                        <div class="space-y-3">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-1.5 h-1.5 rounded-full bg-indigo-400"></div>
+                                                <span class="text-[9px] font-black text-indigo-500 uppercase tracking-widest">Mentor Bisnis</span>
+                                            </div>
+                                            <div class="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm min-h-[100px]">
+                                                <p class="text-[10px] text-slate-600 italic leading-relaxed">"<?= esc($logbook->mentor_note) ?>"</p>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <!-- 3. Admin Monitoring -->
+                                    <?php if ($logbook->admin_at): ?>
+                                        <div class="space-y-3 col-span-1 md:col-span-2 lg:col-span-1">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-1.5 h-1.5 rounded-full bg-rose-400"></div>
+                                                <span class="text-[9px] font-black text-rose-500 uppercase tracking-widest">Monitoring Admin</span>
+                                            </div>
+                                            <div class="p-4 rounded-2xl bg-rose-50/50 border border-rose-100 shadow-sm min-h-[100px] flex flex-col gap-3">
+                                                <p class="text-[10px] text-rose-900 italic leading-relaxed">"<?= esc($logbook->admin_summary ?: 'Terdokumentasi di lapangan.') ?>"</p>
+                                                
+                                                <?php if (!empty($logbook->admin_photos)): ?>
+                                                    <div class="grid grid-cols-4 gap-1.5 mt-auto pt-2 border-t border-rose-100">
+                                                        <?php foreach ($logbook->admin_photos as $p): ?>
+                                                            <div @click="openImageModal('<?= $p->url ?>')" class="aspect-square rounded-lg overflow-hidden border border-rose-200 cursor-pointer hover:ring-2 hover:ring-rose-400 transition-all">
+                                                                <img src="<?= $p->url ?>" class="w-full h-full object-cover">
+                                                            </div>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <!-- 4. Reviewer Monitoring -->
                                     <?php if ($logbook->reviewer_at): ?>
-                                        <div class="p-4 rounded-2xl bg-sky-50 border border-sky-100 flex gap-4">
-                                            <?php if ($logbook->reviewer_photo && $logbook->id): ?>
-                                                <img src="<?= base_url('mahasiswa/kegiatan/file/reviewer/' . $logbook->id) ?>" class="w-12 h-12 rounded-xl object-cover shadow-sm border border-sky-200">
-                                            <?php else: ?>
-                                                <div class="w-12 h-12 rounded-xl bg-sky-100 flex items-center justify-center text-sky-400">
-                                                    <i class="fas fa-clipboard-check"></i>
-                                                </div>
-                                            <?php endif; ?>
-                                            <div class="min-w-0">
-                                                <p class="text-[9px] font-black text-sky-500 uppercase">Reviewer Visit</p>
-                                                <p class="text-[10px] text-sky-900 italic line-clamp-2 mt-1">"<?= esc($logbook->reviewer_summary) ?>"</p>
+                                        <div class="space-y-3 col-span-1 md:col-span-2 lg:col-span-1">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-1.5 h-1.5 rounded-full bg-sky-400"></div>
+                                                <span class="text-[9px] font-black text-sky-500 uppercase tracking-widest">Monitoring Reviewer</span>
+                                            </div>
+                                            <div class="p-4 rounded-2xl bg-sky-50/50 border border-sky-100 shadow-sm min-h-[100px] flex flex-col gap-3">
+                                                <p class="text-[10px] text-sky-900 italic leading-relaxed">"<?= esc($logbook->reviewer_summary ?: 'Terdokumentasi di lapangan.') ?>"</p>
+                                                
+                                                <?php if (!empty($logbook->reviewer_photos)): ?>
+                                                    <div class="grid grid-cols-4 gap-1.5 mt-auto pt-2 border-t border-sky-100">
+                                                        <?php foreach ($logbook->reviewer_photos as $p): ?>
+                                                            <div @click="openImageModal('<?= $p->url ?>')" class="aspect-square rounded-lg overflow-hidden border border-sky-200 cursor-pointer hover:ring-2 hover:ring-sky-400 transition-all">
+                                                                <img src="<?= $p->url ?>" class="w-full h-full object-cover">
+                                                            </div>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                     <?php endif; ?>
@@ -315,8 +360,34 @@
             </div>
             <?php endforeach; ?>
         <?php endif; ?>
-    </div>
-
+    <!-- IMAGE PREVIEW MODAL -->
+    <template x-teleport="body">
+        <div x-show="showImageModal" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-[999] flex items-center justify-center bg-slate-900/90 backdrop-blur-sm p-4"
+             @keydown.escape.window="showImageModal = false">
+            
+            <div class="relative max-w-5xl w-full max-h-[90vh] flex flex-col items-center">
+                <button @click="showImageModal = false" class="absolute -top-12 right-0 text-white hover:text-sky-400 transition-colors flex items-center gap-2 group">
+                    <span class="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Tutup</span>
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+                
+                <img :src="modalImageUrl" class="w-full h-full object-contain rounded-2xl shadow-2xl">
+                
+                <div class="mt-4 flex gap-4">
+                    <a :href="modalImageUrl" download class="btn-primary py-2 px-6 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                        <i class="fas fa-download"></i> Simpan Gambar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </template>
 </div>
 
 <?= $this->endSection() ?>

@@ -21,14 +21,20 @@ use CodeIgniter\Entity\Entity;
  * @property string|null $mentor_note
  * @property string|null $mentor_verified_at
  * @property string|null $admin_note
- * @property string|null $admin_verified_at
+ * @property string|null $admin_summary
+ * @property string|null $admin_photo
+ * @property string|null $admin_at
+ * @property string|null $reviewer_photo
+ * @property string|null $reviewer_summary
+ * @property int|null $reviewer_id
+ * @property string|null $reviewer_at
  * @property string $created_at
  * @property string $updated_at
  */
 class PmwActivityLogbook extends Entity
 {
     protected $datamap = [];
-    protected $dates   = ['created_at', 'updated_at', 'dosen_verified_at', 'mentor_verified_at', 'admin_verified_at'];
+    protected $dates   = ['created_at', 'updated_at', 'dosen_verified_at', 'mentor_verified_at', 'admin_verified_at', 'admin_at', 'reviewer_at'];
     protected $casts   = [
         'id'                     => 'integer',
         'schedule_id'            => 'integer',
@@ -42,5 +48,10 @@ class PmwActivityLogbook extends Entity
         'mentor_status'          => 'string',
         'mentor_note'            => 'string',
         'admin_note'             => 'string',
+        'admin_summary'          => 'string',
+        'admin_photo'            => 'string',
+        'reviewer_photo'         => 'string',
+        'reviewer_summary'       => 'string',
+        'reviewer_id'            => 'integer',
     ];
 }
