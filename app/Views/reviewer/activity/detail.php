@@ -45,61 +45,55 @@
         </div>
     </div>
 
-    <!-- Monitoring Kunjungan Lapangan (Reviewer Form) -->
+    <!-- Monitoring Kunjungan Lapangan (Reviewer View) -->
     <div class="card-premium overflow-hidden animate-stagger delay-200" @mousemove="handleMouseMove">
         <div class="px-6 py-4 border-b border-sky-50 bg-sky-50/30 flex justify-between items-center">
             <h3 class="font-display text-base font-bold text-sky-900">
-                <i class="fas fa-camera text-sky-500 mr-2"></i>Dokumentasi Kunjungan Lapangan
+                <i class="fas fa-map-location-dot text-sky-500 mr-2"></i>Hasil Monitoring Lapangan
             </h3>
+            <?php if ($logbook && $logbook->reviewer_at): ?>
+                <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                    <i class="fas fa-check-circle mr-1"></i> Terverifikasi: <?= date('d/m/Y', strtotime($logbook->reviewer_at)) ?>
+                </span>
+            <?php endif; ?>
         </div>
         <div class="p-6">
             <div class="grid md:grid-cols-2 gap-8">
-                <!-- Left: Form -->
-                <div>
-                    <form action="<?= base_url('reviewer/kegiatan/review/' . $schedule->id) ?>" method="POST" enctype="multipart/form-data" class="space-y-4">
-                        <?= csrf_field() ?>
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Foto Kunjungan Lapangan</label>
-                            <?php if ($logbook && $logbook->reviewer_photo): ?>
-                                <div class="aspect-video rounded-2xl overflow-hidden border-2 border-sky-100 bg-sky-50 group relative mb-3">
-                                    <img src="<?= base_url('reviewer/kegiatan/file/reviewer/' . $logbook->id) ?>" class="w-full h-full object-cover">
-                                    <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
-                                        <i class="fas fa-expand text-2xl"></i>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
-                            <input type="file" name="photo" class="input-modern w-full text-[11px]" accept="image/*">
-                            <p class="text-[10px] text-slate-400 italic">Format: JPG, PNG. Maks 2MB. (Upload ulang untuk mengganti)</p>
+                <!-- Left: Photo -->
+                <div class="space-y-4">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Foto Dokumentasi Lapangan</p>
+                    <?php if ($logbook && $logbook->reviewer_photo): ?>
+                    <div class="aspect-video rounded-2xl overflow-hidden border-4 border-white shadow-lg group relative cursor-pointer" onclick="window.open('<?= base_url('reviewer/kegiatan/file/reviewer/' . $logbook->id) ?>', '_blank')">
+                        <img src="<?= base_url('reviewer/kegiatan/file/reviewer/' . $logbook->id) ?>" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
+                            <i class="fas fa-search-plus text-3xl"></i>
                         </div>
-
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ringkasan Detail Keterangan</label>
-                            <textarea name="summary" rows="4" class="input-modern w-full text-[13px]" placeholder="Masukkan hasil review/kunjungan rill di lapangan..."><?= esc($logbook->reviewer_summary ?? '') ?></textarea>
-                        </div>
-
-                        <button type="submit" class="btn-primary w-full shadow-lg shadow-sky-500/20">
-                            Simpan Dokumentasi Monitoring
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Right: Status & Info -->
-                <div class="bg-slate-50/50 rounded-2xl p-6 border border-slate-100 flex flex-col justify-center text-center space-y-4">
-                    <div class="w-16 h-16 rounded-full bg-sky-100 text-sky-500 flex items-center justify-center mx-auto mb-2">
-                        <i class="fas fa-info-circle text-2xl"></i>
                     </div>
-                    <div>
-                        <h4 class="text-sm font-bold text-slate-800">Panduan Monitoring</h4>
-                        <p class="text-[11px] text-slate-500 leading-relaxed px-4">Reviewer bertugas memverifikasi kondisi rill di lapangan. Foto yang diunggah harus mencerminkan aktivitas wirausaha mahasiswa di lokasi.</p>
-                    </div>
-                    <?php if ($logbook && $logbook->reviewer_at): ?>
-                    <div class="pt-4 border-t border-slate-200">
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Terakhir Diperbarui</p>
-                        <p class="text-[12px] font-bold text-slate-700 mt-1">
-                            <?= date('d M Y, H:i', strtotime($logbook->reviewer_at)) ?>
-                        </p>
+                    <?php else: ?>
+                    <div class="aspect-video rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-300">
+                        <i class="fas fa-image text-3xl mb-2"></i>
+                        <p class="text-[10px] font-bold uppercase tracking-widest">Belum Ada Foto</p>
                     </div>
                     <?php endif; ?>
+                </div>
+
+                <!-- Right: Summary -->
+                <div class="space-y-4">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Catatan / Temuan Lapangan</p>
+                    <div class="p-5 rounded-2xl bg-sky-50/50 border border-sky-100 min-h-[150px]">
+                        <?php if ($logbook && $logbook->reviewer_summary): ?>
+                            <p class="text-[13px] text-slate-700 leading-relaxed italic">"<?= esc($logbook->reviewer_summary) ?>"</p>
+                        <?php else: ?>
+                            <div class="flex flex-col items-center justify-center h-full text-slate-400 py-10">
+                                <i class="fas fa-comment-slash text-2xl mb-2 opacity-20"></i>
+                                <p class="text-[11px] font-bold uppercase tracking-widest text-center">Belum ada catatan temuan</p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div class="pt-4">
+                         <p class="text-[10px] text-slate-400 italic leading-relaxed">* Monitoring lapangan dilakukan oleh reviewer untuk memvalidasi keberadaan dan progres rill usaha mahasiswa.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -121,21 +115,47 @@
                 </div>
             </div>
             <div class="grid md:grid-cols-2 gap-6">
-                <div class="space-y-2">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Foto Kegiatan</label>
-                    <?php if ($logbook->photo_activity): ?>
-                        <div class="aspect-video rounded-2xl overflow-hidden border border-slate-100">
-                            <img src="<?= base_url('reviewer/kegiatan/file/photo/' . $logbook->id) ?>" class="w-full h-full object-cover">
-                        </div>
-                    <?php else: ?>
-                        <div class="aspect-video rounded-2xl bg-slate-50 border border-dashed border-slate-200 flex items-center justify-center text-slate-400 text-[11px]">Foto belum ada</div>
-                    <?php endif; ?>
+                <!-- Photo Gallery Activity -->
+                <div class="space-y-3 col-span-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Galeri Foto Kegiatan Wirausaha</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                        <?php if (!empty($logbook->gallery)): ?>
+                            <?php foreach ($logbook->gallery as $photo): ?>
+                                <div class="aspect-square rounded-2xl overflow-hidden border-2 border-slate-100 bg-slate-50 group relative shadow-sm">
+                                    <img src="<?= base_url('reviewer/kegiatan/gallery/' . $photo->id) ?>" class="w-full h-full object-cover">
+                                    <a href="<?= base_url('reviewer/kegiatan/gallery/' . $photo->id) ?>" target="_blank" 
+                                       class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
+                                        <i class="fas fa-expand text-xl"></i>
+                                    </a>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php elseif ($logbook->photo_activity): ?>
+                             <!-- Legacy support -->
+                             <div class="aspect-square rounded-2xl overflow-hidden border-2 border-slate-100 bg-slate-50 group relative shadow-sm">
+                                    <img src="<?= base_url('reviewer/kegiatan/file/photo/' . $logbook->id) ?>" class="w-full h-full object-cover">
+                                    <a href="<?= base_url('reviewer/kegiatan/file/photo/' . $logbook->id) ?>" target="_blank" 
+                                       class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
+                                        <i class="fas fa-expand text-xl"></i>
+                                    </a>
+                                </div>
+                        <?php else: ?>
+                            <div class="col-span-full py-10 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400">
+                                <i class="fas fa-images text-2xl mb-2 opacity-20"></i>
+                                <span class="text-[11px] font-bold uppercase tracking-widest">Belum ada foto kegiatan</span>
+                            </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
-                <div class="space-y-2">
+
+                <div class="space-y-2 col-span-2 md:col-span-1">
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Foto Kunjungan Dosen</label>
                     <?php if ($logbook->photo_supervisor_visit): ?>
-                        <div class="aspect-video rounded-2xl overflow-hidden border border-slate-100">
+                        <div class="aspect-video rounded-2xl overflow-hidden border border-slate-100 group relative">
                             <img src="<?= base_url('reviewer/kegiatan/file/supervisor/' . $logbook->id) ?>" class="w-full h-full object-cover">
+                            <a href="<?= base_url('reviewer/kegiatan/file/supervisor/' . $logbook->id) ?>" target="_blank" 
+                               class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
+                                <i class="fas fa-expand text-2xl"></i>
+                            </a>
                         </div>
                     <?php else: ?>
                         <div class="aspect-video rounded-2xl bg-slate-50 border border-dashed border-slate-200 flex items-center justify-center text-slate-400 text-[11px]">Foto belum ada</div>

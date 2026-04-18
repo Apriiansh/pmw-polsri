@@ -102,7 +102,9 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->post('kegiatan/delete/(:num)', 'Admin\\ActivityController::deleteSchedule/$1');
         $routes->post('kegiatan/delete-batch', 'Admin\\ActivityController::deleteBatch');
         $routes->post('kegiatan/update-batch', 'Admin\\ActivityController::updateBatch');
+        $routes->post('kegiatan/quick-update-status', 'Admin\\ActivityController::quickUpdateStatus');
         $routes->get('kegiatan/file/(:segment)/(:num)', 'Admin\\ActivityController::viewFile/$1/$2');
+        $routes->get('kegiatan/gallery/(:num)', 'Admin\\ActivityController::viewGalleryFile/$1');
     });
 
     // Mahasiswa Routes
@@ -136,6 +138,8 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('kegiatan', 'Mahasiswa\\ActivityController::index');
         $routes->post('kegiatan/logbook/(:num)', 'Mahasiswa\\ActivityController::submitLogbook/$1');
         $routes->get('kegiatan/file/(:segment)/(:num)', 'Mahasiswa\\ActivityController::viewFile/$1/$2');
+        $routes->get('kegiatan/gallery/(:num)', 'Mahasiswa\\ActivityController::viewGalleryFile/$1');
+        $routes->delete('kegiatan/photo/(:num)', 'Mahasiswa\\ActivityController::deletePhoto/$1');
 
         $routes->get('laporan-kemajuan', 'MahasiswaController::laporanKemajuan');
         $routes->get('laporan-akhir', 'MahasiswaController::laporanAkhir');
@@ -189,6 +193,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
             $routes->get('detail/(:num)', 'ActivityController::detail/$1');
             $routes->post('review/(:num)', 'ActivityController::submitReview/$1');
             $routes->get('file/(:segment)/(:num)', 'ActivityController::viewFile/$1/$2');
+            $routes->get('gallery/(:num)', 'ActivityController::viewGalleryFile/$1');
         });
     });
 
@@ -219,6 +224,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('kegiatan', 'Dosen\\ActivityController::index');
         $routes->post('kegiatan/verify/(:num)', 'Dosen\\ActivityController::verify/$1');
         $routes->get('kegiatan/file/(:any)/(:num)', 'Dosen\\ActivityController::viewFile/$1/$2');
+        $routes->get('kegiatan/gallery/(:num)', 'Dosen\\ActivityController::viewGalleryFile/$1');
     });
 
     // Mentor Routes
@@ -233,6 +239,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('kegiatan', 'Mentor\\ActivityController::index');
         $routes->post('kegiatan/verify/(:num)', 'Mentor\\ActivityController::verify/$1');
         $routes->get('kegiatan/file/(:any)/(:num)', 'Mentor\\ActivityController::viewFile/$1/$2');
+        $routes->get('kegiatan/gallery/(:num)', 'Mentor\\ActivityController::viewGalleryFile/$1');
     });
 
     // Notifications Routes - All authenticated users

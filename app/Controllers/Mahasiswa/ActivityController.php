@@ -5,6 +5,7 @@ namespace App\Controllers\Mahasiswa;
 use App\Controllers\BaseController;
 use App\Models\Activity\PmwActivityScheduleModel;
 use App\Models\Activity\PmwActivityLogbookModel;
+use App\Models\Activity\PmwActivityLogbookPhotoModel;
 use App\Models\Proposal\PmwProposalModel;
 use App\Models\PmwPeriodModel;
 use App\Services\PmwActivityService;
@@ -51,10 +52,16 @@ class ActivityController extends BaseController
         $scheduleModel = new PmwActivityScheduleModel();
         $schedules     = $scheduleModel->getSchedulesByProposal($proposal['id']);
 
-        // Attach logbook to each schedule
+        // Attach logbook and gallery to each schedule
         $logbookModel = new PmwActivityLogbookModel();
+        $photoModel   = new PmwActivityLogbookPhotoModel();
         foreach ($schedules as $schedule) {
             $schedule->logbook = $logbookModel->getBySchedule($schedule->id);
+            if ($schedule->logbook) {
+                $schedule->logbook->gallery = $photoModel->getByLogbook((int)$schedule->logbook->id);
+            } else {
+                $schedule->logbook_gallery = [];
+            }
         }
 
         // Stats
@@ -79,13 +86,22 @@ class ActivityController extends BaseController
     {
         try {
             $data  = $this->request->getPost();
+            
+            // Handle multiple activity photos
             $files = [
-                'photo_activity'         => $this->request->getFile('photo_activity'),
+                'photo_activity'         => $this->request->getFileMultiple('photo_activity'),
                 'photo_supervisor_visit' => $this->request->getFile('photo_supervisor_visit'),
             ];
 
             // Filter out missing/invalid files
-            $files = array_filter($files, fn($f) => $f && $f->isValid() && !$f->hasMoved());
+            if (isset($files['photo_activity'])) {
+                $files['photo_activity'] = array_filter($files['photo_activity'], fn($f) => $f && $f->isValid() && !$f->hasMoved());
+            }
+            if (isset($files['photo_supervisor_visit'])) {
+                if (!$files['photo_supervisor_visit'] || !$files['photo_supervisor_visit']->isValid() || $files['photo_supervisor_visit']->hasMoved()) {
+                    unset($files['photo_supervisor_visit']);
+                }
+            }
 
             $status = $data['status'] ?? 'draft';
             $this->activityService->submitLogbook($scheduleId, $data, $files);
@@ -95,6 +111,7 @@ class ActivityController extends BaseController
                 $scheduleModel = new PmwActivityScheduleModel();
                 $schedule      = $scheduleModel->find($scheduleId);
                 if ($schedule) {
+                    /** @var array $proposal */
                     $proposal = $this->proposalModel->find($schedule->proposal_id);
                     if ($proposal) {
                         $notifModel = new NotificationModel();
@@ -133,6 +150,7 @@ class ActivityController extends BaseController
             return $this->response->setStatusCode(404)->setBody('Jadwal tidak ditemukan.');
         }
 
+        /** @var array|null $proposal */
         $proposal = $this->proposalModel->find($schedule->proposal_id);
         if (!$proposal || (int)($proposal['leader_user_id'] ?? 0) !== (int)auth()->id()) {
             return $this->response->setStatusCode(403)->setBody('Akses ditolak.');
@@ -159,6 +177,81 @@ class ActivityController extends BaseController
             ->setHeader('Content-Type', $mimeType)
             ->setHeader('Content-Disposition', 'inline; filename="' . basename($absPath) . '"')
             ->setBody(file_get_contents($absPath));
+    }
+
+    /**
+     * View gallery file
+     */
+    public function viewGalleryFile(int $photoId): ResponseInterface
+    {
+        $photoModel = new PmwActivityLogbookPhotoModel();
+        $photo      = $photoModel->find($photoId);
+
+        if (!$photo) {
+            return $this->response->setStatusCode(404)->setBody('Foto tidak ditemukan.');
+        }
+
+        // Access check (must be owner of the logbook)
+        $logbookModel = new PmwActivityLogbookModel();
+        $logbook      = $logbookModel->find($photo->logbook_id);
+        
+        $scheduleModel = new PmwActivityScheduleModel();
+        $schedule      = $scheduleModel->find($logbook->schedule_id);
+        
+        $proposal = $this->proposalModel->find($schedule->proposal_id);
+        if (!$proposal || (int)($proposal['leader_user_id'] ?? 0) !== (int)auth()->id()) {
+            return $this->response->setStatusCode(403)->setBody('Akses ditolak.');
+        }
+
+        $absPath = WRITEPATH . 'uploads/' . $photo->file_path;
+        if (!is_file($absPath)) {
+            return $this->response->setStatusCode(404)->setBody('File fisik tidak ditemukan.');
+        }
+
+        $mimeType = mime_content_type($absPath) ?: 'application/octet-stream';
+        return $this->response
+            ->setHeader('Content-Type', $mimeType)
+            ->setHeader('Content-Disposition', 'inline; filename="' . basename($absPath) . '"')
+            ->setBody(file_get_contents($absPath));
+    }
+
+    /**
+     * Delete gallery photo
+     */
+    public function deletePhoto(int $photoId): ResponseInterface
+    {
+        try {
+            $photoModel = new PmwActivityLogbookPhotoModel();
+            $photo      = $photoModel->find($photoId);
+
+            if (!$photo) {
+                throw new \Exception("Foto tidak ditemukan.");
+            }
+
+            // Access check
+            $logbookModel = new PmwActivityLogbookModel();
+            $logbook      = $logbookModel->find($photo->logbook_id);
+            $scheduleModel = new PmwActivityScheduleModel();
+            $schedule      = $scheduleModel->find($logbook->schedule_id);
+            $proposal      = $this->proposalModel->find($schedule->proposal_id);
+
+            if (!$proposal || (int)($proposal['leader_user_id'] ?? 0) !== (int)auth()->id()) {
+                throw new \Exception("Akses ditolak.");
+            }
+
+            // Delete physical file
+            $absPath = WRITEPATH . 'uploads/' . $photo->file_path;
+            if (is_file($absPath)) {
+                unlink($absPath);
+            }
+
+            // Delete record
+            $photoModel->delete($photoId);
+
+            return $this->response->setJSON(['success' => true]);
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['success' => false, 'message' => $e->getMessage()])->setStatusCode(400);
+        }
     }
 
     /**

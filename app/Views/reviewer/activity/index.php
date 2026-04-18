@@ -3,13 +3,23 @@
 <?= $this->section('content') ?>
 
 <div class="space-y-8" x-data="{
+    showMonitoringModal: false,
+    monitoringData: {
+        id: '',
+        nama_usaha: '',
+        summary: '',
+        photo_url: ''
+    },
     handleMouseMove(e) {
         const card = e.currentTarget;
         const rect = card.getBoundingClientRect();
         card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
         card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
     }
-}">
+}" @monitoring.window="
+    monitoringData = $event.detail;
+    showMonitoringModal = true;
+">
 
     <!-- Page Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-stagger">
@@ -26,8 +36,8 @@
         <?php
         $stats = [
             'total'     => count($schedules),
-            'reviewed'  => count(array_filter($schedules, fn($s) => isset($s->logbook->reviewer_at))),
-            'pending'   => count(array_filter($schedules, fn($s) => !isset($s->logbook->reviewer_at))),
+            'reviewed'  => count(array_filter($schedules, fn($s) => !empty($s->reviewer_at))),
+            'pending'   => count(array_filter($schedules, fn($s) => empty($s->reviewer_at))),
         ];
         $statItems = [
             ['title' => 'Total Jadwal', 'value' => $stats['total'], 'icon' => 'fa-calendar-alt', 'bg' => 'bg-sky-50', 'icon_color' => 'text-sky-500'],
@@ -91,22 +101,111 @@
                                 </div>
                             </td>
                             <td>
-                                <?php if (isset($schedule->logbook->reviewer_at)): ?>
-                                    <span class="pmw-status bg-emerald-100 text-emerald-700 text-[10px]">Terdokumentasi</span>
+                                <?php if (!empty($schedule->reviewer_at)): ?>
+                                    <span class="pmw-status bg-emerald-50 text-emerald-600 border-emerald-200 text-[10px]">
+                                        <i class="fas fa-check-circle mr-1"></i> Terdokumentasi
+                                    </span>
                                 <?php else: ?>
-                                    <span class="pmw-status bg-slate-100 text-slate-500 text-[10px]">Belum Direview</span>
+                                    <span class="pmw-status bg-slate-50 text-slate-400 border-slate-200 text-[10px]">
+                                        <i class="fas fa-clock mr-1"></i> Belum Review
+                                    </span>
                                 <?php endif; ?>
                             </td>
                             <td class="text-right whitespace-nowrap">
-                                <a href="<?= base_url('reviewer/kegiatan/detail/' . $schedule->id) ?>" class="btn-primary btn-xs shadow-lg shadow-sky-500/10">
-                                    <i class="fas fa-camera mr-1"></i> Review Kunjungan
-                                </a>
+                                <div class="flex items-center justify-end gap-2">
+                                    <button @click="$dispatch('monitoring', { 
+                                        id: '<?= $schedule->id ?>', 
+                                        nama_usaha: '<?= esc($schedule->nama_usaha) ?>',
+                                        summary: '<?= esc($schedule->reviewer_summary ?? '') ?>',
+                                        photo_url: '<?= $schedule->reviewer_photo ? base_url('reviewer/kegiatan/file/reviewer/' . $schedule->id) : '' ?>'
+                                    })" class="btn-outline btn-xs bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-500 hover:text-white transition-all">
+                                        <i class="fas fa-map-location-dot mr-1"></i> Monitoring
+                                    </button>
+                                    <a href="<?= base_url('reviewer/kegiatan/detail/' . $schedule->id) ?>" class="btn-outline btn-xs bg-sky-50 text-sky-600 border-sky-200 hover:bg-sky-500 hover:text-white transition-all">
+                                        <i class="fas fa-eye mr-1"></i> Detail
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- Monitoring Modal -->
+    <div x-show="showMonitoringModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        style="display: none;"
+        x-cloak>
+
+        <div class="card-premium w-full max-w-3xl bg-white shadow-2xl animate-modal" @click.away="showMonitoringModal = false">
+            <div class="p-6 border-b border-sky-50 flex justify-between items-center bg-sky-50/30">
+                <div class="flex flex-col">
+                    <h3 class="font-display text-lg font-black text-sky-900 uppercase tracking-tight">Monitoring Lapangan</h3>
+                    <p class="text-[10px] text-sky-600 font-bold" x-text="monitoringData.nama_usaha"></p>
+                </div>
+                <button @click="showMonitoringModal = false" class="text-slate-400 hover:text-rose-500 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <form :action="'<?= base_url('reviewer/kegiatan/review') ?>/' + monitoringData.id" method="POST" enctype="multipart/form-data" class="p-6">
+                <?= csrf_field() ?>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Photo Section -->
+                    <div class="space-y-4">
+                        <label class="text-[10px] text-slate-400 font-black uppercase tracking-widest block">Foto Dokumentasi Lapangan</label>
+                        
+                        <div class="relative">
+                            <template x-if="monitoringData.photo_url">
+                                <div class="aspect-video rounded-2xl overflow-hidden border-4 border-white shadow-lg relative group">
+                                    <img :src="monitoringData.photo_url" class="w-full h-full object-cover">
+                                    <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
+                                        <i class="fas fa-search-plus text-2xl"></i>
+                                    </div>
+                                </div>
+                            </template>
+                            
+                            <template x-if="!monitoringData.photo_url">
+                                <div class="aspect-video rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-300">
+                                    <i class="fas fa-image text-4xl mb-2"></i>
+                                    <p class="text-[10px] font-bold uppercase tracking-widest">Belum Ada Foto</p>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class="form-field mt-6">
+                            <label class="form-label text-[11px]">Upload Foto Rill Baru</label>
+                            <input type="file" name="photo" class="input-field py-2.5 text-xs bg-slate-50" accept="image/*">
+                            <p class="text-[9px] text-slate-400 mt-2 italic">* Format: JPG, PNG, WEBP. Maks 2MB.</p>
+                        </div>
+                    </div>
+
+                    <!-- Note Section -->
+                    <div class="flex flex-col">
+                        <div class="form-field flex-1">
+                            <label class="form-label text-[11px]">Catatan / Hasil Temuan Lapangan</label>
+                            <textarea name="summary" x-model="monitoringData.summary" rows="10" class="form-textarea text-xs h-full min-h-[200px]" placeholder="Ceritakan kondisi rill usaha di lokasi..."></textarea>
+                        </div>
+                        
+                        <div class="pt-6 flex gap-3">
+                            <button type="button" @click="showMonitoringModal = false" class="btn-outline flex-1 py-3 text-xs">Batal</button>
+                            <button type="submit" class="btn-primary flex-1 py-3 text-xs shadow-lg shadow-sky-500/10">
+                                <i class="fas fa-save mr-2"></i> Simpan Dokumentasi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 

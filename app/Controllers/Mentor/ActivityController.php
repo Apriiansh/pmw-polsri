@@ -5,6 +5,7 @@ namespace App\Controllers\Mentor;
 use App\Controllers\BaseController;
 use App\Models\Activity\PmwActivityScheduleModel;
 use App\Models\Activity\PmwActivityLogbookModel;
+use App\Models\Activity\PmwActivityLogbookPhotoModel;
 use App\Models\Proposal\PmwProposalModel;
 use App\Models\MentorModel;
 use App\Services\PmwActivityService;
@@ -40,19 +41,32 @@ class ActivityController extends BaseController
         $proposalIds = array_column($proposals, 'id');
 
         // Get pending logbooks for these proposals (status = approved_by_dosen)
-        $logbookModel = new PmwActivityLogbookModel();
-        $pendingLogbooks = $logbookModel->getPendingForMentor($proposalIds);
+        $logbookModel     = new PmwActivityLogbookModel();
+        $photoModel       = new PmwActivityLogbookPhotoModel();
+        $pendingLogbooks  = $logbookModel->getPendingForMentor($proposalIds);
+        $historyLogbooks  = $logbookModel->getHistoryForMentor($proposalIds);
+
+        foreach (array_merge($pendingLogbooks, $historyLogbooks) as $logbook) {
+            $logbook->gallery = $photoModel->getByLogbook((int)$logbook->id);
+        }
 
         // Stats
         $stats = [
-            'total'     => count($pendingLogbooks),
+            'total'     => count($pendingLogbooks) + count($historyLogbooks),
             'pending'   => count($pendingLogbooks),
         ];
 
-        return view('mentor/activity/index', [
+        // Attach members to each proposal
+        $memberModel = new \App\Models\Proposal\PmwProposalMemberModel();
+        foreach ($proposals as &$proposal) {
+            $proposal['members'] = $memberModel->getByProposalId((int) $proposal['id']);
+        }
+
+        return view('mentor/activity', [
             'title'           => 'Verifikasi Kegiatan Wirausaha | PMW Polsri',
             'proposals'       => $proposals,
             'pendingLogbooks' => $pendingLogbooks,
+            'historyLogbooks' => $historyLogbooks,
             'stats'           => $stats,
         ]);
     }
@@ -74,8 +88,8 @@ class ActivityController extends BaseController
             if ($logbook) {
                 $notifModel = new NotificationModel();
                 $notifModel->createActivityVerificationNotification(
-                    (int)$logbook['leader_user_id'] ?? 0,
-                    $logbook['activity_category'],
+                    (int)($logbook->leader_user_id ?? 0),
+                    $logbook->activity_category,
                     $status === 'approved' ? 'approved_by_mentor' : 'revision',
                     'mentor'
                 );
@@ -115,6 +129,30 @@ class ActivityController extends BaseController
         }
 
         $mimeType = mime_content_type($absPath);
+        return $this->response
+            ->setHeader('Content-Type', $mimeType)
+            ->setHeader('Content-Disposition', 'inline; filename="' . basename($absPath) . '"')
+            ->setBody(file_get_contents($absPath));
+    }
+
+    /**
+     * View gallery file
+     */
+    public function viewGalleryFile(int $photoId): ResponseInterface
+    {
+        $photoModel = new PmwActivityLogbookPhotoModel();
+        $photo      = $photoModel->find($photoId);
+
+        if (!$photo) {
+            return $this->response->setStatusCode(404)->setBody('Foto tidak ditemukan.');
+        }
+
+        $absPath = WRITEPATH . 'uploads/' . $photo->file_path;
+        if (!is_file($absPath)) {
+            return $this->response->setStatusCode(404)->setBody('File fisik tidak ditemukan.');
+        }
+
+        $mimeType = mime_content_type($absPath) ?: 'application/octet-stream';
         return $this->response
             ->setHeader('Content-Type', $mimeType)
             ->setHeader('Content-Disposition', 'inline; filename="' . basename($absPath) . '"')

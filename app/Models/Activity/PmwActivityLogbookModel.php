@@ -51,7 +51,7 @@ class PmwActivityLogbookModel extends Model
      */
     public function getLogbookWithSchedule(int $logbookId)
     {
-        return $this->select('pmw_activity_logbooks.*, pas.activity_category, pas.activity_date, pas.activity_time, pas.location, p.nama_usaha')
+        return $this->select('pmw_activity_logbooks.*, pas.activity_category, pas.activity_date, pas.activity_time, pas.location, p.nama_usaha, p.leader_user_id')
                     ->join('pmw_activity_schedules pas', 'pas.id = pmw_activity_logbooks.schedule_id')
                     ->join('pmw_proposals p', 'p.id = pas.proposal_id')
                     ->where('pmw_activity_logbooks.id', $logbookId)
@@ -79,7 +79,7 @@ class PmwActivityLogbookModel extends Model
     }
 
     /**
-     * Get pending logbooks for mentor (status = approved_by_dosen)
+     * Get history logbooks for mentor (status = approved_by_mentor or approved)
      */
     public function getPendingForMentor(array $proposalIds)
     {
@@ -92,6 +92,36 @@ class PmwActivityLogbookModel extends Model
                     ->whereIn('pas.proposal_id', $proposalIds)
                     ->where('pmw_activity_logbooks.status', 'approved_by_dosen')
                     ->orderBy('pas.activity_date', 'DESC')
+                    ->findAll();
+    }
+
+    /**
+     * Get history logbooks for dosen
+     */
+    public function getHistoryForDosen(array $proposalIds)
+    {
+        if (empty($proposalIds)) return [];
+        return $this->select('pmw_activity_logbooks.*, pas.activity_category, pas.activity_date, p.nama_usaha')
+                    ->join('pmw_activity_schedules pas', 'pas.id = pmw_activity_logbooks.schedule_id')
+                    ->join('pmw_proposals p', 'p.id = pas.proposal_id')
+                    ->whereIn('pas.proposal_id', $proposalIds)
+                    ->whereIn('pmw_activity_logbooks.status', ['approved_by_dosen', 'approved_by_mentor', 'approved'])
+                    ->orderBy('pmw_activity_logbooks.updated_at', 'DESC')
+                    ->findAll();
+    }
+
+    /**
+     * Get history logbooks for mentor
+     */
+    public function getHistoryForMentor(array $proposalIds)
+    {
+        if (empty($proposalIds)) return [];
+        return $this->select('pmw_activity_logbooks.*, pas.activity_category, pas.activity_date, p.nama_usaha')
+                    ->join('pmw_activity_schedules pas', 'pas.id = pmw_activity_logbooks.schedule_id')
+                    ->join('pmw_proposals p', 'p.id = pas.proposal_id')
+                    ->whereIn('pas.proposal_id', $proposalIds)
+                    ->whereIn('pmw_activity_logbooks.status', ['approved_by_mentor', 'approved'])
+                    ->orderBy('pmw_activity_logbooks.updated_at', 'DESC')
                     ->findAll();
     }
 }

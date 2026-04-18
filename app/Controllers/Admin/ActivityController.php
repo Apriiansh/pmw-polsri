@@ -5,6 +5,7 @@ namespace App\Controllers\Admin;
 use App\Controllers\BaseController;
 use App\Models\Activity\PmwActivityScheduleModel;
 use App\Models\Activity\PmwActivityLogbookModel;
+use App\Models\Activity\PmwActivityLogbookPhotoModel;
 use App\Models\Proposal\PmwProposalModel;
 use App\Models\PmwPeriodModel;
 use App\Services\PmwActivityService;
@@ -99,15 +100,22 @@ class ActivityController extends BaseController
             return redirect()->to('admin/kegiatan')->with('error', 'Jadwal tidak ditemukan.');
         }
 
-        $proposal = $this->proposalModel->find($schedule->proposal_id);
+        $proposal = $this->proposalModel->getProposalForValidation($schedule->proposal_id);
+        $members  = (new \App\Models\Proposal\PmwProposalMemberModel())->where('proposal_id', $schedule->proposal_id)->findAll();
 
         $logbookModel = new PmwActivityLogbookModel();
         $logbook      = $logbookModel->getBySchedule($scheduleId);
+
+        if ($logbook) {
+            $photoModel = new PmwActivityLogbookPhotoModel();
+            $logbook->gallery = $photoModel->getByLogbook((int)$logbook->id);
+        }
 
         return view('admin/activity/detail', [
             'title'     => 'Detail Kegiatan | PMW Polsri',
             'schedule'  => $schedule,
             'proposal'  => $proposal,
+            'members'   => $members,
             'logbook'   => $logbook,
         ]);
     }
@@ -129,8 +137,8 @@ class ActivityController extends BaseController
             if ($logbook) {
                 $notifModel = new NotificationModel();
                 $notifModel->createActivityVerificationNotification(
-                    (int)$logbook['leader_user_id'] ?? 0,
-                    $logbook['activity_category'],
+                    (int)($logbook->leader_user_id ?? 0),
+                    $logbook->activity_category,
                     $status === 'approved' ? 'approved' : 'revision',
                     'admin'
                 );
@@ -240,6 +248,34 @@ class ActivityController extends BaseController
     }
 
     /**
+     * Quick update status for a batch
+     */
+    public function quickUpdateStatus(): ResponseInterface
+    {
+        try {
+            $batchId    = $this->request->getPost('batch_id');
+            $scheduleId = $this->request->getPost('schedule_id');
+            $status     = $this->request->getPost('status');
+
+            $scheduleModel = new PmwActivityScheduleModel();
+
+            if (!empty($batchId)) {
+                $scheduleModel->where('batch_id', $batchId)
+                             ->set(['status' => $status])
+                             ->update();
+            } elseif (!empty($scheduleId)) {
+                $scheduleModel->update($scheduleId, ['status' => $status]);
+            } else {
+                throw new \Exception('ID Batch atau Jadwal tidak ditemukan.');
+            }
+
+            return redirect()->back()->with('success', 'Status jadwal berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
      * Serve files
      */
     public function viewFile(string $type, int $logbookId): ResponseInterface
@@ -268,6 +304,30 @@ class ActivityController extends BaseController
         }
 
         $mimeType = mime_content_type($absPath);
+        return $this->response
+            ->setHeader('Content-Type', $mimeType)
+            ->setHeader('Content-Disposition', 'inline; filename="' . basename($absPath) . '"')
+            ->setBody(file_get_contents($absPath));
+    }
+
+    /**
+     * View gallery file
+     */
+    public function viewGalleryFile(int $photoId): ResponseInterface
+    {
+        $photoModel = new PmwActivityLogbookPhotoModel();
+        $photo      = $photoModel->find($photoId);
+
+        if (!$photo) {
+            return $this->response->setStatusCode(404)->setBody('Foto tidak ditemukan.');
+        }
+
+        $absPath = WRITEPATH . 'uploads/' . $photo->file_path;
+        if (!is_file($absPath)) {
+            return $this->response->setStatusCode(404)->setBody('File fisik tidak ditemukan.');
+        }
+
+        $mimeType = mime_content_type($absPath) ?: 'application/octet-stream';
         return $this->response
             ->setHeader('Content-Type', $mimeType)
             ->setHeader('Content-Disposition', 'inline; filename="' . basename($absPath) . '"')

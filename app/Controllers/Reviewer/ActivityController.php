@@ -5,6 +5,7 @@ namespace App\Controllers\Reviewer;
 use App\Controllers\BaseController;
 use App\Models\Activity\PmwActivityScheduleModel;
 use App\Models\Activity\PmwActivityLogbookModel;
+use App\Models\Activity\PmwActivityLogbookPhotoModel;
 use App\Models\Proposal\PmwProposalModel;
 use App\Models\PmwPeriodModel;
 use App\Services\PmwActivityService;
@@ -47,6 +48,11 @@ class ActivityController extends BaseController
         $proposal = $this->proposalModel->find($schedule->proposal_id);
         $logbookModel = new PmwActivityLogbookModel();
         $logbook      = $logbookModel->getBySchedule($scheduleId);
+
+        if ($logbook) {
+            $photoModel = new PmwActivityLogbookPhotoModel();
+            $logbook->gallery = $photoModel->getByLogbook((int)$logbook->id);
+        }
 
         return view('reviewer/activity/detail', [
             'title'     => 'Detail Monitoring | PMW Polsri',
@@ -98,6 +104,30 @@ class ActivityController extends BaseController
         }
 
         $mimeType = mime_content_type($absPath);
+        return $this->response
+            ->setHeader('Content-Type', $mimeType)
+            ->setHeader('Content-Disposition', 'inline; filename="' . basename($absPath) . '"')
+            ->setBody(file_get_contents($absPath));
+    }
+
+    /**
+     * View gallery file
+     */
+    public function viewGalleryFile(int $photoId): ResponseInterface
+    {
+        $photoModel = new PmwActivityLogbookPhotoModel();
+        $photo      = $photoModel->find($photoId);
+
+        if (!$photo) {
+            return $this->response->setStatusCode(404)->setBody('Foto tidak ditemukan.');
+        }
+
+        $absPath = WRITEPATH . 'uploads/' . $photo->file_path;
+        if (!is_file($absPath)) {
+            return $this->response->setStatusCode(404)->setBody('File fisik tidak ditemukan.');
+        }
+
+        $mimeType = mime_content_type($absPath) ?: 'application/octet-stream';
         return $this->response
             ->setHeader('Content-Type', $mimeType)
             ->setHeader('Content-Disposition', 'inline; filename="' . basename($absPath) . '"')

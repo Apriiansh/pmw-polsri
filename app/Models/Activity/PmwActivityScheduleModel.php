@@ -48,9 +48,10 @@ class PmwActivityScheduleModel extends Model
      */
     public function getAllSchedulesWithProposal()
     {
-        return $this->select('pmw_activity_schedules.*, p.nama_usaha, pm.nama as ketua_nama')
+        return $this->select('pmw_activity_schedules.*, p.nama_usaha, pm.nama as ketua_nama, pal.status as logbook_status, pal.reviewer_summary, pal.reviewer_photo, pal.reviewer_at')
                     ->join('pmw_proposals p', 'p.id = pmw_activity_schedules.proposal_id')
                     ->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left')
+                    ->join('pmw_activity_logbooks pal', 'pal.schedule_id = pmw_activity_schedules.id', 'left')
                     ->orderBy('activity_date', 'DESC')
                     ->findAll();
     }

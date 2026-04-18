@@ -232,9 +232,9 @@
                 }
                 if ($mainRole === 'reviewer') {
                     // Penilaian Proposal - Tahap 2-3 (Seleksi Administrasi & Pitching Desk)
-                    $navItems[] = ['route' => 'reviewer/penilaian-proposal', 'icon' => 'fa-clipboard-check', 'label' => 'Penilaian Proposal', 'match' => 'reviewer/penilaian-proposal'];
+                    // $navItems[] = ['route' => 'reviewer/penilaian-proposal', 'icon' => 'fa-clipboard-check', 'label' => 'Penilaian Proposal', 'match' => 'reviewer/penilaian-proposal'];
                     // Penilaian Laporan - Tahap 7-8 (Monev 1 & 2)
-                    $navItems[] = ['route' => 'reviewer/penilaian-laporan', 'icon' => 'fa-file-circle-check', 'label' => 'Penilaian Laporan', 'match' => 'reviewer/penilaian-laporan'];
+                    // $navItems[] = ['route' => 'reviewer/penilaian-laporan', 'icon' => 'fa-file-circle-check', 'label' => 'Penilaian Laporan', 'match' => 'reviewer/penilaian-laporan'];
                     // Monitoring Kegiatan - Tahap 9
                     $navItems[] = ['route' => 'reviewer/kegiatan', 'icon' => 'fa-camera-retro', 'label' => 'Monitoring Kegiatan', 'match' => 'reviewer/kegiatan'];
                 }

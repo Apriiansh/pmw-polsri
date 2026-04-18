@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Activity\PmwActivityScheduleModel;
 use App\Models\Activity\PmwActivityLogbookModel;
+use App\Models\Activity\PmwActivityLogbookPhotoModel;
 use App\Models\Proposal\PmwProposalModel;
 use Exception;
 
@@ -11,12 +12,14 @@ class PmwActivityService
 {
     protected $scheduleModel;
     protected $logbookModel;
+    protected $photoModel;
     protected $proposalModel;
 
     public function __construct()
     {
         $this->scheduleModel = new PmwActivityScheduleModel();
         $this->logbookModel  = new PmwActivityLogbookModel();
+        $this->photoModel    = new PmwActivityLogbookPhotoModel();
         $this->proposalModel = new PmwProposalModel();
     }
 
@@ -108,39 +111,70 @@ class PmwActivityService
         $status = $data['status'] ?? 'draft';
         $logbookData['status'] = $status;
 
-        // Handle File Uploads
-        $uploadMap = [
-            'photo_activity'         => 'activity/photos',
-            'photo_supervisor_visit' => 'activity/supervisor',
-        ];
-
-        foreach ($uploadMap as $key => $folder) {
-            if (isset($files[$key]) && $files[$key]->isValid() && !$files[$key]->hasMoved()) {
-                // Delete old file if exists
-                if ($existing && !empty($existing->$key)) {
-                    $oldPath = WRITEPATH . 'uploads/' . $existing->$key;
-                    if (is_file($oldPath)) {
-                        unlink($oldPath);
-                    }
+        // Handle File Uploads (Single ones: Supervisor Visit)
+        if (isset($files['photo_supervisor_visit']) && $files['photo_supervisor_visit']->isValid() && !$files['photo_supervisor_visit']->hasMoved()) {
+            // Delete old file if exists
+            if ($existing && !empty($existing->photo_supervisor_visit)) {
+                $oldPath = WRITEPATH . 'uploads/' . $existing->photo_supervisor_visit;
+                if (is_file($oldPath)) {
+                    unlink($oldPath);
                 }
-                $newName = $files[$key]->getRandomName();
-                $files[$key]->move(WRITEPATH . 'uploads/' . $folder, $newName);
-                $logbookData[$key] = $folder . '/' . $newName;
             }
+            $newName = $files['photo_supervisor_visit']->getRandomName();
+            $files['photo_supervisor_visit']->move(WRITEPATH . 'uploads/activity/supervisor', $newName);
+            $logbookData['photo_supervisor_visit'] = 'activity/supervisor/' . $newName;
         }
 
-        if ($existing) {
-            // Update - preserve approval statuses (do not reset)
-            // Only update status to pending if it was revision
-            if ($existing->status === 'revision' && $status !== 'draft') {
-                $logbookData['status'] = 'pending';
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        try {
+            if ($existing) {
+                // Update - preserve approval statuses (do not reset)
+                if ($existing->status === 'revision' && $status !== 'draft') {
+                    $logbookData['status'] = 'pending';
+                }
+                $this->logbookModel->update($existing->id, $logbookData);
+                $logbookId = $existing->id;
+            } else {
+                // Insert new
+                $logbookData['dosen_status']  = 'pending';
+                $logbookData['mentor_status'] = 'pending';
+                $logbookId = $this->logbookModel->insert($logbookData);
             }
-            return $this->logbookModel->update($existing->id, $logbookData);
-        } else {
-            // Insert new
-            $logbookData['dosen_status']  = 'pending';
-            $logbookData['mentor_status'] = 'pending';
-            return $this->logbookModel->insert($logbookData);
+
+            // Handle Multiple Activity Photos
+            if (isset($files['photo_activity'])) {
+                $activityPhotos = is_array($files['photo_activity']) ? $files['photo_activity'] : [$files['photo_activity']];
+                
+                $isFirst = true;
+                foreach ($activityPhotos as $photo) {
+                    if ($photo->isValid() && !$photo->hasMoved()) {
+                        $newName = $photo->getRandomName();
+                        $photo->move(WRITEPATH . 'uploads/activity/photos', $newName);
+                        $savedPath = 'activity/photos/' . $newName;
+
+                        // Save to photos table
+                        $this->photoModel->insert([
+                            'logbook_id'    => $logbookId,
+                            'file_path'     => $savedPath,
+                            'original_name' => $photo->getClientName(),
+                        ]);
+
+                        // Set the first one as primary in main table for compatibility
+                        if ($isFirst && (!$existing || empty($existing->photo_activity))) {
+                            $this->logbookModel->update($logbookId, ['photo_activity' => $savedPath]);
+                        }
+                        $isFirst = false;
+                    }
+                }
+            }
+
+            $db->transComplete();
+            return $db->transStatus();
+        } catch (Exception $e) {
+            $db->transRollback();
+            throw $e;
         }
     }
 
@@ -268,7 +302,18 @@ class PmwActivityService
      */
     private function deleteLogbookFiles($logbook): void
     {
-        $fileFields = ['photo_activity', 'photo_supervisor_visit'];
+        // 1. Delete Gallery Photos
+        $photos = $this->photoModel->getByLogbook((int)$logbook->id);
+        foreach ($photos as $photo) {
+            $path = WRITEPATH . 'uploads/' . $photo->file_path;
+            if (is_file($path)) {
+                unlink($path);
+            }
+            $this->photoModel->delete($photo->id);
+        }
+
+        // 2. Delete Single Files
+        $fileFields = ['photo_activity', 'photo_supervisor_visit', 'reviewer_photo'];
         foreach ($fileFields as $field) {
             if (!empty($logbook->$field)) {
                 $path = WRITEPATH . 'uploads/' . $logbook->$field;
