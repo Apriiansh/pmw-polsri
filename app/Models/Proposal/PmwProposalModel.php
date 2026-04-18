@@ -284,6 +284,42 @@ class PmwProposalModel extends Model
         return $builder->get()->getResultArray();
     }
 
+    /**
+     * Get all proposals assigned to a specific lecturer
+     */
+    public function getProposalsByLecturer(int $lecturerId, string $status = 'approved'): array
+    {
+        $db = \Config\Database::connect();
+        $builder = $db->table($this->table . ' p');
+        $builder->select('p.*, pa.lecturer_id, pa.mentor_id');
+        $builder->join('pmw_proposal_assignments pa', 'pa.proposal_id = p.id');
+        $builder->where('pa.lecturer_id', $lecturerId);
+        
+        if ($status) {
+            $builder->where('p.status', $status);
+        }
+
+        return $builder->get()->getResultArray();
+    }
+
+    /**
+     * Get all proposals assigned to a specific mentor
+     */
+    public function getProposalsByMentor(int $mentorId, string $status = 'approved'): array
+    {
+        $db = \Config\Database::connect();
+        $builder = $db->table($this->table . ' p');
+        $builder->select('p.*, pa.lecturer_id, pa.mentor_id');
+        $builder->join('pmw_proposal_assignments pa', 'pa.proposal_id = p.id');
+        $builder->where('pa.mentor_id', $mentorId);
+
+        if ($status) {
+            $builder->where('p.status', $status);
+        }
+
+        return $builder->get()->getResultArray();
+    }
+
     protected function initializeProposalStages(array $data)
     {
         if (isset($data['id'])) {

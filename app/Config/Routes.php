@@ -111,10 +111,15 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->post('pitching-desk/update-detail', 'Mahasiswa\\PitchingDeskController::updateDetail');
         $routes->post('pitching-desk/submit', 'Mahasiswa\\PitchingDeskController::submit');
         $routes->get('pitching-desk/doc/(:num)', 'Mahasiswa\\PitchingDeskController::viewDoc/$1');
-        // Tahap 7 - Bimbingan & Mentoring
-        $routes->get('guidance', 'Mahasiswa\\GuidanceController::index');
-        $routes->post('guidance/logbook/(:num)', 'Mahasiswa\\GuidanceController::submitLogbook/$1');
-        $routes->get('guidance/file/(:any)', 'Mahasiswa\\GuidanceController::viewFile/$1');
+        // Tahap 8 - Bimbingan (oleh Dosen Pendamping)
+        $routes->get('bimbingan', 'Mahasiswa\\GuidanceController::bimbingan');
+        $routes->post('bimbingan/logbook/(:num)', 'Mahasiswa\\GuidanceController::submitLogbook/$1');
+        $routes->get('bimbingan/file/(:segment)/(:num)', 'Mahasiswa\\GuidanceController::viewFile/$1/$2');
+
+        // Tahap 8 - Mentoring (oleh Mentor Praktisi)
+        $routes->get('mentoring', 'Mahasiswa\\GuidanceController::mentoring');
+        $routes->post('mentoring/logbook/(:num)', 'Mahasiswa\\GuidanceController::submitLogbook/$1');
+        $routes->get('mentoring/file/(:segment)/(:num)', 'Mahasiswa\\GuidanceController::viewFile/$1/$2');
         $routes->get('laporan-kemajuan', 'MahasiswaController::laporanKemajuan');
         $routes->get('laporan-akhir', 'MahasiswaController::laporanAkhir');
 
@@ -179,19 +184,21 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('implementasi/payment/(:num)', 'Dosen\\ImplementasiController::viewPayment/$1');
         $routes->get('implementasi/konsumsi/(:num)', 'Dosen\\ImplementasiController::viewKonsumsi/$1');
 
-        // Tahap 7 - Bimbingan
-        $routes->get('guidance', 'Dosen\\GuidanceController::index');
-        $routes->post('guidance/schedule', 'Dosen\\GuidanceController::createSchedule');
-        $routes->post('guidance/verify/(:num)', 'Dosen\\GuidanceController::verify/$1');
-        $routes->get('guidance/file/(:any)', 'Dosen\\GuidanceController::viewFile/$1');
+        // Tahap 8 - Manajemen Jadwal Bimbingan
+        $routes->get('bimbingan', 'Dosen\\GuidanceController::index');
+        $routes->post('bimbingan/schedule', 'Dosen\\GuidanceController::createSchedule');
+        $routes->post('bimbingan/verify/(:num)', 'Dosen\\GuidanceController::verify/$1');
+        $routes->get('bimbingan/file/(:any)', 'Dosen\\GuidanceController::viewFile/$1');
     });
 
     // Mentor Routes
-        // Tahap 7 - Mentoring
-        $routes->get('guidance', 'Mentor\\GuidanceController::index');
-        $routes->post('guidance/schedule', 'Mentor\\GuidanceController::createSchedule');
-        $routes->post('guidance/verify/(:num)', 'Mentor\\GuidanceController::verify/$1');
-        $routes->get('guidance/file/(:any)', 'Mentor\\GuidanceController::viewFile/$1');
+    $routes->group('mentor', ['filter' => 'group:mentor'], static function ($routes) {
+        // Tahap 8 - Manajemen Jadwal Mentoring
+        $routes->get('mentoring', 'Mentor\\GuidanceController::index');
+        $routes->post('mentoring/schedule', 'Mentor\\GuidanceController::createSchedule');
+        $routes->post('mentoring/verify/(:num)', 'Mentor\\GuidanceController::verify/$1');
+        $routes->get('mentoring/file/(:any)', 'Mentor\\GuidanceController::viewFile/$1');
+    });
 
     // Notifications Routes - All authenticated users
     $routes->get('notifications', 'NotificationsController::index');

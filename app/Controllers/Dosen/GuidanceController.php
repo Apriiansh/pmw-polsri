@@ -32,9 +32,7 @@ class GuidanceController extends BaseController
         $lecturer = $this->lecturerModel->getByUserId(auth()->id());
         
         // Get teams assigned to this lecturer
-        $teams = $this->proposalModel->where('lecturer_id', $lecturer['id'])
-                                     ->where('status', 'approved')
-                                     ->findAll();
+        $teams = $this->proposalModel->getProposalsByLecturer((int) $lecturer['id']);
 
         $scheduleModel = new PmwGuidanceScheduleModel();
         $schedules = $scheduleModel->getSchedulesByCreator(auth()->id());
@@ -63,7 +61,12 @@ class GuidanceController extends BaseController
             if ($proposal) {
                 $notifModel = new \App\Models\NotificationModel();
                 $timeStr = ($data['schedule_date'] ?? '') . ' ' . ($data['schedule_time'] ?? '');
-                $notifModel->createGuidanceScheduleNotification((int)$proposal['leader_user_id'], $timeStr, 'Lokasi sesuai kesepakatan');
+            $notifModel->createGuidanceScheduleNotification(
+                    (int)$proposal['leader_user_id'],
+                    $timeStr,
+                    'Lokasi sesuai kesepakatan',
+                    'bimbingan'
+                );
             }
             
             return redirect()->back()->with('success', 'Jadwal bimbingan berhasil dibuat.');
@@ -95,7 +98,12 @@ class GuidanceController extends BaseController
 
             if ($logbook) {
                 $notifModel = new \App\Models\NotificationModel();
-                $notifModel->createGuidanceVerificationNotification((int)$logbook->leader_user_id, $logbook->schedule_date, $status === 'approved' ? 'verified' : 'pending');
+                $notifModel->createGuidanceVerificationNotification(
+                    (int)$logbook->leader_user_id,
+                    $logbook->schedule_date,
+                    $status === 'approved' ? 'verified' : 'pending',
+                    'bimbingan'
+                );
             }
 
             return redirect()->back()->with('success', 'Verifikasi bimbingan berhasil disimpan.');

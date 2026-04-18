@@ -262,33 +262,56 @@ class NotificationModel extends Model
     }
 
     /**
-     * Create notification for Guidance/Logbook verification
+     * Create notification for Guidance logbook verification result (Bimbingan/Mentoring)
      */
-    public function createGuidanceVerificationNotification(int $leaderUserId, string $date, string $status)
+    public function createGuidanceVerificationNotification(int $leaderUserId, string $date, string $status, string $type = 'bimbingan')
     {
-        $statusLabel = $status === 'verified' ? 'Diverifikasi' : 'Ditunggu';
-        
+        $statusLabel = $status === 'verified' ? 'Diverifikasi ✅' : 'Perlu Revisi ⚠️';
+        $route = $type === 'mentoring' ? 'mahasiswa/mentoring' : 'mahasiswa/bimbingan';
+        $typeLabel = $type === 'mentoring' ? 'Mentoring' : 'Bimbingan';
+
         return $this->insert([
             'user_id' => $leaderUserId,
-            'title'   => "Logbook Bimbingan {$statusLabel}",
-            'message' => "Entri logbook bimbingan tanggal {$date} telah {$statusLabel} oleh Dosen Pendamping.",
-            'link'    => 'mahasiswa/guidance',
+            'title'   => "Logbook {$typeLabel} {$statusLabel}",
+            'message' => "Entri logbook {$typeLabel} tanggal {$date} telah {$statusLabel} oleh verifikator.",
+            'link'    => $route,
             'type'    => 'guidance_verify',
             'is_read' => false,
         ], true);
     }
 
     /**
-     * Create notification for new Guidance schedule
+     * Create notification for new Guidance/Mentoring schedule
      */
-    public function createGuidanceScheduleNotification(int $leaderUserId, string $time, string $location)
+    public function createGuidanceScheduleNotification(int $leaderUserId, string $time, string $location, string $type = 'bimbingan')
     {
+        $route = $type === 'mentoring' ? 'mahasiswa/mentoring' : 'mahasiswa/bimbingan';
+        $typeLabel = $type === 'mentoring' ? 'Mentoring' : 'Bimbingan';
+
         return $this->insert([
             'user_id' => $leaderUserId,
-            'title'   => "📅 Jadwal Bimbingan Baru",
-            'message' => "Dosen Pendamping telah membuat jadwal bimbingan baru pada {$time} di {$location}.",
-            'link'    => 'mahasiswa/guidance',
+            'title'   => "📅 Jadwal {$typeLabel} Baru",
+            'message' => "Jadwal {$typeLabel} baru telah dibuat pada {$time} ({$location}).",
+            'link'    => $route,
             'type'    => 'guidance_schedule',
+            'is_read' => false,
+        ], true);
+    }
+
+    /**
+     * Notify Dosen/Mentor when student submits a logbook entry
+     */
+    public function createLogbookSubmissionNotification(int $verifierUserId, string $teamName, string $date, string $type = 'bimbingan')
+    {
+        $typeLabel = $type === 'mentoring' ? 'Mentoring' : 'Bimbingan';
+        $route = $type === 'mentoring' ? 'mentor/mentoring' : 'dosen/bimbingan';
+
+        return $this->insert([
+            'user_id' => $verifierUserId,
+            'title'   => "📝 Logbook {$typeLabel} Baru",
+            'message' => "Tim '{$teamName}' telah mengisi logbook {$typeLabel} untuk jadwal tanggal {$date}.",
+            'link'    => $route,
+            'type'    => 'logbook_submitted',
             'is_read' => false,
         ], true);
     }

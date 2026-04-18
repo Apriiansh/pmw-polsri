@@ -443,6 +443,8 @@ h1, h2, h3, h4, h5, .font-display {
   padding: 0 0.875rem;
   transition: all 0.3s var(--ease-smooth);
   gap: 0.75rem;
+  overflow: hidden;
+  position: relative;
 }
 
 .input-group:focus-within {

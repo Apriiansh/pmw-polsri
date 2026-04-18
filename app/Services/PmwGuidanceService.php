@@ -64,6 +64,9 @@ class PmwGuidanceService
             'schedule_id'          => $scheduleId,
             'material_explanation' => $data['material_explanation'],
             'video_url'            => $data['video_url'] ?? null,
+            'nota_title'           => $data['nota_title'] ?? null,
+            'nota_qty'             => $data['nota_qty'] ?? 1,
+            'nota_price'           => $data['nota_price'] ?? 0,
             'nominal_konsumsi'     => $data['nominal_konsumsi'] ?? 0,
             'status'               => 'pending',
         ];

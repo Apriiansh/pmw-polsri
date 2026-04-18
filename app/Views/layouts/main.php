@@ -211,7 +211,6 @@
                     // Laporan Akhir - Tahap xx (Laporan Akhir & Awarding)
                     $navItems[] = ['route' => 'mahasiswa/laporan-akhir', 'icon' => 'fa-box-archive', 'label' => 'Laporan Akhir', 'match' => 'mahasiswa/laporan-akhir'];
                 }
-
                 if ($mainRole === 'reviewer') {
                     // Penilaian Proposal - Tahap 2-3 (Seleksi Administrasi & Pitching Desk)
                     $navItems[] = ['route' => 'reviewer/penilaian-proposal', 'icon' => 'fa-clipboard-check', 'label' => 'Penilaian Proposal', 'match' => 'reviewer/penilaian-proposal'];
@@ -224,19 +223,19 @@
                     $navItems[] = ['route' => 'dosen/pitching-desk', 'icon' => 'fa-chalkboard-user', 'label' => 'Validasi Pitching', 'match' => 'dosen/pitching-desk'];
                     // Validasi Implementasi
                     $navItems[] = ['route' => 'dosen/implementasi', 'icon' => 'fa-list-check', 'label' => 'Validasi Implementasi', 'match' => 'dosen/implementasi'];
-                    // Monitoring Tim - Tahap 6-8 (Implementasi & Monev)
+                    // Validasi Logbook - Tahap 8 (Bimbingan)
+                    $navItems[] = ['route' => 'dosen/bimbingan', 'icon' => 'fa-signature', 'label' => 'Bimbingan Mahasiswa', 'match' => 'dosen/bimbingan'];
+                    // Monitoring Tim - Tahap x (Implementasi & Monev)
                     $navItems[] = ['route' => 'dosen/monitoring', 'icon' => 'fa-users-viewfinder', 'label' => 'Monitoring Tim', 'match' => 'dosen/monitoring'];
-                    // Validasi Logbook - Tahap 6 (Bimbingan)
-                    $navItems[] = ['route' => 'dosen/validasi', 'icon' => 'fa-signature', 'label' => 'Validasi Logbook', 'match' => 'dosen/validasi'];
                 }
 
                 if ($mainRole === 'mentor') {
-                    // Monitoring Tim - Tahap 6-8 (Implementasi & Monev)
-                    $navItems[] = ['route' => 'mentor/monitoring', 'icon' => 'fa-briefcase', 'label' => 'Monitoring Tim', 'match' => 'mentor/monitoring'];
-                    // Validasi Logbook - Tahap 6 (Mentoring)
-                    $navItems[] = ['route' => 'mentor/validasi', 'icon' => 'fa-check-double', 'label' => 'Validasi Logbook', 'match' => 'mentor/validasi'];
-                }
+                    // Validasi Logbook - Tahap 8 (Mentoring)
+                    $navItems[] = ['route' => 'mentor/mentoring', 'icon' => 'fa-check-double', 'label' => 'Mentoring Mahasiswa', 'match' => 'mentor/mentoring'];
 
+                    // Monitoring Tim - Tahap x (Implementasi & Monev)
+                    $navItems[] = ['route' => 'mentor/monitoring', 'icon' => 'fa-briefcase', 'label' => 'Monitoring Tim', 'match' => 'mentor/monitoring'];
+                }
                 $currentUrl = current_url();
                 $currentPath = trim((string) parse_url($currentUrl, PHP_URL_PATH), '/');
 

@@ -32,9 +32,7 @@ class GuidanceController extends BaseController
         $mentor = $this->mentorModel->getByUserId(auth()->id());
         
         // Get teams assigned to this mentor
-        $teams = $this->proposalModel->where('mentor_id', $mentor['id'])
-                                     ->where('status', 'approved')
-                                     ->findAll();
+        $teams = $this->proposalModel->getProposalsByMentor((int) $mentor['id']);
 
         $scheduleModel = new PmwGuidanceScheduleModel();
         $schedules = $scheduleModel->getSchedulesByCreator(auth()->id());
@@ -63,7 +61,12 @@ class GuidanceController extends BaseController
             if ($proposal) {
                 $notifModel = new \App\Models\NotificationModel();
                 $timeStr = ($data['schedule_date'] ?? '') . ' ' . ($data['schedule_time'] ?? '');
-                $notifModel->createGuidanceScheduleNotification((int)$proposal['leader_user_id'], $timeStr, 'Lokasi sesuai kesepakatan');
+                $notifModel->createGuidanceScheduleNotification(
+                    (int)$proposal['leader_user_id'],
+                    $timeStr,
+                    'Lokasi sesuai kesepakatan',
+                    'mentoring'
+                );
             }
 
             return redirect()->back()->with('success', 'Jadwal mentoring berhasil dibuat.');
@@ -95,7 +98,12 @@ class GuidanceController extends BaseController
 
             if ($logbook) {
                 $notifModel = new \App\Models\NotificationModel();
-                $notifModel->createGuidanceVerificationNotification((int)$logbook->leader_user_id, $logbook->schedule_date, $status === 'approved' ? 'verified' : 'pending');
+                $notifModel->createGuidanceVerificationNotification(
+                    (int)$logbook->leader_user_id,
+                    $logbook->schedule_date,
+                    $status === 'approved' ? 'verified' : 'pending',
+                    'mentoring'
+                );
             }
 
             return redirect()->back()->with('success', 'Verifikasi mentoring berhasil disimpan.');

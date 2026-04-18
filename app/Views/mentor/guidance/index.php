@@ -196,7 +196,7 @@
                 </button>
             </div>
             
-            <form action="<?= base_url('mentor/guidance/schedule') ?>" method="POST" class="p-6 space-y-4">
+            <form action="<?= base_url('mentor/mentoring/schedule') ?>" method="POST" class="p-6 space-y-4">
                 <?= csrf_field() ?>
                 
                 <div class="space-y-1.5">
@@ -280,7 +280,7 @@
                                     <p class="text-[10px] text-emerald-600 font-bold uppercase tracking-tighter">Total Nominal</p>
                                     <p class="font-display text-lg font-black text-emerald-700" x-text="new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(selectedLogbook.nominal_konsumsi)"></p>
                                 </div>
-                                <a :href="`<?= base_url('mentor/guidance/file/nota') ?>/${selectedLogbook.id}`" target="_blank" class="btn-primary btn-sm py-2 px-4 shadow-sm" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                <a :href="`<?= base_url('mentor/mentoring/file/nota') ?>/${selectedLogbook.id}`" target="_blank" class="btn-primary btn-sm py-2 px-4 shadow-sm" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
                                     <i class="fas fa-file-invoice mr-1.5"></i> Lihat Nota
                                 </a>
                             </div>
@@ -291,8 +291,8 @@
                         <div class="space-y-1.5">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Foto Dokumentasi</label>
                             <div class="aspect-video rounded-2xl overflow-hidden border-2 border-slate-100 bg-slate-50 group relative">
-                                <img :src="`<?= base_url('mentor/guidance/file/photo') ?>/${selectedLogbook.id}`" class="w-full h-full object-cover">
-                                <a :href="`<?= base_url('mentor/guidance/file/photo') ?>/${selectedLogbook.id}`" target="_blank" 
+                                <img :src="`<?= base_url('mentor/mentoring/file/photo') ?>/${selectedLogbook.id}`" class="w-full h-full object-cover">
+                                <a :href="`<?= base_url('mentor/mentoring/file/photo') ?>/${selectedLogbook.id}`" target="_blank" 
                                    class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
                                     <i class="fas fa-expand text-2xl"></i>
                                 </a>
@@ -301,7 +301,7 @@
 
                         <div class="space-y-1.5" x-show="selectedLogbook.assignment_file">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tugas / Draft Dokumen</label>
-                            <a :href="`<?= base_url('mentor/guidance/file/assignment') ?>/${selectedLogbook.id}`" target="_blank" class="flex items-center gap-3 p-3 rounded-xl border border-amber-100 bg-amber-50 text-amber-600 hover:bg-amber-100 transition-all group w-full">
+                            <a :href="`<?= base_url('mentor/mentoring/file/assignment') ?>/${selectedLogbook.id}`" target="_blank" class="flex items-center gap-3 p-3 rounded-xl border border-amber-100 bg-amber-50 text-amber-600 hover:bg-amber-100 transition-all group w-full">
                                 <i class="fas fa-file-lines text-xl"></i>
                                 <span class="text-xs font-bold uppercase tracking-wider">Download Berkas Tugas</span>
                                 <i class="fas fa-download ml-auto opacity-0 group-hover:opacity-100 transition-all"></i>
@@ -311,7 +311,7 @@
                 </div>
 
                 <!-- Form Section -->
-                <form :action="`<?= base_url('mentor/guidance/verify') ?>/${selectedLogbook.id}`" method="POST" class="pt-6 border-t border-slate-100">
+                <form :action="`<?= base_url('mentor/mentoring/verify') ?>/${selectedLogbook.id}`" method="POST" class="pt-6 border-t border-slate-100">
                     <?= csrf_field() ?>
                     <div class="space-y-6">
                         <div class="grid grid-cols-2 gap-3">
