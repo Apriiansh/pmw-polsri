@@ -151,7 +151,7 @@
                             <div class="w-5 h-5 rounded bg-emerald-500 flex items-center justify-center text-white shrink-0 mt-0.5">
                                 <i class="fas fa-check text-[10px]"></i>
                             </div>
-                            <p class="text-[11px] text-slate-600">Kelengkapan rincian barang (Jumlah, Harga, & Link Pembelian)</p>
+                            <p class="text-[11px] text-slate-600">Kelengkapan rincian komponen (Jumlah, Harga, & Link Pembelian)</p>
                         </div>
                         <div class="flex items-start gap-3">
                             <div class="w-5 h-5 rounded bg-emerald-500 flex items-center justify-center text-white shrink-0 mt-0.5">

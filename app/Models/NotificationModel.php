@@ -317,6 +317,87 @@ class NotificationModel extends Model
     }
 
     /**
+     * Create notification for new Activity schedule (Kegiatan Wirausaha)
+     */
+    public function createActivityScheduleNotification(int $leaderUserId, string $category, string $date)
+    {
+        return $this->insert([
+            'user_id' => $leaderUserId,
+            'title'   => "📅 Jadwal Kegiatan: {$category}",
+            'message' => "Anda memiliki jadwal kegiatan wirausaha '{$category}' pada tanggal {$date}. Silakan persiapkan dan isi logbook setelah kegiatan.",
+            'link'    => 'mahasiswa/kegiatan',
+            'type'    => 'activity_scheduled',
+            'is_read' => false,
+        ], true);
+    }
+
+    /**
+     * Notify Dosen/Mentor when student submits activity logbook
+     */
+    public function createActivitySubmissionNotification(int $leaderUserId, string $category, string $teamName)
+    {
+        // Get dosen/mentor user ids for this proposal
+        $db = \Config\Database::connect();
+        $proposal = $db->table('pmw_proposals p')
+            ->select('pa.lecturer_id, pm.mentor_id')
+            ->join('pmw_proposal_assignments pa', 'pa.proposal_id = p.id')
+            ->join('pmw_proposal_mentors pm', 'pm.proposal_id = p.id', 'left')
+            ->where('p.leader_user_id', $leaderUserId)
+            ->get()->getRow();
+
+        if (!$proposal) {
+            return null;
+        }
+
+        // Notify Dosen
+        if ($proposal->lecturer_id) {
+            $lecturer = $db->table('pmw_lecturers')->where('id', $proposal->lecturer_id)->get()->getRow();
+            if ($lecturer && $lecturer->user_id) {
+                $this->insert([
+                    'user_id' => $lecturer->user_id,
+                    'title'   => "📝 Logbook Kegiatan Baru",
+                    'message' => "Tim '{$teamName}' telah mengisi logbook kegiatan '{$category}'. Silakan verifikasi.",
+                    'link'    => 'dosen/kegiatan',
+                    'type'    => 'activity_submitted',
+                    'is_read' => false,
+                ]);
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Create notification for Activity logbook verification result
+     */
+    public function createActivityVerificationNotification(int $leaderUserId, string $category, string $status, string $verifier = 'dosen')
+    {
+        $statusLabels = [
+            'approved'          => 'Disetujui Dosen ✅',
+            'approved_by_dosen' => 'Disetujui Dosen ✅',
+            'approved_by_mentor'=> 'Disetujui Mentor ✅',
+            'revision'          => 'Perlu Revisi ⚠️',
+        ];
+        $statusLabel = $statusLabels[$status] ?? 'Status Diperbarui';
+
+        $verifierLabel = match ($verifier) {
+            'dosen'  => 'Dosen Pendamping',
+            'mentor' => 'Mentor',
+            'admin'  => 'Admin UPAPPK',
+            default  => 'Verifikator',
+        };
+
+        return $this->insert([
+            'user_id' => $leaderUserId,
+            'title'   => "📋 Verifikasi Kegiatan: {$category}",
+            'message' => "Logbook kegiatan '{$category}' telah di-review oleh {$verifierLabel}. Status: {$statusLabel}.",
+            'link'    => 'mahasiswa/kegiatan',
+            'type'    => 'activity_verified',
+            'is_read' => false,
+        ], true);
+    }
+
+    /**
      * Delete old notifications (keep last 30 days)
      */
     public function deleteOld(int $days = 30): int

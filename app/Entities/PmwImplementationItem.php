@@ -5,13 +5,14 @@ namespace App\Entities;
 use CodeIgniter\Entity\Entity;
 
 /**
- * Entity for Implementation Items (Barang)
+ * Entity for Implementation Items (Komponen)
  *
  * @property int    $id
  * @property int    $proposal_id
  * @property int    $period_id
  * @property string $item_title
  * @property string $item_description
+ * @property string $category
  * @property int    $qty
  * @property float  $price
  * @property string $created_at
@@ -27,6 +28,7 @@ class PmwImplementationItem extends Entity
         'period_id'        => 'integer',
         'item_title'       => 'string',
         'item_description' => 'string',
+        'category'         => 'string',
         'qty'              => 'integer',
         'price'            => 'float',
     ];

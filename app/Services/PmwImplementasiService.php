@@ -27,7 +27,7 @@ class PmwImplementasiService
     }
 
     /**
-     * Save new item (barang)
+     * Save new item (komponen)
      */
     public function saveItem(int $proposalId, int $periodId, array $data): int
     {
@@ -36,6 +36,7 @@ class PmwImplementasiService
             'period_id'        => $periodId,
             'item_title'       => $data['item_title'],
             'item_description' => $data['item_description'] ?? null,
+            'category'         => $data['category'] ?? null,
             'qty'              => $data['qty'] ?? 1,
             'price'            => $data['price'] ?? 0,
         ];
@@ -51,6 +52,7 @@ class PmwImplementasiService
         $updateData = [
             'item_title'       => $data['item_title'] ?? null,
             'item_description' => $data['item_description'] ?? null,
+            'category'         => $data['category'] ?? null,
             'qty'              => $data['qty'] ?? null,
             'price'            => $data['price'] ?? null,
         ];

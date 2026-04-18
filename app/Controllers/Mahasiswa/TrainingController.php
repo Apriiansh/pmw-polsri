@@ -23,7 +23,7 @@ class TrainingController extends BaseController
 
         $activePeriod = $phaseAccess->getActivePeriod();
         if (!$activePeriod) {
-            return view('mahasiswa/pembekalan/index', [
+            return view('mahasiswa/pembekalan', [
                 'title'           => 'Pembekalan',
                 'activePeriod'    => null,
                 'phase'           => null,
@@ -60,7 +60,7 @@ class TrainingController extends BaseController
             }
         }
 
-        return view('mahasiswa/pembekalan/index', [
+        return view('mahasiswa/pembekalan', [
             'title'           => 'Pembekalan',
             'activePeriod'    => $activePeriod,
             'phase'           => $phase,

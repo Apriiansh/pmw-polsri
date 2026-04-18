@@ -112,7 +112,7 @@ class GuidanceController extends BaseController
             }
         }
 
-        return view('mahasiswa/guidance/index', [
+        return view('mahasiswa/guidance', [
             'title'         => $context['title'] . ' | PMW Polsri',
             'proposal'      => $proposal,
             'schedules'     => $schedules,
@@ -141,56 +141,60 @@ class GuidanceController extends BaseController
             // Filter out missing/invalid files
             $files = array_filter($files, fn($f) => $f && $f->isValid() && !$f->hasMoved());
 
+            $status = $data['status'] ?? 'pending';
             $this->guidanceService->submitLogbook($scheduleId, $data, $files);
 
-            // Notify the verifier (Dosen or Mentor)
-            $scheduleModel = new PmwGuidanceScheduleModel();
-            $schedule      = $scheduleModel->find($scheduleId);
-            if ($schedule) {
-                $proposal = $this->proposalModel->find($schedule->proposal_id);
-                if ($proposal) {
-                    $type     = $schedule->type; // 'bimbingan' or 'mentoring'
-                    $teamName = $proposal['nama_usaha'] ?? 'Tim';
-                    $date     = $schedule->schedule_date;
+            // Notify the verifier (Dosen or Mentor) ONLY if not a draft
+            if ($status !== 'draft') {
+                $scheduleModel = new PmwGuidanceScheduleModel();
+                $schedule      = $scheduleModel->find($scheduleId);
+                if ($schedule) {
+                    $proposal = $this->proposalModel->find($schedule->proposal_id);
+                    if ($proposal) {
+                        $type     = $schedule->type; // 'bimbingan' or 'mentoring'
+                        $teamName = $proposal['nama_usaha'] ?? 'Tim';
+                        $date     = $schedule->schedule_date;
 
-                    $notifModel = new NotificationModel();
+                        $notifModel = new NotificationModel();
 
-                    if ($type === 'bimbingan') {
-                        // Notify the assigned Dosen
-                        $assignmentModel = new PmwProposalAssignmentModel();
-                        $assignment      = $assignmentModel->where('proposal_id', $schedule->proposal_id)->first();
-                        if ($assignment) {
-                            $lecturerModel = new \App\Models\LecturerModel();
-                            $lecturer      = $lecturerModel->find($assignment['lecturer_id'] ?? $assignment->lecturer_id ?? 0);
-                            if ($lecturer && ($lecturer['user_id'] ?? null)) {
+                        if ($type === 'bimbingan') {
+                            // Notify the assigned Dosen
+                            $assignmentModel = new PmwProposalAssignmentModel();
+                            $assignment      = $assignmentModel->where('proposal_id', $schedule->proposal_id)->first();
+                            if ($assignment) {
+                                $lecturerModel = new \App\Models\LecturerModel();
+                                $lecturer      = $lecturerModel->find($assignment['lecturer_id'] ?? $assignment->lecturer_id ?? 0);
+                                if ($lecturer && ($lecturer['user_id'] ?? null)) {
+                                    $notifModel->createLogbookSubmissionNotification(
+                                        (int)$lecturer['user_id'],
+                                        (string)$teamName,
+                                        $date,
+                                        'bimbingan'
+                                    );
+                                }
+                            }
+                        } else {
+                            // Notify the assigned Mentor
+                            $db = \Config\Database::connect();
+                            $mentor = $db->table('pmw_mentors m')
+                                ->join('pmw_proposal_mentors pm', 'pm.mentor_id = m.id')
+                                ->where('pm.proposal_id', $schedule->proposal_id)
+                                ->get()->getRowArray();
+                            if ($mentor && ($mentor['user_id'] ?? null)) {
                                 $notifModel->createLogbookSubmissionNotification(
-                                    (int)$lecturer['user_id'],
+                                    (int)$mentor['user_id'],
                                     (string)$teamName,
                                     $date,
-                                    'bimbingan'
+                                    'mentoring'
                                 );
                             }
-                        }
-                    } else {
-                        // Notify the assigned Mentor
-                        $db = \Config\Database::connect();
-                        $mentor = $db->table('pmw_mentors m')
-                            ->join('pmw_proposal_mentors pm', 'pm.mentor_id = m.id')
-                            ->where('pm.proposal_id', $schedule->proposal_id)
-                            ->get()->getRowArray();
-                        if ($mentor && ($mentor['user_id'] ?? null)) {
-                            $notifModel->createLogbookSubmissionNotification(
-                                (int)$mentor['user_id'],
-                                (string)$teamName,
-                                $date,
-                                'mentoring'
-                            );
                         }
                     }
                 }
             }
 
-            return redirect()->back()->with('success', 'Logbook berhasil dikirim.');
+            $successMsg = ($status === 'draft') ? 'Draft logbook berhasil disimpan.' : 'Logbook berhasil dikirim.';
+            return redirect()->back()->with('success', $successMsg);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }

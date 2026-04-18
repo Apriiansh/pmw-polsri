@@ -179,20 +179,41 @@
         <!-- CARD: ITEMS & ASSETS (Col 3) -->
         <div class="lg:col-span-3 card-premium overflow-hidden" @mousemove="handleMouseMove">
             <div class="px-6 py-4 border-b border-slate-50 flex items-center justify-between bg-white/60">
-                <h4 class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Daftar Barang & Inventaris</h4>
-                <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-sky-100 text-sky-600"><?= count($items) ?> Pos</span>
+                <h4 class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Daftar Komponen</h4>
+                <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-sky-100 text-sky-600"><?= count($items) ?> Komponen</span>
             </div>
             <div class="max-h-[500px] overflow-y-auto divide-y divide-slate-50 custom-scrollbar">
                 <?php if (empty($items)): ?>
                     <div class="p-12 text-center text-slate-400">
                         <i class="fas fa-cubes-stacked text-3xl opacity-20 mb-3 block"></i>
-                        <p class="text-xs font-bold uppercase tracking-widest">Belum ada data barang</p>
+                        <p class="text-xs font-bold uppercase tracking-widest">Belum ada data komponen</p>
                     </div>
                 <?php else: ?>
                     <?php foreach ($items as $item): ?>
                         <div class="p-6 hover:bg-slate-50/50 transition-colors group/item">
                             <div class="flex flex-col sm:flex-row gap-6">
                                 <div class="flex-1">
+                                    <?php if ($item->category): 
+                                        $categoryLabels = [
+                                            'bahan' => 'Bahan/Perlengkapan',
+                                            'alat' => 'Alat/Mesin',
+                                            'legalitas' => 'Legalitas',
+                                            'tempat' => 'Tempat',
+                                            'kemasan' => 'Kemasan',
+                                            'lainnya' => 'Lainnya'
+                                        ];
+                                        $catLabel = $categoryLabels[$item->category] ?? $item->category;
+                                        $catClass = match($item->category) {
+                                            'bahan' => 'bg-blue-100 text-blue-700 border-blue-200',
+                                            'alat' => 'bg-purple-100 text-purple-700 border-purple-200',
+                                            'legalitas' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                                            'tempat' => 'bg-orange-100 text-orange-700 border-orange-200',
+                                            'kemasan' => 'bg-pink-100 text-pink-700 border-pink-200',
+                                            default => 'bg-slate-100 text-slate-600 border-slate-200'
+                                        };
+                                    ?>
+                                        <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border <?= $catClass ?> mb-1 inline-block"><?= $catLabel ?></span>
+                                    <?php endif; ?>
                                     <h5 class="text-sm font-black text-slate-800 mb-1 group-hover/item:text-sky-600 transition-colors"><?= esc($item->item_title) ?></h5>
                                     <p class="text-[11px] text-slate-500 leading-relaxed"><?= esc($item->item_description ?: 'Tidak ada deskripsi.') ?></p>
                                     <div class="flex flex-wrap gap-6 mt-4">
@@ -215,7 +236,7 @@
                                         <?php if (!empty($item->photos)): ?>
                                             <?php foreach ($item->photos as $ph): ?>
                                                 <button type="button"
-                                                    onclick="openImagePreview('<?= base_url('admin/implementasi/photo/' . $ph->id) ?>', 'Foto Barang: <?= esc($item->item_title) ?>')"
+                                                    onclick="openImagePreview('<?= base_url('admin/implementasi/photo/' . $ph->id) ?>', 'Foto Komponen: <?= esc($item->item_title) ?>')"
                                                     class="block w-20 h-20 rounded-2xl overflow-hidden border-2 border-white shadow-sm hover:border-sky-400 transition-all group relative">
                                                     <img src="<?= base_url('admin/implementasi/photo/' . $ph->id) ?>" alt="Photo" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
                                                     <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">

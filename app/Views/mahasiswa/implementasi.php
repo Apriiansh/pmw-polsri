@@ -20,7 +20,7 @@
             <h2 class="section-title text-xl sm:text-2xl">
                 Implementasi <span class="text-gradient">Perjanjian</span>
             </h2>
-            <p class="section-subtitle text-[10px] sm:text-[11px]">Tahap 7 — Dokumentasi Barang & Bukti Pembayaran</p>
+            <p class="section-subtitle text-[10px] sm:text-[11px]">Tahap 7 — Dokumentasi Komponen & Bukti Pembayaran</p>
         </div>
         <?php if ($selection && $selection->admin_status === 'revision' && $canEdit): ?>
             <button @click="resetAll()" class="btn-outline btn-sm bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-500 hover:text-white group">
@@ -99,7 +99,7 @@
     <div class="grid md:grid-cols-3 gap-6 animate-stagger delay-150">
         <div class="card-premium p-5 flex items-center justify-between group overflow-hidden" @mousemove="handleMouseMove">
             <div class="relative z-10">
-                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Komoditas/Barang</p>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Komponen</p>
                 <?php
                     $totalQty = array_reduce($items, function($carry, $item) {
                         return $carry + (is_object($item) ? $item->qty : ($item['qty'] ?? 1));
@@ -211,18 +211,33 @@
             <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60 flex items-center justify-between">
                 <div>
                     <h3 class="font-display text-base font-bold text-(--text-heading)">
-                        <i class="fas fa-square-plus text-sky-500 mr-2"></i>Registrasi Barang/Belanja
+                        <i class="fas fa-square-plus text-sky-500 mr-2"></i>Registrasi Komponen
                     </h3>
-                    <p class="text-[10px] text-slate-400 font-semibold mt-0.5 uppercase tracking-tighter">Input rincian barang yang telah dibeli sesuai RAB</p>
+                    <p class="text-[10px] text-slate-400 font-semibold mt-0.5 uppercase tracking-tighter">Input rincian komponen implementasi sesuai RAB</p>
                 </div>
             </div>
             <div class="p-5 sm:p-7">
                 <form @submit.prevent="saveItem()" class="grid md:grid-cols-12 gap-6">
                     <div class="md:col-span-6 form-field">
-                        <label class="form-label">Nama Barang <span class="required">*</span></label>
+                        <label class="form-label">Nama Komponen <span class="required">*</span></label>
                         <div class="input-group">
                             <div class="input-icon"><i class="fas fa-tag"></i></div>
-                            <input type="text" x-model="newItem.item_title" placeholder="Contoh: Oven Listrik, Tepung, dll" required>
+                            <input type="text" x-model="newItem.item_title" placeholder="Contoh: Oven Listrik, Tepung, NIB, dll" required>
+                        </div>
+                    </div>
+                    <div class="md:col-span-6 form-field">
+                        <label class="form-label">Kategori/Justifikasi Pemakaian</label>
+                        <div class="input-group">
+                            <div class="input-icon"><i class="fas fa-layer-group"></i></div>
+                            <select x-model="newItem.category" class="bg-transparent border-none outline-none w-full text-sm">
+                                <option value="">Pilih Kategori...</option>
+                                <option value="bahan">Bahan/Perlengkapan</option>
+                                <option value="alat">Alat/Mesin</option>
+                                <option value="legalitas">Legalitas (NIB, Halal, dll)</option>
+                                <option value="tempat">Tempat/Gerobak</option>
+                                <option value="kemasan">Kemasan</option>
+                                <option value="lainnya">Lainnya</option>
+                            </select>
                         </div>
                     </div>
                     <div class="md:col-span-2 form-field">
@@ -239,17 +254,17 @@
                             <input type="number" x-model="newItem.price" placeholder="0">
                         </div>
                     </div>
-                    <div class="md:col-span-12 form-field">
-                        <label class="form-label">Justifikasi / Detail Kegunaan</label>
+                    <div class="md:col-span-6 form-field">
+                        <label class="form-label">Deskripsi/Justifikasi Pemakaian</label>
                         <div class="input-group p-0!">
                             <div class="input-icon pl-3"><i class="fas fa-align-left"></i></div>
-                            <textarea x-model="newItem.item_description" rows="3" class="px-0! py-3!" placeholder="Jelaskan secara ringkas untuk apa barang ini digunakan dalam usaha Anda..."></textarea>
+                            <textarea x-model="newItem.item_description" rows="3" class="px-0! py-3!" placeholder="Jelaskan secara ringkas untuk apa komponen ini digunakan dalam usaha Anda..."></textarea>
                         </div>
                     </div>
                     <div class="md:col-span-12 flex justify-end">
                         <button type="submit" :disabled="isLoading" class="btn-primary w-full sm:w-auto h-12 px-8">
                             <i class="fas fa-save mr-2" :class="isLoading ? 'fa-spin fa-spinner' : ''"></i>
-                            <span x-text="isLoading ? 'Memproses...' : 'Simpan Inventaris'"></span>
+                            <span x-text="isLoading ? 'Memproses...' : 'Simpan Komponen'"></span>
                         </button>
                     </div>
                 </form>
@@ -261,9 +276,9 @@
     <div class="card-premium overflow-hidden animate-stagger delay-250" @mousemove="handleMouseMove">
         <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60 flex items-center justify-between">
             <h3 class="font-display text-base font-bold text-(--text-heading)">
-                <i class="fas fa-table-list text-sky-500 mr-2"></i>Inventaris Implementasi
+                <i class="fas fa-table-list text-sky-500 mr-2"></i>Daftar Komponen
             </h3>
-            <span class="text-[10px] font-black bg-sky-100 text-sky-700 px-3 py-1 rounded-full uppercase"><?= count($items) ?> Items</span>
+            <span class="text-[10px] font-black bg-sky-100 text-sky-700 px-3 py-1 rounded-full uppercase"><?= count($items) ?> Komponen</span>
         </div>
         <div class="p-5 sm:p-7 space-y-6">
             <?php foreach ($items as $item): ?>
@@ -275,7 +290,30 @@
                                     <i class="fas fa-box text-slate-400 group-hover/item:text-sky-500 transition-colors"></i>
                                 </div>
                                 <div>
-                                    <h4 class="font-display font-bold text-base text-(--text-heading)"><?= esc(is_object($item) ? $item->item_title : $item['item_title']) ?></h4>
+                                    <?php
+                                    $itemCategory = is_object($item) ? $item->category : ($item['category'] ?? '');
+                                    if ($itemCategory):
+                                        $categoryLabels = [
+                                            'bahan' => 'Bahan/Perlengkapan',
+                                            'alat' => 'Alat/Mesin',
+                                            'legalitas' => 'Legalitas',
+                                            'tempat' => 'Tempat',
+                                            'kemasan' => 'Kemasan',
+                                            'lainnya' => 'Lainnya'
+                                        ];
+                                        $catLabel = $categoryLabels[$itemCategory] ?? $itemCategory;
+                                        $catClass = match($itemCategory) {
+                                            'bahan' => 'bg-blue-100 text-blue-700',
+                                            'alat' => 'bg-purple-100 text-purple-700',
+                                            'legalitas' => 'bg-emerald-100 text-emerald-700',
+                                            'tempat' => 'bg-orange-100 text-orange-700',
+                                            'kemasan' => 'bg-pink-100 text-pink-700',
+                                            default => 'bg-slate-100 text-slate-600'
+                                        };
+                                    ?>
+                                        <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md <?= $catClass ?>"><?= $catLabel ?></span>
+                                    <?php endif; ?>
+                                    <h4 class="font-display font-bold text-base text-(--text-heading) mt-1"><?= esc(is_object($item) ? $item->item_title : $item['item_title']) ?></h4>
                                     <div class="flex items-center gap-2 mt-0.5">
                                         <span class="text-xs font-bold text-slate-700">Rp <?= number_format(is_object($item) ? $item->price : $item['price'], 0, ',', '.') ?></span>
                                         <span class="text-[10px] font-black uppercase text-slate-400">×</span>
@@ -297,7 +335,7 @@
 
                         <?php if ($canEdit): ?>
                         <div class="flex items-center gap-1 shrink-0">
-                            <button @click="openEditItem(<?= is_object($item) ? $item->id : $item['id'] ?>, <?= htmlspecialchars(json_encode(is_object($item) ? $item->item_title : $item['item_title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode((is_object($item) ? $item->item_description : ($item['item_description'] ?? '')) ?: ''), ENT_QUOTES, 'UTF-8') ?>, <?= is_object($item) ? $item->qty : ($item['qty'] ?? 1) ?>, <?= is_object($item) ? $item->price : $item['price'] ?>)"
+                            <button @click="openEditItem(<?= is_object($item) ? $item->id : $item['id'] ?>, <?= htmlspecialchars(json_encode(is_object($item) ? $item->item_title : $item['item_title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode((is_object($item) ? $item->item_description : ($item['item_description'] ?? '')) ?: ''), ENT_QUOTES, 'UTF-8') ?>, <?= is_object($item) ? $item->qty : ($item['qty'] ?? 1) ?>, <?= is_object($item) ? $item->price : $item['price'] ?>, <?= htmlspecialchars(json_encode(is_object($item) ? $item->category : ($item['category'] ?? '')), ENT_QUOTES, 'UTF-8') ?>)"
                                 class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:bg-sky-50 hover:text-sky-600 border border-transparent hover:border-sky-100 transition-all bg-white shadow-sm hover:shadow-sky-100">
                                 <i class="fas fa-pen-to-square text-sm"></i>
                             </button>
@@ -313,7 +351,7 @@
                     <div class="mt-6 pt-6 border-t border-slate-100">
                         <div class="flex items-center justify-between mb-4">
                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                <i class="fas fa-camera-retro mr-1.5 text-sky-400"></i>Galeri Barang (<?= count((is_object($item) ? $item->photos : ($item['photos'] ?? [])) ?? []) ?>)
+                                <i class="fas fa-camera-retro mr-1.5 text-sky-400"></i>Galeri Komponen (<?= count((is_object($item) ? $item->photos : ($item['photos'] ?? [])) ?? []) ?>)
                             </p>
                         </div>
 
@@ -405,8 +443,8 @@
                     <div class="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-sm mb-4">
                         <i class="fas fa-box-open text-3xl"></i>
                     </div>
-                    <h5 class="font-display font-bold text-slate-400">Belum Ada Inventaris Terdaftar</h5>
-                    <p class="text-xs font-medium text-slate-400 mt-1 uppercase tracking-widest">Gunakan form di atas untuk menambah rincian implementasi</p>
+                    <h5 class="font-display font-bold text-slate-400">Belum Ada Komponen Terdaftar</h5>
+                    <p class="text-xs font-medium text-slate-400 mt-1 uppercase tracking-widest">Gunakan form di atas untuk menambah rincian komponen implementasi</p>
                 </div>
             <?php endif; ?>
         </div>
@@ -665,10 +703,26 @@
                 <form @submit.prevent="saveEditItem()" class="p-8 space-y-6">
                     <div class="space-y-5">
                         <div class="form-field">
-                            <label class="form-label text-[10px] font-black uppercase text-slate-400 tracking-widest">Nama Barang / Belanja</label>
+                            <label class="form-label text-[10px] font-black uppercase text-slate-400 tracking-widest">Nama Komponen</label>
                             <div class="input-group group-focus-within:border-sky-500 transition-colors">
                                 <div class="input-icon"><i class="fas fa-tag"></i></div>
-                                <input type="text" x-model="editItem.item_title" placeholder="Nama barang..." required>
+                                <input type="text" x-model="editItem.item_title" placeholder="Nama komponen..." required>
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label class="form-label text-[10px] font-black uppercase text-slate-400 tracking-widest">Kategori/Justifikasi Pemakaian</label>
+                            <div class="input-group group-focus-within:border-sky-500 transition-colors">
+                                <div class="input-icon"><i class="fas fa-layer-group"></i></div>
+                                <select x-model="editItem.category" class="bg-transparent border-none outline-none w-full text-sm">
+                                    <option value="">Pilih Kategori...</option>
+                                    <option value="bahan">Bahan/Perlengkapan</option>
+                                    <option value="alat">Alat/Mesin</option>
+                                    <option value="legalitas">Legalitas (NIB, Halal, dll)</option>
+                                    <option value="tempat">Tempat/Gerobak</option>
+                                    <option value="kemasan">Kemasan</option>
+                                    <option value="lainnya">Lainnya</option>
+                                </select>
                             </div>
                         </div>
 
@@ -690,10 +744,10 @@
                         </div>
 
                         <div class="form-field">
-                            <label class="form-label text-[10px] font-black uppercase text-slate-400 tracking-widest">Justifikasi Perubahan</label>
+                            <label class="form-label text-[10px] font-black uppercase text-slate-400 tracking-widest">Deskripsi/Justifikasi Pemakaian</label>
                             <div class="input-group p-0! group-focus-within:border-sky-500 transition-colors">
                                 <div class="input-icon pl-3"><i class="fas fa-align-left"></i></div>
-                                <textarea x-model="editItem.item_description" rows="3" class="px-0! py-3!" placeholder="Detail perubahan kegunaan..."></textarea>
+                                <textarea x-model="editItem.item_description" rows="3" class="px-0! py-3!" placeholder="Deskripsi penggunaan komponen..."></textarea>
                             </div>
                         </div>
                     </div>
@@ -841,6 +895,7 @@
             newItem: {
                 item_title: '',
                 item_description: '',
+                category: '',
                 qty: 1,
                 price: ''
             },
@@ -861,6 +916,7 @@
                 id: null,
                 item_title: '',
                 item_description: '',
+                category: '',
                 qty: 1,
                 price: ''
             },
@@ -921,7 +977,7 @@
                     const result = await response.json();
                     if (result.success) {
                         this.$dispatch('toast-notify', {
-                            message: 'Barang berhasil diregistrasi',
+                            message: 'Komponen berhasil diregistrasi',
                             type: 'success'
                         });
                         setTimeout(() => window.location.reload(), 600);
@@ -1013,11 +1069,12 @@
                 this.newPayment.file = e.target.files[0];
             },
 
-            openEditItem(id, title, desc, qty, price) {
+            openEditItem(id, title, desc, qty, price, category) {
                 this.editItem = {
                     id: id,
                     item_title: title,
                     item_description: desc,
+                    category: category || '',
                     qty: qty,
                     price: price
                 };
@@ -1080,7 +1137,7 @@
             },
 
             async deleteItem(itemId) {
-                if (!confirm('Hapus barang ini beserta galeri fotonya?')) return;
+                if (!confirm('Hapus komponen ini beserta galeri fotonya?')) return;
                 try {
                     const r = await fetch(`<?= base_url('mahasiswa/implementasi/item') ?>/${itemId}`, {
                         method: 'DELETE',
@@ -1123,7 +1180,7 @@
             },
 
             async resetAll() {
-                if (!confirm('PERINGATAN KRITIKAL: Hapus semua data barang & nota secara permanen?')) return;
+                if (!confirm('PERINGATAN KRITIKAL: Hapus semua data komponen & nota secara permanen?')) return;
                 if (!confirm('Konfirmasi Terakhir: Anda harus mengulang input dari awal. Lanjutkan?')) return;
                 try {
                     const formData = new FormData();
@@ -1140,11 +1197,12 @@
                 } catch (e) {}
             },
 
-            openEditItem(id, title, desc, qty, price) {
+            openEditItem(id, title, desc, qty, price, category) {
                 this.editItem = {
                     id,
                     item_title: title,
                     item_description: desc || '',
+                    category: category || '',
                     qty: qty || 1,
                     price: price || ''
                 };

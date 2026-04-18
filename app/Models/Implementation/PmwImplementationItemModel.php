@@ -18,6 +18,7 @@ class PmwImplementationItemModel extends Model
         'period_id',
         'item_title',
         'item_description',
+        'category',
         'qty',
         'price',
     ];

@@ -60,15 +60,37 @@ class PmwGuidanceService
         // Check if logbook already exists
         $existing = $this->logbookModel->getBySchedule($scheduleId);
         
+        // Process flexible nota items from POST arrays
+        $notaTitles = $data['nota_title']  ?? [];
+        $notaQtys   = $data['nota_qty']    ?? [];
+        $notaPrices = $data['nota_price']  ?? [];
+
+        $notaItems = [];
+        $totalKonsumsi = 0;
+
+        foreach ($notaTitles as $i => $title) {
+            $qty   = (int)   ($notaQtys[$i]   ?? 1);
+            $price = (float) ($notaPrices[$i] ?? 0);
+            $subtotal = $qty * $price;
+
+            if (!empty(trim($title))) {
+                $notaItems[] = [
+                    'title'    => trim($title),
+                    'qty'      => $qty,
+                    'price'    => $price,
+                    'subtotal' => $subtotal,
+                ];
+                $totalKonsumsi += $subtotal;
+            }
+        }
+
         $logbookData = [
             'schedule_id'          => $scheduleId,
             'material_explanation' => $data['material_explanation'],
             'video_url'            => $data['video_url'] ?? null,
-            'nota_title'           => $data['nota_title'] ?? null,
-            'nota_qty'             => $data['nota_qty'] ?? 1,
-            'nota_price'           => $data['nota_price'] ?? 0,
-            'nominal_konsumsi'     => $data['nominal_konsumsi'] ?? 0,
-            'status'               => 'pending',
+            'nota_items'           => !empty($notaItems) ? json_encode($notaItems) : null,
+            'nominal_konsumsi'     => $totalKonsumsi,
+            'status'               => $data['status'] ?? 'pending',
         ];
 
         // Handle File Uploads

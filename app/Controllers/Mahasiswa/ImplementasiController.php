@@ -143,6 +143,7 @@ class ImplementasiController extends BaseController
         $rules = [
             'item_title'       => 'required|min_length[3]|max_length[255]',
             'item_description' => 'permit_empty|string',
+            'category'         => 'permit_empty|string|max_length[100]',
             'qty'              => 'permit_empty|integer',
             'price'            => 'permit_empty|decimal',
         ];
@@ -154,6 +155,7 @@ class ImplementasiController extends BaseController
         $data = [
             'item_title'       => $this->request->getPost('item_title'),
             'item_description' => $this->request->getPost('item_description'),
+            'category'         => $this->request->getPost('category'),
             'qty'              => $this->request->getPost('qty') ?: 1,
             'price'            => $this->request->getPost('price') ?: 0,
         ];
@@ -163,12 +165,12 @@ class ImplementasiController extends BaseController
         if ($itemId) {
             return $this->respond([
                 'success' => true,
-                'message' => 'Barang berhasil ditambahkan',
+                'message' => 'Komponen berhasil ditambahkan',
                 'item_id' => $itemId,
             ]);
         }
 
-        return $this->fail('Gagal menyimpan barang');
+        return $this->fail('Gagal menyimpan komponen');
     }
 
     /**
@@ -502,7 +504,7 @@ class ImplementasiController extends BaseController
         $item      = $itemModel->find($itemId);
 
         if (!$item || $item->proposal_id != $proposal['id']) {
-            return $this->fail('Barang tidak ditemukan.');
+            return $this->fail('Komponen tidak ditemukan.');
         }
 
         $data = $this->request->getJSON(true);
@@ -510,15 +512,16 @@ class ImplementasiController extends BaseController
         $updateData = [
             'item_title'       => $data['item_title'] ?? $item->item_title,
             'item_description' => $data['item_description'] ?? $item->item_description,
+            'category'         => $data['category'] ?? $item->category,
             'qty'              => $data['qty'] ?? $item->qty,
             'price'            => $data['price'] ?? $item->price,
         ];
 
         if ($this->implementasiService->updateItem($itemId, $updateData)) {
-            return $this->respond(['success' => true, 'message' => 'Barang berhasil diperbarui']);
+            return $this->respond(['success' => true, 'message' => 'Komponen berhasil diperbarui']);
         }
 
-        return $this->fail('Gagal memperbarui barang');
+        return $this->fail('Gagal memperbarui komponen');
     }
 
     /**

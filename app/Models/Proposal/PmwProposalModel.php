@@ -320,6 +320,24 @@ class PmwProposalModel extends Model
         return $builder->get()->getResultArray();
     }
 
+    /**
+     * Get proposals approved in implementasi for activity scheduling
+     */
+    public function getProposalsForSchedule(int $periodId): array
+    {
+        $db = \Config\Database::connect();
+        $builder = $db->table($this->table . ' p');
+        $builder->select('p.*, pm.nama as ketua_nama');
+        $builder->join('pmw_selection_implementasi psi', 'psi.proposal_id = p.id');
+        $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
+        $builder->where('p.period_id', $periodId);
+        $builder->where('psi.admin_status', 'approved');
+        $builder->where('p.status', 'approved');
+        $builder->orderBy('p.nama_usaha', 'ASC');
+
+        return $builder->get()->getResultArray();
+    }
+
     protected function initializeProposalStages(array $data)
     {
         if (isset($data['id'])) {

@@ -64,7 +64,7 @@
                         <th>Tim/Usaha</th>
                         <th>Ketua</th>
                         <th>Periode</th>
-                        <th class="text-center">Barang</th>
+                        <th class="text-center">Komponen</th>
                         <th class="text-right">Total Harga</th>
                         <th class="text-center">Status Dosen</th>
                         <th class="text-center">Status Final</th>

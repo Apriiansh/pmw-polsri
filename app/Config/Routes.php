@@ -92,6 +92,14 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('implementasi/photo/(:num)', 'Admin\\ImplementasiController::viewPhoto/$1');
         $routes->get('implementasi/payment/(:num)', 'Admin\\ImplementasiController::viewPayment/$1');
         $routes->get('implementasi/konsumsi/(:num)', 'Admin\\ImplementasiController::viewKonsumsi/$1');
+
+        // Tahap 9 - Kegiatan Wirausaha (Activity)
+        $routes->get('kegiatan', 'Admin\\ActivityController::index');
+        $routes->post('kegiatan/schedule', 'Admin\\ActivityController::createSchedule');
+        $routes->get('kegiatan/detail/(:num)', 'Admin\\ActivityController::detail/$1');
+        $routes->post('kegiatan/verify/(:num)', 'Admin\\ActivityController::verify/$1');
+        $routes->post('kegiatan/delete/(:num)', 'Admin\\ActivityController::deleteSchedule/$1');
+        $routes->get('kegiatan/file/(:any)/(:num)', 'Admin\\ActivityController::viewFile/$1/$2');
     });
 
     // Mahasiswa Routes
