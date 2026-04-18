@@ -111,14 +111,13 @@ class WawancaraController extends BaseController
         }
 
         $mentorModel = new \App\Models\MentorModel();
-        $mentors = $mentorModel->findAll();
 
         return view('admin/perjanjian/detail', [
             'title'     => 'Detail Perjanjian Implementasi | PMW Polsri',
             'proposal'  => $proposal,
             'members'   => $members,
             'docsByKey' => $docsByKey,
-            'mentors'   => $mentors,
+            'mentors'   => $mentorModel->getAllWithAssignmentStatus(),
         ]);
     }
 
@@ -158,6 +157,15 @@ class WawancaraController extends BaseController
 
             // Update Mentor Assignment
             if ($mentorId) {
+                // Security check: Ensure mentor is not already assigned to another team
+                $isAlreadyAssigned = $assignmentModel->where('mentor_id', $mentorId)
+                    ->where('proposal_id !=', $id)
+                    ->first();
+                
+                if ($isAlreadyAssigned) {
+                    throw new \Exception('Mentor ini sudah ditugaskan ke tim lain.');
+                }
+
                 $assignmentModel->where('proposal_id', $id)->set([
                     'mentor_id' => $mentorId,
                     'updated_at' => date('Y-m-d H:i:s'),

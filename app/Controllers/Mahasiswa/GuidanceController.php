@@ -176,7 +176,7 @@ class GuidanceController extends BaseController
                             if ($assignment) {
                                 $lecturerModel = new \App\Models\LecturerModel();
                                 $lecturerId    = $assignment->lecturer_id ?? $assignment['lecturer_id'] ?? 0;
-                                $lecturer      = $lecturerModel->find($lecturerId);
+                                $lecturer      = $lecturerId ? $lecturerModel->find($lecturerId) : null;
 
                                 if ($lecturer && ($lecturer->user_id ?? $lecturer['user_id'] ?? null)) {
                                     $notifModel->createLogbookSubmissionNotification(
@@ -189,11 +189,12 @@ class GuidanceController extends BaseController
                             }
                         } else {
                             // Notify the assigned Mentor
-                            $db = \Config\Database::connect();
+                            $db     = \Config\Database::connect();
                             $mentor = $db->table('pmw_mentors m')
-                                ->join('pmw_proposal_mentors pm', 'pm.mentor_id = m.id')
-                                ->where('pm.proposal_id', $schedule->proposal_id)
+                                ->join('pmw_proposal_assignments pa', 'pa.mentor_id = m.id')
+                                ->where('pa.proposal_id', $schedule->proposal_id)
                                 ->get()->getRowArray();
+
                             if ($mentor && ($mentor['user_id'] ?? null)) {
                                 $notifModel->createLogbookSubmissionNotification(
                                     (int)$mentor['user_id'],

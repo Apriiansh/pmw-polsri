@@ -36,24 +36,27 @@
     }
 
     $stats = [
-        ['title' => 'Total User', 'value' => $totalUsers, 'icon' => 'fa-users', 'bg' => 'bg-sky-50', 'icon_color' => 'text-sky-500'],
-        ['title' => 'Mahasiswa', 'value' => $roleCounts['mahasiswa'], 'icon' => 'fa-user-graduate', 'bg' => 'bg-teal-50', 'icon_color' => 'text-teal-500'],
-        ['title' => 'Dosen', 'value' => $roleCounts['dosen'], 'icon' => 'fa-chalkboard-user', 'bg' => 'bg-violet-50', 'icon_color' => 'text-violet-500'],
-        ['title' => 'Reviewer', 'value' => $roleCounts['reviewer'], 'icon' => 'fa-clipboard-check', 'bg' => 'bg-yellow-50', 'icon_color' => 'text-yellow-500'],
+        ['title' => 'Total User', 'value' => $totalUsers, 'icon' => 'fa-users', 'bg' => 'bg-sky-50', 'icon_color' => 'text-sky-500', 'role' => 'all'],
+        ['title' => 'Mahasiswa', 'value' => $roleCounts['mahasiswa'], 'icon' => 'fa-user-graduate', 'bg' => 'bg-teal-50', 'icon_color' => 'text-teal-500', 'role' => 'mahasiswa'],
+        ['title' => 'Dosen', 'value' => $roleCounts['dosen'], 'icon' => 'fa-chalkboard-user', 'bg' => 'bg-violet-50', 'icon_color' => 'text-violet-500', 'role' => 'dosen'],
+        ['title' => 'Mentor', 'value' => $roleCounts['mentor'], 'icon' => 'fa-user-tie', 'bg' => 'bg-emerald-50', 'icon_color' => 'text-emerald-500', 'role' => 'mentor'],
+        ['title' => 'Reviewer', 'value' => $roleCounts['reviewer'], 'icon' => 'fa-clipboard-check', 'bg' => 'bg-yellow-50', 'icon_color' => 'text-yellow-500', 'role' => 'reviewer'],
     ];
     ?>
 
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
         <?php foreach ($stats as $index => $stat): ?>
-        <div class="card-premium p-3 sm:p-5 flex items-center gap-3 sm:gap-4 animate-stagger delay-<?= ($index + 1) * 100 ?>">
-            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl <?= $stat['bg'] ?> flex items-center justify-center shrink-0">
-                <i class="fas <?= $stat['icon'] ?> text-lg sm:text-xl <?= $stat['icon_color'] ?>"></i>
+            <div onclick="filterByRole('<?= $stat['role'] ?>', this)" 
+                 class="stat-card cursor-pointer group card-premium p-3 sm:p-4 flex items-center gap-3 animate-stagger delay-<?= ($index + 1) * 100 ?> transition-all hover:shadow-lg hover:-translate-y-1"
+                 data-role-btn="<?= $stat['role'] ?>">
+                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl <?= $stat['bg'] ?> flex items-center justify-center shrink-0 transition-transform group-hover:scale-110">
+                    <i class="fas <?= $stat['icon'] ?> text-lg <?= $stat['icon_color'] ?>"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider truncate"><?= $stat['title'] ?></p>
+                    <h3 class="font-display text-lg sm:text-xl font-black text-(--text-heading)"><?= $stat['value'] ?></h3>
+                </div>
             </div>
-            <div class="min-w-0">
-                <p class="text-[10px] sm:text-[11px] font-black text-slate-400 uppercase tracking-wider truncate"><?= $stat['title'] ?></p>
-                <h3 class="font-display text-xl sm:text-2xl font-black text-(--text-heading)"><?= $stat['value'] ?></h3>
-            </div>
-        </div>
         <?php endforeach; ?>
     </div>
 
@@ -62,14 +65,14 @@
          3. USERS TABLE
     ================================================================= -->
     <div class="card-premium overflow-hidden animate-stagger delay-500">
-        
+
         <!-- Table Header -->
         <div class="px-4 sm:px-7 py-4 sm:py-5 border-b border-sky-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/60">
             <div>
                 <h3 class="font-display text-base font-bold text-(--text-heading)">Daftar Pengguna</h3>
                 <p class="text-[11px] text-(--text-muted) font-semibold mt-0.5">Semua user yang terdaftar di sistem</p>
             </div>
-            
+
             <!-- Search/Filter -->
             <div class="input-group w-full sm:max-w-xs">
                 <span class="input-icon">
@@ -92,9 +95,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($users as $user): 
+                    <?php foreach ($users as $user):
                         $mainGroup = $user->groups[0] ?? 'visitor';
-                        
+
                         // Role badge colors
                         $roleColors = [
                             'admin'     => 'bg-rose-50 text-rose-600 border-rose-200',
@@ -104,7 +107,7 @@
                             'reviewer'  => 'bg-yellow-50 text-yellow-600 border-yellow-200',
                         ];
                         $roleBadge = $roleColors[$mainGroup] ?? 'bg-slate-50 text-slate-600 border-slate-200';
-                        
+
                         // Role labels
                         $roleLabels = [
                             'admin'     => 'Administrator',
@@ -114,102 +117,103 @@
                             'reviewer'  => 'Reviewer',
                         ];
                         $roleLabel = $roleLabels[$mainGroup] ?? ucfirst($mainGroup);
-                        
+
                         // Status
                         $statusClass = $user->active ? 'pmw-status pmw-status-success' : 'pmw-status pmw-status-danger';
                         $statusText = $user->active ? 'Aktif' : 'Nonaktif';
                         $statusIcon = $user->active ? 'fa-circle-check' : 'fa-circle-xmark';
                     ?>
-                    <tr class="group">
-                        <!-- User Info -->
-                        <td class="whitespace-nowrap">
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-linear-to-tr from-sky-500 to-sky-400 flex items-center justify-center text-white font-display font-bold text-xs sm:text-sm shrink-0">
-                                    <?= strtoupper(substr($user->username, 0, 2)) ?>
-                                </div>
-                                <div class="min-w-0">
-                                    <div class="font-display font-bold text-(--text-heading) text-[13px] truncate max-w-[120px] sm:max-w-none">
-                                        <?= esc($user->username) ?>
+                        <tr class="user-row group" data-role="<?= $mainGroup ?>">
+                            <!-- User Info -->
+                            <td class="whitespace-nowrap">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-linear-to-tr from-sky-500 to-sky-400 flex items-center justify-center text-white font-display font-bold text-xs sm:text-sm shrink-0">
+                                        <?= strtoupper(substr($user->username, 0, 2)) ?>
                                     </div>
-                                    <div class="text-xs text-(--text-muted)">
-                                        ID: <?= $user->id ?>
+                                    <div class="min-w-0">
+                                        <div class="font-display font-bold text-(--text-heading) text-[13px] truncate max-w-[120px] sm:max-w-none">
+                                            <?= esc($user->username) ?>
+                                        </div>
+                                        <div><?= esc($user->nama) ?></div>
+                                        <div class="text-xs text-(--text-muted)">
+                                            ID: <?= $user->id ?>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </td>
+                            </td>
 
-                        <!-- Role Badge -->
-                        <td class="whitespace-nowrap">
-                            <span class="inline-flex items-center gap-1.5 px-2 py-1 sm:px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border <?= $roleBadge ?>">
-                                <i class="fas fa-shield-alt text-[9px] sm:text-[10px]"></i>
-                                <span class="hidden sm:inline"><?= $roleLabel ?></span>
-                                <span class="sm:hidden"><?= substr($roleLabel, 0, 3) ?>.</span>
-                            </span>
-                        </td>
+                            <!-- Role Badge -->
+                            <td class="whitespace-nowrap">
+                                <span class="inline-flex items-center gap-1.5 px-2 py-1 sm:px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border <?= $roleBadge ?>">
+                                    <i class="fas fa-shield-alt text-[9px] sm:text-[10px]"></i>
+                                    <span class="hidden sm:inline"><?= $roleLabel ?></span>
+                                    <span class="sm:hidden"><?= substr($roleLabel, 0, 3) ?>.</span>
+                                </span>
+                            </td>
 
-                        <!-- Status -->
-                        <td>
-                            <span class="<?= $statusClass ?>">
-                                <i class="fas <?= $statusIcon ?> text-[10px]"></i>
-                                <?= $statusText ?>
-                            </span>
-                        </td>
+                            <!-- Status -->
+                            <td>
+                                <span class="<?= $statusClass ?>">
+                                    <i class="fas <?= $statusIcon ?> text-[10px]"></i>
+                                    <?= $statusText ?>
+                                </span>
+                            </td>
 
-                        <!-- Date -->
-                        <td>
-                            <span class="text-xs text-(--text-muted) font-mono">
-                                <?= $user->created_at ? date('d M Y', strtotime($user->created_at->toDateTimeString())) : '-' ?>
-                            </span>
-                        </td>
+                            <!-- Date -->
+                            <td>
+                                <span class="text-xs text-(--text-muted) font-mono">
+                                    <?= $user->created_at ? date('d M Y', strtotime($user->created_at->toDateTimeString())) : '-' ?>
+                                </span>
+                            </td>
 
-                        <!-- Actions -->
-                        <td class="text-right whitespace-nowrap">
-                            <div class="flex items-center justify-end gap-1.5 sm:gap-2">
-                                <!-- Detail Button -->
-                                <?php
-                                $profileJson = json_encode($user->profile ?? []);
-                                $profileEscaped = htmlspecialchars($profileJson, ENT_QUOTES, 'UTF-8');
-                                ?>
-                                <button type="button"
+                            <!-- Actions -->
+                            <td class="text-right whitespace-nowrap">
+                                <div class="flex items-center justify-end gap-1.5 sm:gap-2">
+                                    <!-- Detail Button -->
+                                    <?php
+                                    $profileJson = json_encode($user->profile ?? []);
+                                    $profileEscaped = htmlspecialchars($profileJson, ENT_QUOTES, 'UTF-8');
+                                    ?>
+                                    <button type="button"
                                         onclick='openUserModal(<?= $user->id ?>, "<?= esc($user->username) ?>", "<?= esc($user->email ?? '-') ?>", "<?= $roleLabel ?>", "<?= $mainGroup ?>", <?= $user->active ? 'true' : 'false' ?>, "<?= $user->created_at ? date('d M Y H:i', strtotime($user->created_at->toDateTimeString())) : '-' ?>", "<?= $mainGroup ?>", <?= $profileJson ?>)'
                                         class="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg bg-violet-50 text-violet-500 hover:bg-violet-500 hover:text-white transition-all"
                                         title="Detail">
-                                    <i class="fas fa-eye text-[11px] sm:text-xs"></i>
-                                </button>
-                                <a href="<?= base_url('admin/users/edit/' . $user->id) ?>"
-                                   class="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg bg-sky-50 text-sky-500 hover:bg-sky-500 hover:text-white transition-all"
-                                   title="Edit">
-                                    <i class="fas fa-pen text-[11px] sm:text-xs"></i>
-                                </a>
-                                <?php if ($user->id !== auth()->user()->id): ?>
-                                <!-- Toggle Status -->
-                                <a href="<?= base_url('admin/users/toggle-status/' . $user->id) ?>"
-                                   class="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg <?= $user->active ? "bg-orange-50 text-orange-500 hover:bg-orange-500" : "bg-emerald-50 text-emerald-500 hover:bg-emerald-500" ?> hover:text-white transition-all"
-                                   title="<?= $user->active ? 'Nonaktifkan' : 'Aktifkan' ?>"
-                                   onclick="return confirm('<?= $user->active ? 'Nonaktifkan user ini?' : 'Aktifkan user ini?' ?>')">
-                                    <i class="fas <?= $user->active ? 'fa-ban' : 'fa-check' ?> text-[11px] sm:text-xs"></i>
-                                </a>
-                                <a href="<?= base_url('admin/users/delete/' . $user->id) ?>" 
-                                   class="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all"
-                                   title="Hapus"
-                                   onclick="return confirm('Yakin ingin menghapus user ini?')">
-                                    <i class="fas fa-trash text-[11px] sm:text-xs"></i>
-                                </a>
-                                <?php endif; ?>
-                            </div>
-                        </td>
-                    </tr>
+                                        <i class="fas fa-eye text-[11px] sm:text-xs"></i>
+                                    </button>
+                                    <a href="<?= base_url('admin/users/edit/' . $user->id) ?>"
+                                        class="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg bg-sky-50 text-sky-500 hover:bg-sky-500 hover:text-white transition-all"
+                                        title="Edit">
+                                        <i class="fas fa-pen text-[11px] sm:text-xs"></i>
+                                    </a>
+                                    <?php if ($user->id !== auth()->user()->id): ?>
+                                        <!-- Toggle Status -->
+                                        <a href="<?= base_url('admin/users/toggle-status/' . $user->id) ?>"
+                                            class="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg <?= $user->active ? "bg-orange-50 text-orange-500 hover:bg-orange-500" : "bg-emerald-50 text-emerald-500 hover:bg-emerald-500" ?> hover:text-white transition-all"
+                                            title="<?= $user->active ? 'Nonaktifkan' : 'Aktifkan' ?>"
+                                            onclick="return confirm('<?= $user->active ? 'Nonaktifkan user ini?' : 'Aktifkan user ini?' ?>')">
+                                            <i class="fas <?= $user->active ? 'fa-ban' : 'fa-check' ?> text-[11px] sm:text-xs"></i>
+                                        </a>
+                                        <a href="<?= base_url('admin/users/delete/' . $user->id) ?>"
+                                            class="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all"
+                                            title="Hapus"
+                                            onclick="return confirm('Yakin ingin menghapus user ini?')">
+                                            <i class="fas fa-trash text-[11px] sm:text-xs"></i>
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                        </tr>
                     <?php endforeach; ?>
-                    
+
                     <?php if (empty($users)): ?>
-                    <tr>
-                        <td colspan="5" class="text-center py-12">
-                            <div class="text-(--text-muted)">
-                                <i class="fas fa-users text-4xl mb-3 opacity-30"></i>
-                                <p class="text-sm">Belum ada user terdaftar</p>
-                            </div>
-                        </td>
-                    </tr>
+                        <tr>
+                            <td colspan="5" class="text-center py-12">
+                                <div class="text-(--text-muted)">
+                                    <i class="fas fa-users text-4xl mb-3 opacity-30"></i>
+                                    <p class="text-sm">Belum ada user terdaftar</p>
+                                </div>
+                            </td>
+                        </tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -217,7 +221,7 @@
 
         <!-- Table Footer -->
         <div class="px-4 sm:px-7 py-3 sm:py-4 border-t border-sky-50 bg-white/40 flex items-center justify-between">
-            <p class="text-xs text-(--text-muted)">Menampilkan <?= count($users) ?> user</p>
+            <p class="text-xs text-(--text-muted)">Menampilkan <span id="visible-user-count"><?= count($users) ?></span> user</p>
             <div class="flex gap-2">
                 <button class="btn-outline btn-sm px-2! sm:px-3!" disabled>
                     <i class="fas fa-chevron-left text-xs"></i>
@@ -359,64 +363,96 @@
 </div>
 
 <script>
-function openUserModal(id, username, email, roleLabel, roleKey, isActive, createdAt, roleGroup, profileData) {
-    // Set avatar initials
-    const initials = username.substring(0, 2).toUpperCase();
-    document.getElementById('modal-avatar').textContent = initials;
+    function filterByRole(role, element) {
+        const rows = document.querySelectorAll('.user-row');
+        const cards = document.querySelectorAll('.stat-card');
 
-    // Set text content
-    document.getElementById('modal-userid').textContent = id;
-    document.getElementById('modal-username').textContent = username;
-    document.getElementById('modal-email').textContent = email;
-    document.getElementById('modal-role').textContent = roleLabel;
-    document.getElementById('modal-created').textContent = createdAt;
+        // Update active card styling
+        cards.forEach(card => {
+            card.classList.remove('ring-2', 'ring-sky-400', 'bg-sky-50/50');
+            card.classList.add('bg-white');
+        });
 
-    // Set Bio
-    const bioContainer = document.getElementById('modal-bio-container');
-    const bioText = document.getElementById('modal-bio');
-    if (profileData && profileData.bio && profileData.bio.trim() !== '') {
-        bioContainer.classList.remove('hidden');
-        bioText.textContent = profileData.bio;
-    } else {
-        bioContainer.classList.add('hidden');
+        if (element && role !== 'all') {
+            element.classList.add('ring-2', 'ring-sky-400', 'bg-sky-50/50');
+            element.classList.remove('bg-white');
+        } else if (role === 'all' && element) {
+            element.classList.add('ring-2', 'ring-sky-400', 'bg-sky-50/50');
+        }
+
+        // Filter rows
+        let visibleCount = 0;
+        rows.forEach(row => {
+            if (role === 'all' || row.getAttribute('data-role') === role) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Update count text
+        document.getElementById('visible-user-count').textContent = visibleCount;
     }
 
-    // Set status
-    const statusEl = document.getElementById('modal-status');
-    if (isActive) {
-        statusEl.innerHTML = '<span class="inline-flex items-center gap-1 text-emerald-600 font-semibold"><i class="fas fa-check-circle"></i> Aktif</span>';
-    } else {
-        statusEl.innerHTML = '<span class="inline-flex items-center gap-1 text-rose-600 font-semibold"><i class="fas fa-ban"></i> Nonaktif</span>';
-    }
+    function openUserModal(id, username, email, roleLabel, roleKey, isActive, createdAt, roleGroup, profileData) {
+        // Set avatar initials
+        const initials = username.substring(0, 2).toUpperCase();
+        document.getElementById('modal-avatar').textContent = initials;
 
-    // Set role badge colors
-    const roleBadge = document.getElementById('modal-role-badge');
-    const roleColors = {
-        'admin': 'bg-rose-50 text-rose-600 border-rose-200',
-        'mahasiswa': 'bg-sky-50 text-sky-600 border-sky-200',
-        'dosen': 'bg-violet-50 text-violet-600 border-violet-200',
-        'mentor': 'bg-teal-50 text-teal-600 border-teal-200',
-        'reviewer': 'bg-yellow-50 text-yellow-600 border-yellow-200'
-    };
-    roleBadge.className = `inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border mt-2 ${roleColors[roleKey] || 'bg-slate-50 text-slate-600 border-slate-200'}`;
-    roleBadge.innerHTML = `<i class="fas fa-shield-alt text-[10px]"></i> ${roleLabel}`;
+        // Set text content
+        document.getElementById('modal-userid').textContent = id;
+        document.getElementById('modal-username').textContent = username;
+        document.getElementById('modal-email').textContent = email;
+        document.getElementById('modal-role').textContent = roleLabel;
+        document.getElementById('modal-created').textContent = createdAt;
 
-    // Render role-specific profile data
-    const profileSection = document.getElementById('modal-profile-section');
-    const profileContent = document.getElementById('modal-profile-content');
-    const profileRoleLabel = document.getElementById('modal-profile-role');
+        // Set Bio
+        const bioContainer = document.getElementById('modal-bio-container');
+        const bioText = document.getElementById('modal-bio');
+        if (profileData && profileData.bio && profileData.bio.trim() !== '') {
+            bioContainer.classList.remove('hidden');
+            bioText.textContent = profileData.bio;
+        } else {
+            bioContainer.classList.add('hidden');
+        }
 
-    profileContent.innerHTML = ''; // Clear previous
+        // Set status
+        const statusEl = document.getElementById('modal-status');
+        if (isActive) {
+            statusEl.innerHTML = '<span class="inline-flex items-center gap-1 text-emerald-600 font-semibold"><i class="fas fa-check-circle"></i> Aktif</span>';
+        } else {
+            statusEl.innerHTML = '<span class="inline-flex items-center gap-1 text-rose-600 font-semibold"><i class="fas fa-ban"></i> Nonaktif</span>';
+        }
 
-    if (profileData && Object.keys(profileData).length > 0) {
-        profileSection.classList.remove('hidden');
-        profileRoleLabel.textContent = roleLabel;
+        // Set role badge colors
+        const roleBadge = document.getElementById('modal-role-badge');
+        const roleColors = {
+            'admin': 'bg-rose-50 text-rose-600 border-rose-200',
+            'mahasiswa': 'bg-sky-50 text-sky-600 border-sky-200',
+            'dosen': 'bg-violet-50 text-violet-600 border-violet-200',
+            'mentor': 'bg-teal-50 text-teal-600 border-teal-200',
+            'reviewer': 'bg-yellow-50 text-yellow-600 border-yellow-200'
+        };
+        roleBadge.className = `inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border mt-2 ${roleColors[roleKey] || 'bg-slate-50 text-slate-600 border-slate-200'}`;
+        roleBadge.innerHTML = `<i class="fas fa-shield-alt text-[10px]"></i> ${roleLabel}`;
 
-        let html = '';
+        // Render role-specific profile data
+        const profileSection = document.getElementById('modal-profile-section');
+        const profileContent = document.getElementById('modal-profile-content');
+        const profileRoleLabel = document.getElementById('modal-profile-role');
 
-        switch(roleGroup) {
-            case 'mahasiswa':
-                html = `
+        profileContent.innerHTML = ''; // Clear previous
+
+        if (profileData && Object.keys(profileData).length > 0) {
+            profileSection.classList.remove('hidden');
+            profileRoleLabel.textContent = roleLabel;
+
+            let html = '';
+
+            switch (roleGroup) {
+                case 'mahasiswa':
+                    html = `
                     ${renderProfileField('fa-id-card', 'NIM', profileData.nim)}
                     ${renderProfileField('fa-user', 'Nama Lengkap', profileData.nama)}
                     ${renderProfileField('fa-building', 'Jurusan', profileData.jurusan)}
@@ -425,9 +461,9 @@ function openUserModal(id, username, email, roleLabel, roleKey, isActive, create
                     ${renderProfileField('fa-phone', 'No. HP', profileData.phone)}
                     ${profileData.gender ? renderProfileField('fa-venus-mars', 'Gender', profileData.gender === 'L' ? 'Laki-laki' : 'Perempuan') : ''}
                 `;
-                break;
-            case 'dosen':
-                html = `
+                    break;
+                case 'dosen':
+                    html = `
                     ${renderProfileField('fa-id-badge', 'NIP/NIDN', profileData.nip || profileData.nidn)}
                     ${renderProfileField('fa-user', 'Nama Lengkap', profileData.nama)}
                     ${renderProfileField('fa-building', 'Jurusan', profileData.jurusan)}
@@ -436,9 +472,9 @@ function openUserModal(id, username, email, roleLabel, roleKey, isActive, create
                     ${renderProfileField('fa-phone', 'No. HP', profileData.phone)}
                     ${profileData.gender ? renderProfileField('fa-venus-mars', 'Gender', profileData.gender === 'L' ? 'Laki-laki' : 'Perempuan') : ''}
                 `;
-                break;
-            case 'mentor':
-                html = `
+                    break;
+                case 'mentor':
+                    html = `
                     ${renderProfileField('fa-user', 'Nama Lengkap', profileData.nama)}
                     ${renderProfileField('fa-building', 'Perusahaan', profileData.company)}
                     ${renderProfileField('fa-briefcase', 'Jabatan', profileData.position)}
@@ -446,32 +482,32 @@ function openUserModal(id, username, email, roleLabel, roleKey, isActive, create
                     ${renderProfileField('fa-phone', 'No. HP', profileData.phone)}
                     ${renderProfileField('fa-envelope', 'Email Kantor', profileData.email)}
                 `;
-                break;
-            case 'reviewer':
-                html = `
+                    break;
+                case 'reviewer':
+                    html = `
                     ${renderProfileField('fa-id-badge', 'NIP/NIDN', profileData.nip || profileData.nidn)}
                     ${renderProfileField('fa-user', 'Nama Lengkap', profileData.nama)}
                     ${renderProfileField('fa-university', 'Institusi', profileData.institution)}
                     ${renderProfileField('fa-star', 'Keahlian', profileData.expertise)}
                     ${renderProfileField('fa-phone', 'No. HP', profileData.phone)}
                 `;
-                break;
-            default:
-                html = '<div class="text-center py-4 text-slate-400 italic">Data profil tidak tersedia</div>';
+                    break;
+                default:
+                    html = '<div class="text-center py-4 text-slate-400 italic">Data profil tidak tersedia</div>';
+            }
+
+            profileContent.innerHTML = html;
+        } else {
+            profileSection.classList.add('hidden');
         }
 
-        profileContent.innerHTML = html;
-    } else {
-        profileSection.classList.add('hidden');
+        // Show modal
+        document.getElementById('userModal').classList.remove('hidden');
     }
 
-    // Show modal
-    document.getElementById('userModal').classList.remove('hidden');
-}
-
-function renderProfileField(icon, label, value) {
-    if (!value) return '';
-    return `
+    function renderProfileField(icon, label, value) {
+        if (!value) return '';
+        return `
         <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-50/50 border border-slate-100/50">
             <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-sky-500 shadow-sm shrink-0">
                 <i class="fas ${icon} text-xs"></i>
@@ -482,19 +518,19 @@ function renderProfileField(icon, label, value) {
             </div>
         </div>
     `;
-}
-
-function closeUserModal() {
-    document.getElementById('userModal').classList.add('hidden');
-    document.body.style.overflow = '';
-}
-
-// Close on Escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && !document.getElementById('userModal').classList.contains('hidden')) {
-        closeUserModal();
     }
-});
+
+    function closeUserModal() {
+        document.getElementById('userModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !document.getElementById('userModal').classList.contains('hidden')) {
+            closeUserModal();
+        }
+    });
 </script>
 
 <?= $this->endSection() ?>

@@ -42,4 +42,27 @@ class MentorModel extends Model
     {
         return $this->where('user_id', $userId)->first();
     }
+
+    /**
+     * Get mentors who are not yet assigned to any proposal
+     */
+    public function getAvailable(): array
+    {
+        return $this->select('pmw_mentors.*')
+            ->join('pmw_proposal_assignments', 'pmw_proposal_assignments.mentor_id = pmw_mentors.id', 'left')
+            ->where('pmw_proposal_assignments.mentor_id', null)
+            ->orderBy('nama', 'ASC')
+            ->findAll();
+    }
+
+    /**
+     * Get all mentors with assignment status
+     */
+    public function getAllWithAssignmentStatus(): array
+    {
+        return $this->select('pmw_mentors.*, pa.proposal_id as assigned_proposal_id')
+            ->join('pmw_proposal_assignments pa', 'pa.mentor_id = pmw_mentors.id', 'left')
+            ->orderBy('nama', 'ASC')
+            ->findAll();
+    }
 }

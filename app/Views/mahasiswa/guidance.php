@@ -273,7 +273,7 @@ $fileRoute = $c['route_file'];
                                 <!-- MAIN FORM -->
                                 <form action="<?= base_url($logRoute . '/' . $s->id) ?>" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
                                     <?= csrf_field() ?>
-                                    <input type="hidden" name="status" :value="formStatus">
+                                    <input type="hidden" name="status" x-model="formStatus">
 
                                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
@@ -584,7 +584,7 @@ $fileRoute = $c['route_file'];
                                                 <div class="form-field pt-2 border-t border-slate-50">
                                                     <label class="form-label text-xs">
                                                         Output / Berkas Tugas
-                                                        <span class="text-slate-400 font-normal text-[10px] ml-1">(Opsional, PDF)</span>
+                                                        <span class="text-slate-400 font-normal text-[10px] ml-1">(Jika ada tugas, PDF)</span>
                                                     </label>
 
                                                     <?php if ($logbook && $logbook->assignment_file): ?>

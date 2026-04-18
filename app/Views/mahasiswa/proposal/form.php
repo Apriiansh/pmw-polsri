@@ -311,14 +311,33 @@
                                 class="search-select-dropdown">
                                 <template x-for="lec in filteredLecturers" :key="lec.id">
                                     <div class="search-select-item"
-                                        :class="formData.lecturer_id == lec.id ? 'selected' : ''"
+                                        :class="{
+                                            'selected': formData.lecturer_id == lec.id,
+                                            'opacity-50 cursor-not-allowed': lec.assigned_proposal_id && lec.assigned_proposal_id != '<?= $proposal['id'] ?? 0 ?>'
+                                        }"
                                         @click="
+                                            if (lec.assigned_proposal_id && lec.assigned_proposal_id != '<?= $proposal['id'] ?? 0 ?>') {
+                                                Swal.fire({
+                                                    icon: 'warning',
+                                                    title: 'Dosen Tidak Tersedia',
+                                                    text: 'Dosen ini sudah membimbing tim lain.',
+                                                    confirmButtonColor: '#0ea5e9'
+                                                });
+                                                return;
+                                            }
                                             formData.lecturer_id = lec.id;
                                             lecturerSearch = lec.nama + (lec.nip ? ' — ' + lec.nip : '');
                                             isOpen = false;
                                          ">
-                                        <div class="font-semibold" x-text="lec.nama"></div>
-                                        <div class="text-xs opacity-80" x-text="lec.nip ? 'NIP: ' + lec.nip : 'NIP: -'"></div>
+                                        <div class="flex items-center justify-between gap-2">
+                                            <div>
+                                                <div class="font-semibold" x-text="lec.nama"></div>
+                                                <div class="text-xs opacity-80" x-text="lec.nip ? 'NIP: ' + lec.nip : 'NIP: -'"></div>
+                                            </div>
+                                            <template x-if="lec.assigned_proposal_id && lec.assigned_proposal_id != '<?= $proposal['id'] ?? 0 ?>'">
+                                                <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-600 font-bold uppercase tracking-wider">Sudah di Tim Lain</span>
+                                            </template>
+                                        </div>
                                     </div>
                                 </template>
                                 <div x-show="filteredLecturers.length === 0" class="search-select-empty">

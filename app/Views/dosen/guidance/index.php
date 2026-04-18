@@ -5,6 +5,8 @@
 <div class="space-y-8" x-data="{
     showScheduleModal: false,
     showVerifyModal: false,
+    showTeamModal: false,
+    selectedTeam: null,
     selectedLogbook: null,
     handleMouseMove(e) {
         const card = e.currentTarget;
@@ -78,13 +80,19 @@
                         </div>
                     <?php else: ?>
                         <?php foreach ($teams as $team): ?>
-                        <div class="p-3 rounded-xl border border-slate-100 hover:border-sky-200 hover:bg-sky-50/30 transition-all group cursor-default">
+                        <div class="p-3 rounded-xl border border-slate-100 hover:border-sky-200 hover:bg-sky-50/30 transition-all group cursor-pointer"
+                             @click="selectedTeam = <?= htmlspecialchars(json_encode($team)) ?>; showTeamModal = true">
                             <div class="flex items-start justify-between">
                                 <div>
                                     <h4 class="text-[13px] font-bold text-(--text-heading) group-hover:text-sky-600 transition-colors uppercase"><?= esc($team['nama_usaha']) ?></h4>
                                     <p class="text-[11px] text-slate-500 mt-0.5 line-clamp-1 italic border-l-2 border-sky-200 pl-2 ml-1">"<?= esc($team['kategori_wirausaha']) ?>"</p>
                                 </div>
-                                <span class="pmw-status bg-sky-50 text-sky-600 border-sky-200 text-[9px]">AKTIF</span>
+                                <div class="flex flex-col items-end gap-1">
+                                    <span class="pmw-status bg-sky-50 text-sky-600 border-sky-200 text-[9px]">AKTIF</span>
+                                    <span class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter group-hover:text-sky-500 transition-colors">
+                                        <i class="fas fa-eye mr-1"></i> Detail
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <?php endforeach; ?>
@@ -127,7 +135,7 @@
                                 <tr class="group">
                                     <td class="whitespace-nowrap">
                                         <div class="text-[12px] font-bold text-(--text-heading)"><?= date('d M Y', strtotime($schedule->schedule_date)) ?></div>
-                                        <div class="text-[11px] text-slate-400"><?= $schedule->schedule_time ?> • <?= esc($schedule->team_name) ?></div>
+                                        <div class="text-[11px] text-slate-400"><?= $schedule->schedule_time ?> • <?= esc($schedule->nama_usaha) ?></div>
                                     </td>
                                     <td>
                                         <div class="text-[12px] text-slate-600 line-clamp-1 max-w-[150px]" title="<?= esc($schedule->topic) ?>"><?= esc($schedule->topic) ?></div>
@@ -156,18 +164,26 @@
                                         <span class="pmw-status <?= $statusColors[$schedule->status] ?>"><?= ucfirst($schedule->status) ?></span>
                                     </td>
                                     <td class="text-right whitespace-nowrap">
-                                        <?php if ($schedule->logbook && $schedule->logbook->status !== 'draft'): 
+                                        <?php if ($schedule->logbook && $schedule->logbook->submitted_at && $schedule->logbook->status === 'pending'):
                                             $lb = $schedule->logbook;
                                             $lb->parsed_items = json_decode($lb->nota_items ?? '[]', true) ?? [];
                                             $lb->parsed_files = json_decode($lb->nota_files ?? '[]', true) ?? [];
                                         ?>
-                                            <button @click="selectedLogbook = <?= htmlspecialchars(json_encode($lb)) ?>; selectedLogbook.schedule = <?= htmlspecialchars(json_encode(['date' => $schedule->schedule_date, 'team' => $schedule->team_name, 'topic' => $schedule->topic])) ?>; showVerifyModal = true" 
+                                            <button @click="selectedLogbook = <?= htmlspecialchars(json_encode($lb)) ?>; selectedLogbook.schedule = <?= htmlspecialchars(json_encode(['date' => $schedule->schedule_date, 'team' => $schedule->nama_usaha, 'topic' => $schedule->topic])) ?>; showVerifyModal = true"
                                                     class="btn-outline btn-xs bg-sky-50 text-sky-600 border-sky-200 hover:bg-sky-500 hover:text-white transition-all">
-                                                <i class="fas fa-magnifying-glass mr-1"></i> Preview
+                                                <i class="fas fa-magnifying-glass mr-1"></i> Review
                                             </button>
                                         <?php elseif ($schedule->logbook && $schedule->logbook->status === 'draft'): ?>
                                             <span class="text-[10px] font-bold text-slate-400 italic">
                                                 <i class="fas fa-edit mr-1"></i> Drafting...
+                                            </span>
+                                        <?php elseif ($schedule->logbook && $schedule->logbook->submitted_at && in_array($schedule->logbook->status, ['approved', 'rejected'])): ?>
+                                            <span class="text-[10px] font-bold text-emerald-600 italic">
+                                                <i class="fas fa-check-circle mr-1"></i> Reviewed
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="text-[10px] font-bold text-slate-300 italic">
+                                                <i class="fas fa-clock mr-1"></i> Waiting
                                             </span>
                                         <?php endif; ?>
                                     </td>
@@ -413,6 +429,97 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Details Modal -->
+    <div x-show="showTeamModal" 
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         style="display: none;">
+        
+        <div class="card-premium w-full max-w-2xl bg-white shadow-2xl animate-modal overflow-hidden max-h-[90vh] flex flex-col" @click.away="showTeamModal = false">
+            <div class="p-6 border-b border-sky-50 flex justify-between items-center bg-linear-to-r from-sky-500 to-sky-600 text-white">
+                <div>
+                    <h3 class="font-display text-lg font-black uppercase tracking-wider" x-text="selectedTeam ? selectedTeam.nama_usaha : 'Detail Tim'"></h3>
+                    <p class="text-[10px] text-sky-100 font-bold uppercase tracking-widest mt-0.5" x-text="selectedTeam ? `Kategori: ${selectedTeam.kategori_wirausaha}` : ''"></p>
+                </div>
+                <button @click="showTeamModal = false" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/40 transition-all">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+            
+            <div class="overflow-y-auto p-6 space-y-6 flex-1 custom-scrollbar">
+                <!-- Team Overview -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Kategori Usaha</p>
+                        <p class="text-sm font-bold text-slate-700 uppercase" x-text="selectedTeam ? selectedTeam.kategori_usaha : '-'"></p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Dana Disetujui</p>
+                        <p class="text-sm font-bold text-emerald-600" x-text="selectedTeam ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(selectedTeam.total_rab) : '-'"></p>
+                    </div>
+                </div>
+
+                <!-- Members List -->
+                <div class="space-y-4">
+                    <h4 class="font-display text-xs font-black text-slate-400 uppercase tracking-widest flex items-center">
+                        <i class="fas fa-users-gear mr-2 text-sky-500"></i>
+                        Anggota Tim & Kontak
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 gap-3">
+                        <template x-if="selectedTeam && selectedTeam.members">
+                            <template x-for="(member, idx) in selectedTeam.members" :key="idx">
+                                <div class="group relative p-4 rounded-2xl border border-slate-100 hover:border-sky-200 hover:bg-sky-50/30 transition-all flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-xl bg-linear-to-tr from-sky-500 to-sky-400 flex items-center justify-center text-white font-display font-black text-sm shrink-0 shadow-lg shadow-sky-200">
+                                        <span x-text="member.nama.substring(0, 2).toUpperCase()"></span>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-2">
+                                            <h5 class="text-sm font-bold text-slate-800 truncate" x-text="member.nama"></h5>
+                                            <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter"
+                                                  :class="member.role === 'ketua' ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-500'"
+                                                  x-text="member.role"></span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 font-medium" x-text="`${member.nim} • ${member.prodi}`"></p>
+                                        
+                                        <!-- Contact Actions -->
+                                        <div class="flex items-center gap-3 mt-2.5">
+                                            <a :href="`https://wa.me/${member.phone.replace(/[^0-9]/g, '')}`" target="_blank" 
+                                               class="flex items-center gap-1.5 text-[10px] font-black text-emerald-600 hover:text-emerald-700 transition-colors uppercase tracking-tight">
+                                                <i class="fab fa-whatsapp text-xs"></i>
+                                                WhatsApp
+                                            </a>
+                                            <span class="w-1 h-1 rounded-full bg-slate-200"></span>
+                                            <a :href="`mailto:${member.email}`" 
+                                               class="flex items-center gap-1.5 text-[10px] font-black text-sky-600 hover:text-sky-700 transition-colors uppercase tracking-tight">
+                                                <i class="fas fa-envelope text-xs"></i>
+                                                Email
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="hidden sm:block opacity-0 group-hover:opacity-100 transition-all">
+                                        <i class="fas fa-chevron-right text-slate-300"></i>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 border-t border-slate-50 bg-slate-50/50 flex justify-end">
+                <button @click="showTeamModal = false" class="btn-outline px-8!">
+                    Tutup
+                </button>
             </div>
         </div>
     </div>

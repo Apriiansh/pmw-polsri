@@ -35,7 +35,19 @@ class GuidanceController extends BaseController
         $teams = $this->proposalModel->getProposalsByMentor((int) $mentor['id']);
 
         $scheduleModel = new PmwGuidanceScheduleModel();
-        $schedules = $scheduleModel->getSchedulesByCreator(auth()->id());
+        $schedules     = $scheduleModel->getSchedulesByCreator(auth()->id());
+
+        // Attach logbook entry to each schedule
+        $logbookModel = new PmwGuidanceLogbookModel();
+        foreach ($schedules as $schedule) {
+            $schedule->logbook = $logbookModel->getBySchedule($schedule->id);
+        }
+
+        // Attach members to each team
+        $memberModel = new \App\Models\Proposal\PmwProposalMemberModel();
+        foreach ($teams as &$team) {
+            $team['members'] = $memberModel->getByProposalId((int) $team['id']);
+        }
 
         return view('mentor/guidance/index', [
             'title'     => 'Manajemen Mentoring | PMW Polsri',

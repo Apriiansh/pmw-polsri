@@ -219,10 +219,22 @@ class ProposalController extends BaseController
             }
 
             // Sync Assignments (Lecturer & Mentor)
+            $lecturerId = $this->request->getPost('lecturer_id');
+            if ($lecturerId) {
+                // Security check: Ensure lecturer is not already assigned to another team
+                $isAlreadyAssigned = $assignmentModel->where('lecturer_id', $lecturerId)
+                    ->where('proposal_id !=', $proposalId)
+                    ->first();
+                
+                if ($isAlreadyAssigned) {
+                    throw new \Exception('Dosen pendamping ini sudah membimbing tim lain.');
+                }
+            }
+
             $existingAssignment = $assignmentModel->where('proposal_id', $proposalId)->first();
             $assignmentData = [
                 'proposal_id' => $proposalId,
-                'lecturer_id' => $this->request->getPost('lecturer_id') ?: null,
+                'lecturer_id' => $lecturerId ?: null,
             ];
 
             if ($existingAssignment) {
@@ -593,7 +605,7 @@ class ProposalController extends BaseController
             }
         }
 
-        $lecturers = $lecturerModel->orderBy('nama', 'ASC')->findAll();
+        $lecturers = $lecturerModel->getAllWithAssignmentStatus();
 
         return [
             'title'        => 'Proposal Kami',

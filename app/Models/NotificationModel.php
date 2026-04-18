@@ -339,9 +339,8 @@ class NotificationModel extends Model
         // Get dosen/mentor user ids for this proposal
         $db = \Config\Database::connect();
         $proposal = $db->table('pmw_proposals p')
-            ->select('pa.lecturer_id, pm.mentor_id')
+            ->select('pa.lecturer_id, pa.mentor_id')
             ->join('pmw_proposal_assignments pa', 'pa.proposal_id = p.id')
-            ->join('pmw_proposal_mentors pm', 'pm.proposal_id = p.id', 'left')
             ->where('p.leader_user_id', $leaderUserId)
             ->get()->getRow();
 

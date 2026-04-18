@@ -180,8 +180,15 @@
                                     <select name="mentor_id" class="text-xs bg-transparent border-none focus:ring-0 w-full" required>
                                         <option value="">-- Pilih Mentor --</option>
                                         <?php foreach ($mentors as $mentor): ?>
-                                            <option value="<?= $mentor['id'] ?>" <?= (int)$proposal['mentor_id'] === (int)$mentor['id'] ? 'selected' : '' ?>>
+                                            <?php 
+                                                $isAssigned = $mentor['assigned_proposal_id'] && (int)$mentor['assigned_proposal_id'] !== (int)$proposal['id'];
+                                            ?>
+                                            <option value="<?= $mentor['id'] ?>" 
+                                                <?= (int)$proposal['mentor_id'] === (int)$mentor['id'] ? 'selected' : '' ?>
+                                                <?= $isAssigned ? 'disabled' : '' ?>
+                                                class="<?= $isAssigned ? 'text-slate-400 bg-slate-50 italic' : '' ?>">
                                                 <?= esc($mentor['nama']) ?> - <?= esc($mentor['company']) ?>
+                                                <?= $isAssigned ? ' [SUDAH DI TIM LAIN]' : '' ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
