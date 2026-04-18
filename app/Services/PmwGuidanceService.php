@@ -91,13 +91,14 @@ class PmwGuidanceService
             'nota_items'           => !empty($notaItems) ? json_encode($notaItems) : null,
             'nominal_konsumsi'     => $totalKonsumsi,
             'status'               => $data['status'] ?? 'pending',
+            'submitted_at'         => ($data['status'] ?? 'pending') === 'pending' ? date('Y-m-d H:i:s') : ($existing->submitted_at ?? null),
         ];
 
-        // Handle File Uploads
+        // Handle Single File Uploads
         $uploadMap = [
             'photo_activity'  => 'guidance/photos',
             'assignment_file' => 'guidance/assignments',
-            'nota_file'       => 'guidance/notes',
+            'nota_file'       => 'guidance/notes', // Legacy single file
         ];
 
         foreach ($uploadMap as $key => $folder) {
@@ -106,6 +107,29 @@ class PmwGuidanceService
                 $files[$key]->move(WRITEPATH . 'uploads/' . $folder, $newName);
                 $logbookData[$key] = $folder . '/' . $newName;
             }
+        }
+
+        // Handle Multiple Nota Files Uploads
+        $notaFilesList = [];
+        // Keep existing files if this is an update and no new files were uploaded?
+        // Actually, let's look for 'nota_files' array in $files
+        if (isset($files['nota_files']) && is_array($files['nota_files'])) {
+            foreach ($files['nota_files'] as $file) {
+                if ($file->isValid() && !$file->hasMoved()) {
+                    $newName = $file->getRandomName();
+                    $file->move(WRITEPATH . 'uploads/guidance/notes', $newName);
+                    $notaFilesList[] = 'guidance/notes/' . $newName;
+                }
+            }
+        }
+
+        if (!empty($notaFilesList)) {
+            // If we have new files, we might want to merge with existing ones if it's an update
+            if ($existing && $existing->nota_files) {
+                $oldFiles = json_decode($existing->nota_files, true) ?? [];
+                $notaFilesList = array_merge($oldFiles, $notaFilesList);
+            }
+            $logbookData['nota_files'] = json_encode($notaFilesList);
         }
 
         if ($existing) {

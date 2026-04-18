@@ -124,10 +124,21 @@ class GuidanceController extends BaseController
             return $this->response->setStatusCode(404)->setBody('Berkas tidak ditemukan.');
         }
 
-        $filePath = '';
-        if ($type === 'photo') $filePath = $logbook->photo_activity;
-        elseif ($type === 'assignment') $filePath = $logbook->assignment_file;
-        elseif ($type === 'nota') $filePath = $logbook->nota_file;
+        $filePath = match ($type) {
+            'photo'      => $logbook->photo_activity,
+            'assignment' => $logbook->assignment_file,
+            'nota'       => (function() use ($logbook) {
+                $specificPath = $this->request->getGet('path');
+                if ($specificPath) {
+                    $notaFiles = json_decode($logbook->nota_files ?? '[]', true) ?? [];
+                    if (in_array($specificPath, $notaFiles)) {
+                        return $specificPath;
+                    }
+                }
+                return $logbook->nota_file;
+            })(),
+            default      => ''
+        };
 
         if (empty($filePath)) {
             return $this->response->setStatusCode(404)->setBody('Berkas tidak ditemukan.');

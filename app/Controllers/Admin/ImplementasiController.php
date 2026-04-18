@@ -37,6 +37,7 @@ class ImplementasiController extends BaseController
         $builder->select([
             'p.id',
             'p.nama_usaha',
+            'p.kategori_wirausaha',
             'si.admin_status as implementasi_status',
             'si.admin_catatan as implementasi_catatan',
             'si.dosen_status',

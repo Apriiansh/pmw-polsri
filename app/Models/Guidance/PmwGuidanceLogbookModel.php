@@ -20,9 +20,11 @@ class PmwGuidanceLogbookModel extends Model
         'photo_activity',
         'assignment_file',
         'nota_file',
+        'nota_files',
         'nota_items',
         'nominal_konsumsi',
         'status',
+        'submitted_at',
         'verification_note',
         'verified_at',
     ];

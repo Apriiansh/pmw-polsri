@@ -156,11 +156,19 @@
                                         <span class="pmw-status <?= $statusColors[$schedule->status] ?>"><?= ucfirst($schedule->status) ?></span>
                                     </td>
                                     <td class="text-right whitespace-nowrap">
-                                        <?php if ($schedule->logbook): ?>
-                                            <button @click="selectedLogbook = <?= htmlspecialchars(json_encode($schedule->logbook)) ?>; selectedLogbook.schedule = <?= htmlspecialchars(json_encode(['date' => $schedule->schedule_date, 'team' => $schedule->team_name, 'topic' => $schedule->topic])) ?>; showVerifyModal = true" 
+                                        <?php if ($schedule->logbook && $schedule->logbook->status !== 'draft'): 
+                                            $lb = $schedule->logbook;
+                                            $lb->parsed_items = json_decode($lb->nota_items ?? '[]', true) ?? [];
+                                            $lb->parsed_files = json_decode($lb->nota_files ?? '[]', true) ?? [];
+                                        ?>
+                                            <button @click="selectedLogbook = <?= htmlspecialchars(json_encode($lb)) ?>; selectedLogbook.schedule = <?= htmlspecialchars(json_encode(['date' => $schedule->schedule_date, 'team' => $schedule->team_name, 'topic' => $schedule->topic])) ?>; showVerifyModal = true" 
                                                     class="btn-outline btn-xs bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-500 hover:text-white transition-all">
                                                 <i class="fas fa-magnifying-glass mr-1"></i> Preview
                                             </button>
+                                        <?php elseif ($schedule->logbook && $schedule->logbook->status === 'draft'): ?>
+                                            <span class="text-[10px] font-bold text-slate-400 italic">
+                                                <i class="fas fa-edit mr-1"></i> Drafting...
+                                            </span>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
@@ -249,6 +257,12 @@
                 <div>
                     <h3 class="font-display text-lg font-black text-amber-900 uppercase">Review Logbook Mentoring</h3>
                     <p class="text-[11px] text-slate-500 font-semibold" x-text="selectedLogbook ? `${selectedLogbook.schedule.team} - ${selectedLogbook.schedule.date}` : ''"></p>
+                    <template x-if="selectedLogbook && selectedLogbook.submitted_at">
+                        <p class="text-[9px] text-amber-600 font-black uppercase tracking-tighter mt-1">
+                            <i class="fas fa-paper-plane mr-1 text-[8px]"></i>
+                            Dikirim: <span x-text="new Date(selectedLogbook.submitted_at).toLocaleString('id-ID', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'})"></span>
+                        </p>
+                    </template>
                 </div>
                 <button @click="showVerifyModal = false" class="text-slate-400 hover:text-rose-500 transition-colors">
                     <i class="fas fa-times text-xl"></i>
@@ -273,16 +287,74 @@
                             </a>
                         </div>
 
-                        <div class="space-y-1.5">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nota Konsumsi</label>
-                            <div class="p-3 rounded-xl border border-emerald-100 bg-emerald-50 flex items-center justify-between">
-                                <div>
-                                    <p class="text-[10px] text-emerald-600 font-bold uppercase tracking-tighter">Total Nominal</p>
-                                    <p class="font-display text-lg font-black text-emerald-700" x-text="new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(selectedLogbook.nominal_konsumsi)"></p>
-                                </div>
-                                <a :href="`<?= base_url('mentor/mentoring/file/nota') ?>/${selectedLogbook.id}`" target="_blank" class="btn-primary btn-sm py-2 px-4 shadow-sm" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                                    <i class="fas fa-file-invoice mr-1.5"></i> Lihat Nota
-                                </a>
+                        <div class="space-y-4">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Rincian Nota & Biaya</label>
+                            
+                            <!-- Items Table -->
+                            <div class="rounded-xl border border-slate-100 overflow-hidden shadow-sm bg-white">
+                                <table class="w-full text-left border-collapse">
+                                    <thead class="bg-slate-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-[9px] font-black uppercase text-slate-500 tracking-wider">Item</th>
+                                            <th class="px-3 py-2 text-[9px] font-black uppercase text-slate-500 tracking-wider text-center">Qty</th>
+                                            <th class="px-3 py-2 text-[9px] font-black uppercase text-slate-500 tracking-wider text-right">Harga</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-50">
+                                        <template x-if="selectedLogbook && selectedLogbook.parsed_items.length > 0">
+                                            <template x-for="(item, idx) in selectedLogbook.parsed_items" :key="idx">
+                                                <tr class="hover:bg-slate-50/50 transition-colors">
+                                                    <td class="px-3 py-2 text-[11px] font-medium text-slate-700" x-text="item.title"></td>
+                                                    <td class="px-3 py-2 text-[11px] text-slate-500 text-center" x-text="item.qty"></td>
+                                                    <td class="px-3 py-2 text-[11px] text-slate-700 font-bold text-right" x-text="new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price)"></td>
+                                                </tr>
+                                            </template>
+                                        </template>
+                                        <template x-if="!selectedLogbook || selectedLogbook.parsed_items.length === 0">
+                                            <tr>
+                                                <td colspan="3" class="px-3 py-4 text-[11px] text-slate-400 italic text-center">Tidak ada rincian item.</td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                    <tfoot class="bg-emerald-50/50">
+                                        <tr>
+                                            <td colspan="2" class="px-3 py-2 text-[10px] font-black text-emerald-700 uppercase">Total Keseluruhan</td>
+                                            <td class="px-3 py-2 text-[13px] font-black text-emerald-700 text-right" x-text="selectedLogbook ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(selectedLogbook.nominal_konsumsi) : 'Rp 0'"></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <!-- Multi Files -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <template x-if="selectedLogbook && selectedLogbook.parsed_files.length > 0">
+                                    <template x-for="(file, idx) in selectedLogbook.parsed_files" :key="idx">
+                                        <a :href="`<?= base_url('mentor/mentoring/file/nota') ?>/${selectedLogbook.id}?path=${file}`" target="_blank" 
+                                           class="flex items-center gap-2.5 p-2 rounded-xl border border-emerald-100 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-all group">
+                                            <div class="w-8 h-8 rounded-lg bg-white/60 flex items-center justify-center text-emerald-500">
+                                                <i class="fas fa-file-invoice text-sm"></i>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <p class="text-[10px] font-black uppercase tracking-tighter" x-text="'Nota #' + (idx + 1)"></p>
+                                                <p class="text-[8px] text-emerald-600/70 truncate tracking-widest font-bold">BUKTI FISIK</p>
+                                            </div>
+                                            <i class="fas fa-chevron-right text-[10px] mr-1 opacity-0 group-hover:opacity-100 transition-all"></i>
+                                        </a>
+                                    </template>
+                                </template>
+                                <template x-if="selectedLogbook && (!selectedLogbook.parsed_files || selectedLogbook.parsed_files.length === 0) && selectedLogbook.nota_file">
+                                     <a :href="`<?= base_url('mentor/mentoring/file/nota') ?>/${selectedLogbook.id}`" target="_blank" 
+                                           class="flex items-center gap-2.5 p-2 rounded-xl border border-emerald-100 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-all group">
+                                            <div class="w-8 h-8 rounded-lg bg-white/60 flex items-center justify-center text-emerald-500">
+                                                <i class="fas fa-file-invoice text-sm"></i>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <p class="text-[10px] font-black uppercase tracking-tighter">Bukti Nota</p>
+                                                <p class="text-[8px] text-emerald-600/70 truncate tracking-widest font-bold">LEGACY FILE</p>
+                                            </div>
+                                            <i class="fas fa-chevron-right text-[10px] mr-1 opacity-0 group-hover:opacity-100 transition-all"></i>
+                                        </a>
+                                </template>
                             </div>
                         </div>
                     </div>

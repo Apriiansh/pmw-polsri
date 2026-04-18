@@ -128,6 +128,12 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('mentoring', 'Mahasiswa\\GuidanceController::mentoring');
         $routes->post('mentoring/logbook/(:num)', 'Mahasiswa\\GuidanceController::submitLogbook/$1');
         $routes->get('mentoring/file/(:segment)/(:num)', 'Mahasiswa\\GuidanceController::viewFile/$1/$2');
+
+        // Tahap 9 - Kegiatan Wirausaha
+        $routes->get('kegiatan', 'Mahasiswa\\ActivityController::index');
+        $routes->post('kegiatan/logbook/(:num)', 'Mahasiswa\\ActivityController::submitLogbook/$1');
+        $routes->get('kegiatan/file/(:segment)/(:num)', 'Mahasiswa\\ActivityController::viewFile/$1/$2');
+
         $routes->get('laporan-kemajuan', 'MahasiswaController::laporanKemajuan');
         $routes->get('laporan-akhir', 'MahasiswaController::laporanAkhir');
 
@@ -197,6 +203,11 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->post('bimbingan/schedule', 'Dosen\\GuidanceController::createSchedule');
         $routes->post('bimbingan/verify/(:num)', 'Dosen\\GuidanceController::verify/$1');
         $routes->get('bimbingan/file/(:any)', 'Dosen\\GuidanceController::viewFile/$1');
+
+        // Tahap 9 - Verifikasi Kegiatan Wirausaha
+        $routes->get('kegiatan', 'Dosen\\ActivityController::index');
+        $routes->post('kegiatan/verify/(:num)', 'Dosen\\ActivityController::verify/$1');
+        $routes->get('kegiatan/file/(:any)/(:num)', 'Dosen\\ActivityController::viewFile/$1/$2');
     });
 
     // Mentor Routes
@@ -206,6 +217,11 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->post('mentoring/schedule', 'Mentor\\GuidanceController::createSchedule');
         $routes->post('mentoring/verify/(:num)', 'Mentor\\GuidanceController::verify/$1');
         $routes->get('mentoring/file/(:any)', 'Mentor\\GuidanceController::viewFile/$1');
+
+        // Tahap 9 - Verifikasi Kegiatan Wirausaha
+        $routes->get('kegiatan', 'Mentor\\ActivityController::index');
+        $routes->post('kegiatan/verify/(:num)', 'Mentor\\ActivityController::verify/$1');
+        $routes->get('kegiatan/file/(:any)/(:num)', 'Mentor\\ActivityController::viewFile/$1/$2');
     });
 
     // Notifications Routes - All authenticated users

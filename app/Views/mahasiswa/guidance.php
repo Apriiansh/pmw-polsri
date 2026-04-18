@@ -150,13 +150,15 @@ $fileRoute = $c['route_file'];
                     $lbPayload = $logbook ? [
                         'id'                  => $logbook->id,
                         'status'              => $logbook->status,
-                        'material_explanation'=> $logbook->material_explanation,
+                        'material_explanation' => $logbook->material_explanation,
                         'video_url'           => $logbook->video_url,
                         'photo_activity'      => $logbook->photo_activity,
                         'assignment_file'     => $logbook->assignment_file,
                         'nota_file'           => $logbook->nota_file,
+                        'nota_files'          => json_decode($logbook->nota_files ?? '[]', true) ?? [],
                         'nota_items'          => $parsedNotaItems,
                         'nominal_konsumsi'    => (float)($logbook->nominal_konsumsi ?? 0),
+                        'submitted_at'        => $logbook->submitted_at ? date('Y-m-d H:i:s', strtotime($logbook->submitted_at)) : null,
                         'verification_note'   => $logbook->verification_note,
                     ] : null;
                 ?>
@@ -207,6 +209,13 @@ $fileRoute = $c['route_file'];
                                         <i class="fas fa-rotate text-[9px]"></i>Revisi
                                     </span>
                                 <?php endif; ?>
+                                
+                                <?php if ($logbook && $logbook->submitted_at): ?>
+                                    <div class="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 px-2">
+                                        <i class="fas fa-paper-plane text-[8px] opacity-60"></i>
+                                        <span>Dikirim: <?= date('d M Y, H:i', strtotime($logbook->submitted_at)) ?></span>
+                                    </div>
+                                <?php endif; ?>
 
                                 <!-- Toggle button -->
                                 <button
@@ -221,14 +230,14 @@ $fileRoute = $c['route_file'];
 
                         <!-- ── INLINE EXPAND: Logbook Form ──────────────────────────── -->
                         <div x-show="openIdx === <?= $idx ?>"
-                             x-transition:enter="transition ease-out duration-300"
-                             x-transition:enter-start="opacity-0 -translate-y-2"
-                             x-transition:enter-end="opacity-100 translate-y-0"
-                             x-transition:leave="transition ease-in duration-200"
-                             x-transition:leave-start="opacity-100 translate-y-0"
-                             x-transition:leave-end="opacity-0 -translate-y-2"
-                             x-cloak
-                             class="px-4 sm:px-6 pb-6">
+                            x-transition:enter="transition ease-out duration-300"
+                            x-transition:enter-start="opacity-0 -translate-y-2"
+                            x-transition:enter-end="opacity-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-200"
+                            x-transition:leave-start="opacity-100 translate-y-0"
+                            x-transition:leave-end="opacity-0 -translate-y-2"
+                            x-cloak
+                            class="px-4 sm:px-6 pb-6">
 
                             <!-- Form container -->
                             <div class="rounded-3xl border border-slate-200 bg-slate-50/60 overflow-hidden shadow-inner">
@@ -264,7 +273,7 @@ $fileRoute = $c['route_file'];
                                 <!-- MAIN FORM -->
                                 <form action="<?= base_url($logRoute . '/' . $s->id) ?>" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
                                     <?= csrf_field() ?>
-                                    <input type="hidden" name="status" x-model="formStatus">
+                                    <input type="hidden" name="status" :value="formStatus">
 
                                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
@@ -293,8 +302,7 @@ $fileRoute = $c['route_file'];
                                                             placeholder="Detail pembahasan selama sesi berlangsung... (min. 50 kata)"
                                                             class="custom-scrollbar resize-none"
                                                             :required="formStatus === 'pending'"
-                                                            <?= $isApproved ? 'disabled' : '' ?>
-                                                        ><?= $logbook ? esc($logbook->material_explanation) : '' ?></textarea>
+                                                            <?= $isApproved ? 'disabled' : '' ?>><?= $logbook ? esc($logbook->material_explanation) : '' ?></textarea>
                                                     </div>
                                                     <p class="text-[10px] text-slate-400 mt-1.5 ml-1 italic">
                                                         <i class="fas fa-info-circle mr-1"></i>Min. 50 kata untuk laporan berkualitas.
@@ -320,30 +328,30 @@ $fileRoute = $c['route_file'];
                                             </div>
 
                                             <!-- NOTA SECTION (Dynamic Multi-Item) -->
-                                            <div class="rounded-2xl bg-gradient-to-b from-emerald-600 to-emerald-800 text-white shadow-xl overflow-hidden">
+                                            <div class="rounded-2xl bg-white border border-slate-200/60 shadow-sm overflow-hidden">
 
                                                 <!-- Nota header -->
-                                                <div class="px-5 pt-5 pb-3 flex items-center justify-between">
+                                                <div class="px-5 pt-5 pb-3 flex items-center justify-between bg-slate-50/30 border-b border-slate-50">
                                                     <div class="flex items-center gap-3">
-                                                        <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center border border-white/20">
-                                                            <i class="fas fa-wallet text-white text-sm"></i>
+                                                        <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center border border-slate-200/50">
+                                                            <i class="fas fa-wallet text-slate-500 text-sm"></i>
                                                         </div>
                                                         <div>
-                                                            <h5 class="text-xs font-black uppercase tracking-widest text-white/90">Administrasi Konsumsi</h5>
-                                                            <p class="text-[10px] text-emerald-200 font-medium">Rincian pengeluaran per item (opsional)</p>
+                                                            <h5 class="text-xs font-black uppercase tracking-widest text-slate-800">Administrasi Konsumsi</h5>
+                                                            <p class="text-[10px] text-slate-500 font-medium">Rincian pengeluaran per item (opsional)</p>
                                                         </div>
                                                     </div>
                                                     <?php if (!$isApproved): ?>
-                                                    <button type="button" @click="addNotaItem()"
-                                                        class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 text-white text-[11px] font-black uppercase tracking-widest transition-all">
-                                                        <i class="fas fa-plus text-[10px]"></i> Tambah Item
-                                                    </button>
+                                                        <button type="button" @click="addNotaItem()"
+                                                            class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 text-[10px] font-black uppercase tracking-widest transition-all shadow-sm">
+                                                            <i class="fas fa-plus text-[9px] text-emerald-500"></i> Tambah Item
+                                                        </button>
                                                     <?php endif; ?>
                                                 </div>
 
                                                 <!-- Column headers -->
-                                                <div class="px-5 pb-2">
-                                                    <div class="grid grid-cols-12 gap-2 text-[9px] font-black uppercase tracking-widest text-emerald-300 px-1">
+                                                <div class="px-5 pt-4 pb-2">
+                                                    <div class="grid grid-cols-12 gap-2 text-[9px] font-black uppercase tracking-widest text-slate-400 px-1">
                                                         <div class="col-span-5">Keterangan Item</div>
                                                         <div class="col-span-2 text-center">Qty</div>
                                                         <div class="col-span-3 text-right">Satuan (Rp)</div>
@@ -354,50 +362,50 @@ $fileRoute = $c['route_file'];
                                                 <!-- Dynamic rows -->
                                                 <div class="px-5 space-y-2 pb-3" id="nota-rows-<?= $idx ?>">
                                                     <template x-for="(item, i) in notaItems" :key="i">
-                                                        <div class="grid grid-cols-12 gap-2 items-center bg-white/10 rounded-xl p-2 border border-white/10"
-                                                             x-transition:enter="transition ease-out duration-200"
-                                                             x-transition:enter-start="opacity-0 scale-95"
-                                                             x-transition:enter-end="opacity-100 scale-100">
+                                                        <div class="grid grid-cols-12 gap-2 items-center bg-slate-50/50 rounded-xl p-2 border border-slate-100"
+                                                            x-transition:enter="transition ease-out duration-200"
+                                                            x-transition:enter-start="opacity-0 scale-95"
+                                                            x-transition:enter-end="opacity-100 scale-100">
                                                             <!-- Title -->
                                                             <div class="col-span-5">
                                                                 <input type="text"
-                                                                       :name="'nota_title[]'"
-                                                                       x-model="item.title"
-                                                                       placeholder="Contoh: Nasi Box"
-                                                                       <?= $isApproved ? 'disabled' : '' ?>
-                                                                       class="w-full bg-white/10 border border-white/20 rounded-lg px-2.5 py-2 text-white text-xs font-medium placeholder:text-white/30 outline-none focus:border-white/50 focus:bg-white/15 transition-all">
+                                                                    :name="'nota_title[]'"
+                                                                    x-model="item.title"
+                                                                    placeholder="Contoh: Nasi Box"
+                                                                    <?= $isApproved ? 'disabled' : '' ?>
+                                                                    class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-slate-700 text-xs font-semibold placeholder:text-slate-300 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/5 transition-all">
                                                             </div>
                                                             <!-- Qty -->
                                                             <div class="col-span-2">
                                                                 <input type="number"
-                                                                       :name="'nota_qty[]'"
-                                                                       x-model.number="item.qty"
-                                                                       @input="recalcTotal()"
-                                                                       min="1"
-                                                                       <?= $isApproved ? 'disabled' : '' ?>
-                                                                       class="w-full bg-white/10 border border-white/20 rounded-lg px-2 py-2 text-white text-xs font-bold text-center outline-none focus:border-white/50 focus:bg-white/15 transition-all">
+                                                                    :name="'nota_qty[]'"
+                                                                    x-model.number="item.qty"
+                                                                    @input="recalcTotal()"
+                                                                    min="1"
+                                                                    <?= $isApproved ? 'disabled' : '' ?>
+                                                                    class="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-slate-700 text-xs font-black text-center outline-none focus:border-sky-500 transition-all">
                                                             </div>
                                                             <!-- Price -->
                                                             <div class="col-span-3">
                                                                 <input type="number"
-                                                                       :name="'nota_price[]'"
-                                                                       x-model.number="item.price"
-                                                                       @input="recalcTotal()"
-                                                                       min="0"
-                                                                       step="500"
-                                                                       placeholder="0"
-                                                                       <?= $isApproved ? 'disabled' : '' ?>
-                                                                       class="w-full bg-white/10 border border-white/20 rounded-lg px-2 py-2 text-white text-xs font-bold text-right outline-none focus:border-white/50 focus:bg-white/15 transition-all">
+                                                                    :name="'nota_price[]'"
+                                                                    x-model.number="item.price"
+                                                                    @input="recalcTotal()"
+                                                                    min="0"
+                                                                    step="500"
+                                                                    placeholder="0"
+                                                                    <?= $isApproved ? 'disabled' : '' ?>
+                                                                    class="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-slate-700 text-xs font-black text-right outline-none focus:border-sky-500 transition-all">
                                                             </div>
                                                             <!-- Subtotal + Remove -->
                                                             <div class="col-span-2 flex items-center justify-end gap-1">
-                                                                <span class="text-[10px] font-black text-emerald-200 truncate"
-                                                                      x-text="new Intl.NumberFormat('id-ID', {notation:'compact',maximumFractionDigits:1}).format(item.qty * item.price)"></span>
+                                                                <span class="text-[10px] font-black text-slate-800 truncate"
+                                                                    x-text="new Intl.NumberFormat('id-ID', {notation:'compact',maximumFractionDigits:1}).format(item.qty * item.price)"></span>
                                                                 <?php if (!$isApproved): ?>
-                                                                <button type="button" @click="removeNotaItem(i)"
-                                                                        class="w-6 h-6 rounded-lg bg-rose-500/30 hover:bg-rose-500/60 flex items-center justify-center text-rose-200 hover:text-white transition-all shrink-0 ml-1">
-                                                                    <i class="fas fa-xmark text-[9px]"></i>
-                                                                </button>
+                                                                    <button type="button" @click="removeNotaItem(i)"
+                                                                        class="w-6 h-6 rounded-lg bg-rose-50 hover:bg-rose-500 flex items-center justify-center text-rose-400 hover:text-white border border-rose-100 transition-all shrink-0 ml-1">
+                                                                        <i class="fas fa-trash-can text-[9px]"></i>
+                                                                    </button>
                                                                 <?php endif; ?>
                                                             </div>
                                                         </div>
@@ -405,55 +413,95 @@ $fileRoute = $c['route_file'];
 
                                                     <!-- Empty state -->
                                                     <template x-if="notaItems.length === 0">
-                                                        <div class="flex items-center justify-center py-5 rounded-xl border border-dashed border-white/20 text-white/40 gap-2">
-                                                            <i class="fas fa-receipt text-sm"></i>
-                                                            <span class="text-[11px] font-bold uppercase tracking-widest">Belum ada item konsumsi</span>
+                                                        <div class="flex items-center justify-center py-6 rounded-2xl border border-dashed border-slate-200 text-slate-400 bg-white gap-2.5">
+                                                            <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center">
+                                                                <i class="fas fa-receipt text-xs opacity-60"></i>
+                                                            </div>
+                                                            <span class="text-[11px] font-black uppercase tracking-widest opacity-80">Belum ada item konsumsi</span>
                                                         </div>
                                                     </template>
                                                 </div>
 
                                                 <!-- Grand total row -->
-                                                <div class="mx-5 mb-5 p-3 rounded-xl bg-emerald-900/60 border border-emerald-400/20 flex items-center justify-between">
-                                                    <div class="flex items-center gap-2">
-                                                        <i class="fas fa-sigma text-emerald-300 text-xs"></i>
-                                                        <span class="text-[11px] font-black uppercase tracking-widest text-emerald-200">
-                                                            Total Konsumsi
-                                                            <span class="text-emerald-400 font-normal" x-text="'(' + notaItems.length + ' item)'"></span>
+                                                <div class="mx-5 mb-5 p-4 rounded-xl bg-slate-900 border border-slate-800 shadow-lg flex items-center justify-between">
+                                                    <div class="flex items-center gap-2.5">
+                                                        <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                                                            <i class="fas fa-sigma text-white text-[10px]"></i>
+                                                        </div>
+                                                        <span class="text-[11px] font-black uppercase tracking-widest text-slate-300">
+                                                            Total Keseluruhan
+                                                            <span class="text-white/40 font-normal ml-1" x-text="'(' + notaItems.length + ' item)'"></span>
                                                         </span>
                                                     </div>
                                                     <div class="flex items-center gap-1.5">
-                                                        <span class="text-[10px] font-black text-emerald-300">Rp</span>
-                                                        <span class="text-lg font-black text-white tracking-tight" x-text="new Intl.NumberFormat('id-ID').format(notaTotal)"></span>
+                                                        <span class="text-[10px] font-black text-slate-400">Rp</span>
+                                                        <span class="text-xl font-black text-white tracking-tight" x-text="new Intl.NumberFormat('id-ID').format(notaTotal)"></span>
                                                     </div>
                                                 </div>
 
-                                                <!-- Nota file upload -->
-                                                <div class="px-5 pb-5 border-t border-white/10 pt-4">
-                                                    <?php if ($logbook && $logbook->nota_file): ?>
-                                                        <div class="flex items-center justify-between mb-3">
-                                                            <div class="flex items-center gap-2">
-                                                                <i class="fas fa-receipt text-emerald-200 text-xs"></i>
-                                                                <span class="text-[11px] font-bold text-emerald-100">Bukti nota/kuitansi terlampir</span>
+                                                <!-- Nota files upload -->
+                                                <div class="px-5 pb-5 border-t border-slate-50 pt-5 space-y-4">
+                                                    <!-- Existing Files -->
+                                                    <template x-if="existingNotaFiles.length > 0">
+                                                        <div class="space-y-2">
+                                                            <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">File Tersimpan di Cloud:</p>
+                                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                                                <template x-for="(file, idx) in existingNotaFiles" :key="idx">
+                                                                    <div class="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200 shadow-sm">
+                                                                        <div class="flex items-center gap-3 min-w-0">
+                                                                            <div class="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+                                                                                <i class="fas fa-file-invoice text-xs text-emerald-500"></i>
+                                                                            </div>
+                                                                            <span class="text-[11px] text-slate-700 font-bold truncate" x-text="'Nota #' + (idx + 1)"></span>
+                                                                        </div>
+                                                                        <a :href="'<?= base_url($fileRoute . '/nota/') ?>' + (logbookData.id || 0) + '?path=' + file" target="_blank"
+                                                                            class="text-[9px] font-black text-sky-600 hover:text-sky-700 uppercase tracking-widest bg-sky-50 px-3 py-1.5 rounded-lg transition-all">
+                                                                            Pratinjau
+                                                                        </a>
+                                                                    </div>
+                                                                </template>
                                                             </div>
-                                                            <a href="<?= base_url($fileRoute . '/nota/' . ($logbook->id ?? 0)) ?>" target="_blank"
-                                                               class="text-[10px] font-black bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg uppercase tracking-wider transition-all">
-                                                                <i class="fas fa-eye mr-1"></i>Lihat
-                                                            </a>
                                                         </div>
-                                                    <?php endif; ?>
+                                                    </template>
+
+                                                    <!-- Selected Files Preview -->
+                                                    <template x-if="notaFiles.length > 0">
+                                                        <div class="space-y-2">
+                                                            <p class="text-[9px] font-black uppercase tracking-widest text-sky-500 ml-1">File Baru Ditambahkan:</p>
+                                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                                                <template x-for="(f, idx) in notaFiles" :key="idx">
+                                                                    <div class="flex items-center justify-between p-2.5 rounded-xl bg-sky-50/50 border border-sky-100 border-dashed">
+                                                                        <div class="flex items-center gap-3 min-w-0">
+                                                                            <div class="w-7 h-7 rounded-lg bg-sky-100 flex items-center justify-center shrink-0">
+                                                                                <i class="fas fa-file-circle-plus text-xs text-sky-500"></i>
+                                                                            </div>
+                                                                            <span class="text-[11px] text-slate-600 truncate font-semibold" x-text="f.name"></span>
+                                                                        </div>
+                                                                        <button type="button" @click="removeSelectedNota(idx)"
+                                                                            class="w-6 h-6 rounded-full flex items-center justify-center hover:bg-rose-100 text-rose-400 transition-colors">
+                                                                            <i class="fas fa-times-circle text-sm"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                    </template>
 
                                                     <?php if (!$isApproved): ?>
                                                         <label class="block cursor-pointer group/nota-upload">
-                                                            <input type="file" name="nota_file" accept=".jpg,.jpeg,.png,.pdf" class="hidden sr-only"
-                                                                   @change="handleNotaChange($event)">
-                                                            <div class="flex items-center justify-center gap-2.5 py-3 rounded-2xl border border-dashed border-white/25 hover:border-white/50 hover:bg-white/5 transition-all"
-                                                                 :class="notaFileName ? 'bg-emerald-800/40 border-emerald-300/40' : ''">
-                                                                <i class="text-emerald-200 text-sm"
-                                                                   :class="notaFileName ? 'fas fa-check-circle text-emerald-300' : 'fas fa-cloud-arrow-up'"></i>
-                                                                <p class="text-[11px] font-black tracking-widest uppercase text-emerald-100"
-                                                                   x-text="notaFileName || '<?= $logbook && $logbook->nota_file ? 'Ganti Bukti Nota' : 'Upload Kuitansi / Nota Fisik' ?>'">
-                                                                </p>
-                                                                <span class="text-[9px] bg-emerald-400/20 px-2 py-0.5 rounded text-emerald-200 uppercase">PDF, JPG, PNG</span>
+                                                            <input type="file" name="nota_files[]" accept=".jpg,.jpeg,.png,.pdf" class="hidden sr-only" multiple
+                                                                @change="handleNotaChange($event)">
+                                                            <div class="flex items-center justify-center gap-3 py-4 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-white hover:border-sky-300 transition-all group-hover/nota-upload:shadow-md">
+                                                                <div class="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center group-hover/nota-upload:text-sky-500 transition-colors">
+                                                                    <i class="fas fa-cloud-arrow-up text-sm"></i>
+                                                                </div>
+                                                                <div class="text-left">
+                                                                    <p class="text-[11px] font-black tracking-widest uppercase text-slate-700">
+                                                                        Unggah Nota Tambahan
+                                                                    </p>
+                                                                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Mendukung banyak file (Kamera/Galeri)</p>
+                                                                </div>
+                                                                <span class="ml-auto mr-5 px-2.5 py-1 rounded-lg bg-slate-200/50 text-slate-500 text-[8px] font-black uppercase tracking-tighter shadow-sm">Multiple</span>
                                                             </div>
                                                         </label>
                                                     <?php endif; ?>
@@ -483,10 +531,10 @@ $fileRoute = $c['route_file'];
                                                     <?php if ($logbook && $logbook->photo_activity): ?>
                                                         <div class="relative group rounded-2xl overflow-hidden border border-slate-100 bg-slate-50 aspect-video mb-3 shadow-sm">
                                                             <img src="<?= base_url($fileRoute . '/photo/' . $logbook->id) ?>"
-                                                                 class="w-full h-full object-cover" alt="Foto kegiatan">
+                                                                class="w-full h-full object-cover" alt="Foto kegiatan">
                                                             <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3">
                                                                 <a href="<?= base_url($fileRoute . '/photo/' . $logbook->id) ?>" target="_blank"
-                                                                   class="text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                                                                    class="text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5">
                                                                     <i class="fas fa-expand-alt"></i> Perbesar
                                                                 </a>
                                                             </div>
@@ -502,8 +550,8 @@ $fileRoute = $c['route_file'];
                                                         <!-- Upload / Replace area -->
                                                         <label class="block cursor-pointer group/photo-upload">
                                                             <input type="file" name="photo_activity" accept=".jpg,.jpeg,.png" class="hidden sr-only"
-                                                                   :required="formStatus === 'pending' && !<?= ($logbook && $logbook->photo_activity) ? 'true' : 'false' ?>"
-                                                                   @change="handlePhotoPreview($event)">
+                                                                :required="formStatus === 'pending' && !<?= ($logbook && $logbook->photo_activity) ? 'true' : 'false' ?>"
+                                                                @change="handlePhotoPreview($event)">
 
                                                             <!-- Photo preview after selection -->
                                                             <template x-if="photoPreview">
@@ -549,7 +597,7 @@ $fileRoute = $c['route_file'];
                                                                 <p class="text-[10px] text-slate-400">Dokumen PDF Terlampir</p>
                                                             </div>
                                                             <a href="<?= base_url($fileRoute . '/assignment/' . $logbook->id) ?>" target="_blank"
-                                                               class="w-8 h-8 rounded-lg bg-orange-500 text-white flex items-center justify-center hover:bg-orange-600 transition-colors shadow-sm">
+                                                                class="w-8 h-8 rounded-lg bg-orange-500 text-white flex items-center justify-center hover:bg-orange-600 transition-colors shadow-sm">
                                                                 <i class="fas fa-eye text-xs"></i>
                                                             </a>
                                                         </div>
@@ -558,20 +606,20 @@ $fileRoute = $c['route_file'];
                                                     <?php if (!$isApproved): ?>
                                                         <label class="block cursor-pointer group/assign-upload">
                                                             <input type="file" name="assignment_file" accept=".pdf" class="hidden sr-only"
-                                                                   @change="handleAssignmentChange($event)">
+                                                                @change="handleAssignmentChange($event)">
 
                                                             <div class="flex items-center gap-3 p-3 rounded-xl border border-dashed border-slate-200 bg-slate-50/50
                                                                         group-hover/assign-upload:border-orange-400 group-hover/assign-upload:bg-orange-50/30 transition-all"
-                                                                 :class="assignmentFileName ? 'border-emerald-300 bg-emerald-50/30' : ''">
+                                                                :class="assignmentFileName ? 'border-emerald-300 bg-emerald-50/30' : ''">
                                                                 <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all"
-                                                                     :class="assignmentFileName ? 'bg-emerald-100' : 'bg-slate-100 group-hover/assign-upload:bg-orange-100'">
+                                                                    :class="assignmentFileName ? 'bg-emerald-100' : 'bg-slate-100 group-hover/assign-upload:bg-orange-100'">
                                                                     <i class="text-sm transition-colors"
-                                                                       :class="assignmentFileName ? 'fas fa-check text-emerald-500' : 'fas fa-file-arrow-up text-slate-400 group-hover/assign-upload:text-orange-500'"></i>
+                                                                        :class="assignmentFileName ? 'fas fa-check text-emerald-500' : 'fas fa-file-arrow-up text-slate-400 group-hover/assign-upload:text-orange-500'"></i>
                                                                 </div>
                                                                 <div class="flex-1 min-w-0">
                                                                     <p class="text-[11px] font-bold transition-colors"
-                                                                       :class="assignmentFileName ? 'text-emerald-700' : 'text-slate-500 group-hover/assign-upload:text-orange-700'"
-                                                                       x-text="assignmentFileName || '<?= ($logbook && $logbook->assignment_file) ? 'Ganti Berkas PDF' : 'Upload Output / Tugas (PDF)' ?>'"></p>
+                                                                        :class="assignmentFileName ? 'text-emerald-700' : 'text-slate-500 group-hover/assign-upload:text-orange-700'"
+                                                                        x-text="assignmentFileName || '<?= ($logbook && $logbook->assignment_file) ? 'Ganti Berkas PDF' : 'Upload Output / Tugas (PDF)' ?>'"></p>
                                                                 </div>
                                                             </div>
                                                         </label>
@@ -587,21 +635,20 @@ $fileRoute = $c['route_file'];
                                             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                                                 <!-- Save Draft -->
                                                 <button type="submit"
-                                                        @click.prevent="formStatus = 'draft'; $el.closest('form').submit()"
-                                                        class="group/draft flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 font-black text-[11px] uppercase tracking-widest transition-all">
-                                                    <div class="w-7 h-7 rounded-lg bg-slate-200 group-hover/draft:bg-slate-300 flex items-center justify-center shrink-0 transition-all">
+                                                    @click.prevent="formStatus = 'draft'; $el.closest('form').submit()"
+                                                    class="group/draft flex items-center justify-center gap-2.5 px-4 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 font-black text-[11px] uppercase tracking-widest transition-all">
+                                                    <div class="w-2 h-2 rounded-lg bg-slate-200 group-hover/draft:bg-slate-300 flex items-center justify-center shrink-0 transition-all">
                                                         <i class="fas fa-floppy-disk text-slate-500 text-xs"></i>
                                                     </div>
                                                     <div class="text-left">
                                                         <p class="text-[10px] font-black">Simpan Draft</p>
-                                                        <p class="text-[9px] font-medium text-slate-400 normal-case tracking-normal">Belum dikirim ke verifikator</p>
                                                     </div>
                                                 </button>
 
                                                 <!-- Submit for Review -->
                                                 <button type="submit"
-                                                        @click.prevent="formStatus = 'pending'; $el.closest('form').submit()"
-                                                        class="<?= $isBmb ? 'btn-primary' : 'btn-accent' ?> group/submit flex-1 flex items-center justify-center gap-2.5 py-3.5 px-6 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg transition-all">
+                                                    @click.prevent="formStatus = 'pending'; $el.closest('form').submit()"
+                                                    class="<?= $isBmb ? 'btn-primary' : 'btn-accent' ?> group/submit flex-1 flex items-center justify-center gap-2.5 py-3.5 px-6 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg transition-all">
                                                     <i class="fas fa-paper-plane group-hover/submit:translate-x-0.5 group-hover/submit:-translate-y-0.5 transition-transform"></i>
                                                     <div class="text-left">
                                                         <p class="text-[10px] font-black">Kirim Laporan</p>
@@ -651,13 +698,29 @@ $fileRoute = $c['route_file'];
         animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         opacity: 0;
     }
-    .delay-100 { animation-delay: 0.1s; }
-    .delay-150 { animation-delay: 0.15s; }
-    .delay-200 { animation-delay: 0.2s; }
+
+    .delay-100 {
+        animation-delay: 0.1s;
+    }
+
+    .delay-150 {
+        animation-delay: 0.15s;
+    }
+
+    .delay-200 {
+        animation-delay: 0.2s;
+    }
 
     @keyframes slideUpFade {
-        from { opacity: 0; transform: translateY(20px); }
-        to   { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 </style>
 
@@ -669,15 +732,20 @@ $fileRoute = $c['route_file'];
         return {
             // Which schedule row is open (-1 = none)
             openIdx: -1,
+            logbookData: {},
 
             // Per-form state (reset on each open)
-            formStatus: 'pending',
+            formStatus: 'pending', // Will be seeded from logbook.status on open
             photoPreview: null,
             assignmentFileName: '',
-            notaFileName: '',
+
+            // Multi-nota files
+            notaFiles: [], // Files selected in current session
+            existingNotaFiles: [], // Files already in DB
+            notaFileName: '', // Legacy text display
 
             // Dynamic nota items list
-            notaItems: [],   // [{ title, qty, price }]
+            notaItems: [], // [{ title, qty, price }]
             notaTotal: 0,
 
             handleMouseMove(e) {
@@ -698,19 +766,24 @@ $fileRoute = $c['route_file'];
                 }
 
                 this.openIdx = idx;
+                this.logbookData = logbook || {};
 
-                // Reset per-form state
-                this.formStatus         = 'pending';
-                this.photoPreview       = null;
+                // Reset/Seed per-form state
+                this.formStatus = logbook?.status || 'pending';
+                this.photoPreview = null;
                 this.assignmentFileName = '';
-                this.notaFileName       = '';
+                this.notaFiles = [];
+                this.notaFileName = '';
+
+                // Load existing files
+                this.existingNotaFiles = logbook?.nota_files || [];
 
                 // Seed nota items from existing logbook
                 if (logbook && Array.isArray(logbook.nota_items) && logbook.nota_items.length > 0) {
                     this.notaItems = logbook.nota_items.map(item => ({
-                        title : item.title  ?? '',
-                        qty   : parseInt(item.qty    ?? 1),
-                        price : parseFloat(item.price ?? 0),
+                        title: item.title ?? '',
+                        qty: parseInt(item.qty ?? 1),
+                        price: parseFloat(item.price ?? 0),
                     }));
                 } else {
                     // Start fresh — add one empty row for convenience
@@ -722,12 +795,19 @@ $fileRoute = $c['route_file'];
                 // Scroll into view
                 this.$nextTick(() => {
                     this.$el.querySelector(`[x-show="openIdx === ${idx}"]`)
-                        ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        ?.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'nearest'
+                        });
                 });
             },
 
             addNotaItem() {
-                this.notaItems.push({ title: '', qty: 1, price: 0 });
+                this.notaItems.push({
+                    title: '',
+                    qty: 1,
+                    price: 0
+                });
             },
 
             removeNotaItem(i) {
@@ -743,9 +823,14 @@ $fileRoute = $c['route_file'];
 
             handlePhotoPreview(e) {
                 const file = e.target.files[0];
-                if (!file) { this.photoPreview = null; return; }
+                if (!file) {
+                    this.photoPreview = null;
+                    return;
+                }
                 const reader = new FileReader();
-                reader.onload = ev => { this.photoPreview = ev.target.result; };
+                reader.onload = ev => {
+                    this.photoPreview = ev.target.result;
+                };
                 reader.readAsDataURL(file);
             },
 
@@ -755,8 +840,19 @@ $fileRoute = $c['route_file'];
             },
 
             handleNotaChange(e) {
-                const file = e.target.files[0];
-                this.notaFileName = file ? file.name : '';
+                const files = e.target.files;
+                if (!files) return;
+
+                for (let i = 0; i < files.length; i++) {
+                    this.notaFiles.push({
+                        name: files[i].name,
+                        file: files[i]
+                    });
+                }
+            },
+
+            removeSelectedNota(idx) {
+                this.notaFiles.splice(idx, 1);
             }
         };
     }

@@ -136,12 +136,24 @@ class GuidanceController extends BaseController
                 'photo_activity'  => $this->request->getFile('photo_activity'),
                 'assignment_file' => $this->request->getFile('assignment_file'),
                 'nota_file'       => $this->request->getFile('nota_file'),
+                'nota_files'      => $this->request->getFileMultiple('nota_files'),
             ];
 
-            // Filter out missing/invalid files
-            $files = array_filter($files, fn($f) => $f && $f->isValid() && !$f->hasMoved());
+            // Filter out missing/invalid singular files
+            $singularKeys = ['photo_activity', 'assignment_file', 'nota_file'];
+            foreach ($singularKeys as $key) {
+                if (!isset($files[$key]) || !$files[$key]->isValid() || $files[$key]->hasMoved()) {
+                    unset($files[$key]);
+                }
+            }
 
-            $status = $data['status'] ?? 'pending';
+            // Filter multiple files
+            if (isset($files['nota_files'])) {
+                $files['nota_files'] = array_filter($files['nota_files'], fn($f) => $f && $f->isValid() && !$f->hasMoved());
+                if (empty($files['nota_files'])) unset($files['nota_files']);
+            }
+
+            $status = $this->request->getPost('status') ?: 'pending';
             $this->guidanceService->submitLogbook($scheduleId, $data, $files);
 
             // Notify the verifier (Dosen or Mentor) ONLY if not a draft
@@ -163,10 +175,12 @@ class GuidanceController extends BaseController
                             $assignment      = $assignmentModel->where('proposal_id', $schedule->proposal_id)->first();
                             if ($assignment) {
                                 $lecturerModel = new \App\Models\LecturerModel();
-                                $lecturer      = $lecturerModel->find($assignment['lecturer_id'] ?? $assignment->lecturer_id ?? 0);
-                                if ($lecturer && ($lecturer['user_id'] ?? null)) {
+                                $lecturerId    = $assignment->lecturer_id ?? $assignment['lecturer_id'] ?? 0;
+                                $lecturer      = $lecturerModel->find($lecturerId);
+
+                                if ($lecturer && ($lecturer->user_id ?? $lecturer['user_id'] ?? null)) {
                                     $notifModel->createLogbookSubmissionNotification(
-                                        (int)$lecturer['user_id'],
+                                        (int)($lecturer->user_id ?? $lecturer['user_id']),
                                         (string)$teamName,
                                         $date,
                                         'bimbingan'
@@ -227,7 +241,17 @@ class GuidanceController extends BaseController
         $filePath = match ($fileType) {
             'photo'      => is_array($logbook) ? ($logbook['photo_activity'] ?? '') : $logbook->photo_activity,
             'assignment' => is_array($logbook) ? ($logbook['assignment_file'] ?? '') : $logbook->assignment_file,
-            'nota'       => is_array($logbook) ? ($logbook['nota_file'] ?? '') : $logbook->nota_file,
+            'nota'       => (function() use ($logbook, $fileType) {
+                // Support multiple nota files via query param ?path=...
+                $specificPath = $this->request->getGet('path');
+                if ($specificPath) {
+                    $notaFiles = json_decode(is_array($logbook) ? ($logbook['nota_files'] ?? '[]') : ($logbook->nota_files ?? '[]'), true) ?? [];
+                    if (in_array($specificPath, $notaFiles)) {
+                        return $specificPath;
+                    }
+                }
+                return is_array($logbook) ? ($logbook['nota_file'] ?? '') : $logbook->nota_file;
+            })(),
             default      => ''
         };
 
