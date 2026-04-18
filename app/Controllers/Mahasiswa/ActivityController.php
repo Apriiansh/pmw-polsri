@@ -58,18 +58,17 @@ class ActivityController extends BaseController
         }
 
         // Stats
-        $stats = [
-            'total'     => count($schedules),
-            'draft'     => count(array_filter($schedules, fn($s) => $s->logbook && $s->logbook->status === 'draft')),
-            'pending'   => count(array_filter($schedules, fn($s) => $s->logbook && in_array($s->logbook->status, ['pending', 'approved_by_dosen', 'approved_by_mentor']))),
-            'approved'  => count(array_filter($schedules, fn($s) => $s->logbook && $s->logbook->status === 'approved')),
-        ];
+        $statsTotal    = count($schedules);
+        $statsLogbook  = count(array_filter($schedules, fn($s) => $s->logbook !== null));
+        $statsVerified = count(array_filter($schedules, fn($s) => $s->logbook && $s->logbook->status === 'approved'));
 
         return view('mahasiswa/activity', [
-            'title'     => 'Logbook Kegiatan Wirausaha | PMW Polsri',
-            'proposal'  => $proposal,
-            'schedules' => $schedules,
-            'stats'     => $stats,
+            'title'         => 'Logbook Kegiatan Wirausaha | PMW Polsri',
+            'proposal'      => $proposal,
+            'schedules'     => $schedules,
+            'statsTotal'    => $statsTotal,
+            'statsLogbook'  => $statsLogbook,
+            'statsVerified' => $statsVerified,
         ]);
     }
 
@@ -142,6 +141,7 @@ class ActivityController extends BaseController
         $filePath = match ($fileType) {
             'photo'      => $logbook->photo_activity,
             'supervisor' => $logbook->photo_supervisor_visit,
+            'reviewer'   => $logbook->reviewer_photo,
             default      => ''
         };
 

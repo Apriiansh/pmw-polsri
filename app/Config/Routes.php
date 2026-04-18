@@ -98,8 +98,11 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->post('kegiatan/schedule', 'Admin\\ActivityController::createSchedule');
         $routes->get('kegiatan/detail/(:num)', 'Admin\\ActivityController::detail/$1');
         $routes->post('kegiatan/verify/(:num)', 'Admin\\ActivityController::verify/$1');
+        $routes->post('kegiatan/review/(:num)', 'Admin\\ActivityController::submitReview/$1');
         $routes->post('kegiatan/delete/(:num)', 'Admin\\ActivityController::deleteSchedule/$1');
-        $routes->get('kegiatan/file/(:any)/(:num)', 'Admin\\ActivityController::viewFile/$1/$2');
+        $routes->post('kegiatan/delete-batch', 'Admin\\ActivityController::deleteBatch');
+        $routes->post('kegiatan/update-batch', 'Admin\\ActivityController::updateBatch');
+        $routes->get('kegiatan/file/(:segment)/(:num)', 'Admin\\ActivityController::viewFile/$1/$2');
     });
 
     // Mahasiswa Routes
@@ -179,6 +182,14 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
     $routes->group('reviewer', ['filter' => 'group:reviewer'], static function ($routes) {
         $routes->get('penilaian-proposal', 'ReviewerController::penilaianProposal');
         $routes->get('penilaian-laporan', 'ReviewerController::penilaianLaporan');
+
+        // Tahap 9 - Verifikasi Kegiatan Wirausaha
+        $routes->group('kegiatan', ['namespace' => 'App\Controllers\Reviewer'], function($routes) {
+            $routes->get('/', 'ActivityController::index');
+            $routes->get('detail/(:num)', 'ActivityController::detail/$1');
+            $routes->post('review/(:num)', 'ActivityController::submitReview/$1');
+            $routes->get('file/(:segment)/(:num)', 'ActivityController::viewFile/$1/$2');
+        });
     });
 
     // Dosen Routes

@@ -43,7 +43,7 @@
                         <h2 class="text-xl font-bold text-slate-800"><?= esc($proposal['nama_usaha'] ?? 'Tanpa Nama') ?></h2>
                         <p class="text-slate-500 mt-1">
                             <i class="fas fa-user text-sky-400 mr-1"></i>
-                            <?= esc($members[0]['nama'] ?? '-') ?> 
+                            <?= esc($members[0]['nama'] ?? '-') ?>
                             <span class="text-slate-400">(Ketua)</span>
                         </p>
                     </div>
@@ -175,7 +175,6 @@
                         <?php foreach ($documents as $doc): ?>
                             <?php
                             $friendlyName = $docNames[$doc['doc_key']] ?? strtoupper(str_replace('_', ' ', $doc['doc_key']));
-                            $fileName = $doc['doc_key'] . '.pdf';
                             ?>
                             <a href="<?= base_url('admin/administrasi/seleksi/doc/' . $doc['id']) ?>"
                                 class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-sky-50 border border-slate-100 hover:border-sky-200 transition-all group">
@@ -191,6 +190,163 @@
                     </div>
                 </div>
             <?php endif; ?>
+
+            <!-- Progress & Activity Tracking -->
+            <div class="space-y-6">
+                <!-- Tabs Header -->
+                <div class="flex items-center gap-4 mb-2">
+                    <h3 class="text-lg font-bold text-slate-800">Tracking Progress</h3>
+                    <div class="h-px flex-1 bg-slate-100"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Bimbingan Stat -->
+                    <?php $bimbinganCount = count(array_filter($guidanceLogs, fn($l) => $l->type === 'bimbingan' && $l->status === 'approved')); ?>
+                    <div class="card-premium p-4 border-l-4 border-l-amber-500" @mousemove="handleMouseMove">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                            </div>
+                            <span class="text-xs font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full uppercase">Bimbingan</span>
+                        </div>
+                        <p class="text-2xl font-black text-slate-800"><?= $bimbinganCount ?> <span class="text-xs font-normal text-slate-400">Log</span></p>
+                        <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-wider">Total Terverifikasi</p>
+                    </div>
+
+                    <!-- Mentoring Stat -->
+                    <?php $mentoringCount = count(array_filter($guidanceLogs, fn($l) => $l->type === 'mentoring' && $l->status === 'approved')); ?>
+                    <div class="card-premium p-4 border-l-4 border-l-emerald-500" @mousemove="handleMouseMove">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <span class="text-xs font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full uppercase">Mentoring</span>
+                        </div>
+                        <p class="text-2xl font-black text-slate-800"><?= $mentoringCount ?> <span class="text-xs font-normal text-slate-400">Log</span></p>
+                        <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-wider">Total Terverifikasi</p>
+                    </div>
+
+                    <!-- Kegiatan Wirausaha Stat -->
+                    <?php $kegiatanCount = count(array_filter($activityLogs, fn($l) => $l->status === 'approved')); ?>
+                    <div class="card-premium p-4 border-l-4 border-l-violet-500" @mousemove="handleMouseMove">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="w-10 h-10 rounded-lg bg-violet-50 text-violet-500 flex items-center justify-center">
+                                <i class="fas fa-store"></i>
+                            </div>
+                            <span class="text-xs font-black text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full uppercase">Kegiatan</span>
+                        </div>
+                        <p class="text-2xl font-black text-slate-800"><?= $kegiatanCount ?> <span class="text-xs font-normal text-slate-400">Log</span></p>
+                        <p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-wider">Total Terverifikasi</p>
+                    </div>
+                </div>
+
+                <!-- Logs List -->
+                <div class="card-premium overflow-hidden" @mousemove="handleMouseMove" x-data="{ activeTab: 'bimbingan' }">
+                    <?php
+                    $badgeClasses = [
+                        'draft' => 'bg-slate-100 text-slate-600',
+                        'pending' => 'bg-amber-100 text-amber-700',
+                        'approved' => 'bg-emerald-100 text-emerald-700',
+                        'revision' => 'bg-rose-100 text-rose-700',
+                        'approved_by_dosen' => 'bg-purple-100 text-purple-700',
+                        'approved_by_mentor' => 'bg-indigo-100 text-indigo-700',
+                    ];
+                    ?>
+                    <div class="flex border-b border-slate-100 bg-slate-50/50">
+                        <button @click="activeTab = 'bimbingan'" :class="activeTab === 'bimbingan' ? 'border-amber-500 text-amber-600 bg-white' : 'border-transparent text-slate-500 hover:text-slate-700'" class="px-6 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all">
+                            Log Bimbingan
+                        </button>
+                        <button @click="activeTab = 'mentoring'" :class="activeTab === 'mentoring' ? 'border-emerald-500 text-emerald-600 bg-white' : 'border-transparent text-slate-500 hover:text-slate-700'" class="px-6 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all">
+                            Log Mentoring
+                        </button>
+                        <button @click="activeTab = 'kegiatan'" :class="activeTab === 'kegiatan' ? 'border-violet-500 text-violet-600 bg-white' : 'border-transparent text-slate-500 hover:text-slate-700'" class="px-6 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all">
+                            Log Kegiatan
+                        </button>
+                    </div>
+
+                    <div class="p-0">
+                        <!-- Bimbingan Tab -->
+                        <div x-show="activeTab === 'bimbingan'" class="divide-y divide-slate-100">
+                            <?php $bimbinganLogs = array_filter($guidanceLogs, fn($l) => $l->type === 'bimbingan'); ?>
+                            <?php if (empty($bimbinganLogs)): ?>
+                                <div class="p-8 text-center text-slate-400">
+                                    <i class="fas fa-calendar-times text-3xl mb-2 opacity-20"></i>
+                                    <p class="text-sm">Belum ada log bimbingan</p>
+                                </div>
+                            <?php else: ?>
+                                <?php foreach ($bimbinganLogs as $log): ?>
+                                    <div class="p-4 hover:bg-slate-50/50 transition-colors">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-[11px] font-bold text-slate-500">
+                                                <i class="far fa-calendar-alt mr-1"></i>
+                                                <?= date('d M Y', strtotime($log->schedule_date)) ?>
+                                            </span>
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase <?= $badgeClasses[$log->status] ?? 'bg-slate-100 text-slate-600' ?>">
+                                                <?= $log->status ?> by Dosen
+                                            </span>
+                                        </div>
+                                        <p class="text-sm font-semibold text-slate-700 mb-1"><?= esc($log->topic ?: 'Bimbingan Rutin') ?></p>
+                                        <p class="text-[11px] text-slate-500 line-clamp-2"><?= esc($log->material_explanation) ?></p>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+
+                        <!-- Mentoring Tab -->
+                        <div x-show="activeTab === 'mentoring'" class="divide-y divide-slate-100" style="display: none;">
+                            <?php $mentoringLogs = array_filter($guidanceLogs, fn($l) => $l->type === 'mentoring'); ?>
+                            <?php if (empty($mentoringLogs)): ?>
+                                <div class="p-8 text-center text-slate-400">
+                                    <i class="fas fa-calendar-times text-3xl mb-2 opacity-20"></i>
+                                    <p class="text-sm">Belum ada log mentoring</p>
+                                </div>
+                            <?php else: ?>
+                                <?php foreach ($mentoringLogs as $log): ?>
+                                    <div class="p-4 hover:bg-slate-50/50 transition-colors">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-[11px] font-bold text-slate-500">
+                                                <i class="far fa-calendar-alt mr-1"></i>
+                                                <?= date('d M Y', strtotime($log->schedule_date)) ?>
+                                            </span>
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase <?= $badgeClasses[$log->status] ?? 'bg-slate-100 text-slate-600' ?>">
+                                                <?= $log->status ?> by Mentor
+                                            </span>
+                                        </div>
+                                        <p class="text-sm font-semibold text-slate-700 mb-1"><?= esc($log->topic ?: 'Mentoring Rutin') ?></p>
+                                        <p class="text-[11px] text-slate-500 line-clamp-2"><?= esc($log->material_explanation) ?></p>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+
+                        <!-- Kegiatan Tab -->
+                        <div x-show="activeTab === 'kegiatan'" class="divide-y divide-slate-100" style="display: none;">
+                            <?php if (empty($activityLogs)): ?>
+                                <div class="p-8 text-center text-slate-400">
+                                    <i class="fas fa-calendar-times text-3xl mb-2 opacity-20"></i>
+                                    <p class="text-sm">Belum ada log kegiatan</p>
+                                </div>
+                            <?php else: ?>
+                                <?php foreach ($activityLogs as $log): ?>
+                                    <div class="p-4 hover:bg-slate-50/50 transition-colors">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-[11px] font-bold text-slate-500">
+                                                <i class="far fa-calendar-alt mr-1"></i>
+                                                <?= date('d M Y', strtotime($log->activity_date)) ?>
+                                            </span>
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase <?= $badgeClasses[$log->status] ?? 'bg-slate-100 text-slate-600' ?>">
+                                                <?= $log->status ?>
+                                            </span>
+                                        </div>
+                                        <p class="text-sm font-semibold text-slate-700 mb-1"><?= esc($log->activity_category) ?></p>
+                                        <p class="text-[11px] text-slate-500 line-clamp-2"><?= esc($log->activity_description) ?></p>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Right: Sidebar Info -->
@@ -201,7 +357,7 @@
                     <i class="fas fa-chalkboard-user text-violet-500"></i>
                     Pembimbing
                 </h3>
-                
+
                 <?php if (!empty($proposal['dosen_nama'])): ?>
                     <div class="flex items-start gap-3 p-3 rounded-xl bg-violet-50 border border-violet-100">
                         <div class="w-10 h-10 rounded-lg bg-violet-100 text-violet-500 flex items-center justify-center shrink-0">
@@ -312,22 +468,22 @@
             <div class="card-premium p-5" @mousemove="handleMouseMove">
                 <h3 class="font-bold text-slate-800 mb-4">Tautan Cepat</h3>
                 <div class="space-y-2">
-                    <a href="<?= base_url('admin/administrasi/seleksi/' . $proposal['id']) ?>" 
+                    <a href="<?= base_url('admin/administrasi/seleksi/' . $proposal['id']) ?>"
                         class="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-sky-50 text-slate-600 hover:text-sky-600 transition-colors">
                         <i class="fas fa-file-alt w-5"></i>
                         <span class="text-sm font-medium">Detail Proposal</span>
                     </a>
-                    <a href="<?= base_url('admin/pitching-desk/' . $proposal['id']) ?>" 
+                    <a href="<?= base_url('admin/pitching-desk/' . $proposal['id']) ?>"
                         class="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-sky-50 text-slate-600 hover:text-sky-600 transition-colors">
                         <i class="fas fa-chalkboard w-5"></i>
                         <span class="text-sm font-medium">Pitching Desk</span>
                     </a>
-                    <a href="<?= base_url('admin/perjanjian/' . $proposal['id']) ?>" 
+                    <a href="<?= base_url('admin/perjanjian/' . $proposal['id']) ?>"
                         class="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-sky-50 text-slate-600 hover:text-sky-600 transition-colors">
                         <i class="fas fa-handshake w-5"></i>
                         <span class="text-sm font-medium">Perjanjian</span>
                     </a>
-                    <a href="<?= base_url('admin/implementasi/' . $proposal['id']) ?>" 
+                    <a href="<?= base_url('admin/implementasi/' . $proposal['id']) ?>"
                         class="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-sky-50 text-slate-600 hover:text-sky-600 transition-colors">
                         <i class="fas fa-cubes w-5"></i>
                         <span class="text-sm font-medium">Implementasi</span>

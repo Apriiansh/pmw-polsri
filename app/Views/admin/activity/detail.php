@@ -32,9 +32,8 @@
             <p class="text-[11px] text-slate-500"><?= esc($proposal['kategori_wirausaha']) ?></p>
         </div>
         <div class="card-premium p-5" @mousemove="handleMouseMove">
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Lokasi & Waktu</p>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Lokasi Pelaksanaan</p>
             <p class="text-lg font-bold text-slate-800 mt-1"><?= esc($schedule->location ?: '-') ?></p>
-            <p class="text-[11px] text-slate-500"><?= $schedule->activity_time ?></p>
         </div>
         <div class="card-premium p-5" @mousemove="handleMouseMove">
             <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status Verifikasi</p>
@@ -136,6 +135,71 @@
                     <p class="text-[13px] text-slate-600"><?= esc($logbook->mentor_note ?: '-') ?></p>
                     <?php if ($logbook->mentor_verified_at): ?>
                         <p class="text-[10px] text-slate-400 mt-2"><?= date('d M Y H:i', strtotime($logbook->mentor_verified_at)) ?></p>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monitoring Kunjungan Lapangan (Reviewer/Admin Documentation) -->
+    <div class="card-premium overflow-hidden animate-stagger delay-300" @mousemove="handleMouseMove">
+        <div class="px-6 py-4 border-b border-sky-50 bg-sky-50/30 flex justify-between items-center">
+            <h3 class="font-display text-base font-bold text-sky-900">
+                <i class="fas fa-camera text-sky-500 mr-2"></i>Monitoring Kunjungan Lapangan
+            </h3>
+            <?php if ($logbook && $logbook->reviewer_at): ?>
+                <span class="text-[10px] font-bold text-sky-600 bg-sky-100 px-3 py-1 rounded-full">Terdokumentasi</span>
+            <?php endif; ?>
+        </div>
+        <div class="p-6">
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Left: Documentation Display / Form -->
+                <div>
+                    <form action="<?= base_url('admin/kegiatan/review/' . $schedule->id) ?>" method="POST" enctype="multipart/form-data" class="space-y-4">
+                        <?= csrf_field() ?>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Foto Kunjungan Lapangan</label>
+                            <?php if ($logbook && $logbook->reviewer_photo): ?>
+                                <div class="aspect-video rounded-2xl overflow-hidden border-2 border-sky-100 bg-sky-50 group relative mb-3">
+                                    <img src="<?= base_url('admin/kegiatan/file/reviewer/' . $logbook->id) ?>" class="w-full h-full object-cover">
+                                    <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
+                                        <i class="fas fa-expand text-2xl"></i>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                            <input type="file" name="photo" class="input-modern w-full text-[11px]" accept="image/*">
+                            <p class="text-[10px] text-slate-400 italic">Format: JPG, PNG. Maks 2MB. (Upload ulang untuk mengganti)</p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ringkasan Detail Keterangan</label>
+                            <textarea name="summary" rows="4" class="input-modern w-full text-[13px]" placeholder="Masukkan hasil review/kunjungan rill di lapangan..."><?= esc($logbook->reviewer_summary ?? '') ?></textarea>
+                        </div>
+
+                        <button type="submit" class="btn-primary w-full shadow-lg shadow-sky-500/20">
+                            Simpan Dokumentasi Monitoring
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Right: Status & History -->
+                <div class="bg-slate-50/50 rounded-2xl p-6 border border-slate-100 flex flex-col justify-center text-center space-y-4">
+                    <div class="w-16 h-16 rounded-full bg-sky-100 text-sky-500 flex items-center justify-center mx-auto mb-2">
+                        <i class="fas fa-map-marker-alt text-2xl"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-800">Status Monitoring</h4>
+                        <p class="text-[11px] text-slate-500 leading-relaxed px-4">Admin dan Reviewer bertugas mendokumentasikan kondisi rill di lokasi wirausaha sebagai bukti fisik monitoring dan evaluasi (Monev).</p>
+                    </div>
+                    <?php if ($logbook && $logbook->reviewer_at): ?>
+                    <div class="pt-4 border-t border-slate-200">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Diperbarui Oleh</p>
+                        <p class="text-[12px] font-bold text-slate-700 mt-1">
+                            <i class="fas fa-user-check text-emerald-500 mr-1"></i>
+                            User ID: <?= $logbook->reviewer_id ?>
+                        </p>
+                        <p class="text-[10px] text-slate-400"><?= date('d M Y, H:i', strtotime($logbook->reviewer_at)) ?></p>
+                    </div>
                     <?php endif; ?>
                 </div>
             </div>

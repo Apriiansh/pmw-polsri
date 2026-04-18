@@ -161,16 +161,17 @@
                             ['route' => 'admin/pitching-desk',        'label' => 'Pitching Desk', 'match' => 'admin/pitching-desk'],
                             ['route' => 'admin/perjanjian',           'label' => 'Perjanjian Kontrak', 'match' => 'admin/perjanjian'],
                             ['route' => 'admin/pengumuman',           'label' => 'Pengumuman Lolos', 'match' => 'admin/pengumuman'],
+                            ['route' => 'admin/implementasi', 'label' => 'Implementasi List', 'match' => 'admin/implementasi'],
                         ]
                     ];
 
                     // 2. Monitoring & Monev
                     $navItems[] = [
-                        'label' => 'Monitoring & Monev',
+                        'label' => 'Monev',
                         'icon'  => 'fa-chart-line',
                         'id'    => 'monitoring',
                         'children' => [
-                            ['route' => 'admin/implementasi', 'label' => 'Validasi Implementasi', 'match' => 'admin/implementasi'],
+                            ['route' => 'admin/teams', 'label' => 'Peserta PMW', 'match' => 'admin/teams'],
                             ['route' => 'admin/kegiatan',     'label' => 'Kegiatan Wirausaha',   'match' => 'admin/kegiatan'],
                         ]
                     ];
@@ -181,7 +182,6 @@
                         'icon'  => 'fa-database',
                         'id'    => 'manajemen',
                         'children' => [
-                            ['route' => 'admin/teams',  'label' => 'Data TIM Peserta', 'match' => 'admin/teams'],
                             ['route' => 'admin/users/', 'label' => 'Manajemen User',   'match' => 'admin/users'],
                             ['route' => 'admin/cms',    'label' => 'Manajemen Konten', 'match' => 'admin/cms'],
                         ]
@@ -235,6 +235,8 @@
                     $navItems[] = ['route' => 'reviewer/penilaian-proposal', 'icon' => 'fa-clipboard-check', 'label' => 'Penilaian Proposal', 'match' => 'reviewer/penilaian-proposal'];
                     // Penilaian Laporan - Tahap 7-8 (Monev 1 & 2)
                     $navItems[] = ['route' => 'reviewer/penilaian-laporan', 'icon' => 'fa-file-circle-check', 'label' => 'Penilaian Laporan', 'match' => 'reviewer/penilaian-laporan'];
+                    // Monitoring Kegiatan - Tahap 9
+                    $navItems[] = ['route' => 'reviewer/kegiatan', 'icon' => 'fa-camera-retro', 'label' => 'Monitoring Kegiatan', 'match' => 'reviewer/kegiatan'];
                 }
 
                 if ($mainRole === 'dosen') {

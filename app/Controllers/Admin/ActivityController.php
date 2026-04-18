@@ -31,7 +31,24 @@ class ActivityController extends BaseController
     public function index(): string
     {
         $scheduleModel = new PmwActivityScheduleModel();
-        $schedules     = $scheduleModel->getAllSchedulesWithProposal();
+        
+        // All individual schedules for validation
+        $schedules = $scheduleModel->getAllSchedulesWithProposal();
+
+        // Master schedules (Global Events)
+        // Grouping by batch_id (new) or fall back to combination for legacy records
+        $masterSchedules = $scheduleModel->select('
+                batch_id, 
+                activity_category, 
+                activity_date, 
+                location, 
+                notes, 
+                status,
+                COUNT(*) as team_count
+            ')
+            ->groupBy('batch_id, activity_category, activity_date, location, notes, status')
+            ->orderBy('activity_date', 'DESC')
+            ->findAll();
 
         // Stats
         $stats = [
@@ -42,9 +59,10 @@ class ActivityController extends BaseController
         ];
 
         return view('admin/activity/index', [
-            'title'     => 'Manajemen Kegiatan Wirausaha | PMW Polsri',
-            'schedules' => $schedules,
-            'stats'     => $stats,
+            'title'           => 'Manajemen Kegiatan Wirausaha | PMW Polsri',
+            'schedules'       => $schedules,
+            'masterSchedules' => $masterSchedules,
+            'stats'           => $stats,
         ]);
     }
 
@@ -125,13 +143,97 @@ class ActivityController extends BaseController
     }
 
     /**
-     * Delete schedule
+     * Submit visit documentation (by Admin)
+     */
+    public function submitReview(int $scheduleId): ResponseInterface
+    {
+        try {
+            $data = [
+                'summary' => $this->request->getPost('summary'),
+            ];
+            $photo = $this->request->getFile('photo');
+
+            $this->activityService->submitReview($scheduleId, auth()->id(), $data, $photo);
+
+            return redirect()->back()->with('success', 'Monitoring kunjungan berhasil disimpan.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Delete schedule batch
      */
     public function deleteSchedule(int $scheduleId): ResponseInterface
     {
         try {
             $this->activityService->deleteSchedule($scheduleId);
             return redirect()->to('admin/kegiatan')->with('success', 'Jadwal kegiatan berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Delete batch of schedules
+     */
+    public function deleteBatch(): ResponseInterface
+    {
+        try {
+            $batchId = $this->request->getPost('batch_id');
+            $scheduleModel = new PmwActivityScheduleModel();
+
+            $builder = $scheduleModel->builder();
+            if (!empty($batchId)) {
+                $builder->where('batch_id', $batchId);
+            } else {
+                // Fallback for legacy records
+                $builder->where('activity_category', $this->request->getPost('activity_category'))
+                        ->where('activity_date', $this->request->getPost('activity_date'))
+                        ->where('location', $this->request->getPost('location'));
+            }
+
+            $schedules = $builder->get()->getResult();
+            foreach ($schedules as $s) {
+                $this->activityService->deleteSchedule((int)$s->id);
+            }
+
+            return redirect()->to('admin/kegiatan')->with('success', 'Batch jadwal kegiatan berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Update batch of schedules
+     */
+    public function updateBatch(): ResponseInterface
+    {
+        try {
+            $batchId = $this->request->getPost('batch_id');
+            $data = [
+                'activity_category' => $this->request->getPost('activity_category'),
+                'activity_date'     => $this->request->getPost('activity_date'),
+                'location'          => $this->request->getPost('location'),
+                'notes'             => $this->request->getPost('notes'),
+                'status'            => $this->request->getPost('status'),
+            ];
+
+            $scheduleModel = new PmwActivityScheduleModel();
+            $builder = $scheduleModel->builder();
+            
+            if (!empty($batchId)) {
+                $builder->where('batch_id', $batchId);
+            } else {
+                // Fallback for legacy records
+                $builder->where('activity_category', $this->request->getPost('old_category'))
+                        ->where('activity_date', $this->request->getPost('old_date'))
+                        ->where('location', $this->request->getPost('old_location'));
+            }
+
+            $builder->update($data);
+
+            return redirect()->to('admin/kegiatan')->with('success', 'Batch jadwal kegiatan berhasil diperbarui.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
@@ -152,6 +254,7 @@ class ActivityController extends BaseController
         $filePath = match ($type) {
             'photo'     => $logbook->photo_activity,
             'supervisor' => $logbook->photo_supervisor_visit,
+            'reviewer'   => $logbook->reviewer_photo,
             default     => ''
         };
 

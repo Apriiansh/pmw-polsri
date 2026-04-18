@@ -16,6 +16,7 @@ class PmwActivityScheduleModel extends Model
     protected $allowedFields    = [
         'proposal_id',
         'period_id',
+        'batch_id',
         'activity_category',
         'activity_date',
         'activity_time',

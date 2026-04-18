@@ -36,10 +36,12 @@ class PmwActivityService
         $count = 0;
         $notifModel = new \App\Models\NotificationModel();
 
+        $batchId = 'ACT-' . strtoupper(bin2hex(random_bytes(4)));
         foreach ($proposals as $proposal) {
             $this->scheduleModel->insert([
                 'proposal_id'       => $proposal['id'],
                 'period_id'         => $periodId,
+                'batch_id'          => $batchId,
                 'activity_category' => $data['activity_category'],
                 'activity_date'     => $data['activity_date'],
                 'activity_time'     => $data['activity_time'] ?? null,
@@ -274,6 +276,44 @@ class PmwActivityService
                     unlink($path);
                 }
             }
+        }
+    }
+
+    /**
+     * Submit visit documentation (by Admin or Reviewer)
+     */
+    public function submitReview(int $scheduleId, int $userId, array $data, ?object $photo): bool
+    {
+        $logbook = $this->logbookModel->getBySchedule($scheduleId);
+        
+        $updateData = [
+            'reviewer_summary' => $data['summary'],
+            'reviewer_id'      => $userId,
+            'reviewer_at'      => date('Y-m-d H:i:s'),
+        ];
+
+        // Handle Photo Upload
+        if ($photo && $photo->isValid() && !$photo->hasMoved()) {
+            // Delete old if exists
+            if ($logbook && !empty($logbook->reviewer_photo)) {
+                $oldPath = WRITEPATH . 'uploads/' . $logbook->reviewer_photo;
+                if (is_file($oldPath)) {
+                    unlink($oldPath);
+                }
+            }
+            $newName = $photo->getRandomName();
+            $photo->move(WRITEPATH . 'uploads/activity/reviewer', $newName);
+            $updateData['reviewer_photo'] = 'activity/reviewer/' . $newName;
+        }
+
+        if ($logbook) {
+            return $this->logbookModel->update($logbook->id, $updateData);
+        } else {
+            // If student hasn't even created a draft, we create the logbook entry for them
+            // to store the reviewer documentation.
+            $updateData['schedule_id'] = $scheduleId;
+            $updateData['status']      = 'draft'; // Stays in draft until student fills it
+            return $this->logbookModel->insert($updateData);
         }
     }
 

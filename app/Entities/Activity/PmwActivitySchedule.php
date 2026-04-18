@@ -22,13 +22,13 @@ use CodeIgniter\Entity\Entity;
 class PmwActivitySchedule extends Entity
 {
     protected $datamap = [];
-    protected $dates   = ['created_at', 'updated_at'];
+    protected $dates   = ['created_at', 'updated_at', 'activity_date'];
     protected $casts   = [
         'id'                => 'integer',
         'proposal_id'       => 'integer',
         'period_id'         => 'integer',
         'activity_category' => 'string',
-        'activity_date'     => 'date',
+        'activity_date'     => 'datetime',
         'activity_time'     => 'string',
         'location'          => 'string',
         'status'            => 'string',

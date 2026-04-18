@@ -10,6 +10,8 @@ use App\Models\ReviewerModel;
 use App\Models\PmwPeriodModel;
 use App\Models\PmwScheduleModel;
 use App\Models\PmwDocumentModel;
+use App\Models\Guidance\PmwGuidanceLogbookModel;
+use App\Models\Activity\PmwActivityLogbookModel;
 use CodeIgniter\Shield\Models\UserModel;
 use CodeIgniter\Shield\Entities\User;
 
@@ -853,8 +855,16 @@ class AdminController extends BaseController
             'per.year as period_year',
             'per.id as period_id',
             '(SELECT COUNT(*) FROM pmw_proposal_members pm2 WHERE pm2.proposal_id = p.id) as member_count',
-            '(SELECT GROUP_CONCAT(CONCAT(role, ":", nama, " (", nim, ")") SEPARATOR "|")
-              FROM pmw_proposal_members pm3 WHERE pm3.proposal_id = p.id) as members_list',
+            '(SELECT GROUP_CONCAT(CONCAT(role, ":", nama) SEPARATOR "|") FROM pmw_proposal_members pm3 WHERE pm3.proposal_id = p.id) as members_list',
+            '(SELECT COUNT(*) FROM pmw_guidance_schedules gs 
+              JOIN pmw_guidance_logbooks gl ON gl.schedule_id = gs.id 
+              WHERE gs.proposal_id = p.id AND gs.type = "bimbingan" AND gl.status = "approved") as total_bimbingan',
+            '(SELECT COUNT(*) FROM pmw_guidance_schedules gs 
+              JOIN pmw_guidance_logbooks gl ON gl.schedule_id = gs.id 
+              WHERE gs.proposal_id = p.id AND gs.type = "mentoring" AND gl.status = "approved") as total_mentoring',
+            '(SELECT COUNT(*) FROM pmw_activity_schedules pas 
+              JOIN pmw_activity_logbooks pal ON pal.schedule_id = pas.id 
+              WHERE pas.proposal_id = p.id AND pal.status = "approved") as total_kegiatan',
             'sp.dosen_status as pitching_dosen_status',
             'sp.admin_status as pitching_admin_status',
             'sp.student_submitted_at',
@@ -900,6 +910,9 @@ class AdminController extends BaseController
             'total' => count($teams),
             'with_mentor' => count(array_filter($teams, fn($t) => !empty($t['mentor_nama']))),
             'with_bank' => count(array_filter($teams, fn($t) => !empty($t['bank_account']))),
+            'total_bimbingan' => array_sum(array_column($teams, 'total_bimbingan')),
+            'total_mentoring' => array_sum(array_column($teams, 'total_mentoring')),
+            'total_kegiatan' => array_sum(array_column($teams, 'total_kegiatan')),
         ];
 
         return view('admin/teams/index', [
@@ -923,6 +936,8 @@ class AdminController extends BaseController
         $memberModel = new \App\Models\Proposal\PmwProposalMemberModel();
         $bankAccountModel = new \App\Models\AnnouncementFunding\PmwBankAccountModel();
         $documentModel = new PmwDocumentModel();
+        $guidanceLogbookModel = new PmwGuidanceLogbookModel();
+        $activityLogbookModel = new PmwActivityLogbookModel();
 
         // Get proposal detail
         $proposal = $proposalModel->getProposalForValidation($id);
@@ -939,6 +954,20 @@ class AdminController extends BaseController
         // Get documents
         $documents = $documentModel->getProposalDocs($id);
 
+        // Get Guidance Logs (Bimbingan & Mentoring)
+        $guidanceLogs = $guidanceLogbookModel->select('pmw_guidance_logbooks.*, gs.type, gs.schedule_date, gs.topic')
+            ->join('pmw_guidance_schedules gs', 'gs.id = pmw_guidance_logbooks.schedule_id')
+            ->where('gs.proposal_id', $id)
+            ->orderBy('gs.schedule_date', 'DESC')
+            ->findAll();
+
+        // Get Activity Logs (Kegiatan Wirausaha)
+        $activityLogs = $activityLogbookModel->select('pmw_activity_logbooks.*, pas.activity_category, pas.activity_date')
+            ->join('pmw_activity_schedules pas', 'pas.id = pmw_activity_logbooks.schedule_id')
+            ->where('pas.proposal_id', $id)
+            ->orderBy('pas.activity_date', 'DESC')
+            ->findAll();
+
         return view('admin/teams/detail', [
             'title'        => 'Detail TIM | PMW Polsri',
             'header_title' => 'Detail TIM Peserta',
@@ -947,6 +976,8 @@ class AdminController extends BaseController
             'members'      => $members,
             'bankAccount'  => $bankAccount,
             'documents'    => $documents,
+            'guidanceLogs' => $guidanceLogs,
+            'activityLogs' => $activityLogs,
         ]);
     }
 }

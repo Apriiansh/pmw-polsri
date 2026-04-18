@@ -40,12 +40,22 @@
             </div>
         </div>
         <div class="card-premium p-4 flex items-center gap-4" @mousemove="handleMouseMove">
-            <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center">
-                <i class="fas fa-handshake text-amber-500 text-lg"></i>
+            <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+                <i class="fas fa-chart-line text-amber-500 text-base"></i>
             </div>
-            <div>
-                <p class="text-[10px] text-slate-400 font-bold uppercase">Perjanjian</p>
-                <p class="text-xl font-bold text-amber-600">Coming Soon</p>
+            <div class="flex flex-col gap-1.5 flex-1 min-w-0">
+                <div class="flex justify-between items-center">
+                    <p class="text-[9px] text-slate-400 font-bold uppercase truncate">Bimbingan</p>
+                    <p class="text-xs font-black text-amber-600"><?= number_format($stats['total_bimbingan']) ?>x</p>
+                </div>
+                <div class="flex justify-between items-center border-t border-slate-50 pt-1">
+                    <p class="text-[9px] text-slate-400 font-bold uppercase truncate">Mentoring</p>
+                    <p class="text-xs font-black text-emerald-600"><?= number_format($stats['total_mentoring']) ?>x</p>
+                </div>
+                <div class="flex justify-between items-center border-t border-slate-50 pt-1">
+                    <p class="text-[9px] text-slate-400 font-bold uppercase truncate">Kegiatan</p>
+                    <p class="text-xs font-black text-violet-600"><?= number_format($stats['total_kegiatan']) ?>x</p>
+                </div>
             </div>
         </div>
     </div>
@@ -98,6 +108,7 @@
                         <th class="px-4 py-3 text-left text-[11px] font-bold text-slate-500 uppercase">Periode</th>
                         <th class="px-4 py-3 text-left text-[11px] font-bold text-slate-500 uppercase">Total Bimbingan</th>
                         <th class="px-4 py-3 text-left text-[11px] font-bold text-slate-500 uppercase">Total Mentoring</th>
+                        <th class="px-4 py-3 text-left text-[11px] font-bold text-slate-500 uppercase">Total Kegiatan</th>
                         <th class="px-4 py-3 text-center text-[11px] font-bold text-slate-500 uppercase">Aksi</th>
                     </tr>
                 </thead>
@@ -125,7 +136,7 @@
                                             <p class="font-bold text-slate-800"><?= esc($team['nama_usaha'] ?? 'Tanpa Nama') ?></p>
                                             <p class="text-[11px] text-slate-500">
                                                 <i class="fas fa-user text-sky-400 mr-1"></i>
-                                                <?= esc($team['ketua_nama'] ?? '-') ?> 
+                                                <?= esc($team['ketua_nama'] ?? '-') ?>
                                                 <span class="text-slate-400">(<?= esc($team['ketua_nim'] ?? '-') ?>)</span>
                                             </p>
                                             <p class="text-[10px] text-slate-400 mt-0.5">
@@ -150,16 +161,16 @@
                                             </span>
                                             <span class="text-[11px] text-slate-500">anggota</span>
                                         </div>
-                                        <?php 
+                                        <?php
                                         $members = explode('|', $team['members_list'] ?? '');
-                                        foreach ($members as $member): 
+                                        foreach ($members as $member):
                                             if (strpos($member, 'anggota:') !== false):
                                                 $member = str_replace('anggota:', '', $member);
                                         ?>
-                                            <p class="text-[10px] text-slate-400 mt-0.5 pl-7">• <?= esc($member) ?></p>
-                                        <?php 
+                                                <p class="text-[10px] text-slate-400 mt-0.5 pl-7">• <?= esc($member) ?></p>
+                                        <?php
                                             endif;
-                                        endforeach; 
+                                        endforeach;
                                         ?>
                                     <?php else: ?>
                                         <span class="text-[11px] text-slate-400">-</span>
@@ -205,17 +216,25 @@
 
                                 <!-- Total Bimbingan -->
                                 <td class="px-4 py-4 text-center">
-                                    <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 text-slate-500 text-[10px] font-semibold">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full <?= $team['total_bimbingan'] > 0 ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-slate-50 text-slate-400 border border-slate-100' ?> text-[11px] font-bold transition-all">
                                         <i class="fas fa-chalkboard-teacher"></i>
-                                        Coming Soon
+                                        <?= number_format($team['total_bimbingan']) ?>x
                                     </span>
                                 </td>
 
                                 <!-- Total Mentoring -->
                                 <td class="px-4 py-4 text-center">
-                                    <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 text-slate-500 text-[10px] font-semibold">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full <?= $team['total_mentoring'] > 0 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-50 text-slate-400 border border-slate-100' ?> text-[11px] font-bold transition-all">
                                         <i class="fas fa-user-tie"></i>
-                                        Coming Soon
+                                        <?= number_format($team['total_mentoring']) ?>x
+                                    </span>
+                                </td>
+
+                                <!-- Total Kegiatan -->
+                                <td class="px-4 py-4 text-center">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full <?= $team['total_kegiatan'] > 0 ? 'bg-violet-50 text-violet-600 border border-violet-100' : 'bg-slate-50 text-slate-400 border border-slate-100' ?> text-[11px] font-bold transition-all">
+                                        <i class="fas fa-store"></i>
+                                        <?= number_format($team['total_kegiatan']) ?>x
                                     </span>
                                 </td>
 
@@ -223,15 +242,15 @@
                                 <td class="px-4 py-4">
                                     <div class="flex items-center justify-center gap-1">
                                         <!-- Detail -->
-                                        <a href="<?= base_url('admin/teams/' . $team['proposal_id']) ?>" 
+                                        <a href="<?= base_url('admin/teams/' . $team['proposal_id']) ?>"
                                             class="w-8 h-8 flex items-center justify-center rounded-lg bg-sky-50 text-sky-500 hover:bg-sky-500 hover:text-white transition-all"
                                             title="Detail TIM">
                                             <i class="fas fa-eye text-xs"></i>
                                         </a>
-                                        
+
                                         <!-- Bank Account -->
                                         <?php if ($team['bank_account']): ?>
-                                            <button type="button" 
+                                            <button type="button"
                                                 onclick='openBankModal(<?= json_encode($team['bank_account']) ?>)'
                                                 class="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all"
                                                 title="Rekening Bank">
@@ -240,7 +259,7 @@
                                         <?php endif; ?>
 
                                         <!-- Proposal Link -->
-                                        <a href="<?= base_url('admin/administrasi/seleksi/' . $team['proposal_id']) ?>" 
+                                        <a href="<?= base_url('admin/administrasi/seleksi/' . $team['proposal_id']) ?>"
                                             class="w-8 h-8 flex items-center justify-center rounded-lg bg-violet-50 text-violet-500 hover:bg-violet-500 hover:text-white transition-all"
                                             title="Lihat Proposal">
                                             <i class="fas fa-file-alt text-xs"></i>
@@ -284,7 +303,7 @@
                             <p class="text-[11px] text-slate-400 font-bold uppercase mb-1">Nama Pemilik Rekening</p>
                             <p id="bank-account-holder" class="text-sm font-bold text-slate-800">--</p>
                         </div>
-                        
+
                         <div class="grid grid-cols-2 gap-4">
                             <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                 <p class="text-[11px] text-slate-400 font-bold uppercase mb-1">Nama Bank</p>
@@ -295,7 +314,7 @@
                                 <p id="bank-branch" class="text-sm font-bold text-slate-800">--</p>
                             </div>
                         </div>
-                        
+
                         <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
                             <p class="text-[11px] text-emerald-500 font-bold uppercase mb-1">Nomor Rekening</p>
                             <p id="bank-account-number" class="text-lg font-mono font-bold text-emerald-700">--</p>
@@ -320,29 +339,29 @@
 </div>
 
 <script>
-function openBankModal(bankData) {
-    document.getElementById('bank-account-holder').textContent = bankData.account_holder_name || '-';
-    document.getElementById('bank-name').textContent = bankData.bank_name || '-';
-    document.getElementById('bank-branch').textContent = bankData.branch_office || '-';
-    document.getElementById('bank-account-number').textContent = bankData.account_number || '-';
-    
-    const descSection = document.getElementById('bank-description-section');
-    const descEl = document.getElementById('bank-description');
-    if (bankData.description) {
-        descSection.classList.remove('hidden');
-        descEl.textContent = bankData.description;
-    } else {
-        descSection.classList.add('hidden');
-    }
-    
-    document.getElementById('bankModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-}
+    function openBankModal(bankData) {
+        document.getElementById('bank-account-holder').textContent = bankData.account_holder_name || '-';
+        document.getElementById('bank-name').textContent = bankData.bank_name || '-';
+        document.getElementById('bank-branch').textContent = bankData.branch_office || '-';
+        document.getElementById('bank-account-number').textContent = bankData.account_number || '-';
 
-function closeBankModal() {
-    document.getElementById('bankModal').classList.add('hidden');
-    document.body.style.overflow = '';
-}
+        const descSection = document.getElementById('bank-description-section');
+        const descEl = document.getElementById('bank-description');
+        if (bankData.description) {
+            descSection.classList.remove('hidden');
+            descEl.textContent = bankData.description;
+        } else {
+            descSection.classList.add('hidden');
+        }
+
+        document.getElementById('bankModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeBankModal() {
+        document.getElementById('bankModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
 </script>
 
 <?= $this->endSection() ?>
