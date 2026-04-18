@@ -12,6 +12,7 @@ use CodeIgniter\Entity\Entity;
  * @property int    $period_id
  * @property string $item_title
  * @property string $item_description
+ * @property int    $qty
  * @property float  $price
  * @property string $created_at
  * @property string $updated_at
@@ -26,6 +27,7 @@ class PmwImplementationItem extends Entity
         'period_id'        => 'integer',
         'item_title'       => 'string',
         'item_description' => 'string',
+        'qty'              => 'integer',
         'price'            => 'float',
     ];
 }

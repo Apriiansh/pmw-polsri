@@ -6,11 +6,19 @@ use App\Controllers\BaseController;
 use App\Models\Proposal\PmwProposalModel;
 use App\Models\PmwScheduleModel;
 use App\Models\PmwPeriodModel;
+use App\Models\Implementation\PmwImplementationItemPhotoModel;
+use App\Models\Implementation\PmwImplementationPaymentModel;
+use App\Models\Implementation\PmwImplementationKonsumsiModel;
 use App\Services\PmwImplementasiService;
 use App\Services\PmwPhaseAccessService;
 use App\Services\PmwSelectionService;
+use App\Entities\PmwImplementationItem;
+use App\Entities\PmwImplementationItemPhoto;
+use App\Entities\PmwImplementationPayment;
+use App\Entities\PmwImplementationKonsumsi;
 use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\HTTP\IncomingRequest;
+use CodeIgniter\HTTP\ResponseInterface;
 
 /**
  * @property IncomingRequest $request
@@ -34,6 +42,15 @@ class ImplementasiController extends BaseController
         $this->scheduleModel      = new PmwScheduleModel();
         $this->periodModel        = new PmwPeriodModel();
         $this->implementasiService = new PmwImplementasiService();
+    }
+
+    /**
+     * Helper to check if implementation phase is currently open
+     */
+    private function isPhaseOpen(): bool
+    {
+        $phaseAccess = new PmwPhaseAccessService();
+        return $phaseAccess->isPhaseOpenForActivePeriod(self::PHASE_NUMBER);
     }
 
     /**
@@ -61,7 +78,7 @@ class ImplementasiController extends BaseController
 
         // Security check: Must have passed Tahap 6 (wawancara approved)
         $selectionService = new PmwSelectionService();
-        if (!$proposal || !$selectionService->leaderPassedStage1((int) $activePeriod['id'], (int) $user->id)) {
+        if (!$proposal || !$selectionService->leaderPassedWawancara((int) $activePeriod['id'], (int) $user->id)) {
             return redirect()->to('mahasiswa/pengumuman')->with('error', 'Anda harus lolos Tahap I terlebih dahulu.');
         }
 
@@ -71,10 +88,14 @@ class ImplementasiController extends BaseController
         $isPhaseOpen = $phaseAccess->isPhaseOpen($phase);
 
         // Check if can edit
-        $canEdit = $isPhaseOpen && $this->implementasiService->canEdit($proposal['id']);
+        $canEdit = $this->implementasiService->canEdit($proposal['id'], $isPhaseOpen);
 
         // Get implementation data
         $implementationData = $this->implementasiService->getFullData($proposal['id']);
+
+        // Get selection record
+        $selectionModel = new \App\Models\Selection\PmwSelectionImplementasiModel();
+        $selection = $selectionModel->getByProposal($proposal['id']);
 
         return view('mahasiswa/implementasi', [
             'title'              => 'Implementasi List Perjanjian',
@@ -83,6 +104,7 @@ class ImplementasiController extends BaseController
             'phase'              => $phase,
             'isPhaseOpen'        => $isPhaseOpen,
             'canEdit'            => $canEdit,
+            'selection'          => $selection,
             'items'              => $implementationData['items'],
             'payments'           => $implementationData['payments'],
             'konsumsi'           => $implementationData['konsumsi'],
@@ -113,14 +135,15 @@ class ImplementasiController extends BaseController
         }
 
         // Check if can edit
-        if (!$this->implementasiService->canEdit($proposal['id'])) {
-            return $this->fail('Data sudah diverifikasi dan tidak dapat diubah.');
+        if (!$this->implementasiService->canEdit($proposal['id'], $this->isPhaseOpen())) {
+            return $this->fail('Sesi pengisian laporan ditutup atau laporan sudah diverifikasi.');
         }
 
         // Validation
         $rules = [
             'item_title'       => 'required|min_length[3]|max_length[255]',
             'item_description' => 'permit_empty|string',
+            'qty'              => 'permit_empty|integer',
             'price'            => 'permit_empty|decimal',
         ];
 
@@ -131,6 +154,7 @@ class ImplementasiController extends BaseController
         $data = [
             'item_title'       => $this->request->getPost('item_title'),
             'item_description' => $this->request->getPost('item_description'),
+            'qty'              => $this->request->getPost('qty') ?: 1,
             'price'            => $this->request->getPost('price') ?: 0,
         ];
 
@@ -170,12 +194,19 @@ class ImplementasiController extends BaseController
         }
 
         // Check if can edit
-        if (!$this->implementasiService->canEdit($proposal['id'])) {
-            return $this->fail('Data sudah diverifikasi dan tidak dapat diubah.');
+        if (!$this->implementasiService->canEdit($proposal['id'], $this->isPhaseOpen())) {
+            return $this->fail('Sesi pengisian laporan ditutup atau laporan sudah diverifikasi.');
         }
 
         $photoTitle = $this->request->getPost('photo_title') ?: 'Foto Barang';
         $file       = $this->request->getFile('photo');
+
+        // Security: Verify item belongs to this proposal
+        $itemModel = new \App\Models\Implementation\PmwImplementationItemModel();
+        $item      = $itemModel->find($itemId);
+        if (!$item || $item->proposal_id != $proposal['id']) {
+            return $this->fail('Akses ke item ditolak.');
+        }
 
         $result = $this->implementasiService->uploadItemPhoto($itemId, $file, $photoTitle);
 
@@ -209,8 +240,8 @@ class ImplementasiController extends BaseController
         }
 
         // Check if can edit
-        if (!$this->implementasiService->canEdit($proposal['id'])) {
-            return $this->fail('Data sudah diverifikasi dan tidak dapat diubah.');
+        if (!$this->implementasiService->canEdit($proposal['id'], $this->isPhaseOpen())) {
+            return $this->fail('Sesi pengisian laporan ditutup atau laporan sudah diverifikasi.');
         }
 
         $paymentTitle = $this->request->getPost('payment_title') ?: 'Bukti Pembayaran';
@@ -248,8 +279,8 @@ class ImplementasiController extends BaseController
         }
 
         // Check if can edit
-        if (!$this->implementasiService->canEdit($proposal['id'])) {
-            return $this->fail('Data sudah diverifikasi dan tidak dapat diubah.');
+        if (!$this->implementasiService->canEdit($proposal['id'], $this->isPhaseOpen())) {
+            return $this->fail('Sesi pengisian laporan ditutup atau laporan sudah diverifikasi.');
         }
 
         $konsumsiTitle = $this->request->getPost('konsumsi_title') ?: 'Bukti Konsumsi Mentoring';
@@ -287,8 +318,8 @@ class ImplementasiController extends BaseController
         }
 
         // Check if can edit
-        if (!$this->implementasiService->canEdit($proposal['id'])) {
-            return $this->fail('Data sudah diverifikasi dan tidak dapat dihapus.');
+        if (!$this->implementasiService->canEdit($proposal['id'], $this->isPhaseOpen())) {
+            return $this->fail('Sesi pengisian laporan ditutup atau laporan sudah diverifikasi.');
         }
 
         // Verify item belongs to this proposal
@@ -329,8 +360,8 @@ class ImplementasiController extends BaseController
         }
 
         // Check if can edit
-        if (!$this->implementasiService->canEdit($proposal['id'])) {
-            return $this->fail('Data sudah diverifikasi dan tidak dapat dihapus.');
+        if (!$this->implementasiService->canEdit($proposal['id'], $this->isPhaseOpen())) {
+            return $this->fail('Sesi pengisian laporan ditutup atau laporan sudah diverifikasi.');
         }
 
         // Verify photo belongs to an item of this proposal
@@ -378,8 +409,8 @@ class ImplementasiController extends BaseController
         }
 
         // Check if can edit
-        if (!$this->implementasiService->canEdit($proposal['id'])) {
-            return $this->fail('Data sudah diverifikasi dan tidak dapat dihapus.');
+        if (!$this->implementasiService->canEdit($proposal['id'], $this->isPhaseOpen())) {
+            return $this->fail('Sesi pengisian laporan ditutup atau laporan sudah diverifikasi.');
         }
 
         // Verify payment belongs to this proposal
@@ -420,8 +451,8 @@ class ImplementasiController extends BaseController
         }
 
         // Check if can edit
-        if (!$this->implementasiService->canEdit($proposal['id'])) {
-            return $this->fail('Data sudah diverifikasi dan tidak dapat dihapus.');
+        if (!$this->implementasiService->canEdit($proposal['id'], $this->isPhaseOpen())) {
+            return $this->fail('Sesi pengisian laporan ditutup atau laporan sudah diverifikasi.');
         }
 
         // Verify konsumsi belongs to this proposal
@@ -462,8 +493,8 @@ class ImplementasiController extends BaseController
         }
 
         // Check if can edit
-        if (!$this->implementasiService->canEdit($proposal['id'])) {
-            return $this->fail('Data sudah diverifikasi dan tidak dapat diubah.');
+        if (!$this->implementasiService->canEdit($proposal['id'], $this->isPhaseOpen())) {
+            return $this->fail('Sesi pengisian laporan ditutup atau laporan sudah diverifikasi.');
         }
 
         // Verify item belongs to this proposal
@@ -479,6 +510,7 @@ class ImplementasiController extends BaseController
         $updateData = [
             'item_title'       => $data['item_title'] ?? $item->item_title,
             'item_description' => $data['item_description'] ?? $item->item_description,
+            'qty'              => $data['qty'] ?? $item->qty,
             'price'            => $data['price'] ?? $item->price,
         ];
 
@@ -512,8 +544,8 @@ class ImplementasiController extends BaseController
         }
 
         // Check if can edit
-        if (!$this->implementasiService->canEdit($proposal['id'])) {
-            return $this->fail('Data sudah diverifikasi dan tidak dapat diubah.');
+        if (!$this->implementasiService->canEdit($proposal['id'], $this->isPhaseOpen())) {
+            return $this->fail('Sesi pengisian laporan ditutup atau laporan sudah diverifikasi.');
         }
 
         // Verify payment belongs to this proposal
@@ -557,8 +589,8 @@ class ImplementasiController extends BaseController
         }
 
         // Check if can edit
-        if (!$this->implementasiService->canEdit($proposal['id'])) {
-            return $this->fail('Data sudah diverifikasi dan tidak dapat diubah.');
+        if (!$this->implementasiService->canEdit($proposal['id'], $this->isPhaseOpen())) {
+            return $this->fail('Sesi pengisian laporan ditutup atau laporan sudah diverifikasi.');
         }
 
         // Verify konsumsi belongs to this proposal
@@ -615,5 +647,236 @@ class ImplementasiController extends BaseController
         }
 
         return $this->fail('Gagal mereset data');
+    }
+    /**
+     * View/Preview implementation photo
+     */
+    public function viewPhoto(int $photoId): ResponseInterface
+    {
+        $user = auth()->user();
+        $activePeriod = $this->periodModel->where('is_active', true)->first();
+        if (!$activePeriod) {
+            return $this->response->setStatusCode(404);
+        }
+
+        $proposal = $this->proposalModel->findByPeriodAndLeader($activePeriod['id'], $user->id);
+        if (!$proposal) {
+            return $this->response->setStatusCode(403);
+        }
+
+        $photoModel = new PmwImplementationItemPhotoModel();
+        /** @var PmwImplementationItemPhoto|null $photo */
+        $photo      = $photoModel->find($photoId);
+
+        if (!$photo) {
+            return $this->response->setStatusCode(404);
+        }
+
+        // Verify photo belongs to an item of this proposal
+        $itemModel = new \App\Models\Implementation\PmwImplementationItemModel();
+        
+        /** @var PmwImplementationItem|null $item */
+        $item      = $itemModel->find($photo->item_id);
+
+        if (!$item || (int) $item->proposal_id !== (int) $proposal['id']) {
+            return $this->response->setStatusCode(403);
+        }
+
+        $absPath = WRITEPATH . $photo->file_path;
+        if (!is_file($absPath)) {
+            return $this->response->setStatusCode(404);
+        }
+
+        // Defensive mime type with fallback
+        try {
+            $mimeType = mime_content_type($absPath) ?: 'image/jpeg';
+        } catch (\Exception $e) {
+            $mimeType = 'image/jpeg';
+        }
+
+        // Use is_object/array check just in case model behavior changes
+        $originalName = is_object($photo) ? $photo->original_name : ($photo['original_name'] ?? 'photo.jpg');
+
+        return $this->response
+            ->setHeader('Content-Type', $mimeType)
+            ->setHeader('Content-Disposition', 'inline; filename="' . $originalName . '"')
+            ->setBody(file_get_contents($absPath));
+    }
+
+    /**
+     * View/Preview payment proof
+     */
+    public function viewPayment(int $paymentId): ResponseInterface
+    {
+        $user = auth()->user();
+        $activePeriod = $this->periodModel->where('is_active', true)->first();
+        if (!$activePeriod) {
+            return $this->response->setStatusCode(404);
+        }
+
+        $proposal = $this->proposalModel->findByPeriodAndLeader($activePeriod['id'], $user->id);
+        if (!$proposal) {
+            return $this->response->setStatusCode(403);
+        }
+
+        $paymentModel = new PmwImplementationPaymentModel();
+        
+        /** @var PmwImplementationPayment|null $payment */
+        $payment      = $paymentModel->find($paymentId);
+
+        if (!$payment || (int) $payment->proposal_id !== (int) $proposal['id']) {
+            return $this->response->setStatusCode(403);
+        }
+
+        $absPath = WRITEPATH . $payment->file_path;
+        if (!is_file($absPath)) {
+            return $this->response->setStatusCode(404);
+        }
+
+        try {
+            $mimeType = mime_content_type($absPath) ?: 'image/jpeg';
+        } catch (\Exception $e) {
+            $mimeType = 'image/jpeg';
+        }
+
+        $originalName = is_object($payment) ? $payment->original_name : ($payment['original_name'] ?? 'proof.jpg');
+
+        return $this->response
+            ->setHeader('Content-Type', $mimeType)
+            ->setHeader('Content-Disposition', 'inline; filename="' . $originalName . '"')
+            ->setBody(file_get_contents($absPath));
+    }
+
+    /**
+     * View/Preview konsumsi proof
+     */
+    public function viewKonsumsi(int $konsumsiId): ResponseInterface
+    {
+        $user = auth()->user();
+        $activePeriod = $this->periodModel->where('is_active', true)->first();
+        if (!$activePeriod) {
+            return $this->response->setStatusCode(404);
+        }
+
+        $proposal = $this->proposalModel->findByPeriodAndLeader($activePeriod['id'], $user->id);
+        if (!$proposal) {
+            return $this->response->setStatusCode(403);
+        }
+
+        $konsumsiModel = new PmwImplementationKonsumsiModel();
+        
+        /** @var PmwImplementationKonsumsi|null $konsumsi */
+        $konsumsi      = $konsumsiModel->find($konsumsiId);
+
+        if (!$konsumsi || (int) $konsumsi->proposal_id !== (int) $proposal['id']) {
+            return $this->response->setStatusCode(403);
+        }
+
+        $absPath = WRITEPATH . $konsumsi->file_path;
+        if (!is_file($absPath)) {
+            return $this->response->setStatusCode(404);
+        }
+
+        try {
+            $mimeType = mime_content_type($absPath) ?: 'image/jpeg';
+        } catch (\Exception $e) {
+            $mimeType = 'image/jpeg';
+        }
+
+        $originalName = is_object($konsumsi) ? $konsumsi->original_name : ($konsumsi['original_name'] ?? 'konsumsi.jpg');
+
+        return $this->response
+            ->setHeader('Content-Type', $mimeType)
+            ->setHeader('Content-Disposition', 'inline; filename="' . $originalName . '"')
+            ->setBody(file_get_contents($absPath));
+    }
+
+    /**
+     * Submit implementation for verification (AJAX)
+     */
+    public function submit()
+    {
+        if (!$this->request->is('ajax')) {
+            return redirect()->back();
+        }
+
+        $user = auth()->user();
+        $activePeriod = $this->periodModel->where('is_active', true)->first();
+
+        if (!$activePeriod) {
+            return $this->fail('Periode aktif tidak ditemukan.');
+        }
+
+        $proposal = $this->proposalModel->findByPeriodAndLeader($activePeriod['id'], $user->id);
+
+        if (!$proposal) {
+            return $this->fail('Proposal tidak ditemukan.');
+        }
+
+        // Check if can submit (using canEdit logic which handles phase + revision)
+        if (!$this->implementasiService->canEdit($proposal['id'], $this->isPhaseOpen())) {
+            return $this->fail('Laporan tidak dapat dikirim karena sesi sudah ditutup atau sedang dalam proses review.');
+        }
+
+        // Check data completeness
+        $data = $this->implementasiService->getFullData($proposal['id']);
+        if (count($data['items']) === 0) {
+            return $this->fail('Anda harus menginput minimal 1 barang belanja.');
+        }
+
+        if (count($data['payments']) === 0) {
+            return $this->fail('Anda harus mengunggah minimal 1 bukti pembayaran.');
+        }
+
+        $selectionModel = new \App\Models\Selection\PmwSelectionImplementasiModel();
+        $selection = $selectionModel->getByProposal($proposal['id']);
+
+        if (!$selection) {
+            return $this->fail('Data seleksi tidak ditemukan.');
+        }
+
+        // Check if already approved/rejected
+        if (in_array($selection->admin_status, ['approved', 'rejected'])) {
+            return $this->fail('Laporan sudah divalidasi dan tidak dapat dikirim ulang.');
+        }
+
+        $updateData = [
+            'student_submitted_at' => date('Y-m-d H:i:s'),
+            'dosen_status'         => 'pending',
+            'admin_status'         => 'pending',
+            'updated_at'           => date('Y-m-d H:i:s'),
+        ];
+
+        if ($selectionModel->update($selection->id, $updateData)) {
+            // Get assignment to find lecturer
+            $assignmentModel = new \App\Models\Proposal\PmwProposalAssignmentModel();
+            $assignment = $assignmentModel->where('proposal_id', $proposal['id'])->first();
+
+            if ($assignment && $assignment->lecturer_id) {
+                $lecturerModel = new \App\Models\LecturerModel();
+                $lecturer = $lecturerModel->find($assignment->lecturer_id);
+
+                if ($lecturer && $lecturer['user_id']) {
+                    $notifModel = new \App\Models\NotificationModel();
+                    $notifModel->insert([
+                        'user_id' => $lecturer['user_id'],
+                        'type'    => 'implementasi_submitted',
+                        'title'   => 'Laporan Implementasi Masuk',
+                        'message' => "Tim '{$proposal['nama_usaha']}' telah mengirimkan laporan implementasi untuk divalidasi.",
+                        'link'    => 'dosen/implementasi',
+                        'data_id' => $proposal['id'],
+                        'is_read' => false,
+                    ]);
+                }
+            }
+
+            return $this->respond([
+                'success' => true,
+                'message' => 'Laporan progress implementasi berhasil dikirim untuk verifikasi.',
+                'redirect' => base_url('mahasiswa/implementasi')
+            ]);
+        }
+
+        return $this->fail('Gagal mengirim laporan');
     }
 }

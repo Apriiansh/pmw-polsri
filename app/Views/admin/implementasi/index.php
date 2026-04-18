@@ -66,7 +66,8 @@
                         <th>Periode</th>
                         <th class="text-center">Barang</th>
                         <th class="text-right">Total Harga</th>
-                        <th class="text-center">Status</th>
+                        <th class="text-center">Status Dosen</th>
+                        <th class="text-center">Status Final</th>
                         <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -97,16 +98,31 @@
                         </td>
                         <td class="text-center">
                             <?php
+                            $dosenStatus = $p['dosen_status'] ?? 'pending';
+                            $dBadge = match($dosenStatus) {
+                                'approved' => ['bg-emerald-50 text-emerald-600 border-emerald-100', 'fa-check', 'Approved'],
+                                'revision' => ['bg-orange-50 text-orange-600 border-orange-100', 'fa-rotate', 'Revision'],
+                                'rejected' => ['bg-rose-50 text-rose-600 border-rose-100', 'fa-times', 'Rejected'],
+                                default    => ['bg-amber-50 text-amber-600 border-amber-100', 'fa-clock', 'Pending'],
+                            };
+                            ?>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black border <?= $dBadge[0] ?>">
+                                <i class="fas <?= $dBadge[1] ?>"></i>
+                                <?= strtoupper($dBadge[2]) ?>
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <?php
                             $statusBadge = match($p['implementasi_status']) {
-                                'approved' => ['bg-emerald-100 text-emerald-700', 'fa-check', 'Disetujui'],
-                                'rejected' => ['bg-rose-100 text-rose-700', 'fa-xmark', 'Ditolak'],
-                                'revision' => ['bg-orange-100 text-orange-700', 'fa-pen', 'Revisi'],
-                                default => ['bg-amber-100 text-amber-700', 'fa-clock', 'Pending'],
+                                'approved' => ['bg-emerald-500 text-white shadow-sm shadow-emerald-100', 'fa-check-double', 'Berkas Sah'],
+                                'rejected' => ['bg-rose-500 text-white shadow-sm shadow-rose-100', 'fa-xmark', 'Ditolak'],
+                                'revision' => ['bg-orange-500 text-white shadow-sm shadow-orange-100', 'fa-pen', 'Perlu Revisi'],
+                                default => ['bg-slate-100 text-slate-500', 'fa-clock', 'Waiting'],
                             };
                             ?>
                             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black <?= $statusBadge[0] ?>">
                                 <i class="fas <?= $statusBadge[1] ?>"></i>
-                                <?= $statusBadge[2] ?>
+                                <?= strtoupper($statusBadge[2]) ?>
                             </span>
                         </td>
                         <td class="text-center">

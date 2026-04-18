@@ -65,15 +65,21 @@ class PmwSelectionService
         return $builder->get()->getResultArray();
     }
 
-    public function updateWawancaraStatus(int $proposalId, string $status): bool
+    public function updateWawancaraStatus(int $proposalId, string $status, bool $updateSubmittedAt = false): bool
     {
         $db = Database::connect();
 
+        $data = [
+            'admin_status' => $status,
+            'updated_at'   => date('Y-m-d H:i:s')
+        ];
+
+        if ($updateSubmittedAt) {
+            $data['student_submitted_at'] = date('Y-m-d H:i:s');
+        }
+
         return $db->table('pmw_selection_wawancara')
             ->where('proposal_id', $proposalId)
-            ->update([
-                'admin_status' => $status,
-                'updated_at'   => date('Y-m-d H:i:s')
-            ]);
+            ->update($data);
     }
 }

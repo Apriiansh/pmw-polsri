@@ -74,12 +74,15 @@ class WawancaraController extends BaseController
             $docsByKey[$doc['doc_key']] = $doc;
         }
 
+        $isLocked = ($proposal['wawancara_status'] ?? 'pending') === 'approved';
+
         return view('mahasiswa/wawancara', [
             'title'        => 'Perjanjian Implementasi',
             'proposal'     => $proposal,
             'activePeriod' => $activePeriod,
             'phase'        => $phase,
             'isPhaseOpen'  => $isPhaseOpen,
+            'isLocked'     => $isLocked,
             'docsByKey'    => $docsByKey
         ]);
     }
@@ -178,8 +181,8 @@ class WawancaraController extends BaseController
                 ]);
             }
 
-            // Update wawancara selection status
-            $this->selectionService->updateWawancaraStatus($proposalId, 'pending');
+            // Update wawancara selection status (and set submission timestamp)
+            $this->selectionService->updateWawancaraStatus($proposalId, 'pending', true);
 
             return $this->respond([
                 'success'  => true,

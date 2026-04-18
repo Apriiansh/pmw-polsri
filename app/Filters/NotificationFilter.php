@@ -10,7 +10,11 @@ class NotificationFilter implements FilterInterface
 {
     public function before(RequestInterface $request, $arguments = null)
     {
-        $notifId = request()->getGet('notif');
+        if (! $request instanceof \CodeIgniter\HTTP\IncomingRequest) {
+            return;
+        }
+
+        $notifId = $request->getGet('notif');
         
         if ($notifId && auth()->loggedIn()) {
             $notificationModel = new NotificationModel();

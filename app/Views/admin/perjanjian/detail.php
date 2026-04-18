@@ -100,7 +100,7 @@
 
             <!-- Document Viewer -->
             <div class="lg:col-span-2 space-y-6">
-                <div class="card-premium overflow-hidden flex flex-col h-[calc(100vh-280px)] min-h-[500px]" @mousemove="handleMouseMove">
+                <div class="card-premium overflow-hidden flex flex-col h-[calc(100vh-200px)] min-h-[500px]" @mousemove="handleMouseMove">
                     <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60 flex items-center justify-between shrink-0">
                         <h3 class="font-display text-base font-bold text-(--text-heading)">
                             <i class="fas fa-file-pdf text-rose-500 mr-2"></i>

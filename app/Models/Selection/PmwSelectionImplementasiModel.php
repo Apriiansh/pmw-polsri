@@ -14,8 +14,13 @@ class PmwSelectionImplementasiModel extends Model
     protected $protectFields    = true;
     protected $allowedFields    = [
         'proposal_id',
+        'student_submitted_at',
+        'dosen_status',
+        'dosen_catatan',
+        'dosen_verified_at',
         'admin_status',
-        'admin_catatan'
+        'admin_catatan',
+        'admin_verified_at'
     ];
 
     // Dates

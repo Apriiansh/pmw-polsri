@@ -37,7 +37,69 @@
         $isBerkembang = $proposal['kategori_wirausaha'] === 'berkembang';
         $pptDoc = $docsByKey['pitching_ppt'] ?? null;
         $videoDoc = $docsByKey['pitching_video'] ?? null;
+        $dStatus = $proposal['pitching_dosen_status'] ?? 'pending';
+        $aStatus = $proposal['pitching_admin_status'] ?? 'pending';
+        $isSubmitted = !empty($proposal['student_submitted_at']);
         ?>
+
+        <!-- ─── STICKY ACTION BAR ────────────────────────────────────────── -->
+        <div class="sticky top-4 z-40 bg-white/90 backdrop-blur-md shadow-lg border border-sky-100 rounded-2xl p-4 mb-6 animate-stagger delay-150 flex items-center justify-between gap-4 flex-wrap">
+            
+            <!-- Left: Status Info -->
+            <div class="flex items-center gap-3 min-w-0">
+                <?php if ($dStatus === 'approved' && $aStatus === 'approved'): ?>
+                    <div class="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+                        <i class="fas fa-circle-check text-emerald-500 text-base"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status Pitching Desk</p>
+                        <p class="text-sm font-black text-emerald-700">Lolos Seleksi Pitching ✓</p>
+                    </div>
+                <?php elseif ($isSubmitted && $dStatus === 'pending'): ?>
+                    <div class="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+                        <i class="fas fa-hourglass-half text-amber-500 text-base animate-pulse-soft"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status Pitching Desk</p>
+                        <p class="text-sm font-black text-amber-700">Menunggu Review Dosen</p>
+                        <p class="text-[10px] text-amber-500 font-mono">
+                            Dikirim: <?= date('d M Y H:i', strtotime($proposal['student_submitted_at'])) ?>
+                        </p>
+                    </div>
+                <?php elseif ($isSubmitted && $dStatus === 'approved' && $aStatus === 'pending'): ?>
+                    <div class="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center shrink-0">
+                        <i class="fas fa-hourglass-half text-sky-500 text-base animate-pulse-soft"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status Pitching Desk</p>
+                        <p class="text-sm font-black text-sky-700">Dosen ✓ — Menunggu Verifikasi Admin</p>
+                        <p class="text-[10px] text-sky-500 font-mono">
+                            Dikirim: <?= date('d M Y H:i', strtotime($proposal['student_submitted_at'])) ?>
+                        </p>
+                    </div>
+                <?php else: ?>
+                    <div class="w-9 h-9 rounded-xl bg-sky-50 flex items-center justify-center shrink-0">
+                        <i class="fas fa-file-pen text-sky-500 text-base"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status Pitching Desk</p>
+                        <p class="text-sm font-black text-slate-700">
+                            <?= ($dStatus === 'revision' || $aStatus === 'revision') ? 'Revisi — Perbarui Berkas' : 'Belum Dikirim' ?>
+                        </p>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <!-- Right: Action Summary -->
+            <?php if ($isSubmitted): ?>
+            <div class="flex items-center gap-2 shrink-0">
+                <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-100">
+                    <i class="fas fa-file-powerpoint text-orange-400 text-xs"></i>
+                    <span class="text-[11px] font-black text-slate-600">PPT Terunggah</span>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
 
         <!-- ================================================================
          2. PERIOD INFO CARD
@@ -66,15 +128,19 @@
         <!-- ================================================================
              Notification Alert (New Module)
         ================================================================= -->
-        <?php 
+        <?php
         $hasDosenNote = !empty($proposal['pitching_dosen_catatan']) && $proposal['pitching_dosen_status'] !== 'approved' && $proposal['pitching_dosen_status'] !== 'pending';
         $hasAdminNote = !empty($proposal['pitching_admin_catatan']) && $proposal['pitching_admin_status'] !== 'approved' && $proposal['pitching_admin_status'] !== 'pending';
-        
-        if ($hasDosenNote || $hasAdminNote): 
+
+        if ($hasDosenNote || $hasAdminNote):
             $note = $hasAdminNote ? $proposal['pitching_admin_catatan'] : $proposal['pitching_dosen_catatan'];
             $status = $hasAdminNote ? $proposal['pitching_admin_status'] : $proposal['pitching_dosen_status'];
-            $source = $hasAdminNote ? 'Admin/UPAPKK' : 'Dosen Pendamping';
-            
+            if ($hasAdminNote) {
+                $source = 'Admin/UPAPKK';
+            } else {
+                $source = !empty($proposal['dosen_nama']) ? $proposal['dosen_nama'] : 'Dosen Pendamping';
+            }
+
             $alertClasses = [
                 'revision' => 'bg-orange-50 border-orange-200 text-orange-800',
                 'rejected' => 'bg-rose-50 border-rose-200 text-rose-800',
@@ -83,7 +149,7 @@
                 'revision' => 'fa-circle-exclamation text-orange-500',
                 'rejected' => 'fa-circle-xmark text-rose-500',
             ];
-            
+
             $colorClass = $alertClasses[$status] ?? 'bg-slate-50 border-slate-200 text-slate-800';
             $icon = $alertIcons[$status] ?? 'fa-info-circle text-slate-400';
         ?>
@@ -103,7 +169,11 @@
             </div>
         <?php endif; ?>
 
-        <?php $isLocked = ($proposal['pitching_admin_status'] === 'approved'); ?>
+        <?php
+        $isSubmitted = !empty($proposal['student_submitted_at']);
+        // Locked if submitted AND not in revision, OR if already fully approved by admin
+        $isLocked = ($isSubmitted && $proposal['pitching_dosen_status'] !== 'revision') || ($proposal['pitching_admin_status'] === 'approved');
+        ?>
 
         <?php if ($proposal['pitching_dosen_status'] === 'approved' && $proposal['pitching_admin_status'] === 'approved'): ?>
             <!-- ================================================================
@@ -151,15 +221,21 @@
                         <?php
                         $isComplete = ($pptDoc && (!$isBerkembang || !empty($proposal['video_url'])));
 
+                        $dosenInfo = !empty($proposal['dosen_nama'])
+                            ? $proposal['dosen_nama']
+                            : 'Belum ditugaskan';
+
                         $steps = [
                             [
                                 'label'  => 'Validasi Dosen',
+                                'sublabel' => $dosenInfo,
                                 'status' => (!$pptDoc ? 'empty' : $proposal['pitching_dosen_status']),
                                 'note'   => $proposal['pitching_dosen_catatan'],
                                 'icon'   => 'fa-user-tie'
                             ],
                             [
                                 'label'  => 'Validasi UPAPKK',
+                                'sublabel' => 'Admin/UPAPKK',
                                 'status' => (!$pptDoc ? 'empty' : $proposal['pitching_admin_status']),
                                 'note'   => $proposal['pitching_admin_catatan'],
                                 'icon'   => 'fa-award'
@@ -184,6 +260,9 @@
                                 </div>
                                 <div class="text-left md:text-center mt-1">
                                     <p class="text-xs font-black uppercase tracking-tighter text-slate-400"><?= $step['label'] ?></p>
+                                    <p class="text-[10px] text-slate-500 truncate max-w-[140px]" title="<?= esc($step['sublabel'] ?? '') ?>">
+                                        <i class="fas fa-user-tag text-[9px] mr-1"></i><?= esc($step['sublabel'] ?? '') ?>
+                                    </p>
                                     <div class="flex items-center gap-1.5 md:justify-center mt-1">
                                         <span class="text-[10px] font-black <?= $color['text'] ?> uppercase italic"><?= $color['label'] ?></span>
                                         <i class="fas <?= $color['icon'] ?> text-[10px] <?= $color['text'] ?>"></i>
@@ -201,7 +280,11 @@
 
                     <div class="mt-8 md:mt-24 pt-6 border-t border-slate-50 text-[11px] text-slate-400 text-center">
                         <i class="fas fa-info-circle mr-1"></i>
-                        Proposal Anda harus disetujui oleh Dosen Pendamping terlebih dahulu sebelum dapat divalidasi oleh Admin.
+                        <?php if (!empty($proposal['dosen_nama'])): ?>
+                            Proposal Anda akan divalidasi oleh <strong class="text-sky-600"><?= esc($proposal['dosen_nama']) ?></strong> terlebih dahulu sebelum ke Admin.
+                        <?php else: ?>
+                            Proposal Anda harus disetujui oleh Dosen Pendamping terlebih dahulu sebelum dapat divalidasi oleh Admin.
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -295,8 +378,27 @@
                         </div>
                         <div class="flex flex-col items-end gap-2">
                             <?php if ($isLocked): ?>
-                                <div class="px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-lg text-emerald-600 font-bold text-[10px] flex items-center gap-1.5">
-                                    <i class="fas fa-check-circle"></i> Berkas Sah & Terkunci
+                                <?php 
+                                    $lockStatus = 'Menunggu Validasi';
+                                    $lockColor = 'bg-sky-50 text-sky-600 border-sky-100';
+                                    $lockIcon = 'fa-clock';
+
+                                    if ($proposal['pitching_admin_status'] === 'approved') {
+                                        $lockStatus = 'Berkas Sah & Terkunci';
+                                        $lockColor = 'bg-emerald-50 text-emerald-600 border-emerald-100';
+                                        $lockIcon = 'fa-check-circle';
+                                    } elseif ($proposal['pitching_dosen_status'] === 'approved') {
+                                        $lockStatus = 'Disetujui Dosen (Terkunci)';
+                                        $lockColor = 'bg-teal-50 text-teal-600 border-teal-100';
+                                        $lockIcon = 'fa-user-check';
+                                    } elseif ($proposal['pitching_dosen_status'] === 'rejected' || $proposal['pitching_admin_status'] === 'rejected') {
+                                        $lockStatus = 'Ditolak & Terkunci';
+                                        $lockColor = 'bg-rose-50 text-rose-600 border-rose-100';
+                                        $lockIcon = 'fa-lock';
+                                    }
+                                ?>
+                                <div class="px-3 py-1.5 <?= $lockColor ?> border rounded-lg font-bold text-[10px] flex items-center gap-1.5 shadow-sm">
+                                    <i class="fas <?= $lockIcon ?>"></i> <?= $lockStatus ?>
                                 </div>
                             <?php elseif ($isPhaseOpen): ?>
                                 <label class="relative cursor-pointer">
@@ -428,13 +530,34 @@
                 </div>
 
                 <div class="text-right">
-                    <template x-if="isComplete">
-                        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 border border-emerald-200">
-                            <i class="fas fa-check-circle text-emerald-500"></i>
-                            <span class="text-sm font-bold text-emerald-700">Siap Pitching!</span>
+                    <template x-if="isSubmitted">
+                        <div class="inline-flex flex-col items-end">
+                            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 border border-emerald-200 shadow-sm shadow-emerald-100">
+                                <i class="fas fa-check-double text-emerald-500"></i>
+                                <span class="text-sm font-bold text-emerald-700">Sudah Terkirim</span>
+                            </div>
+                            <p class="text-[10px] text-slate-400 mt-1 italic">Dikirim pada <?= formatIndonesianDate($proposal['student_submitted_at']) ?></p>
                         </div>
                     </template>
-                    <template x-if="!isComplete">
+
+                    <template x-if="!isSubmitted && isComplete">
+                        <button type="button"
+                            @click="submitPitching()"
+                            class="group relative overflow-hidden inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold transition-all hover:bg-emerald-600 hover:text-white hover:shadow-xl hover:shadow-emerald-200 active:scale-95">
+                            <!-- Normal State -->
+                            <span class="inline-flex items-center gap-2 transition-all duration-300 group-hover:-translate-y-10 group-hover:opacity-0">
+                                <i class="fas fa-check-circle"></i>
+                                Siap Pitching!
+                            </span>
+                            <!-- Hover State -->
+                            <span class="absolute inset-0 flex items-center justify-center translate-y-10 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:cursor-pointer group-hover:opacity-100">
+                                <i class="fas fa-paper-plane mr-2"></i>
+                                Kirim Pitching
+                            </span>
+                        </button>
+                    </template>
+
+                    <template x-if="!isSubmitted && !isComplete">
                         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 border border-amber-200">
                             <i class="fas fa-exclamation-triangle text-amber-500"></i>
                             <span class="text-sm font-bold text-amber-700">Belum Lengkap</span>
@@ -465,6 +588,7 @@
             detailKeterangan: <?= json_encode($proposal['detail_keterangan'] ?? '') ?>,
             isSavingDetail: false,
             isSavingVideo: false,
+            isSubmitted: <?= $isSubmitted ? 'true' : 'false' ?>,
 
             handleMouseMove(e) {
                 const card = e.currentTarget;
@@ -599,15 +723,63 @@
                     });
             },
 
+            submitPitching() {
+                Swal.fire({
+                    title: 'Kirim Bahan Pitching?',
+                    text: "Pastikan semua bahan (PPT/Video) sudah benar. Setelah dikirim, Anda tidak dapat mengubahnya lagi sampai diproses oleh Dosen.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#10b981',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: 'Ya, Kirim Sekarang!',
+                    cancelButtonText: 'Cek Lagi',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Mengirim...',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        fetch('<?= base_url('mahasiswa/pitching-desk/submit') ?>', {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        title: 'Terikirim!',
+                                        text: data.message,
+                                        icon: 'success'
+                                    }).then(() => {
+                                        window.location.reload();
+                                    });
+                                } else {
+                                    Swal.fire('Gagal!', data.message, 'error');
+                                }
+                            })
+                            .catch(() => {
+                                Swal.fire('Error', 'Gagal menghubungi server', 'error');
+                            });
+                    }
+                });
+            },
+
             downloadFile(type) {
                 <?php if ($pptDoc): ?>
                     if (type === 'ppt') {
-                        window.location.href = '<?= base_url('mahasiswa/proposal/doc/' . $pptDoc['id']) ?>';
+                        window.location.href = '<?= base_url('mahasiswa/pitching-desk/doc/' . $pptDoc['id']) ?>';
                     }
                 <?php endif; ?>
                 <?php if ($videoDoc): ?>
                     if (type === 'video') {
-                        window.location.href = '<?= base_url('mahasiswa/proposal/doc/' . $videoDoc['id']) ?>';
+                        window.location.href = '<?= base_url('mahasiswa/pitching-desk/doc/' . ($videoDoc['id'] ?? 0)) ?>';
                     }
                 <?php endif; ?>
             }

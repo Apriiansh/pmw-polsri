@@ -158,6 +158,22 @@ class NotificationModel extends Model
     }
 
     /**
+     * Create notification for lecturer when student submits pitching materials
+     */
+    public function createPitchingSubmissionNotification(int $lecturerUserId, int $proposalId, string $namaUsaha, string $ketuaNama): int
+    {
+        return $this->insert([
+            'user_id'  => $lecturerUserId,
+            'type'     => 'pitching_submitted',
+            'title'    => 'Bahan Pitching Terkirim',
+            'message'  => "Mahasiswa '{$ketuaNama}' telah mengirimkan bahan pitching untuk proposal '{$namaUsaha}'",
+            'link'     => 'dosen/pitching-desk',
+            'data_id'  => $proposalId,
+            'is_read'  => false,
+        ], true);
+    }
+
+    /**
      * Create validation result notification for student
      */
     public function createValidationResultNotification(int $userId, int $proposalId, string $namaUsaha, string $status, ?string $catatan = null): int

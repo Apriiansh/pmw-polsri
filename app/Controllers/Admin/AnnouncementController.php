@@ -28,11 +28,23 @@ class AnnouncementController extends BaseController
 
         $announcement = null;
 
+        $passedTeams = [];
+        $bankAccounts = [];
+
         if ($activePeriod) {
             $phase = $phaseAccess->getPhaseForActivePeriod(self::PHASE_NUMBER);
             $isPhaseOpen = $phaseAccess->isPhaseOpen($phase);
 
             $announcement = $announcementService->getOrCreatePhaseAnnouncement((int) $activePeriod['id'], self::PHASE_NUMBER);
+            
+            $selectionService = new \App\Services\PmwSelectionService();
+            $bankAccountModel = new \App\Models\AnnouncementFunding\PmwBankAccountModel();
+            
+            $passedTeams = $selectionService->getPassedStage1Teams((int) $activePeriod['id']);
+            $dbBankAccs = $bankAccountModel->findByPeriod((int) $activePeriod['id']);
+            foreach ($dbBankAccs as $ba) {
+                $bankAccounts[$ba->proposal_id] = $ba;
+            }
         }
 
         return view('admin/pengumuman', [
@@ -41,6 +53,8 @@ class AnnouncementController extends BaseController
             'phase'           => $phase,
             'isPhaseOpen'     => $isPhaseOpen,
             'announcement'    => $announcement,
+            'passedTeams'     => $passedTeams,
+            'bankAccounts'    => $bankAccounts,
         ]);
     }
 
@@ -149,6 +163,24 @@ class AnnouncementController extends BaseController
         }
 
         return redirect()->back()->with('error', 'Gagal mempublish pengumuman.');
+    }
+
+    public function downloadTeamBankBook(int $bankAccountId)
+    {
+        $bankAccountModel = new \App\Models\AnnouncementFunding\PmwBankAccountModel();
+        $bankAccount = $bankAccountModel->find($bankAccountId);
+
+        if (!$bankAccount || empty($bankAccount->bank_book_scan)) {
+            return redirect()->back()->with('error', 'File buku rekening tidak ditemukan.');
+        }
+
+        $absPath = WRITEPATH . $bankAccount->bank_book_scan;
+        if (!is_file($absPath)) {
+            return redirect()->back()->with('error', 'File tidak ditemukan di server.');
+        }
+
+        return $this->response->download($absPath, null)
+            ->setFileName(basename($absPath));
     }
 
 }

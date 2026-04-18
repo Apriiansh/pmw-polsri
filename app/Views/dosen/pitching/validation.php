@@ -30,7 +30,7 @@
         <?php
         $statItems = [
             ['title' => 'Total Bimbingan', 'value' => $stats['total'], 'icon' => 'fa-users', 'bg' => 'bg-sky-50', 'icon_color' => 'text-sky-500'],
-            ['title' => 'Menunggu', 'value' => $stats['pending'], 'icon' => 'fa-clock', 'bg' => 'bg-yellow-50', 'icon_color' => 'text-yellow-500'],
+            ['title' => 'Menunggu', 'value' => $stats['pending'], 'icon' => 'fa-clock', 'bg' => 'bg-amber-50', 'icon_color' => 'text-amber-500'],
             ['title' => 'Disetujui', 'value' => $stats['approved'], 'icon' => 'fa-circle-check', 'bg' => 'bg-emerald-50', 'icon_color' => 'text-emerald-500'],
             ['title' => 'Revisi/Ditolak', 'value' => $stats['revision'] + $stats['rejected'], 'icon' => 'fa-circle-xmark', 'bg' => 'bg-rose-50', 'icon_color' => 'text-rose-500'],
         ];
@@ -57,7 +57,7 @@
             Semua
         </a>
         <a href="<?= base_url('dosen/pitching-desk?status=pending') ?>" 
-           class="btn-outline btn-sm <?= $statusFilter === 'pending' ? 'bg-yellow-500 text-white border-yellow-500 hover:bg-yellow-600' : '' ?>">
+           class="btn-outline btn-sm <?= $statusFilter === 'pending' ? 'bg-amber-500 text-white border-amber-500 hover:bg-amber-600' : '' ?>">
             <i class="fas fa-clock mr-1"></i> Menunggu
         </a>
         <a href="<?= base_url('dosen/pitching-desk?status=approved') ?>" 
@@ -100,28 +100,42 @@
                 <tbody>
                     <?php 
                     $statusColors = [
-                        'pending'  => 'bg-yellow-50 text-yellow-600 border-yellow-200',
+                        'pending'  => 'bg-slate-50 text-slate-600 border-slate-200',
+                        'submitted' => 'bg-amber-50 text-amber-600 border-amber-200',
                         'approved' => 'bg-emerald-50 text-emerald-600 border-emerald-200',
                         'revision' => 'bg-orange-50 text-orange-600 border-orange-200',
                         'rejected' => 'bg-rose-50 text-rose-600 border-rose-200',
                     ];
                     $statusLabels = [
-                        'pending'  => 'Menunggu',
+                        'pending'  => 'Belum Kirim',
+                        'submitted' => 'Menunggu',
                         'approved' => 'Disetujui',
                         'revision' => 'Revisi',
                         'rejected' => 'Ditolak',
                     ];
                     ?>
                     <?php foreach ($proposals as $proposal): ?>
+                    <?php 
+                        $currentStatus = $proposal['pitching_dosen_status'];
+                        if ($currentStatus === 'pending' && !empty($proposal['student_submitted_at'])) {
+                            $currentStatus = 'submitted';
+                        }
+                    ?>
                     <tr class="group">
                         <td class="whitespace-nowrap">
                             <div class="font-display font-bold text-(--text-heading) text-[13px]">
                                 <?= esc($proposal['nama_usaha'] ?: 'Tim #' . $proposal['id']) ?>
                             </div>
+                            <?php if (!empty($proposal['student_submitted_at'])): ?>
+                                <div class="text-[9px] font-black text-sky-500 mt-1 uppercase flex items-center gap-1">
+                                    <i class="fas fa-paper-plane text-[8px]"></i>
+                                    Dikirim: <?= date('d/m/y H:i', strtotime($proposal['student_submitted_at'])) ?>
+                                </div>
+                            <?php endif; ?>
                         </td>
                         <td class="whitespace-nowrap">
                             <div class="text-[13px] font-semibold text-slate-600"><?= esc($proposal['ketua_nama']) ?></div>
-                            <div class="text-[11px] text-slate-400"><?= esc($proposal['ketua_nim']) ?></div>
+                            <div class="text-[11px] text-slate-400"><?= esc($proposal['ketua_nim'] ?? '') ?></div>
                         </td>
                         <td class="text-center">
                             <?php if ($proposal['video_url']): ?>
@@ -134,7 +148,7 @@
                         </td>
                         <td class="text-center">
                             <?php if ($proposal['pitching_ppt_id']): ?>
-                                <a href="<?= base_url('dosen/pitching-desk/doc/' . $proposal['pitching_ppt_id']) ?>" class="text-orange-500 hover:text-orange-600">
+                                <a href="<?= base_url('dosen/pitching-desk/doc/' . $proposal['pitching_ppt_id']) ?>" target="_blank" class="text-orange-500 hover:text-orange-600">
                                     <i class="fas fa-file-powerpoint text-xl"></i>
                                 </a>
                             <?php else: ?>
@@ -142,12 +156,14 @@
                             <?php endif; ?>
                         </td>
                         <td>
-                            <span class="pmw-status <?= $statusColors[$proposal['pitching_dosen_status']] ?? 'bg-slate-50' ?>">
-                                <?= $statusLabels[$proposal['pitching_dosen_status']] ?>
+                            <span class="pmw-status <?= $statusColors[$currentStatus] ?? 'bg-slate-50' ?>">
+                                <i class="fas fa-circle text-[8px] mr-1"></i>
+                                <?= $statusLabels[$currentStatus] ?>
                             </span>
                         </td>
                         <td>
                             <span class="pmw-status <?= $statusColors[$proposal['pitching_admin_status']] ?? 'bg-slate-50' ?>">
+                                <i class="fas fa-circle text-[8px] mr-1"></i>
                                 <?= $statusLabels[$proposal['pitching_admin_status']] ?>
                             </span>
                         </td>

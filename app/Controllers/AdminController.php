@@ -191,7 +191,7 @@ class AdminController extends BaseController
                 return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan sistem saat menyimpan data.');
             }
 
-            return redirect()->to('admin/users/manage')->with('success', 'User berhasil ditambahkan');
+            return redirect()->to('admin/users')->with('success', 'User berhasil ditambahkan');
         } catch (\Exception $e) {
             $db->transRollback();
             return redirect()->back()->withInput()->with('error', 'Error: ' . $e->getMessage());
@@ -207,7 +207,7 @@ class AdminController extends BaseController
         $user = $userModel->findById($id);
 
         if (!$user) {
-            return redirect()->to('admin/users/manage')->with('error', 'User tidak ditemukan');
+            return redirect()->to('admin/users')->with('error', 'User tidak ditemukan');
         }
 
         $role = $this->request->getPost('role');
@@ -277,7 +277,7 @@ class AdminController extends BaseController
                 return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan sistem saat mengupdate data.');
             }
 
-            return redirect()->to('admin/users/manage')->with('success', 'User berhasil diupdate');
+            return redirect()->to('admin/users')->with('success', 'User berhasil diupdate');
         } catch (\Exception $e) {
             $db->transRollback();
             return redirect()->back()->withInput()->with('error', 'Error: ' . $e->getMessage());
@@ -293,12 +293,12 @@ class AdminController extends BaseController
         $user = $userModel->findById($id);
 
         if (!$user) {
-            return redirect()->to('admin/users/manage')->with('error', 'User tidak ditemukan');
+            return redirect()->to('admin/users')->with('error', 'User tidak ditemukan');
         }
 
         // Prevent self-deletion
         if ($user->id === auth()->user()->id) {
-            return redirect()->to('admin/users/manage')->with('error', 'Tidak bisa menghapus diri sendiri');
+            return redirect()->to('admin/users')->with('error', 'Tidak bisa menghapus diri sendiri');
         }
 
         $db = \Config\Database::connect();
@@ -331,10 +331,10 @@ class AdminController extends BaseController
 
             $db->transComplete();
 
-            return redirect()->to('admin/users/manage')->with('success', 'User berhasil dihapus');
+            return redirect()->to('admin/users')->with('success', 'User berhasil dihapus');
         } catch (\Exception $e) {
             $db->transRollback();
-            return redirect()->to('admin/users/manage')->with('error', 'Gagal menghapus user: ' . $e->getMessage());
+            return redirect()->to('admin/users')->with('error', 'Gagal menghapus user: ' . $e->getMessage());
         }
     }
 
@@ -347,19 +347,19 @@ class AdminController extends BaseController
         $user = $userModel->findById($id);
 
         if (!$user) {
-            return redirect()->to('admin/users/manage')->with('error', 'User tidak ditemukan');
+            return redirect()->to('admin/users')->with('error', 'User tidak ditemukan');
         }
 
         // Prevent self-deactivation
         if ($user->id === auth()->user()->id) {
-            return redirect()->to('admin/users/manage')->with('error', 'Tidak bisa mengubah status diri sendiri');
+            return redirect()->to('admin/users')->with('error', 'Tidak bisa mengubah status diri sendiri');
         }
 
         $newStatus = !$user->active;
         $userModel->update($id, ['active' => $newStatus]);
 
         $message = $newStatus ? 'User berhasil diaktifkan' : 'User berhasil dinonaktifkan';
-        return redirect()->to('admin/users/manage')->with('success', $message);
+        return redirect()->to('admin/users')->with('success', $message);
     }
 
     /**
@@ -814,5 +814,139 @@ class AdminController extends BaseController
                 }
                 break;
         }
+    }
+
+    /**
+     * Display all teams/participants with their proposals and related data
+     */
+    public function teams()
+    {
+        $proposalModel = new \App\Models\Proposal\PmwProposalModel();
+        $memberModel = new \App\Models\Proposal\PmwProposalMemberModel();
+        $bankAccountModel = new \App\Models\AnnouncementFunding\PmwBankAccountModel();
+        $periodModel = new PmwPeriodModel();
+
+        // Get filter parameters
+        $periodFilter = $this->request->getGet('period');
+        $search = $this->request->getGet('search');
+
+        // Build query - Only show teams that have passed pitching desk (approved by admin)
+        $db = \Config\Database::connect();
+        $builder = $db->table('pmw_proposals p');
+        $builder->select([
+            'p.id as proposal_id',
+            'p.nama_usaha',
+            'p.kategori_wirausaha',
+            'p.kategori_usaha',
+            'p.total_rab',
+            'p.leader_user_id',
+            'pm.nama as ketua_nama',
+            'pm.nim as ketua_nim',
+            'pm.jurusan as ketua_jurusan',
+            'pm.prodi as ketua_prodi',
+            'pm.phone as ketua_phone',
+            'pm.email as ketua_email',
+            'l.nama as dosen_nama',
+            'l.nip as dosen_nip',
+            'm.nama as mentor_nama',
+            'per.name as period_name',
+            'per.year as period_year',
+            'per.id as period_id',
+            '(SELECT COUNT(*) FROM pmw_proposal_members pm2 WHERE pm2.proposal_id = p.id) as member_count',
+            '(SELECT GROUP_CONCAT(CONCAT(role, ":", nama, " (", nim, ")") SEPARATOR "|")
+              FROM pmw_proposal_members pm3 WHERE pm3.proposal_id = p.id) as members_list',
+            'sp.dosen_status as pitching_dosen_status',
+            'sp.admin_status as pitching_admin_status',
+            'sp.student_submitted_at',
+        ]);
+        $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
+        $builder->join('pmw_proposal_assignments pa', 'pa.proposal_id = p.id', 'left');
+        $builder->join('pmw_lecturers l', 'l.id = pa.lecturer_id', 'left');
+        $builder->join('pmw_mentors m', 'm.id = pa.mentor_id', 'left');
+        $builder->join('pmw_periods per', 'per.id = p.period_id', 'left');
+        $builder->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left');
+
+        // Only show teams that have passed pitching desk (approved by admin)
+        $builder->where('sp.admin_status', 'approved');
+
+        // Apply filters
+        if ($periodFilter) {
+            $builder->where('p.period_id', $periodFilter);
+        }
+        if ($search) {
+            $builder->groupStart()
+                ->like('p.nama_usaha', $search)
+                ->orLike('pm.nama', $search)
+                ->orLike('pm.nim', $search)
+                ->groupEnd();
+        }
+
+        $builder->orderBy('per.year', 'DESC');
+        $builder->orderBy('per.name', 'DESC');
+        $builder->orderBy('sp.student_submitted_at', 'DESC');
+
+        $teams = $builder->get()->getResultArray();
+
+        // Get bank accounts for each proposal
+        foreach ($teams as &$team) {
+            $team['bank_account'] = $bankAccountModel->findByProposal((int) $team['proposal_id']);
+        }
+
+        // Get all periods for filter dropdown
+        $periods = $periodModel->findAll();
+
+        // Stats - recalculated for teams in funding phase
+        $stats = [
+            'total' => count($teams),
+            'with_mentor' => count(array_filter($teams, fn($t) => !empty($t['mentor_nama']))),
+            'with_bank' => count(array_filter($teams, fn($t) => !empty($t['bank_account']))),
+        ];
+
+        return view('admin/teams/index', [
+            'title'           => 'Data TIM Peserta | PMW Polsri',
+            'header_title'    => 'Data TIM Peserta',
+            'header_subtitle' => 'TIM peserta yang telah lolos pitching desk (Dana 1)',
+            'teams'           => $teams,
+            'periods'         => $periods,
+            'stats'           => $stats,
+            'periodFilter'    => $periodFilter,
+            'search'          => $search,
+        ]);
+    }
+
+    /**
+     * Detail tim peserta
+     */
+    public function teamDetail(int $id)
+    {
+        $proposalModel = new \App\Models\Proposal\PmwProposalModel();
+        $memberModel = new \App\Models\Proposal\PmwProposalMemberModel();
+        $bankAccountModel = new \App\Models\AnnouncementFunding\PmwBankAccountModel();
+        $documentModel = new PmwDocumentModel();
+
+        // Get proposal detail
+        $proposal = $proposalModel->getProposalForValidation($id);
+        if (!$proposal) {
+            return redirect()->to('admin/teams')->with('error', 'Proposal tidak ditemukan');
+        }
+
+        // Get team members
+        $members = $memberModel->getByProposalId($id);
+
+        // Get bank account
+        $bankAccount = $bankAccountModel->findByProposal($id);
+
+        // Get documents
+        $documents = $documentModel->getProposalDocs($id);
+
+        return view('admin/teams/detail', [
+            'title'        => 'Detail TIM | PMW Polsri',
+            'header_title' => 'Detail TIM Peserta',
+            'header_subtitle' => $proposal['nama_usaha'] ?? 'Proposal #' . $id,
+            'proposal'     => $proposal,
+            'members'      => $members,
+            'bankAccount'  => $bankAccount,
+            'documents'    => $documents,
+        ]);
     }
 }

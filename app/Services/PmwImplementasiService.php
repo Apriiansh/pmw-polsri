@@ -36,6 +36,7 @@ class PmwImplementasiService
             'period_id'        => $periodId,
             'item_title'       => $data['item_title'],
             'item_description' => $data['item_description'] ?? null,
+            'qty'              => $data['qty'] ?? 1,
             'price'            => $data['price'] ?? 0,
         ];
 
@@ -50,6 +51,7 @@ class PmwImplementasiService
         $updateData = [
             'item_title'       => $data['item_title'] ?? null,
             'item_description' => $data['item_description'] ?? null,
+            'qty'              => $data['qty'] ?? null,
             'price'            => $data['price'] ?? null,
         ];
 
@@ -344,8 +346,12 @@ class PmwImplementasiService
 
     /**
      * Check if proposal can be edited
+     * 
+     * @param int $proposalId
+     * @param bool $isPhaseOpen Whether the official phase is currently open
+     * @return bool
      */
-    public function canEdit(int $proposalId): bool
+    public function canEdit(int $proposalId, bool $isPhaseOpen = true): bool
     {
         $db = Database::connect();
         $selection = $db->table('pmw_selection_implementasi')
@@ -354,10 +360,29 @@ class PmwImplementasiService
             ->getRow();
         
         if (!$selection) {
-            return true; // Default to true if record doesn't exist yet (should be created on registration)
+            // If no selection record yet, can only edit if phase is open
+            return $isPhaseOpen; 
         }
 
-        // Can edit if status is pending or revision
-        return in_array($selection->admin_status, ['pending', 'revision']);
+        // 1. HARD STOP: If admin already approved or rejected, no more edits whatsoever
+        if (in_array($selection->admin_status, ['approved', 'rejected'])) {
+            return false;
+        }
+
+        // 2. REVISION OVERRIDE: If Dosen or Admin requested a revision, 
+        // student CAN edit regardless of the official phase schedule.
+        $isRevision = ($selection->dosen_status === 'revision' || $selection->admin_status === 'revision');
+        if ($isRevision) {
+            return true;
+        }
+
+        // 3. PENDING LOCK: If student has already submitted and it's pending review, 
+        // they cannot edit until a revision is requested.
+        if (!empty($selection->student_submitted_at)) {
+            return false;
+        }
+
+        // 4. DRAFT MODE: If not submitted yet, can only edit if the official phase is still open
+        return $isPhaseOpen;
     }
 }

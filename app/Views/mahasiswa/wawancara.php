@@ -26,10 +26,56 @@ use App\Models\Proposal\PmwProposalModel;
         </div>
     </div>
 
+    <!-- ─── STICKY ACTION BAR ────────────────────────────────────────── -->
+    <div class="sticky top-4 z-40 bg-white/90 backdrop-blur-md shadow-lg border border-sky-100 rounded-2xl p-4 mb-6 animate-stagger delay-150 flex items-center justify-between gap-4 flex-wrap">
+        
+        <!-- Left: Status Info -->
+        <div class="flex items-center gap-3 min-w-0">
+            <?php
+            $wStatus = $proposal['wawancara_status'] ?? 'pending';
+            $wSubmittedAt = $proposal['wawancara_submitted_at'] ?? null;
+            $statusMap = [
+                'pending'  => ['icon' => 'fa-hourglass-half', 'color' => 'amber',   'label' => 'Menunggu Verifikasi Admin'],
+                'approved' => ['icon' => 'fa-circle-check',    'color' => 'emerald', 'label' => 'Berkas Disetujui ✓'],
+                'revision' => ['icon' => 'fa-circle-exclamation', 'color' => 'orange', 'label' => 'Perlu Revisi Berkas'],
+                'rejected' => ['icon' => 'fa-circle-xmark',    'color' => 'rose',    'label' => 'Berkas Ditolak'],
+            ];
+            // If status is pending but never submitted
+            if ($wStatus === 'pending' && empty($wSubmittedAt)) {
+                $st = ['icon' => 'fa-file-pen', 'color' => 'sky', 'label' => 'Belum Diunggah'];
+            } else {
+                $st = $statusMap[$wStatus] ?? $statusMap['pending'];
+            }
+            ?>
+            <div class="w-9 h-9 rounded-xl bg-<?= $st['color'] ?>-100 flex items-center justify-center shrink-0">
+                <i class="fas <?= $st['icon'] ?> text-<?= $st['color'] ?>-500 text-base <?= ($st['color'] === 'amber' && !empty($wSubmittedAt)) ? 'animate-pulse-soft' : '' ?>"></i>
+            </div>
+            <div class="min-w-0">
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status Perjanjian</p>
+                <p class="text-sm font-black text-<?= $st['color'] ?>-700"><?= $st['label'] ?></p>
+                <?php if (!empty($wSubmittedAt)): ?>
+                    <p class="text-[10px] text-<?= $st['color'] ?>-500 font-mono">
+                        Dikirim: <?= date('d M Y H:i', strtotime($wSubmittedAt)) ?>
+                    </p>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Right: Action Summary -->
+        <?php if (!empty($wSubmittedAt)): ?>
+        <div class="flex items-center gap-2 shrink-0">
+            <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-100">
+                <i class="fas fa-file-pdf text-rose-400 text-xs"></i>
+                <span class="text-[11px] font-black text-slate-600">PDF Terunggah</span>
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
+
     <!-- ================================================================
-         2. PHASE & STATUS INFO
+         2. PHASE INFO
     ================================================================= -->
-    <div class="grid md:grid-cols-3 gap-6 animate-stagger delay-100">
+    <div class="grid md:grid-cols-2 gap-6 animate-stagger delay-100">
         <!-- Period Card -->
         <div class="card-premium p-5 flex flex-col justify-between" @mousemove="handleMouseMove">
             <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Periode</p>
@@ -51,32 +97,6 @@ use App\Models\Proposal\PmwProposalModel;
                 <i class="fas <?= $isPhaseOpen ? 'fa-lock-open' : 'fa-lock' ?>"></i>
                 <?= $isPhaseOpen ? 'TAHAPAN DIBUKA' : 'TAHAPAN DITUTUP' ?>
             </span>
-        </div>
-
-        <?php $isLocked = ($proposal['wawancara_status'] === 'approved'); ?>
-
-        <!-- Validation Status Card -->
-        <?php
-        $wStatus = $proposal['wawancara_status'] ?? 'pending';
-        $statusMap = [
-            'pending'  => ['color' => 'amber',  'icon' => 'fa-clock',    'label' => 'Menunggu Validasi'],
-            'approved' => ['color' => 'emerald', 'icon' => 'fa-check',    'label' => 'Disetujui'],
-            'revision' => ['color' => 'orange',  'icon' => 'fa-rotate',   'label' => 'Perlu Revisi'],
-            'rejected' => ['color' => 'rose',    'icon' => 'fa-xmark',    'label' => 'Ditolak'],
-        ];
-        $st = $statusMap[$wStatus] ?? $statusMap['pending'];
-        ?>
-        <div class="card-premium p-5 border-l-4 border-l-<?= $st['color'] ?>-500" @mousemove="handleMouseMove">
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status Validasi UPAPKK</p>
-            <div class="flex items-center gap-2 mt-1">
-                <i class="fas <?= $st['icon'] ?> text-<?= $st['color'] ?>-500"></i>
-                <p class="text-sm font-bold text-slate-800 uppercase"><?= $st['label'] ?></p>
-            </div>
-            <?php if ($proposal['wawancara_catatan']): ?>
-            <div class="mt-3 p-2 rounded-lg bg-<?= $st['color'] ?>-50 border border-<?= $st['color'] ?>-100 text-[10px] text-slate-600 italic">
-                "<?= esc($proposal['wawancara_catatan']) ?>"
-            </div>
-            <?php endif; ?>
         </div>
     </div>
 

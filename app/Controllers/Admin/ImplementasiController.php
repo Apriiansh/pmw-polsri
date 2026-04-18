@@ -39,28 +39,30 @@ class ImplementasiController extends BaseController
             'p.nama_usaha',
             'si.admin_status as implementasi_status',
             'si.admin_catatan as implementasi_catatan',
+            'si.dosen_status',
+            'si.student_submitted_at',
             'pm.nama as ketua_nama',
             'pm.nim as ketua_nim',
             'per.name as period_name',
             'per.year as period_year',
             '(SELECT COUNT(*) FROM pmw_implementation_items WHERE proposal_id = p.id) as item_count',
-            '(SELECT SUM(price) FROM pmw_implementation_items WHERE proposal_id = p.id) as total_price',
+            '(SELECT SUM(price * COALESCE(qty,1)) FROM pmw_implementation_items WHERE proposal_id = p.id) as total_price',
         ]);
         $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
         $builder->join('pmw_periods per', 'per.id = p.period_id', 'left');
         $builder->join('pmw_selection_wawancara sw', 'sw.proposal_id = p.id', 'left');
         $builder->join('pmw_selection_implementasi si', 'si.proposal_id = p.id', 'left');
 
-        // Only show proposals that have submitted implementation data (Phase 7 starts after Phase 4 approved)
+        // Only show where student has actually submitted
         $builder->where('sw.admin_status', 'approved');
-        $builder->having('item_count >', 0);
+        $builder->where('si.student_submitted_at IS NOT NULL', null, false);
 
         if ($statusFilter) {
             $builder->where('si.admin_status', $statusFilter);
         }
 
         $builder->orderBy('si.admin_status', 'ASC');
-        $builder->orderBy('p.updated_at', 'DESC');
+        $builder->orderBy('si.dosen_verified_at', 'DESC');
 
         $proposals = $builder->get()->getResultArray();
 
@@ -104,12 +106,20 @@ class ImplementasiController extends BaseController
             'p.kategori_wirausaha',
             'si.admin_status as implementasi_status',
             'si.admin_catatan as implementasi_catatan',
+            'si.dosen_status',
+            'si.dosen_catatan',
+            'si.dosen_verified_at',
+            'si.student_submitted_at',
             'p.total_rab',
             'pm.nama as ketua_nama',
             'pm.nim as ketua_nim',
             'pm.jurusan as ketua_jurusan',
             'pm.prodi as ketua_prodi',
             'l.nama as dosen_nama',
+            'l.nip as dosen_nip',
+            'l.jurusan as dosen_jurusan',
+            'l.prodi as dosen_prodi',
+            'l.phone as dosen_phone',
             'per.name as period_name',
             'per.year as period_year',
         ]);
@@ -126,12 +136,17 @@ class ImplementasiController extends BaseController
             return redirect()->to('admin/implementasi')->with('error', 'Proposal tidak ditemukan');
         }
 
+        // Get proposal members
+        $memberModel = new \App\Models\Proposal\PmwProposalMemberModel();
+        $members     = $memberModel->getByProposalId($proposalId);
+
         // Get implementation data
         $implementationData = $this->implementasiService->getFullData($proposalId);
 
         return $this->response->setBody(view('admin/implementasi/detail', [
             'title'        => 'Detail Validasi Implementasi | PMW Polsri',
             'proposal'     => $proposal,
+            'members'      => $members,
             'items'        => $implementationData['items'],
             'payments'     => $implementationData['payments'],
             'konsumsi'     => $implementationData['konsumsi'],
@@ -151,6 +166,11 @@ class ImplementasiController extends BaseController
             return redirect()->to('admin/implementasi')->with('error', 'Data implementasi tidak ditemukan');
         }
 
+        // Enforce: Dosen must have approved before Admin can act
+        if ($exists->dosen_status !== 'approved') {
+            return redirect()->back()->with('error', 'Dosen Pendamping harus menyetujui laporan implementasi terlebih dahulu sebelum Admin dapat melakukan verifikasi.');
+        }
+
         $status  = $this->request->getPost('status');
         $catatan = $this->request->getPost('catatan');
 
@@ -159,9 +179,10 @@ class ImplementasiController extends BaseController
         }
 
         $updateData = [
-            'admin_status'  => $status,
-            'admin_catatan' => $catatan ?: null,
-            'updated_at'    => date('Y-m-d H:i:s'),
+            'admin_status'     => $status,
+            'admin_catatan'    => $catatan ?: null,
+            'admin_verified_at' => date('Y-m-d H:i:s'),
+            'updated_at'       => date('Y-m-d H:i:s'),
         ];
 
         if ($selectionModel->where('proposal_id', $proposalId)->set($updateData)->update()) {
@@ -203,12 +224,17 @@ class ImplementasiController extends BaseController
             return redirect()->back()->with('error', 'File fisik tidak ditemukan');
         }
 
-        // Inline preview for images
-        $mimeType = mime_content_type($absPath);
+        try {
+            $mimeType = mime_content_type($absPath) ?: 'image/jpeg';
+        } catch (\Exception $e) {
+            $mimeType = 'image/jpeg';
+        }
+
+        $originalName = is_object($photo) ? $photo->original_name : ($photo['original_name'] ?? 'photo.jpg');
 
         return $this->response
             ->setHeader('Content-Type', $mimeType)
-            ->setHeader('Content-Disposition', 'inline; filename="' . $photo->original_name . '"')
+            ->setHeader('Content-Disposition', 'inline; filename="' . $originalName . '"')
             ->setBody(file_get_contents($absPath));
     }
 
@@ -230,12 +256,17 @@ class ImplementasiController extends BaseController
             return redirect()->back()->with('error', 'File fisik tidak ditemukan');
         }
 
-        // Inline preview for images
-        $mimeType = mime_content_type($absPath);
+        try {
+            $mimeType = mime_content_type($absPath) ?: 'image/jpeg';
+        } catch (\Exception $e) {
+            $mimeType = 'image/jpeg';
+        }
+
+        $originalName = is_object($payment) ? $payment->original_name : ($payment['original_name'] ?? 'proof.jpg');
 
         return $this->response
             ->setHeader('Content-Type', $mimeType)
-            ->setHeader('Content-Disposition', 'inline; filename="' . $payment->original_name . '"')
+            ->setHeader('Content-Disposition', 'inline; filename="' . $originalName . '"')
             ->setBody(file_get_contents($absPath));
     }
 
@@ -257,12 +288,17 @@ class ImplementasiController extends BaseController
             return redirect()->back()->with('error', 'File fisik tidak ditemukan');
         }
 
-        // Inline preview for images
-        $mimeType = mime_content_type($absPath);
+        try {
+            $mimeType = mime_content_type($absPath) ?: 'image/jpeg';
+        } catch (\Exception $e) {
+            $mimeType = 'image/jpeg';
+        }
+
+        $originalName = is_object($konsumsi) ? $konsumsi->original_name : ($konsumsi['original_name'] ?? 'konsumsi.jpg');
 
         return $this->response
             ->setHeader('Content-Type', $mimeType)
-            ->setHeader('Content-Disposition', 'inline; filename="' . $konsumsi->original_name . '"')
+            ->setHeader('Content-Disposition', 'inline; filename="' . $originalName . '"')
             ->setBody(file_get_contents($absPath));
     }
 }

@@ -164,8 +164,9 @@
                     ];
 
                     $navItems[] = ['route' => 'admin/pengumuman', 'icon' => 'fa-bullhorn',  'label' => 'Pengumuman',       'match' => 'admin/pengumuman'];
-                    $navItems[] = ['route' => 'admin/implementasi', 'icon' => 'fa-clipboard-check',  'label' => 'Validasi Implementasi',       'match' => 'admin/implementasi'];
+                    $navItems[] = ['route' => 'admin/implementasi', 'icon' => 'fa-list-check',  'label' => 'Validasi Implementasi',       'match' => 'admin/implementasi'];
 
+                    $navItems[] = ['route' => 'admin/teams',     'icon' => 'fa-users',           'label' => 'Data TIM Peserta', 'match' => 'admin/teams'];
                     $navItems[] = ['route' => 'admin/users/',    'icon' => 'fa-users-gear',      'label' => 'Manajemen User',   'match' => 'admin/users'];
                     $navItems[] = ['route' => 'admin/cms',      'icon' => 'fa-clapperboard',   'label' => 'Manajemen Konten', 'match' => 'admin/cms'];
                     $navItems[] = ['route' => 'admin/laporan',  'icon' => 'fa-file-contract',   'label' => 'Laporan',          'match' => 'admin/laporan'];
@@ -183,32 +184,33 @@
                         ]
                     ];
 
-                    // Pengumuman Tahap I - Tahap 5
-                    $navItems[] = ['route' => 'mahasiswa/pengumuman', 'icon' => 'fa-bullhorn', 'label' => 'Dana Thp I & Data Rekening', 'match' => 'mahasiswa/pengumuman'];
+                    // Tahap 5, 6 & 7
+                    $navItems[] = [
+                        'label' => 'Kelolosan Tahap I',
+                        'icon' => 'fa-money-bill-1',
+                        'children' => [
+                            ['route' => 'mahasiswa/pengumuman', 'icon' => 'fa-bullhorn', 'label' => 'Pengumuman', 'match' => 'mahasiswa/pengumuman'],
+                            ['route' => 'mahasiswa/pembekalan', 'icon' => 'fa-chalkboard-user', 'label' => 'Pembekalan', 'match' => 'mahasiswa/pembekalan'],
+                            ['route' => 'mahasiswa/implementasi', 'icon' => 'fa-list-check', 'label' => 'Implementasi', 'match' => 'mahasiswa/implementasi'],
+                        ]
+                    ];
 
-                    // Pembekalan - Tahap 6
-                    $navItems[] = ['route' => 'mahasiswa/pembekalan', 'icon' => 'fa-chalkboard-user', 'label' => 'Pembekalan', 'match' => 'mahasiswa/pembekalan'];
+                    // Tahap 8
+                    $navItems[] = [
+                        'label' => 'Logbook PMW',
+                        'icon' => 'fa-book',
+                        'children' => [
+                            ['route' => 'mahasiswa/bimbingan', 'icon' => 'fa-book', 'label' => 'Bimbingan', 'match' => 'mahasiswa/bimbingan'],
+                            ['route' => 'mahasiswa/mentoring', 'icon' => 'fa-handshake-angle', 'label' => 'Mentoring', 'match' => 'mahasiswa/mentoring'],
+                        ]
+                    ];
 
-                    // Implementasi List Perjanjian - Tahap 7
-                    $navItems[] = ['route' => 'mahasiswa/implementasi', 'icon' => 'fa-list-check', 'label' => 'Implementasi', 'match' => 'mahasiswa/implementasi'];
-                
-                    // Bimbingan - Tahap 6 (Implementasi, Bimbingan & Mentoring)
-                    $navItems[] = ['route' => 'mahasiswa/bimbingan', 'icon' => 'fa-chalkboard-user', 'label' => 'Bimbingan', 'match' => 'mahasiswa/bimbingan'];
-
-                    
-                      // Mentoring - Tahap 6 (Implementasi, Bimbingan & Mentoring)
-                    $navItems[] = ['route' => 'mahasiswa/mentoring', 'icon' => 'fa-handshake-angle', 'label' => 'Mentoring', 'match' => 'mahasiswa/mentoring'];
-
-                  
-                    // Laporan Kemajuan - Tahap 7-8 (Monev 1 & 2)
+                    // Laporan Kemajuan - Tahap xx (Monev 1 & 2)
                     $navItems[] = ['route' => 'mahasiswa/laporan-kemajuan', 'icon' => 'fa-chart-pie', 'label' => 'Laporan Kemajuan', 'match' => 'mahasiswa/laporan-kemajuan'];
 
-                    // Laporan Akhir - Tahap 10-11 (Laporan Akhir & Awarding)
+                    // Laporan Akhir - Tahap xx (Laporan Akhir & Awarding)
                     $navItems[] = ['route' => 'mahasiswa/laporan-akhir', 'icon' => 'fa-box-archive', 'label' => 'Laporan Akhir', 'match' => 'mahasiswa/laporan-akhir'];
-
-                    
-                   
-                    }
+                }
 
                 if ($mainRole === 'reviewer') {
                     // Penilaian Proposal - Tahap 2-3 (Seleksi Administrasi & Pitching Desk)
@@ -220,6 +222,8 @@
                 if ($mainRole === 'dosen') {
                     // Validasi Pitching Desk (Dosen Pendamping)
                     $navItems[] = ['route' => 'dosen/pitching-desk', 'icon' => 'fa-chalkboard-user', 'label' => 'Validasi Pitching', 'match' => 'dosen/pitching-desk'];
+                    // Validasi Implementasi
+                    $navItems[] = ['route' => 'dosen/implementasi', 'icon' => 'fa-list-check', 'label' => 'Validasi Implementasi', 'match' => 'dosen/implementasi'];
                     // Monitoring Tim - Tahap 6-8 (Implementasi & Monev)
                     $navItems[] = ['route' => 'dosen/monitoring', 'icon' => 'fa-users-viewfinder', 'label' => 'Monitoring Tim', 'match' => 'dosen/monitoring'];
                     // Validasi Logbook - Tahap 6 (Bimbingan)
@@ -498,7 +502,7 @@
                                     <?php else: ?>
                                         <?php foreach ($notifications as $notif): ?>
                                             <a href="<?= base_url($notif['link'] ?? '#') ?>?notif=<?= $notif['id'] ?>"
-                                               class="flex items-start gap-3 px-4 py-3 hover:bg-sky-50 transition-colors border-b border-slate-50 last:border-0">
+                                                class="flex items-start gap-3 px-4 py-3 hover:bg-sky-50 transition-colors border-b border-slate-50 last:border-0">
                                                 <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0
                                                     <?= $notif['type'] === 'proposal_submitted' ? 'bg-emerald-100 text-emerald-600' : 'bg-sky-100 text-sky-600' ?>">
                                                     <i class="fas <?= $notif['type'] === 'proposal_submitted' ? 'fa-file-import' : 'fa-info' ?> text-xs"></i>

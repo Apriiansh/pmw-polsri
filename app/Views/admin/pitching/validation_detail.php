@@ -36,17 +36,25 @@
 
     <?php
     $statusColors = [
-        'pending'  => 'bg-yellow-50 text-yellow-600 border-yellow-200',
-        'approved' => 'bg-emerald-50 text-emerald-600 border-emerald-200',
-        'revision' => 'bg-orange-50 text-orange-600 border-orange-200',
-        'rejected' => 'bg-rose-50 text-rose-600 border-rose-200',
+        'pending'  => 'bg-slate-100 text-slate-600 border-slate-200',
+        'submitted' => 'bg-amber-100 text-amber-600 border-amber-200',
+        'approved' => 'bg-emerald-100 text-emerald-600 border-emerald-200',
+        'revision' => 'bg-orange-100 text-orange-600 border-orange-200',
+        'rejected' => 'bg-rose-100 text-rose-600 border-rose-200',
     ];
     $statusLabels = [
-        'pending'  => 'Menunggu Validasi',
+        'pending'  => 'Belum Dikirim',
+        'submitted' => 'Menunggu Validasi',
         'approved' => 'Lolos Pitching',
         'revision' => 'Perlu Revisi',
         'rejected' => 'Ditolak',
     ];
+
+    // Determine current effective status
+    $currentStatus = $proposal['pitching_admin_status'];
+    if ($currentStatus === 'pending' && !empty($proposal['student_submitted_at'])) {
+        $currentStatus = 'submitted';
+    }
     ?>
 
     <!-- ================================================================
@@ -63,9 +71,9 @@
                     <?= esc($proposal['period_name'] ?? '-') ?> - <?= esc($proposal['period_year'] ?? '') ?>
                 </p>
             </div>
-            <span class="pmw-status <?= $statusColors[$proposal['pitching_admin_status']] ?? '' ?>">
+            <span class="pmw-status <?= $statusColors[$currentStatus] ?? '' ?>">
                 <i class="fas fa-circle text-[8px]"></i>
-                <?= $statusLabels[$proposal['pitching_admin_status']] ?? ucfirst($proposal['pitching_admin_status']) ?>
+                <?= $statusLabels[$currentStatus] ?? ucfirst($currentStatus) ?>
             </span>
         </div>
 
@@ -112,10 +120,18 @@
             $isBerkembang = $proposal['kategori_wirausaha'] === 'berkembang';
             $isComplete = $hasPpt && (!$isBerkembang || $hasVideo);
             ?>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black <?= $isComplete ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white' ?> shadow-sm">
-                <i class="fas <?= $isComplete ? 'fa-check-double' : 'fa-exclamation-triangle' ?>"></i>
-                <?= $isComplete ? 'LENGKAP' : 'BELUM LENGKAP' ?>
-            </span>
+            <div class="flex items-center gap-3">
+                <?php if (!empty($proposal['student_submitted_at'])): ?>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black bg-sky-500 text-white shadow-sm shadow-sky-100">
+                        <i class="fas fa-paper-plane"></i>
+                        TERKIRIM: <?= date('d/m/y H:i', strtotime($proposal['student_submitted_at'])) ?>
+                    </span>
+                <?php endif; ?>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black <?= $isComplete ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white' ?> shadow-sm">
+                    <i class="fas <?= $isComplete ? 'fa-check-double' : 'fa-exclamation-triangle' ?>"></i>
+                    <?= $isComplete ? 'LENGKAP' : 'BELUM LENGKAP' ?>
+                </span>
+            </div>
         </div>
         <div class="p-5 sm:p-7">
             <div class="grid sm:grid-cols-2 lg:grid-cols-<?= $isBerkembang ? '3' : '2' ?> gap-4">
@@ -289,25 +305,47 @@
                     Bahan Presentasi
                 </h3>
                 <?php if (isset($docsByKey['pitching_ppt'])): ?>
-                <a href="<?= base_url('admin/seleksi-administrasi/doc/' . $docsByKey['pitching_ppt']['id']) ?>" class="text-[10px] font-black text-orange-500 hover:text-orange-600 uppercase tracking-widest">
+                <a href="<?= base_url('admin/pitching-desk/doc/' . $docsByKey['pitching_ppt']['id']) ?>" class="text-[10px] font-black text-orange-500 hover:text-orange-600 uppercase tracking-widest">
                     <i class="fas fa-download mr-1"></i> Download
                 </a>
                 <?php endif; ?>
             </div>
             <div class="p-0">
                 <?php if (isset($docsByKey['pitching_ppt'])): ?>
-                <div class="aspect-3/4 sm:aspect-square w-full bg-slate-100 relative group">
-                    <iframe src="<?= base_url('admin/seleksi-administrasi/doc/' . $docsByKey['pitching_ppt']['id'] . '?inline=1') ?>" class="w-full h-full border-none" allow="autoplay"></iframe>
+                <?php 
+                    // Gunakan original_name karena file_path bisa saja memiliki ekstensi yang di-guess oleh server
+                    $fileExtension = strtolower(pathinfo($docsByKey['pitching_ppt']['original_name'], PATHINFO_EXTENSION));
+                    $isPdf = ($fileExtension === 'pdf');
+                ?>
+                <div class="aspect-3/4 sm:aspect-square w-full bg-slate-50 relative group flex items-center justify-center">
+                    <?php if ($isPdf): ?>
+                        <iframe src="<?= base_url('admin/pitching-desk/doc/' . $docsByKey['pitching_ppt']['id'] . '?inline=1') ?>" class="w-full h-full border-none" allow="autoplay"></iframe>
+                    <?php else: ?>
+                        <!-- Placeholder for non-PDF files (PPT/PPTX) to prevent automatic download -->
+                        <div class="text-center p-8">
+                            <div class="w-20 h-20 rounded-3xl bg-orange-100 text-orange-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-100/50">
+                                <i class="fas fa-file-powerpoint text-3xl"></i>
+                            </div>
+                            <h4 class="font-display font-bold text-slate-700 mb-1"><?= esc($docsByKey['pitching_ppt']['original_name']) ?></h4>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4">File <?= strtoupper($fileExtension) ?> (Preview tidak tersedia)</p>
+                            <a href="<?= base_url('admin/pitching-desk/doc/' . $docsByKey['pitching_ppt']['id']) ?>" class="btn-primary btn-sm px-6">
+                                <i class="fas fa-download mr-2"></i> Download & Buka
+                            </a>
+                        </div>
+                    <?php endif; ?>
+
                     <!-- Overlay for better UX -->
                     <div class="absolute inset-x-0 bottom-0 p-4 bg-linear-to-t from-slate-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                         <p class="text-white text-[10px] font-bold"><?= esc($docsByKey['pitching_ppt']['original_name']) ?></p>
                     </div>
                 </div>
                 <div class="p-3 bg-orange-50/50 border-t border-orange-100 flex items-center justify-between">
-                    <span class="text-[10px] text-orange-700 font-bold uppercase"><?= strtoupper(pathinfo($docsByKey['pitching_ppt']['file_path'], PATHINFO_EXTENSION)) ?></span>
-                    <a href="<?= base_url('admin/seleksi-administrasi/doc/' . $docsByKey['pitching_ppt']['id'] . '?inline=1') ?>" target="_blank" class="btn-ghost btn-xs text-orange-600">
+                    <span class="text-[10px] text-orange-700 font-bold uppercase"><?= strtoupper($fileExtension) ?> File</span>
+                    <?php if ($isPdf): ?>
+                    <a href="<?= base_url('admin/pitching-desk/doc/' . $docsByKey['pitching_ppt']['id'] . '?inline=1') ?>" target="_blank" class="btn-ghost btn-xs text-orange-600">
                         <i class="fas fa-expand-alt"></i>
                     </a>
+                    <?php endif; ?>
                 </div>
                 <?php else: ?>
                 <div class="p-12 text-center bg-slate-50/50">

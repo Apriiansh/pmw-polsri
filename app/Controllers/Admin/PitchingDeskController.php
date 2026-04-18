@@ -26,10 +26,11 @@ class PitchingDeskController extends BaseController
         $allProposals = $proposalModel->getProposalsForAdminPitching();
         $stats = [
             'total'     => count($allProposals),
-            'pending'   => count(array_filter($allProposals, fn($p) => $p['admin_status'] === 'pending')),
-            'approved'  => count(array_filter($allProposals, fn($p) => $p['admin_status'] === 'approved')),
-            'revision'  => count(array_filter($allProposals, fn($p) => $p['admin_status'] === 'revision')),
-            'rejected'  => count(array_filter($allProposals, fn($p) => $p['admin_status'] === 'rejected')),
+            'pending'   => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'pending' && empty($p['student_submitted_at']))),
+            'submitted' => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'pending' && !empty($p['student_submitted_at']))),
+            'approved'  => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'approved')),
+            'revision'  => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'revision')),
+            'rejected'  => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'rejected')),
         ];
 
         return view('admin/pitching/validation', [
@@ -114,6 +115,25 @@ class PitchingDeskController extends BaseController
             return redirect()->to('admin/pitching-desk')->with('message', 'Validasi final berhasil disimpan');
         }
 
-        return redirect()->back()->with('error', 'Gagal menyimpan validasi');
+    }
+
+    /**
+     * View/Download documents (PPT/PDF)
+     */
+    public function viewDoc(int $id)
+    {
+        $documentModel = new PmwDocumentModel();
+        $doc = $documentModel->find($id);
+
+        if (!$doc) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Dokumen tidak ditemukan');
+        }
+
+        $path = WRITEPATH . $doc['file_path'];
+        if (!file_exists($path)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('File tidak ditemukan di server');
+        }
+
+        return $this->response->download($path, null)->inline();
     }
 }

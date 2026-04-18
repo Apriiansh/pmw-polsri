@@ -30,16 +30,22 @@ class PitchingDeskController extends BaseController
         // Get active period
         $activePeriod = $periodModel->getActive();
 
-        // Get proposal with status approved for this user, including leader name and selection statuses
+        // Get proposal with status approved for this user, including leader name, dosen info and selection statuses
         $proposal = $proposalModel->select([
-                'pmw_proposals.*', 
-                'pm.nama as ketua_nama',
-                'sp.dosen_status as pitching_dosen_status',
-                'sp.admin_status as pitching_admin_status',
-                'sp.dosen_catatan as pitching_dosen_catatan',
-                'sp.admin_catatan as pitching_admin_catatan'
-            ])
+            'pmw_proposals.*',
+            'pm.nama as ketua_nama',
+            'l.nama as dosen_nama',
+            'l.nip as dosen_nip',
+            'l.prodi as dosen_prodi',
+            'sp.dosen_status as pitching_dosen_status',
+            'sp.admin_status as pitching_admin_status',
+            'sp.dosen_catatan as pitching_dosen_catatan',
+            'sp.admin_catatan as pitching_admin_catatan',
+            'sp.student_submitted_at'
+        ])
             ->join('pmw_proposal_members pm', 'pm.proposal_id = pmw_proposals.id AND pm.role = "ketua"', 'left')
+            ->join('pmw_proposal_assignments pa', 'pa.proposal_id = pmw_proposals.id', 'left')
+            ->join('pmw_lecturers l', 'l.id = pa.lecturer_id', 'left')
             ->join('pmw_selection_pitching sp', 'sp.proposal_id = pmw_proposals.id', 'left')
             ->where('pmw_proposals.leader_user_id', $user->id)
             ->where('pmw_proposals.status', 'approved')
@@ -248,10 +254,118 @@ class PitchingDeskController extends BaseController
         ]);
     }
 
+    /**
+     * Submit pitching materials formally
+     */
+    public function submit()
+    {
+        $user = auth()->user();
+        $proposalModel = new PmwProposalModel();
+        $documentModel = new PmwDocumentModel();
+        $pitchingModel = new \App\Models\Selection\PmwSelectionPitchingModel();
+        $notificationModel = new \App\Models\NotificationModel();
+
+        $proposal = $proposalModel->select([
+            'pmw_proposals.*',
+            'pm.nama as ketua_nama',
+            'pa.lecturer_id'
+        ])
+            ->join('pmw_proposal_members pm', 'pm.proposal_id = pmw_proposals.id AND pm.role = "ketua"', 'left')
+            ->join('pmw_proposal_assignments pa', 'pa.proposal_id = pmw_proposals.id', 'left')
+            ->where('pmw_proposals.leader_user_id', $user->id)
+            ->where('pmw_proposals.status', 'approved')
+            ->first();
+
+        if (!$proposal) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Proposal tidak ditemukan']);
+        }
+
+        // Validate PPT
+        $ppt = $documentModel->where('proposal_id', $proposal['id'])
+            ->where('doc_key', 'pitching_ppt')
+            ->first();
+
+        if (!$ppt) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Anda harus mengunggah file PPT terlebih dahulu']);
+        }
+
+        // Validate Video for Berkembang
+        if ($proposal['kategori_wirausaha'] === 'berkembang') {
+            if (empty($proposal['video_url'])) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Harap isi link video pitching Anda']);
+            }
+            if (empty($proposal['detail_keterangan'])) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Harap isi detail keterangan pengembangan usaha Anda']);
+            }
+        }
+
+        // Update submission status
+        $pitchingRecord = $pitchingModel->where('proposal_id', $proposal['id'])->first();
+        $data = [
+            'student_submitted_at' => date('Y-m-d H:i:s'),
+            'dosen_status'         => 'pending', // Reset status if it was in revision
+        ];
+
+        if ($pitchingRecord) {
+            $pitchingModel->update($pitchingRecord->id, $data);
+        } else {
+            $data['proposal_id'] = $proposal['id'];
+            $pitchingModel->insert($data);
+        }
+
+        // Send notification to lecturer if assigned
+        if (!empty($proposal['lecturer_id'])) {
+            $lecturerModel = new \App\Models\LecturerModel();
+            $lecturer = $lecturerModel->find($proposal['lecturer_id']);
+            if ($lecturer && !empty($lecturer['user_id'])) {
+                $notificationModel->createPitchingSubmissionNotification(
+                    (int) $lecturer['user_id'],
+                    (int) $proposal['id'],
+                    $proposal['nama_usaha'],
+                    $proposal['ketua_nama']
+                );
+            }
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Bahan pitching berhasil dikirim! Silakan tunggu validasi dari Dosen Pendamping.'
+        ]);
+    }
+
     private function isPhaseOpen(?array $phase): bool
     {
         if (!$phase) return false;
         $now = date('Y-m-d H:i:s');
         return $now >= $phase['start_date'] && $now <= $phase['end_date'];
+    }
+
+    /**
+     * View/Download documents (PPT/PDF)
+     */
+    public function viewDoc(int $id)
+    {
+        $documentModel = new PmwDocumentModel();
+        $doc = $documentModel->find($id);
+
+        if (!$doc) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Dokumen tidak ditemukan');
+        }
+
+        // Check ownership
+        $user = auth()->user();
+        $proposalModel = new PmwProposalModel();
+        $proposal = $proposalModel->find($doc['proposal_id']);
+
+        if (!$proposal || (int)$proposal['leader_user_id'] !== (int)$user->id) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Akses ditolak');
+        }
+
+        $path = WRITEPATH . $doc['file_path'];
+        if (!file_exists($path)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('File tidak ditemukan di server');
+        }
+
+        return $this->response->download($path, null)->inline();
     }
 }

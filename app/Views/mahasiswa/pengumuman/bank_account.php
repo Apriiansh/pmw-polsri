@@ -16,17 +16,56 @@
         </div>
     </div>
 
-    <div class="grid md:grid-cols-3 gap-6 animate-stagger delay-100">
+    <!-- ─── STICKY ACTION BAR ────────────────────────────────────────── -->
+    <div class="sticky top-4 z-40 bg-white/90 backdrop-blur-md shadow-lg border border-sky-100 rounded-2xl p-4 mb-6 animate-stagger delay-150 flex items-center justify-between gap-4 flex-wrap">
+        
+        <!-- Left: Status Info -->
+        <div class="flex items-center gap-3 min-w-0">
+            <?php
+            $hasData = !empty($bankAccount->bank_name) && !empty($bankAccount->account_number);
+            $updateAt = $bankAccount->updated_at ?? null;
+            ?>
+            <div class="w-9 h-9 rounded-xl <?= $hasData ? 'bg-emerald-100' : 'bg-amber-100' ?> flex items-center justify-center shrink-0">
+                <i class="fas <?= $hasData ? 'fa-circle-check text-emerald-500' : 'fa-circle-info text-amber-500' ?> text-base"></i>
+            </div>
+            <div class="min-w-0">
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status Data Rekening</p>
+                <p class="text-sm font-black <?= $hasData ? 'text-emerald-700' : 'text-amber-700' ?>">
+                    <?= $hasData ? 'Data Sudah Lengkap ✓' : 'Belum Dilengkapi' ?>
+                </p>
+                <?php if (!empty($updateAt)): ?>
+                    <p class="text-[10px] text-slate-500 font-mono">
+                        Terakhir Update: <?= date('d M Y H:i', strtotime($updateAt)) ?>
+                    </p>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Right: Action Summary -->
+        <div class="flex items-center gap-2 shrink-0">
+            <button type="submit" form="bankAccountForm" class="btn-accent h-10 px-6 font-bold rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2">
+                <i class="fas fa-save shadow-sm"></i>
+                <span>Simpan Data</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         2. PHASE INFO
+    ================================================================= -->
+    <div class="grid md:grid-cols-2 gap-6 animate-stagger delay-100">
+        <!-- Period Card -->
         <div class="card-premium p-5 flex flex-col justify-between" @mousemove="handleMouseMove">
             <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Periode</p>
             <p class="text-base font-bold text-slate-800 mt-1">
                 <?= $activePeriod ? esc($activePeriod['name']) . ' ' . esc($activePeriod['year']) : '-' ?>
             </p>
             <div class="mt-4 pt-4 border-t border-slate-50">
-                <p class="text-[11px] font-bold text-slate-500 italic">Input Data Rekening</p>
+                <p class="text-[11px] font-bold text-slate-500 italic">Pengisian Data Rekening</p>
             </div>
         </div>
 
+        <!-- Schedule Card -->
         <div class="card-premium p-5 border-l-4 <?= $isPhaseOpen ? 'border-l-emerald-500' : 'border-l-rose-500' ?>" @mousemove="handleMouseMove">
             <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Jadwal Input</p>
             <p class="text-sm font-bold text-slate-800 mt-1">
@@ -36,22 +75,6 @@
                 <i class="fas <?= $isPhaseOpen ? 'fa-lock-open' : 'fa-lock' ?>"></i>
                 <?= $isPhaseOpen ? 'INPUT DIBUKA' : 'INPUT DITUTUP' ?>
             </span>
-        </div>
-
-        <div class="card-premium p-5 border-l-4 border-l-sky-500" @mousemove="handleMouseMove">
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status Data</p>
-            <div class="flex items-center gap-2 mt-1">
-                <?php
-                $hasData = !empty($bankAccount->bank_name) && !empty($bankAccount->account_number);
-                ?>
-                <i class="fas <?= $hasData ? 'fa-circle-check text-emerald-500' : 'fa-circle-info text-amber-500' ?>"></i>
-                <p class="text-sm font-bold text-slate-800 uppercase">
-                    <?= $hasData ? 'Sudah Diisi' : 'Belum Diisi' ?>
-                </p>
-            </div>
-            <p class="text-[11px] text-slate-500 mt-2">
-                <?= $hasData ? 'Data rekening telah lengkap.' : 'Silakan lengkapi data rekening Anda.' ?>
-            </p>
         </div>
     </div>
 

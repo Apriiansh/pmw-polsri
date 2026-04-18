@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var \App\Entities\PmwProposal $proposal
  * @var \App\Entities\PmwPeriod $activePeriod
@@ -21,7 +22,7 @@
             </h2>
             <p class="section-subtitle text-[10px] sm:text-[11px]">Tahap 7 — Dokumentasi Barang & Bukti Pembayaran</p>
         </div>
-        <?php if ((is_object($proposal) ? $proposal->implementasi_status : $proposal['implementasi_status']) === 'rejected' && $canEdit): ?>
+        <?php if ($selection && $selection->admin_status === 'revision' && $canEdit): ?>
             <button @click="resetAll()" class="btn-outline btn-sm bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-500 hover:text-white group">
                 <i class="fas fa-trash-can mr-2 group-hover:rotate-12 transition-transform"></i>Reset Semua Data
             </button>
@@ -29,7 +30,12 @@
     </div>
 
     <!-- ─── STATUS CARDS ───────────────────────────────────────────── -->
-    <div class="grid md:grid-cols-3 gap-6 animate-stagger delay-100">
+    <?php
+        $selectionStatus = $selection ? $selection->admin_status : 'pending';
+        $dosenStatus     = $selection ? ($selection->dosen_status ?? 'pending') : 'pending';
+        $isSubmitted     = $selection && !empty($selection->student_submitted_at);
+    ?>
+    <div class="grid md:grid-cols-4 gap-5 animate-stagger delay-100">
         <div class="card-premium p-5 flex flex-col justify-between" @mousemove="handleMouseMove">
             <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Periode Aktif</p>
             <p class="text-base font-bold text-slate-800 mt-1">
@@ -52,33 +58,54 @@
             </span>
         </div>
 
-        <div class="card-premium p-5 border-l-4 <?= $proposal['implementasi_status'] === 'approved' ? 'border-l-emerald-500' : ($proposal['implementasi_status'] === 'rejected' ? 'border-l-rose-500' : 'border-l-amber-500') ?>" @mousemove="handleMouseMove">
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status Verifikasi Admin</p>
+        <?php
+            $dosenBorder = match($dosenStatus) { 'approved' => 'border-l-emerald-500', 'rejected', 'revision' => 'border-l-orange-500', default => 'border-l-amber-400' };
+            $dosenIcon   = match($dosenStatus) { 'approved' => 'fa-circle-check text-emerald-500', 'rejected' => 'fa-circle-xmark text-rose-500', 'revision' => 'fa-circle-exclamation text-orange-500', default => 'fa-clock text-amber-400' };
+            $dosenLabel  = match($dosenStatus) { 'approved' => 'Disetujui', 'rejected' => 'Ditolak', 'revision' => 'Perlu Revisi', default => ($isSubmitted ? 'Menunggu Review' : 'Belum Dikirim') };
+        ?>
+        <div class="card-premium p-5 border-l-4 <?= $dosenBorder ?>" @mousemove="handleMouseMove">
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status Dosen Pendamping</p>
             <div class="flex items-center gap-2 mt-1">
-                <i class="fas <?= $proposal['implementasi_status'] === 'approved' ? 'fa-circle-check text-emerald-500' : ($proposal['implementasi_status'] === 'rejected' ? 'fa-circle-xmark text-rose-500' : ($proposal['implementasi_status'] === 'revision' ? 'fa-circle-exclamation text-orange-500' : 'fa-clock text-amber-500')) ?>"></i>
-                <p class="text-sm font-bold text-slate-800 uppercase">
-                    <?= match ($proposal['implementasi_status']) {
-                        'approved' => 'Disetujui',
-                        'rejected' => 'Ditolak',
-                        'revision' => 'Perlu Revisi',
-                        default => 'Menunggu Verifikasi',
-                    } ?>
-                </p>
+                <i class="fas <?= $dosenIcon ?>"></i>
+                <p class="text-sm font-bold text-slate-800 uppercase"><?= $dosenLabel ?></p>
             </div>
-            <?php if ($proposal['implementasi_catatan']): ?>
-                <div class="mt-2 p-2 rounded-lg bg-slate-50 border border-slate-100">
-                    <p class="text-[10px] text-slate-500 italic">"<?= esc($proposal['implementasi_catatan']) ?>"</p>
+            <?php if ($selection && $selection->dosen_catatan): ?>
+                <div class="mt-2 p-2 rounded-lg bg-amber-50 border border-amber-100">
+                    <p class="text-[10px] text-amber-600 italic">"<?= esc($selection->dosen_catatan) ?>"</p>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <?php
+            $adminBorder = match($selectionStatus) { 'approved' => 'border-l-emerald-500', 'rejected' => 'border-l-rose-500', 'revision' => 'border-l-orange-500', default => 'border-l-slate-300' };
+            $adminIcon   = match($selectionStatus) { 'approved' => 'fa-circle-check text-emerald-500', 'rejected' => 'fa-circle-xmark text-rose-500', 'revision' => 'fa-circle-exclamation text-orange-500', default => 'fa-clock text-slate-400' };
+            $adminLabel  = match($selectionStatus) { 'approved' => 'Disetujui', 'rejected' => 'Ditolak', 'revision' => 'Perlu Revisi', default => ($dosenStatus === 'approved' ? 'Menunggu Admin' : 'Menunggu Dosen') };
+        ?>
+        <div class="card-premium p-5 border-l-4 <?= $adminBorder ?>" @mousemove="handleMouseMove">
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status Admin UPAPKK</p>
+            <div class="flex items-center gap-2 mt-1">
+                <i class="fas <?= $adminIcon ?>"></i>
+                <p class="text-sm font-bold text-slate-800 uppercase"><?= $adminLabel ?></p>
+            </div>
+            <?php if ($selection && $selection->admin_catatan): ?>
+                <div class="mt-2 p-2 rounded-lg bg-rose-50 border border-rose-100">
+                    <p class="text-[10px] text-rose-600 italic">"<?= esc($selection->admin_catatan) ?>"</p>
                 </div>
             <?php endif; ?>
         </div>
     </div>
 
     <!-- ─── SUMMARY STATS ──────────────────────────────────────────── -->
-    <div class="grid md:grid-cols-2 gap-6 animate-stagger delay-150">
+    <div class="grid md:grid-cols-3 gap-6 animate-stagger delay-150">
         <div class="card-premium p-5 flex items-center justify-between group overflow-hidden" @mousemove="handleMouseMove">
             <div class="relative z-10">
                 <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Komoditas/Barang</p>
-                <p class="text-3xl font-bold text-sky-600 mt-1"><?= count($items) ?> <span class="text-xs text-slate-400 font-normal">item belanja</span></p>
+                <?php
+                    $totalQty = array_reduce($items, function($carry, $item) {
+                        return $carry + (is_object($item) ? $item->qty : ($item['qty'] ?? 1));
+                    }, 0);
+                ?>
+                <p class="text-2xl font-bold text-sky-600 mt-1"><?= $totalQty ?> <span class="text-xs text-slate-400 font-normal">item belanja</span></p>
             </div>
             <div class="w-14 h-14 rounded-2xl bg-sky-50 flex items-center justify-center group-hover:bg-sky-100 transition-colors duration-500">
                 <i class="fas fa-cubes-stacked text-sky-500 text-2xl group-hover:scale-110 transition-transform"></i>
@@ -86,14 +113,97 @@
         </div>
         <div class="card-premium p-5 flex items-center justify-between group overflow-hidden" @mousemove="handleMouseMove">
             <div class="relative z-10">
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Total RAB</p>
+                <p class="text-2xl font-bold text-violet-600 mt-1">Rp <?= number_format($proposal['total_rab'] ?? 0, 0, ',', '.') ?></p>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-violet-50 flex items-center justify-center group-hover:bg-violet-100 transition-colors duration-500">
+                <i class="fas fa-wallet text-violet-500 text-2xl group-hover:scale-110 transition-transform"></i>
+            </div>
+        </div>
+        <div class="card-premium p-5 flex items-center justify-between group overflow-hidden" @mousemove="handleMouseMove">
+            <div class="relative z-10">
                 <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Akumulasi Harga</p>
-                <p class="text-3xl font-bold text-emerald-600 mt-1">Rp <?= number_format($totalPrice, 0, ',', '.') ?></p>
+                <p class="text-2xl font-bold text-emerald-600 mt-1">Rp <?= number_format($totalPrice, 0, ',', '.') ?></p>
             </div>
             <div class="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors duration-500">
                 <i class="fas fa-receipt text-emerald-500 text-2xl group-hover:scale-110 transition-transform"></i>
             </div>
         </div>
     </div>
+
+    <!-- ─── STICKY ACTION BAR ────────────────────────────────────────── -->
+    <?php if ($isPhaseOpen): ?>
+    <div class="sticky top-4 z-[45] bg-white/80 backdrop-blur-xl shadow-2xl shadow-sky-500/10 border border-white/40 rounded-3xl p-4 animate-stagger delay-150 flex items-center justify-between gap-4 flex-wrap ring-1 ring-slate-900/5">
+
+        <!-- Left: Status info -->
+        <div class="flex items-center gap-4 min-w-0">
+            <?php if ($selectionStatus === 'approved'): ?>
+                <div class="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center shrink-0 border border-emerald-200">
+                    <i class="fas fa-check-double text-emerald-600 text-lg"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">Status Implementasi</p>
+                    <p class="text-sm font-black text-emerald-700 mt-1">Selesai & Disetujui ✓</p>
+                </div>
+            <?php elseif ($isSubmitted && $dosenStatus === 'pending'): ?>
+                <div class="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center shrink-0 border border-amber-200">
+                    <i class="fas fa-paper-plane text-amber-600 text-lg animate-bounce-soft"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">Status Implementasi</p>
+                    <p class="text-sm font-black text-amber-700 mt-1">Sedang Diverifikasi</p>
+                    <p class="text-[9px] text-amber-500 font-bold bg-amber-50 px-2 py-0.5 rounded-full inline-block mt-0.5">
+                        <i class="fas fa-clock mr-1"></i><?= $selection->student_submitted_at ? date('d M Y H:i', strtotime($selection->student_submitted_at)) : '-' ?>
+                    </p>
+                </div>
+            <?php elseif ($isSubmitted && $dosenStatus === 'approved' && $selectionStatus === 'pending'): ?>
+                <div class="w-12 h-12 rounded-2xl bg-sky-100 flex items-center justify-center shrink-0 border border-sky-200">
+                    <i class="fas fa-building-circle-check text-sky-600 text-lg animate-pulse-soft"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">Status Implementasi</p>
+                    <p class="text-sm font-black text-sky-700 mt-1">Dosen ✓ · Menunggu Admin</p>
+                </div>
+            <?php elseif ($canEdit): ?>
+                <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">
+                    <i class="fas fa-file-signature text-slate-500 text-lg"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">Status Implementasi</p>
+                    <p class="text-sm font-black text-slate-700 mt-1">
+                        <?= $isSubmitted ? 'Perlu Revisi Data' : 'Draf Laporan Belum Dikirim' ?>
+                    </p>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Right: Action button -->
+        <div class="flex items-center gap-3 shrink-0">
+            <?php if ($canEdit): ?>
+                <!-- Summary indicator -->
+                <div class="hidden lg:flex flex-col items-end mr-2">
+                    <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Total Akumulasi</p>
+                    <p class="text-sm font-black text-emerald-600">Rp <?= number_format($totalPrice, 0, ',', '.') ?></p>
+                </div>
+
+                <button
+                    @click="submitImplementation()"
+                    :disabled="isSubmitting"
+                    class="btn-primary h-12 px-8 bg-linear-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-xl shadow-sky-500/20 hover:shadow-sky-500/40 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed uppercase tracking-widest text-[11px]"
+                >
+                    <span x-show="!isSubmitting">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        <?= $isSubmitted ? 'Kirim Ulang' : 'Kirim Laporan' ?>
+                    </span>
+                    <span x-show="isSubmitting">
+                        <i class="fas fa-spinner fa-spin mr-2"></i>Mengirim...
+                    </span>
+                </button>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php endif; ?>
+
 
     <?php if ($canEdit): ?>
         <!-- ─── ADD ITEM FORM ──────────────────────────────────────────── -->
@@ -107,29 +217,36 @@
                 </div>
             </div>
             <div class="p-5 sm:p-7">
-                <form @submit.prevent="saveItem()" class="grid md:grid-cols-2 gap-6">
-                    <div class="form-field">
+                <form @submit.prevent="saveItem()" class="grid md:grid-cols-12 gap-6">
+                    <div class="md:col-span-6 form-field">
                         <label class="form-label">Nama Barang <span class="required">*</span></label>
                         <div class="input-group">
                             <div class="input-icon"><i class="fas fa-tag"></i></div>
                             <input type="text" x-model="newItem.item_title" placeholder="Contoh: Oven Listrik, Tepung, dll" required>
                         </div>
                     </div>
-                    <div class="form-field">
+                    <div class="md:col-span-2 form-field">
+                        <label class="form-label">Kuantiti</label>
+                        <div class="input-group">
+                            <div class="input-icon"><i class="fas fa-cubes"></i></div>
+                            <input type="number" x-model="newItem.qty" min="1" placeholder="1">
+                        </div>
+                    </div>
+                    <div class="md:col-span-4 form-field">
                         <label class="form-label">Harga Satuan/Total (Rp)</label>
                         <div class="input-group">
                             <div class="input-icon"><i class="fas fa-rupiah-sign"></i></div>
                             <input type="number" x-model="newItem.price" placeholder="0">
                         </div>
                     </div>
-                    <div class="md:col-span-2 form-field">
+                    <div class="md:col-span-12 form-field">
                         <label class="form-label">Justifikasi / Detail Kegunaan</label>
                         <div class="input-group p-0!">
                             <div class="input-icon pl-3"><i class="fas fa-align-left"></i></div>
                             <textarea x-model="newItem.item_description" rows="3" class="px-0! py-3!" placeholder="Jelaskan secara ringkas untuk apa barang ini digunakan dalam usaha Anda..."></textarea>
                         </div>
                     </div>
-                    <div class="md:col-span-2 flex justify-end">
+                    <div class="md:col-span-12 flex justify-end">
                         <button type="submit" :disabled="isLoading" class="btn-primary w-full sm:w-auto h-12 px-8">
                             <i class="fas fa-save mr-2" :class="isLoading ? 'fa-spin fa-spinner' : ''"></i>
                             <span x-text="isLoading ? 'Memproses...' : 'Simpan Inventaris'"></span>
@@ -158,34 +275,38 @@
                                     <i class="fas fa-box text-slate-400 group-hover/item:text-sky-500 transition-colors"></i>
                                 </div>
                                 <div>
-                                <h4 class="font-display font-bold text-base text-(--text-heading)"><?= esc(is_object($item) ? $item->item_title : $item['item_title']) ?></h4>
-                                <div class="flex items-center gap-2 mt-0.5">
-                                    <span class="text-xs font-bold text-emerald-600">Rp <?= number_format(is_object($item) ? $item->price : $item['price'], 0, ',', '.') ?></span>
-                                    <span class="w-1 h-1 rounded-full bg-slate-200"></span>
-                                    <span class="text-[10px] font-black text-slate-400 uppercase">Perolehan Barang</span>
+                                    <h4 class="font-display font-bold text-base text-(--text-heading)"><?= esc(is_object($item) ? $item->item_title : $item['item_title']) ?></h4>
+                                    <div class="flex items-center gap-2 mt-0.5">
+                                        <span class="text-xs font-bold text-slate-700">Rp <?= number_format(is_object($item) ? $item->price : $item['price'], 0, ',', '.') ?></span>
+                                        <span class="text-[10px] font-black uppercase text-slate-400">×</span>
+                                        <span class="text-[10px] font-black uppercase text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md"><?= is_object($item) ? $item->qty : ($item['qty'] ?? 1) ?> pcs</span>
+                                        <span class="w-1 h-1 rounded-full bg-slate-200"></span>
+                                        <span class="text-xs font-bold text-emerald-600">Total: Rp <?= number_format((is_object($item) ? $item->price : $item['price']) * (is_object($item) ? $item->qty : ($item['qty'] ?? 1)), 0, ',', '.') ?></span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <?php 
+                            <?php
                             $itemDesc = is_object($item) ? $item->item_description : ($item['item_description'] ?? '');
-                            if ($itemDesc): 
-                        ?>
-                            <div class="mt-4 p-3 rounded-xl bg-slate-50/50 border border-slate-100 text-[13px] text-slate-600 leading-relaxed">
-                                <?= nl2br(esc((string)$itemDesc)) ?>
-                            </div>
-                        <?php endif; ?>
-                    </div>
+                            if ($itemDesc):
+                            ?>
+                                <div class="mt-4 p-3 rounded-xl bg-slate-50/50 border border-slate-100 text-[13px] text-slate-600 leading-relaxed">
+                                    <?= nl2br(esc((string)$itemDesc)) ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
 
+                        <?php if ($canEdit): ?>
                         <div class="flex items-center gap-1 shrink-0">
-                            <button @click="openEditItem(<?= is_object($item) ? $item->id : $item['id'] ?>, <?= htmlspecialchars(json_encode(is_object($item) ? $item->item_title : $item['item_title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode((is_object($item) ? $item->item_description : ($item['item_description'] ?? '')) ?: ''), ENT_QUOTES, 'UTF-8') ?>, <?= is_object($item) ? $item->price : $item['price'] ?>)"
+                            <button @click="openEditItem(<?= is_object($item) ? $item->id : $item['id'] ?>, <?= htmlspecialchars(json_encode(is_object($item) ? $item->item_title : $item['item_title']), ENT_QUOTES, 'UTF-8') ?>, <?= htmlspecialchars(json_encode((is_object($item) ? $item->item_description : ($item['item_description'] ?? '')) ?: ''), ENT_QUOTES, 'UTF-8') ?>, <?= is_object($item) ? $item->qty : ($item['qty'] ?? 1) ?>, <?= is_object($item) ? $item->price : $item['price'] ?>)"
                                 class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:bg-sky-50 hover:text-sky-600 border border-transparent hover:border-sky-100 transition-all bg-white shadow-sm hover:shadow-sky-100">
                                 <i class="fas fa-pen-to-square text-sm"></i>
                             </button>
                             <button @click="deleteItem(<?= is_object($item) ? $item->id : $item['id'] ?>)"
-                                    class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-all">
-                                    <i class="fas fa-trash-can text-sm"></i>
-                                </button>
-                            </div>
+                                class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-all">
+                                <i class="fas fa-trash-can text-sm"></i>
+                            </button>
+                        </div>
+                        <?php endif; ?>
                     </div>
 
                     <!-- Photos Section -->
@@ -197,21 +318,21 @@
                         </div>
 
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                            <?php 
-                                $itemPhotos = (is_object($item) ? $item->photos : ($item['photos'] ?? [])) ?? [];
-                                foreach ($itemPhotos as $photo): 
+                            <?php
+                            $itemPhotos = (is_object($item) ? $item->photos : ($item['photos'] ?? [])) ?? [];
+                            foreach ($itemPhotos as $photo):
                             ?>
                                 <div class="group/img relative aspect-square rounded-2xl overflow-hidden border border-slate-100 bg-slate-50">
-                                    <img src="<?= base_url('admin/implementasi/photo/' . (is_object($photo) ? $photo->id : $photo['id'])) ?>"
+                                    <img src="<?= base_url('mahasiswa/implementasi/photo/' . (is_object($photo) ? $photo->id : $photo['id'])) ?>"
                                         alt="<?= esc(is_object($photo) ? $photo->photo_title : $photo['photo_title']) ?>"
                                         class="w-full h-full object-cover group-hover/img:scale-110 transition-transform duration-700">
 
                                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover/img:opacity-100 transition-all duration-300 flex flex-col justify-end p-3">
                                         <div class="flex items-center justify-center gap-2 mb-2">
-                                            <a href="<?= base_url('admin/implementasi/photo/' . (is_object($photo) ? $photo->id : $photo['id'])) ?>" target="_blank"
+                                            <button @click="openLightbox('<?= base_url('mahasiswa/implementasi/photo/' . (is_object($photo) ? $photo->id : $photo['id'])) ?>', '<?= esc(is_object($photo) ? $photo->photo_title : $photo['photo_title']) ?>')"
                                                 class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/40 transition-colors">
                                                 <i class="fas fa-eye text-xs"></i>
-                                            </a>
+                                            </button>
                                             <?php if ($canEdit): ?>
                                                 <button @click="deletePhoto(<?= is_object($photo) ? $photo->id : $photo['id'] ?>)"
                                                     class="w-8 h-8 rounded-full bg-rose-500/20 backdrop-blur-md text-rose-200 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-colors">
@@ -307,16 +428,16 @@
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
                 <?php foreach ($payments as $payment): ?>
                     <div class="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300">
-                        <img src="<?= base_url('admin/implementasi/payment/' . (is_object($payment) ? $payment->id : $payment['id'])) ?>"
+                        <img src="<?= base_url('mahasiswa/implementasi/payment/' . (is_object($payment) ? $payment->id : $payment['id'])) ?>"
                             alt="<?= esc(is_object($payment) ? $payment->payment_title : $payment['payment_title']) ?>"
                             class="w-full h-full object-cover">
 
                         <div class="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-3">
                             <div class="flex items-center justify-center gap-2 mb-2">
-                                <a href="<?= base_url('admin/implementasi/payment/' . (is_object($payment) ? $payment->id : $payment['id'])) ?>" target="_blank"
+                                <button @click="openLightbox('<?= base_url('mahasiswa/implementasi/payment/' . (is_object($payment) ? $payment->id : $payment['id'])) ?>', '<?= esc(is_object($payment) ? $payment->payment_title : $payment['payment_title']) ?>')"
                                     class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/40 transition-colors">
                                     <i class="fas fa-eye text-xs"></i>
-                                </a>
+                                </button>
                                 <?php if ($canEdit): ?>
                                     <button @click="openEditPayment(<?= is_object($payment) ? $payment->id : $payment['id'] ?>, '<?= esc(is_object($payment) ? $payment->payment_title : $payment['payment_title']) ?>')"
                                         class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/40 transition-colors">
@@ -399,16 +520,16 @@
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
                 <?php foreach ($konsumsi ?? [] as $k): ?>
                     <div class="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-300">
-                        <img src="<?= base_url('admin/implementasi/konsumsi/' . (is_object($k) ? $k->id : $k['id'])) ?>"
+                        <img src="<?= base_url('mahasiswa/implementasi/konsumsi/' . (is_object($k) ? $k->id : $k['id'])) ?>"
                             alt="<?= esc(is_object($k) ? $k->konsumsi_title : $k['konsumsi_title']) ?>"
                             class="w-full h-full object-cover">
 
                         <div class="absolute inset-0 bg-gradient-to-t from-amber-950/90 via-amber-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-3">
                             <div class="flex items-center justify-center gap-2 mb-2">
-                                <a href="<?= base_url('admin/implementasi/konsumsi/' . (is_object($k) ? $k->id : $k['id'])) ?>" target="_blank"
+                                <button @click="openLightbox('<?= base_url('mahasiswa/implementasi/konsumsi/' . (is_object($k) ? $k->id : $k['id'])) ?>', '<?= esc(is_object($k) ? $k->konsumsi_title : $k['konsumsi_title']) ?>')"
                                     class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/40 transition-colors">
                                     <i class="fas fa-eye text-xs"></i>
-                                </a>
+                                </button>
                                 <?php if ($canEdit): ?>
                                     <button @click="openEditKonsumsi(<?= is_object($k) ? $k->id : $k['id'] ?>, '<?= esc(is_object($k) ? $k->konsumsi_title : $k['konsumsi_title']) ?>')"
                                         class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/40 transition-colors">
@@ -477,111 +598,221 @@
 
     <!-- ─── MODALS ─────────────────────────────────────────────────── -->
 
-    <!-- Edit Item Modal -->
-    <div x-show="showEditItemModal" x-cloak
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0 scale-95"
-        x-transition:enter-end="opacity-100 scale-100"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4" @click.self="showEditItemModal = false">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-white/20" @click.stop>
-            <div class="p-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-                <h3 class="font-display font-bold text-lg text-slate-800 flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-lg bg-sky-500 text-white flex items-center justify-center shadow-lg shadow-sky-500/20">
-                        <i class="fas fa-pen-nib text-xs"></i>
-                    </div>
-                    Revisi Data Barang
-                </h3>
-                <button @click="showEditItemModal = false" class="text-slate-400 hover:text-slate-600 transition-colors">
-                    <i class="fas fa-times"></i>
-                </button>
+    <!-- Lightbox Modal -->
+    <template x-teleport="body">
+        <div x-show="showLightbox" x-cloak
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/95 backdrop-blur-xl p-4 sm:p-10"
+            @keydown.escape.window="closeLightbox()">
+            
+            <!-- Close Button -->
+            <button @click="closeLightbox()" class="absolute top-6 right-6 w-12 h-12 flex items-center justify-center rounded-2xl bg-white/10 text-white hover:bg-white/20 transition-all border border-white/10 z-[101]">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+
+            <!-- Image Container -->
+            <div class="relative max-w-5xl w-full h-full flex flex-col items-center justify-center gap-6" @click.away="closeLightbox()">
+                <div class="relative group bg-white/5 p-2 rounded-[2.5rem] border border-white/10 shadow-2xl">
+                    <img :src="lightboxUrl" class="max-w-full max-h-[75vh] rounded-[2rem] object-contain shadow-2xl" :alt="lightboxTitle">
+                </div>
+                
+                <div class="text-center space-y-2 max-w-2xl px-6">
+                    <h4 class="text-xl sm:text-2xl font-display font-bold text-white tracking-tight uppercase" x-text="lightboxTitle"></h4>
+                    <p class="text-slate-400 text-xs sm:text-sm font-medium tracking-widest uppercase">Dokumentasi Implementasi Perjanjian</p>
+                </div>
             </div>
-            <form @submit.prevent="saveEditItem()" class="p-6 space-y-5">
-                <div class="form-field">
-                    <label class="form-label">Nama Barang</label>
-                    <div class="input-group">
-                        <input type="text" x-model="editItem.item_title" required>
+        </div>
+    </template>
+
+    <!-- Edit Item Modal -->
+    <template x-teleport="body">
+        <div x-show="showEditItemModal" x-cloak
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200"
+            class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4">
+            
+            <div @click.away="showEditItemModal = false"
+                x-show="showEditItemModal"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 translate-y-8 scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                class="bg-white rounded-[2.5rem] shadow-2xl max-w-xl w-full overflow-hidden border border-slate-100">
+                
+                <!-- Modal Header -->
+                <div class="px-8 py-7 bg-linear-to-r from-sky-500 to-sky-600 text-white flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20">
+                            <i class="fas fa-pen-nib text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-display font-bold text-lg leading-tight uppercase tracking-tight">Perbarui Item</h3>
+                            <p class="text-[10px] text-white/70 font-bold uppercase tracking-widest">Master Data Implementasi</p>
+                        </div>
                     </div>
-                </div>
-                <div class="form-field">
-                    <label class="form-label">Harga Satuan (Rp)</label>
-                    <div class="input-group">
-                        <input type="number" x-model="editItem.price">
-                    </div>
-                </div>
-                <div class="form-field">
-                    <label class="form-label">Detail Perubahan Kegunaan</label>
-                    <div class="input-group p-0!">
-                        <textarea x-model="editItem.item_description" rows="3" class="px-3! py-3!"></textarea>
-                    </div>
-                </div>
-                <div class="flex gap-3 pt-4 border-t border-slate-50">
-                    <button type="button" @click="showEditItemModal = false" class="btn-outline flex-1 h-12 rounded-xl">Batalkan</button>
-                    <button type="submit" :disabled="isLoadingEdit" class="btn-primary flex-1 h-12 rounded-xl shadow-sky-500/20">
-                        <i class="fas fa-save mr-2" :class="isLoadingEdit ? 'fa-spin fa-spinner' : ''"></i>
-                        <span x-text="isLoadingEdit ? 'Menyimpan...' : 'Simpan Revisi'"></span>
+                    <button @click="showEditItemModal = false" class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
-            </form>
+
+                <!-- Modal Body -->
+                <form @submit.prevent="saveEditItem()" class="p-8 space-y-6">
+                    <div class="space-y-5">
+                        <div class="form-field">
+                            <label class="form-label text-[10px] font-black uppercase text-slate-400 tracking-widest">Nama Barang / Belanja</label>
+                            <div class="input-group group-focus-within:border-sky-500 transition-colors">
+                                <div class="input-icon"><i class="fas fa-tag"></i></div>
+                                <input type="text" x-model="editItem.item_title" placeholder="Nama barang..." required>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-5">
+                            <div class="form-field">
+                                <label class="form-label text-[10px] font-black uppercase text-slate-400 tracking-widest">Kuantiti</label>
+                                <div class="input-group group-focus-within:border-sky-500 transition-colors">
+                                    <div class="input-icon"><i class="fas fa-cubes"></i></div>
+                                    <input type="number" x-model="editItem.qty" min="1" placeholder="1">
+                                </div>
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label text-[10px] font-black uppercase text-slate-400 tracking-widest">Harga Satuan (Rp)</label>
+                                <div class="input-group group-focus-within:border-sky-500 transition-colors">
+                                    <div class="input-icon text-emerald-500"><i class="fas fa-rupiah-sign"></i></div>
+                                    <input type="number" x-model="editItem.price" placeholder="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label class="form-label text-[10px] font-black uppercase text-slate-400 tracking-widest">Justifikasi Perubahan</label>
+                            <div class="input-group p-0! group-focus-within:border-sky-500 transition-colors">
+                                <div class="input-icon pl-3"><i class="fas fa-align-left"></i></div>
+                                <textarea x-model="editItem.item_description" rows="3" class="px-0! py-3!" placeholder="Detail perubahan kegunaan..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 pt-4">
+                        <button type="button" @click="showEditItemModal = false" class="btn-outline flex-1 h-14 rounded-2xl font-bold uppercase tracking-widest text-[11px]">Batal</button>
+                        <button type="submit" :disabled="isLoadingEdit" class="btn-primary flex-2 h-14 rounded-2xl font-bold uppercase tracking-widest text-[11px] shadow-lg shadow-sky-500/20">
+                            <i class="fas fa-save mr-2" :class="isLoadingEdit ? 'fa-spin fa-spinner' : ''"></i>
+                            <span x-text="isLoadingEdit ? 'Menyimpan...' : 'Simpan Perubahan'"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
+    </template>
 
     <!-- Edit Payment Modal -->
-    <div x-show="showEditPaymentModal" x-cloak
-        x-transition:enter="transition ease-out duration-300"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4" @click.self="showEditPaymentModal = false">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-white/20" @click.stop>
-            <div class="p-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-                <h3 class="font-display font-bold text-lg text-slate-800">Ubah Judul Nota</h3>
-                <button @click="showEditPaymentModal = false" class="text-slate-400 hover:text-slate-600 transition-colors">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form @submit.prevent="saveEditPayment()" class="p-6 space-y-5">
-                <div class="form-field">
-                    <label class="form-label">Judul/Keterangan Nota</label>
-                    <div class="input-group">
-                        <input type="text" x-model="editPayment.payment_title" required>
+    <template x-teleport="body">
+        <div x-show="showEditPaymentModal" x-cloak
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200"
+            class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4">
+            
+            <div @click.away="showEditPaymentModal = false"
+                x-show="showEditPaymentModal"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 translate-y-8 scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                class="bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full overflow-hidden border border-slate-100">
+                
+                <div class="px-8 py-7 bg-linear-to-r from-emerald-500 to-teal-600 text-white flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20">
+                            <i class="fas fa-file-invoice text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-display font-bold text-lg leading-tight uppercase tracking-tight">Ubah Data Nota</h3>
+                            <p class="text-[10px] text-white/70 font-bold uppercase tracking-widest">Update Bukti Transaksi</p>
+                        </div>
                     </div>
-                </div>
-                <div class="flex gap-3 pt-4">
-                    <button type="button" @click="showEditPaymentModal = false" class="btn-outline flex-1 h-12 rounded-xl">Batalkan</button>
-                    <button type="submit" :disabled="isLoadingEditPayment" class="btn-primary flex-1 h-12 rounded-xl">
-                        <i class="fas fa-check-circle mr-2" :class="isLoadingEditPayment ? 'fa-spin fa-spinner' : ''"></i>
-                        <span x-text="isLoadingEditPayment ? 'Memproses...' : 'Terapkan'"></span>
+                    <button @click="showEditPaymentModal = false" class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
-            </form>
+
+                <form @submit.prevent="saveEditPayment()" class="p-8 space-y-6">
+                    <div class="form-field">
+                        <label class="form-label text-[10px] font-black uppercase text-slate-400 tracking-widest">Keterangan / Nama Nota</label>
+                        <div class="input-group group-focus-within:border-emerald-500 transition-colors">
+                            <div class="input-icon"><i class="fas fa-signature text-emerald-400"></i></div>
+                            <input type="text" x-model="editPayment.payment_title" placeholder="Contoh: Nota Pembelian Alat..." required>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 pt-4">
+                        <button type="button" @click="showEditPaymentModal = false" class="btn-outline flex-1 h-14 rounded-2xl font-bold uppercase tracking-widest text-[11px]">Batal</button>
+                        <button type="submit" :disabled="isLoadingEditPayment" class="btn-primary border-none! bg-emerald-500! hover:bg-emerald-600! flex-2 h-14 rounded-2xl font-bold uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-500/20">
+                            <i class="fas fa-check-circle mr-2" :class="isLoadingEditPayment ? 'fa-spin fa-spinner' : ''"></i>
+                            <span x-text="isLoadingEditPayment ? 'Memproses...' : 'Terapkan'"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
+    </template>
 
     <!-- Edit Konsumsi Modal -->
-    <div x-show="showEditKonsumsiModal" x-cloak
-        x-transition:enter="transition ease-out duration-300"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4" @click.self="showEditKonsumsiModal = false">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-white/20" @click.stop>
-            <div class="p-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-                <h3 class="font-display font-bold text-lg text-slate-800">Ubah Judul Konsumsi</h3>
-                <button @click="showEditKonsumsiModal = false" class="text-slate-400 hover:text-slate-600 transition-colors">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form @submit.prevent="saveEditKonsumsi()" class="p-6 space-y-5">
-                <div class="form-field">
-                    <label class="form-label">Judul/Keterangan Konsumsi</label>
-                    <div class="input-group">
-                        <input type="text" x-model="editKonsumsi.konsumsi_title" required>
+    <template x-teleport="body">
+        <div x-show="showEditKonsumsiModal" x-cloak
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200"
+            class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4">
+            
+            <div @click.away="showEditKonsumsiModal = false"
+                x-show="showEditKonsumsiModal"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 translate-y-8 scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                class="bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full overflow-hidden border border-slate-100">
+                
+                <div class="px-8 py-7 bg-linear-to-r from-amber-500 to-orange-600 text-white flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20">
+                            <i class="fas fa-utensils text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-display font-bold text-lg leading-tight uppercase tracking-tight">Data Konsumsi</h3>
+                            <p class="text-[10px] text-white/70 font-bold uppercase tracking-widest">Update Dokumentasi</p>
+                        </div>
                     </div>
-                </div>
-                <div class="flex gap-3 pt-4">
-                    <button type="button" @click="showEditKonsumsiModal = false" class="btn-outline flex-1 h-12 rounded-xl">Batalkan</button>
-                    <button type="submit" :disabled="isLoadingEditKonsumsi" class="btn-primary flex-1 h-12 rounded-xl bg-amber-500 hover:bg-amber-600 border-amber-500">
-                        <i class="fas fa-check-circle mr-2" :class="isLoadingEditKonsumsi ? 'fa-spin fa-spinner' : ''"></i>
-                        <span x-text="isLoadingEditKonsumsi ? 'Memproses...' : 'Terapkan'"></span>
+                    <button @click="showEditKonsumsiModal = false" class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
-            </form>
+
+                <form @submit.prevent="saveEditKonsumsi()" class="p-8 space-y-6">
+                    <div class="form-field">
+                        <label class="form-label text-[10px] font-black uppercase text-slate-400 tracking-widest">Keterangan / Nama Kegiatan</label>
+                        <div class="input-group group-focus-within:border-amber-500 transition-colors">
+                            <div class="input-icon"><i class="fas fa-signature text-amber-500"></i></div>
+                            <input type="text" x-model="editKonsumsi.konsumsi_title" placeholder="Contoh: Makan Siang Rapat..." required>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 pt-4">
+                        <button type="button" @click="showEditKonsumsiModal = false" class="btn-outline flex-1 h-14 rounded-2xl font-bold uppercase tracking-widest text-[11px]">Batal</button>
+                        <button type="submit" :disabled="isLoadingEditKonsumsi" class="btn-primary border-none! bg-amber-500! hover:bg-amber-600! flex-2 h-14 rounded-2xl font-bold uppercase tracking-widest text-[11px] shadow-lg shadow-amber-500/20">
+                            <i class="fas fa-check-circle mr-2" :class="isLoadingEditKonsumsi ? 'fa-spin fa-spinner' : ''"></i>
+                            <span x-text="isLoadingEditKonsumsi ? 'Memproses...' : 'Terapkan'"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
+    </template>
 
 </div>
 
@@ -596,9 +827,13 @@
             isLoadingEdit: false,
             isLoadingEditPayment: false,
             isLoadingEditKonsumsi: false,
+            isSubmitting: false,
             showEditItemModal: false,
             showEditPaymentModal: false,
             showEditKonsumsiModal: false,
+            showLightbox: false,
+            lightboxUrl: '',
+            lightboxTitle: '',
             currentItemId: null,
             currentPaymentId: null,
             currentUploadItemId: null,
@@ -606,6 +841,7 @@
             newItem: {
                 item_title: '',
                 item_description: '',
+                qty: 1,
                 price: ''
             },
             newPayment: {
@@ -625,6 +861,7 @@
                 id: null,
                 item_title: '',
                 item_description: '',
+                qty: 1,
                 price: ''
             },
             editPayment: {
@@ -641,6 +878,22 @@
                 const rect = card.getBoundingClientRect();
                 card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
                 card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+            },
+
+            openLightbox(url, title) {
+                this.lightboxUrl = url;
+                this.lightboxTitle = title;
+                this.showLightbox = true;
+                document.body.classList.add('overflow-hidden');
+            },
+
+            closeLightbox() {
+                this.showLightbox = false;
+                setTimeout(() => {
+                    this.lightboxUrl = '';
+                    this.lightboxTitle = '';
+                    document.body.classList.remove('overflow-hidden');
+                }, 300);
             },
 
             scrollToForm() {
@@ -760,6 +1013,33 @@
                 this.newPayment.file = e.target.files[0];
             },
 
+            openEditItem(id, title, desc, qty, price) {
+                this.editItem = {
+                    id: id,
+                    item_title: title,
+                    item_description: desc,
+                    qty: qty,
+                    price: price
+                };
+                this.showEditItemModal = true;
+            },
+
+            openEditPayment(id, title) {
+                this.editPayment = {
+                    id: id,
+                    payment_title: title
+                };
+                this.showEditPaymentModal = true;
+            },
+
+            openEditKonsumsi(id, title) {
+                this.editKonsumsi = {
+                    id: id,
+                    konsumsi_title: title
+                };
+                this.showEditKonsumsiModal = true;
+            },
+
             async uploadPayment() {
                 if (!this.newPayment.payment_title || !this.newPayment.file) return;
                 this.isLoadingPayment = true;
@@ -860,11 +1140,12 @@
                 } catch (e) {}
             },
 
-            openEditItem(id, title, desc, price) {
+            openEditItem(id, title, desc, qty, price) {
                 this.editItem = {
                     id,
                     item_title: title,
                     item_description: desc || '',
+                    qty: qty || 1,
                     price: price || ''
                 };
                 this.showEditItemModal = true;
@@ -1001,6 +1282,47 @@
                     if (res.success) window.location.reload();
                 } catch (e) {} finally {
                     this.isLoadingEditKonsumsi = false;
+                }
+            },
+
+            async submitImplementation() {
+                if (!confirm('Apakah Anda yakin ingin mengirim laporan implementasi ini? Setelah dikirim, data akan dikunci dan diverifikasi oleh Dosen Pendamping & Admin.')) return;
+                
+                this.isSubmitting = true;
+                try {
+                    const formData = new FormData();
+                    formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
+
+                    const response = await fetch('<?= base_url('mahasiswa/implementasi/submit') ?>', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.$dispatch('toast-notify', {
+                            message: result.message,
+                            type: 'success'
+                        });
+                        if (result.redirect) {
+                            setTimeout(() => window.location.href = result.redirect, 1000);
+                        }
+                    } else {
+                        this.$dispatch('toast-notify', {
+                            message: result.message,
+                            type: 'error'
+                        });
+                    }
+                } catch (e) {
+                    this.$dispatch('toast-notify', {
+                        message: 'Terjadi kesalahan sistem',
+                        type: 'error'
+                    });
+                } finally {
+                    this.isSubmitting = false;
                 }
             }
         }

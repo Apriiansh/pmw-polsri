@@ -19,45 +19,51 @@
             </a>
         </div>
 
-        <!-- Sticky Actions Bar -->
+        <!-- ─── STICKY ACTION BAR ────────────────────────────────────────── -->
         <div class="sticky top-4 z-40 bg-white/90 backdrop-blur-md shadow-lg border border-sky-100 rounded-2xl p-4 mb-6 flex items-center justify-between gap-4 flex-wrap animate-in fade-in slide-in-from-top-4 duration-500">
-            <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center text-sky-500">
-                    <i class="fas fa-file-signature text-lg"></i>
+            
+            <!-- Left: Status Info -->
+            <div class="flex items-center gap-3 min-w-0">
+                <?php
+                $status = $proposal['status'] ?? 'new';
+                $statusMap = [
+                    'new'       => ['icon' => 'fa-file-circle-plus', 'color' => 'slate',   'label' => 'Baru (Draft)'],
+                    'draft'     => ['icon' => 'fa-file-pen',          'color' => 'amber',   'label' => 'Draft Tersimpan'],
+                    'submitted' => ['icon' => 'fa-paper-plane',      'color' => 'emerald', 'label' => 'Proposal Terkirim'],
+                    'revision'  => ['icon' => 'fa-file-circle-exclamation', 'color' => 'orange', 'label' => 'Perlu Revisi'],
+                    'approved'  => ['icon' => 'fa-circle-check',     'color' => 'sky',     'label' => 'Proposal Disetujui'],
+                    'rejected'  => ['icon' => 'fa-circle-xmark',     'color' => 'rose',    'label' => 'Proposal Ditolak'],
+                ];
+                $st = $statusMap[$status] ?? $statusMap['new'];
+                ?>
+                <div class="w-9 h-9 rounded-xl bg-<?= $st['color'] ?>-100 flex items-center justify-center shrink-0">
+                    <i class="fas <?= $st['icon'] ?> text-<?= $st['color'] ?>-500 text-base"></i>
                 </div>
-                <div>
+                <div class="min-w-0">
                     <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status Proposal</p>
-                    <div class="flex items-center gap-2 mt-0.5">
-                        <?php
-                        $status = $proposal['status'] ?? 'new';
-                        $statusMap = [
-                            'new' => ['bg-slate-400', 'Baru (Draft)'],
-                            'draft' => ['bg-amber-400', 'Draft Tersimpan'],
-                            'submitted' => ['bg-emerald-500', 'Sudah Dikirim'],
-                            'revision' => ['bg-orange-500', 'Perlu Revisi'],
-                            'approved' => ['bg-sky-500', 'Disetujui'],
-                            'rejected' => ['bg-rose-500', 'Ditolak'],
-                        ];
-                        $currStatus = $statusMap[$status] ?? $statusMap['new'];
-                        ?>
-                        <span class="inline-flex w-2 h-2 rounded-full <?= $currStatus[0] ?> <?= $status === 'draft' ? 'animate-pulse' : '' ?>"></span>
-                        <p class="text-sm font-bold text-slate-700"><?= $currStatus[1] ?></p>
-                    </div>
+                    <p class="text-sm font-black text-<?= $st['color'] ?>-700"><?= $st['label'] ?></p>
+                    <?php if ($status !== 'draft' && $status !== 'new' && !empty($proposal['submitted_at'])): ?>
+                        <p class="text-[10px] text-<?= $st['color'] ?>-500 font-mono">
+                            Dikirim: <?= date('d M Y H:i', strtotime($proposal['submitted_at'])) ?>
+                        </p>
+                    <?php endif; ?>
                 </div>
             </div>
 
-            <?php $isLocked = in_array($proposal['status'] ?? 'new', ['submitted', 'approved', 'rejected']); ?>
+            <?php $isLocked = in_array($status, ['submitted', 'approved', 'rejected']); ?>
 
-            <div class="flex items-center gap-3">
+            <!-- Right: Action Buttons -->
+            <div class="flex items-center gap-3 shrink-0">
                 <?php if (!$isLocked): ?>
-                    <button type="submit" form="mainProposalForm" formnovalidate class="btn-accent py-2.5 px-6 shadow-sm hover:shadow-md transition-all flex items-center gap-2">
-                        <i class="fas fa-save"></i>
+                    <button type="submit" form="mainProposalForm" formnovalidate class="btn-primary h-10 px-6 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold rounded-xl shadow-sm transition-all flex items-center gap-2">
+                        <i class="fas fa-save text-amber-500"></i>
                         <span>Simpan Draft</span>
                     </button>
+                    <!-- Submit button is usually at the bottom of proposal, but we keep the draft button here -->
                 <?php else: ?>
-                    <div class="px-4 py-2 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 text-xs font-bold flex items-center gap-2">
+                    <div class="h-10 px-4 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 text-xs font-bold flex items-center gap-2">
                         <i class="fas fa-lock"></i>
-                        Proposal Terkirim
+                        Data Terkunci
                     </div>
                 <?php endif; ?>
             </div>
@@ -730,13 +736,22 @@
                                 </div>
                             </div>
                             
-                            <div class="shrink-0">
-                                <?php if ($isLocked): ?>
+                            <div class="shrink-0 flex items-center gap-3 ml-auto">
+                                <?php if ($proposal['status'] === 'rejected'): ?>
+                                    <button type="button" 
+                                        class="px-6 py-3 bg-white border-2 border-rose-500 text-rose-500 hover:bg-rose-50 rounded-xl font-bold text-sm transition-all flex items-center gap-2 group"
+                                        @click="confirmReset(<?= $proposal['id'] ?>)">
+                                        <i class="fas fa-trash-alt group-hover:shake"></i>
+                                        Buat Ulang Proposal
+                                    </button>
+                                <?php endif; ?>
+
+                                <?php if ($isLocked && $proposal['status'] !== 'rejected'): ?>
                                     <div class="px-6 py-3 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-600 font-bold text-sm flex items-center gap-2">
                                         <i class="fas fa-check-circle"></i>
                                         Finalisasi Selesai
                                     </div>
-                                <?php elseif ($isPhaseOpen): ?>
+                                <?php elseif ($isPhaseOpen && $proposal['status'] !== 'rejected'): ?>
                                     <button type="button"
                                         class="btn-primary py-3.5 px-10 shadow-xl shadow-sky-200/50 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed group relative overflow-hidden"
                                         :disabled="!isFormComplete || !allDocsReady"
@@ -746,7 +761,7 @@
                                             Kirim Proposal Sekarang
                                         </span>
                                     </button>
-                                <?php else: ?>
+                                <?php elseif (!$isPhaseOpen): ?>
                                     <p class="text-xs text-rose-600 flex items-center gap-2 font-bold bg-rose-50 px-4 py-2 rounded-lg border border-rose-100">
                                         <i class="fas fa-lock"></i> Pengiriman ditutup
                                     </p>

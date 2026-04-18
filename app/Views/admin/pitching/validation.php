@@ -30,9 +30,9 @@
         <?php
         $statItems = [
             ['title' => 'Tervalidasi Dosen', 'value' => $stats['total'], 'icon' => 'fa-clipboard-check', 'bg' => 'bg-sky-50', 'icon_color' => 'text-sky-500'],
-            ['title' => 'Menunggu Admin', 'value' => $stats['pending'], 'icon' => 'fa-clock', 'bg' => 'bg-yellow-50', 'icon_color' => 'text-yellow-500'],
-            ['title' => 'Lolos Pitching', 'value' => $stats['approved'], 'icon' => 'fa-circle-check', 'bg' => 'bg-emerald-50', 'icon_color' => 'text-emerald-500'],
-            ['title' => 'Revisi/Ditolak', 'value' => $stats['revision'] + $stats['rejected'], 'icon' => 'fa-circle-xmark', 'bg' => 'bg-rose-50', 'icon_color' => 'text-rose-500'],
+            ['title' => 'Sudah Kirim', 'value' => $stats['submitted'], 'icon' => 'fa-paper-plane', 'bg' => 'bg-emerald-50', 'icon_color' => 'text-emerald-500'],
+            ['title' => 'Belum Kirim', 'value' => $stats['pending'], 'icon' => 'fa-clock', 'bg' => 'bg-yellow-50', 'icon_color' => 'text-yellow-500'],
+            ['title' => 'Final Lolos', 'value' => $stats['approved'], 'icon' => 'fa-circle-check', 'bg' => 'bg-violet-50', 'icon_color' => 'text-violet-500'],
         ];
         ?>
         <?php foreach ($statItems as $index => $stat): ?>
@@ -142,8 +142,21 @@
                             <?php endif; ?>
                         </td>
                         <td>
-                            <span class="pmw-status <?= $statusColors[$proposal['pitching_admin_status']] ?? 'bg-slate-50' ?>">
-                                <?= $statusLabels[$proposal['pitching_admin_status']] ?>
+                            <?php 
+                            $effStatus = $proposal['pitching_admin_status'];
+                            $effLabel = $statusLabels[$effStatus];
+                            $effColor = $statusColors[$effStatus];
+                            
+                            if ($effStatus === 'pending' && !empty($proposal['student_submitted_at'])) {
+                                $effLabel = 'Siap Validasi';
+                                $effColor = 'bg-sky-500 text-white border-sky-600 shadow-sm';
+                            } elseif ($effStatus === 'pending') {
+                                $effLabel = 'Belum Kirim';
+                                $effColor = 'bg-slate-100 text-slate-500 border-slate-200';
+                            }
+                            ?>
+                            <span class="pmw-status <?= $effColor ?>">
+                                <?= $effLabel ?>
                             </span>
                         </td>
                         <td class="text-right whitespace-nowrap">

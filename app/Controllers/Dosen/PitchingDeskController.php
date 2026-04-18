@@ -83,7 +83,7 @@ class PitchingDeskController extends BaseController
     {
         $proposalModel = new PmwProposalModel();
         $selectionModel = new \App\Models\Selection\PmwSelectionPitchingModel();
-        
+
         $lecturer = (new \App\Models\LecturerModel())->where('user_id', auth()->id())->first();
 
         // Security check: ensure this lecturer is assigned to this proposal via assignments table
@@ -112,10 +112,48 @@ class PitchingDeskController extends BaseController
 
         // Update selection pitching table
         if ($selectionModel->where('proposal_id', $id)->set($updateData)->update()) {
+            // Send notification to mahasiswa
+            $notificationModel = new \App\Models\NotificationModel();
+            $notificationModel->createPitchingValidationNotification(
+                (int) $proposal['leader_user_id'],
+                $id,
+                $proposal['nama_usaha'] ?? 'Tanpa Nama',
+                $status,
+                $catatan
+            );
+
             return redirect()->to('dosen/pitching-desk')->with('message', 'Proposal berhasil divalidasi');
         }
 
         return redirect()->back()->with('error', 'Gagal menyimpan validasi');
     }
 
+    /**
+     * View/Download document for pitching
+     */
+    public function viewDoc(int $id)
+    {
+        $documentModel = new PmwDocumentModel();
+        $doc = $documentModel->find($id);
+
+        if (!$doc) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        // Security check: ensure this lecturer is assigned to this proposal
+        $lecturer = (new \App\Models\LecturerModel())->where('user_id', auth()->id())->first();
+        $proposalModel = new PmwProposalModel();
+        $proposal = $proposalModel->getProposalForValidation((int) $doc['proposal_id']);
+
+        if (!$proposal || $proposal['lecturer_id'] != $lecturer['id']) {
+            return redirect()->to('dosen/pitching-desk')->with('error', 'Akses ditolak');
+        }
+
+        $path = WRITEPATH . $doc['file_path'];
+        if (!file_exists($path)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('File tidak ditemukan di server');
+        }
+
+        return $this->response->download($path, null)->inline();
+    }
 }

@@ -36,6 +36,10 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('users/toggle-status/(:num)', 'AdminController::toggleUserStatus/$1');
         $routes->get('users/delete/(:num)', 'AdminController::deleteUser/$1');
 
+        // Teams / Peserta Management
+        $routes->get('teams', 'AdminController::teams');
+        $routes->get('teams/(:num)', 'AdminController::teamDetail/$1');
+
         // Tahap 2 - Seleksi Administrasi
         $routes->get('validasi', 'Admin\\ValidationController::seleksiAdministrasi'); // Alias for notifications
         $routes->group('administrasi', static function ($routes) {
@@ -64,6 +68,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('pitching-desk', 'Admin\\PitchingDeskController::index');
         $routes->get('pitching-desk/(:num)', 'Admin\\PitchingDeskController::detail/$1');
         $routes->post('pitching-desk/(:num)/validate', 'Admin\\PitchingDeskController::validateAction/$1');
+        $routes->get('pitching-desk/doc/(:num)', 'Admin\\PitchingDeskController::viewDoc/$1');
 
         // Tahap 4 - Wawancara Perjanjian (Perjanjian Implementasi)
         $routes->get('perjanjian', 'Admin\\WawancaraController::index');
@@ -78,6 +83,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->post('pengumuman/(:num)/upload-sk', 'Admin\\AnnouncementController::uploadSk/$1');
         $routes->post('pengumuman/(:num)/delete-sk', 'Admin\\AnnouncementController::deleteSk/$1');
         $routes->get('pengumuman/(:num)/sk', 'Admin\\AnnouncementController::downloadSk/$1');
+        $routes->get('pengumuman/rekening/(:num)/download', 'Admin\\AnnouncementController::downloadTeamBankBook/$1');
 
         // Tahap 7 - Implementasi List Perjanjian (Admin Verification)
         $routes->get('implementasi', 'Admin\\ImplementasiController::index');
@@ -103,6 +109,8 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->post('pitching-desk/upload-ppt', 'Mahasiswa\\PitchingDeskController::uploadPpt');
         $routes->post('pitching-desk/update-video-url', 'Mahasiswa\\PitchingDeskController::updateVideoUrl');
         $routes->post('pitching-desk/update-detail', 'Mahasiswa\\PitchingDeskController::updateDetail');
+        $routes->post('pitching-desk/submit', 'Mahasiswa\\PitchingDeskController::submit');
+        $routes->get('pitching-desk/doc/(:num)', 'Mahasiswa\\PitchingDeskController::viewDoc/$1');
         // Tahap 7 - Bimbingan & Mentoring
         $routes->get('guidance', 'Mahasiswa\\GuidanceController::index');
         $routes->post('guidance/logbook/(:num)', 'Mahasiswa\\GuidanceController::submitLogbook/$1');
@@ -142,6 +150,10 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->put('implementasi/konsumsi/(:num)', 'Mahasiswa\\ImplementasiController::updateKonsumsi/$1');
         $routes->delete('implementasi/konsumsi/(:num)', 'Mahasiswa\\ImplementasiController::deleteKonsumsi/$1');
         $routes->post('implementasi/reset', 'Mahasiswa\\ImplementasiController::resetAll');
+        $routes->post('implementasi/submit', 'Mahasiswa\\ImplementasiController::submit');
+        $routes->get('implementasi/photo/(:num)', 'Mahasiswa\\ImplementasiController::viewPhoto/$1');
+        $routes->get('implementasi/payment/(:num)', 'Mahasiswa\\ImplementasiController::viewPayment/$1');
+        $routes->get('implementasi/konsumsi/(:num)', 'Mahasiswa\\ImplementasiController::viewKonsumsi/$1');
     });
 
     // Reviewer Routes
@@ -154,7 +166,19 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
     $routes->group('dosen', ['filter' => 'group:dosen'], static function ($routes) {
         $routes->get('monitoring', 'DosenController::monitoring');
         $routes->get('validasi', 'DosenController::validasi');
-        
+        $routes->get('pitching-desk', 'Dosen\\PitchingDeskController::index');
+        $routes->get('pitching-desk/(:num)', 'Dosen\\PitchingDeskController::detail/$1');
+        $routes->post('pitching-desk/(:num)/validate', 'Dosen\\PitchingDeskController::validateAction/$1');
+        $routes->get('pitching-desk/doc/(:num)', 'Dosen\\PitchingDeskController::viewDoc/$1');
+
+        // Tahap 7 - Validasi Implementasi
+        $routes->get('implementasi', 'Dosen\\ImplementasiController::index');
+        $routes->get('implementasi/(:num)', 'Dosen\\ImplementasiController::detail/$1');
+        $routes->post('implementasi/(:num)/validate', 'Dosen\\ImplementasiController::validateAction/$1');
+        $routes->get('implementasi/photo/(:num)', 'Dosen\\ImplementasiController::viewPhoto/$1');
+        $routes->get('implementasi/payment/(:num)', 'Dosen\\ImplementasiController::viewPayment/$1');
+        $routes->get('implementasi/konsumsi/(:num)', 'Dosen\\ImplementasiController::viewKonsumsi/$1');
+
         // Tahap 7 - Bimbingan
         $routes->get('guidance', 'Dosen\\GuidanceController::index');
         $routes->post('guidance/schedule', 'Dosen\\GuidanceController::createSchedule');

@@ -18,6 +18,7 @@ class PmwImplementationItemModel extends Model
         'period_id',
         'item_title',
         'item_description',
+        'qty',
         'price',
     ];
 
@@ -52,7 +53,7 @@ class PmwImplementationItemModel extends Model
      */
     public function getTotalPrice(int $proposalId): float
     {
-        $result = $this->selectSum('price', 'total')
+        $result = $this->select('SUM(price * qty) as total')
                        ->where('proposal_id', $proposalId)
                        ->first();
         

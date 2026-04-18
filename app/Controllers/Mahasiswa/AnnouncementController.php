@@ -44,7 +44,7 @@ class AnnouncementController extends BaseController
         $passedTeams = $selectionService->getPassedStage1Teams((int) $activePeriod['id']);
 
         $user = auth()->user();
-        $isPassed = ($user) ? $selectionService->leaderPassedStage1((int) $activePeriod['id'], (int) $user->id) : false;
+        $isPassed = ($user) ? $selectionService->leaderPassedWawancara((int) $activePeriod['id'], (int) $user->id) : false;
 
         // Get proposal for the current user
         $proposal = null;
@@ -96,7 +96,7 @@ class AnnouncementController extends BaseController
             return redirect()->to('mahasiswa/pengumuman')->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        $isPassed = $selectionService->leaderPassedStage1((int) $activePeriod['id'], (int) $user->id);
+        $isPassed = $selectionService->leaderPassedWawancara((int) $activePeriod['id'], (int) $user->id);
         if (!$isPassed) {
             return redirect()->to('mahasiswa/pengumuman')->with('error', 'Anda belum lolos Tahap I.');
         }
@@ -140,7 +140,7 @@ class AnnouncementController extends BaseController
             return redirect()->back()->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        $isPassed = $selectionService->leaderPassedStage1((int) $activePeriod['id'], (int) $user->id);
+        $isPassed = $selectionService->leaderPassedWawancara((int) $activePeriod['id'], (int) $user->id);
         if (!$isPassed) {
             return redirect()->back()->with('error', 'Anda belum lolos Tahap I.');
         }
@@ -197,7 +197,7 @@ class AnnouncementController extends BaseController
             return redirect()->back()->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        $isPassed = $selectionService->leaderPassedStage1((int) $activePeriod['id'], (int) $user->id);
+        $isPassed = $selectionService->leaderPassedWawancara((int) $activePeriod['id'], (int) $user->id);
         if (!$isPassed) {
             return redirect()->back()->with('error', 'Akses ditolak.');
         }
@@ -233,7 +233,7 @@ class AnnouncementController extends BaseController
         }
 
         $user = auth()->user();
-        if (!$user || !$selectionService->leaderPassedStage1((int) $activePeriod['id'], (int) $user->id)) {
+        if (!$user || !$selectionService->leaderPassedWawancara((int) $activePeriod['id'], (int) $user->id)) {
             return redirect()->back()->with('error', 'Akses ditolak.');
         }
 
