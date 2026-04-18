@@ -195,13 +195,14 @@
                         ]
                     ];
 
-                    // Tahap 8
+                    // Tahap 8 & 9
                     $navItems[] = [
                         'label' => 'Logbook PMW',
                         'icon' => 'fa-book',
                         'children' => [
                             ['route' => 'mahasiswa/bimbingan', 'icon' => 'fa-book', 'label' => 'Bimbingan', 'match' => 'mahasiswa/bimbingan'],
                             ['route' => 'mahasiswa/mentoring', 'icon' => 'fa-handshake-angle', 'label' => 'Mentoring', 'match' => 'mahasiswa/mentoring'],
+                            ['route' => 'mahasiswa/kegiatan', 'icon' => 'fa-store', 'label' => 'Kegiatan Wirausaha', 'match' => 'mahasiswa/kegiatan'],
                         ]
                     ];
 
@@ -219,12 +220,23 @@
                 }
 
                 if ($mainRole === 'dosen') {
-                    // Validasi Pitching Desk (Dosen Pendamping)
-                    $navItems[] = ['route' => 'dosen/pitching-desk', 'icon' => 'fa-chalkboard-user', 'label' => 'Validasi Pitching', 'match' => 'dosen/pitching-desk'];
-                    // Validasi Implementasi
-                    $navItems[] = ['route' => 'dosen/implementasi', 'icon' => 'fa-list-check', 'label' => 'Validasi Implementasi', 'match' => 'dosen/implementasi'];
-                    // Validasi Logbook - Tahap 8 (Bimbingan)
-                    $navItems[] = ['route' => 'dosen/bimbingan', 'icon' => 'fa-signature', 'label' => 'Bimbingan Mahasiswa', 'match' => 'dosen/bimbingan'];
+                      // Tahap 8 & 9
+                    $navItems[] = [
+                        'label' => 'Validasi',
+                        'icon' => 'fa-check-double',
+                        'children' => [
+                            ['route' => 'dosen/pitching-desk', 'icon' => 'fa-chalkboard-user', 'label' => 'Pitching Desk', 'match' => 'dosen/pitching-desk'],
+                            ['route' => 'dosen/implementasi', 'icon' => 'fa-list-check', 'label' => 'Implementasi List', 'match' => 'dosen/implementasi'],
+                        ]
+                    ];
+                    $navItems[] = [
+                        'label'=> 'Bimbingan & Kegiatan',
+                        'icon'=> 'fa-users',
+                        'children'=> [
+                            ['route' => 'dosen/bimbingan', 'icon' => 'fa-signature', 'label' => 'Bimbingan Mahasiswa', 'match' => 'dosen/bimbingan'],
+                            ['route' => 'dosen/kegiatan', 'icon' => 'fa-store', 'label' => 'Kegiatan Wirausaha', 'match' => 'dosen/kegiatan'],
+                        ]
+                    ];
                     // Monitoring Tim - Tahap x (Implementasi & Monev)
                     $navItems[] = ['route' => 'dosen/monitoring', 'icon' => 'fa-users-viewfinder', 'label' => 'Monitoring Tim', 'match' => 'dosen/monitoring'];
                 }
@@ -232,6 +244,8 @@
                 if ($mainRole === 'mentor') {
                     // Validasi Logbook - Tahap 8 (Mentoring)
                     $navItems[] = ['route' => 'mentor/mentoring', 'icon' => 'fa-check-double', 'label' => 'Mentoring Mahasiswa', 'match' => 'mentor/mentoring'];
+                    // Validasi Logbook - Tahap 9 (Kegiatan Wirausaha)
+                    $navItems[] = ['route' => 'mentor/kegiatan', 'icon' => 'fa-store', 'label' => 'Kegiatan Wirausaha', 'match' => 'mentor/kegiatan'];
 
                     // Monitoring Tim - Tahap x (Implementasi & Monev)
                     $navItems[] = ['route' => 'mentor/monitoring', 'icon' => 'fa-briefcase', 'label' => 'Monitoring Tim', 'match' => 'mentor/monitoring'];

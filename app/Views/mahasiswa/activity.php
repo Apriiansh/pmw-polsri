@@ -265,7 +265,7 @@
                                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                                         <!-- Save Draft -->
                                         <button type="submit"
-                                                @click.prevent="formStatus = 'draft'; $el.closest('form').submit()"
+                                                @click.prevent="formStatus = 'draft'; $nextTick(() => $el.closest('form').submit())"
                                                 class="group/draft flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 font-black text-[11px] uppercase tracking-widest transition-all">
                                             <div class="w-7 h-7 rounded-lg bg-slate-200 group-hover/draft:bg-slate-300 flex items-center justify-center shrink-0 transition-all">
                                                 <i class="fas fa-floppy-disk text-slate-500 text-xs"></i>
@@ -278,7 +278,7 @@
 
                                         <!-- Submit for Review -->
                                         <button type="submit"
-                                                @click.prevent="formStatus = 'pending'; $el.closest('form').submit()"
+                                                @click.prevent="formStatus = 'pending'; $nextTick(() => $el.closest('form').submit())"
                                                 class="btn-primary group/submit flex-1 flex items-center justify-center gap-2.5 py-3.5 px-6 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg transition-all">
                                             <i class="fas fa-paper-plane group-hover/submit:translate-x-0.5 group-hover/submit:-translate-y-0.5 transition-transform"></i>
                                             <div class="text-left">
