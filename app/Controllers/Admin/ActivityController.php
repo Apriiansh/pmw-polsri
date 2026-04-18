@@ -41,42 +41,29 @@ class ActivityController extends BaseController
             'completed' => count(array_filter($schedules, fn($s) => $s->status === 'completed')),
         ];
 
-        // Get approved proposals for schedule creation dropdown
-        $activePeriod = $this->periodModel->where('is_active', true)->first();
-        $proposals    = [];
-        if ($activePeriod) {
-            $proposals = $this->proposalModel->getProposalsForSchedule($activePeriod['id']);
-        }
-
         return view('admin/activity/index', [
             'title'     => 'Manajemen Kegiatan Wirausaha | PMW Polsri',
             'schedules' => $schedules,
             'stats'     => $stats,
-            'proposals' => $proposals,
         ]);
     }
 
     /**
-     * Create schedule
+     * Create schedule for all qualified teams
      */
     public function createSchedule(): ResponseInterface
     {
         try {
             $data = $this->request->getPost();
-            $this->activityService->createSchedule($data);
+            $activePeriod = $this->periodModel->where('is_active', true)->first();
 
-            // Send notification to student
-            $proposal = $this->proposalModel->find($data['proposal_id']);
-            if ($proposal) {
-                $notifModel = new NotificationModel();
-                $notifModel->createActivityScheduleNotification(
-                    (int)$proposal['leader_user_id'],
-                    $data['activity_category'],
-                    $data['activity_date']
-                );
+            if (!$activePeriod) {
+                return redirect()->back()->with('error', 'Tidak ada periode aktif yang ditemukan.');
             }
 
-            return redirect()->back()->with('success', 'Jadwal kegiatan berhasil dibuat.');
+            $count = $this->activityService->createBatchSchedules((int)$activePeriod['id'], $data);
+
+            return redirect()->back()->with('success', "Jadwal kegiatan berhasil dibuat untuk $count tim.");
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }

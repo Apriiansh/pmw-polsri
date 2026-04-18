@@ -202,7 +202,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('bimbingan', 'Dosen\\GuidanceController::index');
         $routes->post('bimbingan/schedule', 'Dosen\\GuidanceController::createSchedule');
         $routes->post('bimbingan/verify/(:num)', 'Dosen\\GuidanceController::verify/$1');
-        $routes->get('bimbingan/file/(:any)', 'Dosen\\GuidanceController::viewFile/$1');
+        $routes->get('bimbingan/file/(:segment)/(:num)', 'Dosen\\GuidanceController::viewFile/$1/$2');
 
         // Tahap 9 - Verifikasi Kegiatan Wirausaha
         $routes->get('kegiatan', 'Dosen\\ActivityController::index');
@@ -216,7 +216,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('mentoring', 'Mentor\\GuidanceController::index');
         $routes->post('mentoring/schedule', 'Mentor\\GuidanceController::createSchedule');
         $routes->post('mentoring/verify/(:num)', 'Mentor\\GuidanceController::verify/$1');
-        $routes->get('mentoring/file/(:any)', 'Mentor\\GuidanceController::viewFile/$1');
+        $routes->get('mentoring/file/(:segment)/(:num)', 'Mentor\\GuidanceController::viewFile/$1/$2');
 
         // Tahap 9 - Verifikasi Kegiatan Wirausaha
         $routes->get('kegiatan', 'Mentor\\ActivityController::index');

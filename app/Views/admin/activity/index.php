@@ -154,14 +154,14 @@
             <form action="<?= base_url('admin/kegiatan/schedule') ?>" method="POST" class="p-6 space-y-4">
                 <?= csrf_field() ?>
                 
-                <div class="space-y-1.5">
-                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-1">Pilih Tim</label>
-                    <select name="proposal_id" class="input-modern w-full" required>
-                        <option value="">-- Pilih Tim --</option>
-                        <?php foreach($proposals as $p): ?>
-                            <option value="<?= $p['id'] ?>"><?= esc($p['nama_usaha']) ?> (<?= esc($p['ketua_nama']) ?>)</option>
-                        <?php endforeach; ?>
-                    </select>
+                <div class="p-4 rounded-xl bg-amber-50 border border-amber-100 flex gap-3 mb-2">
+                    <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+                        <i class="fas fa-info-circle text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-bold text-amber-900 leading-snug">Jadwal Global</p>
+                        <p class="text-[10px] text-amber-700 leading-normal">Jadwal ini akan otomatis diterapkan kepada <strong>seluruh tim</strong> yang telah lolos seleksi implementasi.</p>
+                    </div>
                 </div>
 
                 <div class="space-y-1.5">

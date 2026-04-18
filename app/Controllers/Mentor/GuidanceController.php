@@ -49,7 +49,7 @@ class GuidanceController extends BaseController
             $team['members'] = $memberModel->getByProposalId((int) $team['id']);
         }
 
-        return view('mentor/guidance/index', [
+        return view('mentor/guidance', [
             'title'     => 'Manajemen Mentoring | PMW Polsri',
             'teams'     => $teams,
             'schedules' => $schedules,

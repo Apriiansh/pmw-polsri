@@ -149,27 +149,45 @@
                 ];
 
                 if ($mainRole === 'admin') {
-                    $navItems[] = ['route' => 'admin/pmw-system', 'icon' => 'fa-calendar-days',  'label' => 'PMW System',       'match' => 'admin/pmw-system'];
+                    $navItems[] = ['route' => 'admin/pmw-system', 'icon' => 'fa-calendar-days',  'label' => 'PMW System', 'match' => 'admin/pmw-system'];
 
-                    // Tahap Seleksi - Grouped
+                    // 1. Seleksi & Validasi
                     $navItems[] = [
                         'label' => 'Seleksi & Validasi',
                         'icon'  => 'fa-clipboard-check',
                         'id'    => 'seleksi',
                         'children' => [
                             ['route' => 'admin/administrasi/seleksi', 'label' => 'Administrasi', 'match' => 'admin/administrasi/seleksi'],
-                            ['route' => 'admin/pitching-desk',        'label' => 'Pitching',     'match' => 'admin/pitching-desk'],
-                            ['route' => 'admin/perjanjian',           'label' => 'Perjanjian',   'match' => 'admin/perjanjian'],
+                            ['route' => 'admin/pitching-desk',        'label' => 'Pitching Desk', 'match' => 'admin/pitching-desk'],
+                            ['route' => 'admin/perjanjian',           'label' => 'Perjanjian Kontrak', 'match' => 'admin/perjanjian'],
+                            ['route' => 'admin/pengumuman',           'label' => 'Pengumuman Lolos', 'match' => 'admin/pengumuman'],
                         ]
                     ];
 
-                    $navItems[] = ['route' => 'admin/pengumuman', 'icon' => 'fa-bullhorn',  'label' => 'Pengumuman',       'match' => 'admin/pengumuman'];
-                    $navItems[] = ['route' => 'admin/implementasi', 'icon' => 'fa-list-check',  'label' => 'Validasi Implementasi',       'match' => 'admin/implementasi'];
+                    // 2. Monitoring & Monev
+                    $navItems[] = [
+                        'label' => 'Monitoring & Monev',
+                        'icon'  => 'fa-chart-line',
+                        'id'    => 'monitoring',
+                        'children' => [
+                            ['route' => 'admin/implementasi', 'label' => 'Validasi Implementasi', 'match' => 'admin/implementasi'],
+                            ['route' => 'admin/kegiatan',     'label' => 'Kegiatan Wirausaha',   'match' => 'admin/kegiatan'],
+                        ]
+                    ];
 
-                    $navItems[] = ['route' => 'admin/teams',     'icon' => 'fa-users',           'label' => 'Data TIM Peserta', 'match' => 'admin/teams'];
-                    $navItems[] = ['route' => 'admin/users/',    'icon' => 'fa-users-gear',      'label' => 'Manajemen User',   'match' => 'admin/users'];
-                    $navItems[] = ['route' => 'admin/cms',      'icon' => 'fa-clapperboard',   'label' => 'Manajemen Konten', 'match' => 'admin/cms'];
-                    $navItems[] = ['route' => 'admin/laporan',  'icon' => 'fa-file-contract',   'label' => 'Laporan',          'match' => 'admin/laporan'];
+                    // 3. Manajemen Data
+                    $navItems[] = [
+                        'label' => 'Manajemen Data',
+                        'icon'  => 'fa-database',
+                        'id'    => 'manajemen',
+                        'children' => [
+                            ['route' => 'admin/teams',  'label' => 'Data TIM Peserta', 'match' => 'admin/teams'],
+                            ['route' => 'admin/users/', 'label' => 'Manajemen User',   'match' => 'admin/users'],
+                            ['route' => 'admin/cms',    'label' => 'Manajemen Konten', 'match' => 'admin/cms'],
+                        ]
+                    ];
+
+                    $navItems[] = ['route' => 'admin/laporan', 'icon' => 'fa-file-contract', 'label' => 'Laporan Akhir', 'match' => 'admin/laporan'];
                 }
 
                 if ($mainRole === 'mahasiswa') {
@@ -189,7 +207,7 @@
                         'label' => 'Kelolosan Tahap I',
                         'icon' => 'fa-money-bill-1',
                         'children' => [
-                            ['route' => 'mahasiswa/pengumuman', 'icon' => 'fa-bullhorn', 'label' => 'Pengumuman', 'match' => 'mahasiswa/pengumuman'],
+                            ['route' => 'mahasiswa/pengumuman', 'icon' => 'fa-bullhorn', 'label' => 'Pengumuman Lolos Dana I', 'match' => 'mahasiswa/pengumuman'],
                             ['route' => 'mahasiswa/pembekalan', 'icon' => 'fa-chalkboard-user', 'label' => 'Pembekalan', 'match' => 'mahasiswa/pembekalan'],
                             ['route' => 'mahasiswa/implementasi', 'icon' => 'fa-list-check', 'label' => 'Implementasi', 'match' => 'mahasiswa/implementasi'],
                         ]
@@ -220,7 +238,7 @@
                 }
 
                 if ($mainRole === 'dosen') {
-                      // Tahap 8 & 9
+                    // Tahap 8 & 9
                     $navItems[] = [
                         'label' => 'Validasi',
                         'icon' => 'fa-check-double',
@@ -230,9 +248,9 @@
                         ]
                     ];
                     $navItems[] = [
-                        'label'=> 'Bimbingan & Kegiatan',
-                        'icon'=> 'fa-users',
-                        'children'=> [
+                        'label' => 'Bimbingan & Kegiatan',
+                        'icon' => 'fa-users',
+                        'children' => [
                             ['route' => 'dosen/bimbingan', 'icon' => 'fa-signature', 'label' => 'Bimbingan Mahasiswa', 'match' => 'dosen/bimbingan'],
                             ['route' => 'dosen/kegiatan', 'icon' => 'fa-store', 'label' => 'Kegiatan Wirausaha', 'match' => 'dosen/kegiatan'],
                         ]

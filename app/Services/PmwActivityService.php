@@ -21,6 +21,48 @@ class PmwActivityService
     }
 
     /**
+     * Create activity schedules for all qualified teams in a period
+     */
+    public function createBatchSchedules(int $periodId, array $data): int
+    {
+        $proposals = $this->proposalModel->getProposalsForSchedule($periodId);
+        if (empty($proposals)) {
+            throw new Exception("Belum ada tim yang lolos seleksi implementasi pada periode ini.");
+        }
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        $count = 0;
+        $notifModel = new \App\Models\NotificationModel();
+
+        foreach ($proposals as $proposal) {
+            $this->scheduleModel->insert([
+                'proposal_id'       => $proposal['id'],
+                'period_id'         => $periodId,
+                'activity_category' => $data['activity_category'],
+                'activity_date'     => $data['activity_date'],
+                'activity_time'     => $data['activity_time'] ?? null,
+                'location'          => $data['location'] ?? null,
+                'status'            => 'planned',
+                'notes'             => $data['notes'] ?? null,
+            ]);
+
+            // Notification
+            $notifModel->createActivityScheduleNotification(
+                (int)$proposal['leader_user_id'],
+                $data['activity_category'],
+                $data['activity_date']
+            );
+
+            $count++;
+        }
+
+        $db->transComplete();
+        return $count;
+    }
+
+    /**
      * Create activity schedule (by Admin)
      */
     public function createSchedule(array $data): int
