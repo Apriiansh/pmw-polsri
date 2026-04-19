@@ -14,6 +14,7 @@ class PmwExpoSubmissionModel extends Model
     protected $allowedFields    = [
         'proposal_id',
         'summary',
+        'certificate_path',
         'submitted_at',
     ];
 
@@ -28,7 +29,8 @@ class PmwExpoSubmissionModel extends Model
 
     public function getAllSubmissionsWithDetails(int $periodId)
     {
-        return $this->select('pmw_expo_submissions.*, p.nama_usaha, pm.nama as ketua_nama, pm.nim as ketua_nim')
+        return $this->select('pmw_expo_submissions.*, p.nama_usaha, pm.nama as ketua_nama, pm.nim as ketua_nim, 
+                            (SELECT COUNT(*) FROM pmw_expo_attachments WHERE submission_id = pmw_expo_submissions.id) as attachment_count')
                     ->join('pmw_proposals p', 'p.id = pmw_expo_submissions.proposal_id')
                     ->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left')
                     ->where('p.period_id', $periodId)

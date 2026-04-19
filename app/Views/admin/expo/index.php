@@ -5,6 +5,8 @@
 <div class="space-y-8 pb-20" x-data="{ 
     showScheduleModal: false,
     showCategoryModal: false,
+    showCertModal: false,
+    certificateSubmissionId: null,
     categoryData: {
         id: '',
         name: '',
@@ -24,7 +26,7 @@
             <h2 class="section-title text-xl sm:text-2xl">
                 Awarding & <span class="text-gradient">Expo PMW</span>
             </h2>
-            <p class="section-subtitle text-[10px] sm:text-[11px]">Tahap Akhir — Pameran Kewirausahaan & Penganugerahan Award</p>
+            <p class="section-subtitle text-[10px] sm:text-[11px]">Tahap Akhir — Expo Kewirausahaan & Awarding PMW</p>
         </div>
         <div class="flex items-center gap-2">
             <a href="<?= base_url('admin/awards') ?>" class="btn-outline bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-500 hover:text-white transition-all shadow-sm">
@@ -154,6 +156,7 @@
                             <th>Summary Dokumentasi</th>
                             <th class="text-center">Lampiran</th>
                             <th>Tanggal Kirim</th>
+                            <th class="text-center">Sertifikat</th>
                             <th class="text-right">Aksi</th>
                         </tr>
                     </thead>
@@ -194,6 +197,23 @@
                                     <td>
                                         <div class="text-[11px] font-bold text-slate-500"><?= date('d/m/Y', strtotime($sub->submitted_at)) ?></div>
                                         <div class="text-[10px] text-slate-400"><?= date('H:i', strtotime($sub->submitted_at)) ?> WIB</div>
+                                    </td>
+                                    <td class="text-center">
+                                        <?php if (!empty($sub->certificate_path)): ?>
+                                            <div class="flex items-center justify-center gap-3">
+                                                <a href="<?= base_url('admin/expo/certificate/' . $sub->id) ?>" target="_blank" class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all shadow-sm" title="Lihat Sertifikat">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                                <a href="<?= base_url('admin/expo/delete-certificate/' . $sub->id) ?>" onclick="return confirm('Hapus sertifikat ini?')" class="w-7 h-7 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm" title="Hapus">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        <?php else: ?>
+                                            <button @click="certificateSubmissionId = <?= $sub->id ?>; showCertModal = true" class="text-[9px] font-black uppercase text-slate-400 hover:text-sky-600 transition-colors flex items-center gap-1.5 mx-auto">
+                                                <i class="fas fa-cloud-upload-alt"></i>
+                                                Upload
+                                            </button>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="text-right whitespace-nowrap">
                                         <a href="<?= base_url('admin/expo/submission/' . $sub->id) ?>" class="btn-outline btn-xs bg-sky-50 text-sky-600 border-sky-200 hover:bg-sky-500 hover:text-white transition-all">
@@ -293,6 +313,50 @@
                 <div class="pt-4 flex gap-3">
                     <button type="button" @click="showCategoryModal = false" class="btn-outline flex-1">Batal</button>
                     <button type="submit" class="btn-primary flex-1">Simpan Kategori</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Certificate Upload Modal -->
+    <div x-show="showCertModal" 
+         class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100"
+             @click.away="showCertModal = false"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100">
+            <div class="bg-slate-50 p-6 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="font-display text-lg font-black text-sky-900 uppercase tracking-tight">Upload Sertifikat</h3>
+                <button @click="showCertModal = false" class="text-slate-400 hover:text-rose-500 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form action="<?= base_url('admin/expo/upload-certificate') ?>" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
+                <?= csrf_field() ?>
+                <input type="hidden" name="submission_id" x-model="certificateSubmissionId">
+                <div class="form-field">
+                    <label class="form-label">File Sertifikat (PDF/JPG/PNG)</label>
+                    <div class="mt-2">
+                        <input type="file" name="certificate" accept=".pdf,.jpg,.jpeg,.png" required
+                               class="block w-full text-sm text-slate-500
+                                      file:mr-4 file:py-2.5 file:px-4
+                                      file:rounded-xl file:border-0
+                                      file:text-xs file:font-black file:uppercase
+                                      file:bg-sky-50 file:text-sky-700
+                                      hover:file:bg-sky-100 transition-all">
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-2 italic">Pastikan file sudah sesuai dengan tim yang dipilih.</p>
+                </div>
+                <div class="pt-4 flex gap-3">
+                    <button type="button" @click="showCertModal = false" class="btn-outline flex-1">Batal</button>
+                    <button type="submit" class="btn-primary flex-1">Upload Sertifikat</button>
                 </div>
             </form>
         </div>

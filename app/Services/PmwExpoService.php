@@ -18,6 +18,7 @@ class PmwExpoService
     protected $attachmentModel;
     protected $awardModel;
     protected $proposalModel;
+    protected $notificationModel;
 
     public function __construct()
     {
@@ -27,6 +28,7 @@ class PmwExpoService
         $this->attachmentModel = new PmwExpoAttachmentModel();
         $this->awardModel      = new PmwAwardModel();
         $this->proposalModel   = new PmwProposalModel();
+        $this->notificationModel = new \App\Models\NotificationModel();
     }
 
     /**
@@ -46,10 +48,15 @@ class PmwExpoService
         ];
 
         if ($existing) {
-            return $this->scheduleModel->update($existing->id, $payload);
+            $this->scheduleModel->update($existing->id, $payload);
         } else {
-            return $this->scheduleModel->insert($payload);
+            $this->scheduleModel->insert($payload);
         }
+
+        // Notify students about the expo schedule
+        $this->notificationModel->createExpoScheduleNotification($periodId, $data['event_name'], $data['event_date']);
+
+        return true;
     }
 
     /**
@@ -114,20 +121,53 @@ class PmwExpoService
             }
 
             // Handle Attachments
-            if (!empty($files['attachments'])) {
-                foreach ($files['attachments'] as $index => $file) {
-                    if ($file->isValid() && !$file->hasMoved()) {
-                        $newName = $file->getRandomName();
-                        $file->move(WRITEPATH . 'uploads/expo', $newName);
-                        
-                        $this->attachmentModel->insert([
-                            'submission_id' => $submissionId,
-                            'title'         => $data['attachment_titles'][$index] ?? 'Lampiran',
-                            'file_path'     => 'expo/' . $newName,
-                            'file_type'     => strpos($file->getMimeType(), 'image') !== false ? 'image' : 'document',
-                        ]);
+            if (!empty($data['attachment_titles'])) {
+                foreach ($data['attachment_titles'] as $index => $title) {
+                    $attachmentId = $data['attachment_ids'][$index] ?? null;
+                    $file         = $files['attachments'][$index] ?? null;
+
+                    if ($attachmentId) {
+                        // Update existing
+                        $updateData = ['title' => $title];
+
+                        if ($file && $file->isValid() && !$file->hasMoved()) {
+                            // Replace file
+                            $existingAtt = $this->attachmentModel->find($attachmentId);
+                            if ($existingAtt) {
+                                @unlink(WRITEPATH . 'uploads/' . $existingAtt->file_path);
+                            }
+
+                            $mimeType = $file->getMimeType();
+                            $newName  = $file->getRandomName();
+                            $file->move(WRITEPATH . 'uploads/expo', $newName);
+                            
+                            $updateData['file_path'] = 'expo/' . $newName;
+                            $updateData['file_type'] = strpos($mimeType, 'image') !== false ? 'image' : 'document';
+                        }
+
+                        $this->attachmentModel->update($attachmentId, $updateData);
+                    } else {
+                        // New attachment
+                        if ($file && $file->isValid() && !$file->hasMoved()) {
+                            $mimeType = $file->getMimeType();
+                            $newName  = $file->getRandomName();
+                            $file->move(WRITEPATH . 'uploads/expo', $newName);
+                            
+                            $this->attachmentModel->insert([
+                                'submission_id' => $submissionId,
+                                'title'         => $title ?: 'Lampiran',
+                                'file_path'     => 'expo/' . $newName,
+                                'file_type'     => strpos($mimeType, 'image') !== false ? 'image' : 'document',
+                            ]);
+                        }
                     }
                 }
+            }
+
+            // Trigger Notification to Admin
+            $proposal = $this->proposalModel->find($proposalId);
+            if ($proposal) {
+                $this->notificationModel->createExpoSubmissionNotification($proposalId, $proposal['nama_usaha']);
             }
 
             $db->transCommit();
@@ -151,12 +191,25 @@ class PmwExpoService
             throw new \Exception("Peringkat {$data['rank']} sudah diisi untuk kategori ini.");
         }
 
-        return $this->awardModel->insert([
+        $awardId = $this->awardModel->insert([
             'proposal_id' => $data['proposal_id'],
             'category_id' => $data['category_id'],
             'rank'        => $data['rank'],
             'notes'       => $data['notes'] ?? '',
         ]);
+
+        // Notify the winner
+        $proposal = $this->proposalModel->find($data['proposal_id']);
+        $category = $this->categoryModel->find($data['category_id']);
+        if ($proposal && $category) {
+            $this->notificationModel->createExpoAwardNotification(
+                (int)$proposal['leader_user_id'],
+                $category->name,
+                (int)$data['rank']
+            );
+        }
+
+        return $awardId;
     }
 
     /**
@@ -165,5 +218,50 @@ class PmwExpoService
     public function deleteWinner(int $awardId)
     {
         return $this->awardModel->delete($awardId);
+    }
+
+    /**
+     * Save/Update Certificate for a submission
+     */
+    public function saveCertificate(int $submissionId, $file)
+    {
+        if (!$file->isValid() || $file->hasMoved()) {
+            throw new \Exception('File sertifikat tidak valid.');
+        }
+
+        $newName = $file->getRandomName();
+        $file->move(WRITEPATH . 'uploads/certificates', $newName);
+
+        $this->submissionModel->update($submissionId, [
+            'certificate_path' => 'certificates/' . $newName
+        ]);
+
+        // Notify student about certificate
+        $submission = $this->submissionModel->select('pmw_expo_submissions.*, p.leader_user_id, p.nama_usaha')
+                                            ->join('pmw_proposals p', 'p.id = pmw_expo_submissions.proposal_id')
+                                            ->find($submissionId);
+        if ($submission && $submission->leader_user_id) {
+            $this->notificationModel->createExpoCertificateNotification(
+                (int)$submission->leader_user_id,
+                $submission->nama_usaha
+            );
+        }
+
+        return true;
+    }
+
+    /**
+     * Delete Certificate
+     */
+    public function deleteCertificate(int $submissionId)
+    {
+        $submission = $this->submissionModel->find($submissionId);
+        if ($submission && $submission->certificate_path) {
+            @unlink(WRITEPATH . 'uploads/' . $submission->certificate_path);
+        }
+
+        return $this->submissionModel->update($submissionId, [
+            'certificate_path' => null
+        ]);
     }
 }

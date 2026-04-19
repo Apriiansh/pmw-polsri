@@ -1,8 +1,8 @@
 <?php
 
 /**
- * @var \App\Entities\PmwProposal $proposal
- * @var \App\Entities\PmwPeriod $activePeriod
+ * @var array|null $proposal
+ * @var array|null $activePeriod
  * @var \App\Entities\PmwImplementationItem[] $items
  * @var \App\Entities\PmwImplementationPayment[] $payments
  * @var \App\Entities\PmwImplementationKonsumsi[] $konsumsi
@@ -313,18 +313,18 @@
                                     ?>
                                         <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md <?= $catClass ?>"><?= $catLabel ?></span>
                                     <?php endif; ?>
-                                    <h4 class="font-display font-bold text-base text-(--text-heading) mt-1"><?= esc(is_object($item) ? $item->item_title : $item['item_title']) ?></h4>
+                                    <h4 class="font-display font-bold text-base text-(--text-heading) mt-1"><?= esc($item->item_title) ?></h4>
                                     <div class="flex items-center gap-2 mt-0.5">
-                                        <span class="text-xs font-bold text-slate-700">Rp <?= number_format(is_object($item) ? $item->price : $item['price'], 0, ',', '.') ?></span>
+                                        <span class="text-xs font-bold text-slate-700">Rp <?= number_format($item->price, 0, ',', '.') ?></span>
                                         <span class="text-[10px] font-black uppercase text-slate-400">×</span>
-                                        <span class="text-[10px] font-black uppercase text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md"><?= is_object($item) ? $item->qty : ($item['qty'] ?? 1) ?> pcs</span>
+                                        <span class="text-[10px] font-black uppercase text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md"><?= $item->qty ?> pcs</span>
                                         <span class="w-1 h-1 rounded-full bg-slate-200"></span>
-                                        <span class="text-xs font-bold text-emerald-600">Total: Rp <?= number_format((is_object($item) ? $item->price : $item['price']) * (is_object($item) ? $item->qty : ($item['qty'] ?? 1)), 0, ',', '.') ?></span>
+                                        <span class="text-xs font-bold text-emerald-600">Total: Rp <?= number_format($item->price * $item->qty, 0, ',', '.') ?></span>
                                     </div>
                                 </div>
                             </div>
                             <?php
-                            $itemDesc = is_object($item) ? $item->item_description : ($item['item_description'] ?? '');
+                            $itemDesc = $item->item_description;
                             if ($itemDesc):
                             ?>
                                 <div class="mt-4 p-3 rounded-xl bg-slate-50/50 border border-slate-100 text-[13px] text-slate-600 leading-relaxed">
@@ -466,29 +466,29 @@
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
                 <?php foreach ($payments as $payment): ?>
                     <div class="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300">
-                        <img src="<?= base_url('mahasiswa/implementasi/payment/' . (is_object($payment) ? $payment->id : $payment['id'])) ?>"
-                            alt="<?= esc(is_object($payment) ? $payment->payment_title : $payment['payment_title']) ?>"
+                        <img src="<?= base_url('mahasiswa/implementasi/payment/' . $payment->id) ?>"
+                            alt="<?= esc($payment->payment_title) ?>"
                             class="w-full h-full object-cover">
 
                         <div class="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-3">
                             <div class="flex items-center justify-center gap-2 mb-2">
-                                <button @click="openLightbox('<?= base_url('mahasiswa/implementasi/payment/' . (is_object($payment) ? $payment->id : $payment['id'])) ?>', '<?= esc(is_object($payment) ? $payment->payment_title : $payment['payment_title']) ?>')"
+                                <button @click="openLightbox('<?= base_url('mahasiswa/implementasi/payment/' . $payment->id) ?>', '<?= esc($payment->payment_title) ?>')"
                                     class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/40 transition-colors">
                                     <i class="fas fa-eye text-xs"></i>
                                 </button>
                                 <?php if ($canEdit): ?>
-                                    <button @click="openEditPayment(<?= is_object($payment) ? $payment->id : $payment['id'] ?>, '<?= esc(is_object($payment) ? $payment->payment_title : $payment['payment_title']) ?>')"
+                                    <button @click="openEditPayment(<?= $payment->id ?>, '<?= esc($payment->payment_title) ?>')"
                                         class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/40 transition-colors">
                                         <i class="fas fa-pen-to-square text-xs"></i>
                                     </button>
-                                    <button @click="deletePayment(<?= is_object($payment) ? $payment->id : $payment['id'] ?>)"
+                                    <button @click="deletePayment(<?= $payment->id ?>)"
                                         class="w-8 h-8 rounded-full bg-rose-500/20 backdrop-blur-md text-rose-200 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-colors">
                                         <i class="fas fa-trash-can text-xs"></i>
                                     </button>
                                 <?php endif; ?>
                             </div>
                             <p class="text-[10px] font-bold text-white text-center line-clamp-2 uppercase leading-tight tracking-tighter">
-                                <?= esc(is_object($payment) ? $payment->payment_title : $payment['payment_title']) ?>
+                                <?= esc($payment->payment_title) ?>
                             </p>
                         </div>
                     </div>
@@ -558,29 +558,29 @@
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
                 <?php foreach ($konsumsi ?? [] as $k): ?>
                     <div class="group relative aspect-[3/4] rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-300">
-                        <img src="<?= base_url('mahasiswa/implementasi/konsumsi/' . (is_object($k) ? $k->id : $k['id'])) ?>"
-                            alt="<?= esc(is_object($k) ? $k->konsumsi_title : $k['konsumsi_title']) ?>"
+                        <img src="<?= base_url('mahasiswa/implementasi/konsumsi/' . $k->id) ?>"
+                            alt="<?= esc($k->konsumsi_title) ?>"
                             class="w-full h-full object-cover">
 
                         <div class="absolute inset-0 bg-gradient-to-t from-amber-950/90 via-amber-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-3">
                             <div class="flex items-center justify-center gap-2 mb-2">
-                                <button @click="openLightbox('<?= base_url('mahasiswa/implementasi/konsumsi/' . (is_object($k) ? $k->id : $k['id'])) ?>', '<?= esc(is_object($k) ? $k->konsumsi_title : $k['konsumsi_title']) ?>')"
+                                <button @click="openLightbox('<?= base_url('mahasiswa/implementasi/konsumsi/' . $k->id) ?>', '<?= esc($k->konsumsi_title) ?>')"
                                     class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/40 transition-colors">
                                     <i class="fas fa-eye text-xs"></i>
                                 </button>
                                 <?php if ($canEdit): ?>
-                                    <button @click="openEditKonsumsi(<?= is_object($k) ? $k->id : $k['id'] ?>, '<?= esc(is_object($k) ? $k->konsumsi_title : $k['konsumsi_title']) ?>')"
+                                    <button @click="openEditKonsumsi(<?= $k->id ?>, '<?= esc($k->konsumsi_title) ?>')"
                                         class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/40 transition-colors">
                                         <i class="fas fa-pen-to-square text-xs"></i>
                                     </button>
-                                    <button @click="deleteKonsumsi(<?= is_object($k) ? $k->id : $k['id'] ?>)"
+                                    <button @click="deleteKonsumsi(<?= $k->id ?>)"
                                         class="w-8 h-8 rounded-full bg-rose-500/20 backdrop-blur-md text-rose-200 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-colors">
                                         <i class="fas fa-trash-can text-xs"></i>
                                     </button>
                                 <?php endif; ?>
                             </div>
                             <p class="text-[10px] font-bold text-white text-center line-clamp-2 uppercase leading-tight tracking-tighter">
-                                <?= esc(is_object($k) ? $k->konsumsi_title : $k['konsumsi_title']) ?>
+                                <?= esc($k->konsumsi_title) ?>
                             </p>
                         </div>
                     </div>
@@ -638,30 +638,70 @@
 
     <!-- Lightbox Modal -->
     <template x-teleport="body">
-        <div x-show="showLightbox" x-cloak
+        <div x-show="showLightbox"
             x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100"
             x-transition:leave="transition ease-in duration-200"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
-            class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/95 backdrop-blur-xl p-4 sm:p-10"
-            @keydown.escape.window="closeLightbox()">
-            
-            <!-- Close Button -->
-            <button @click="closeLightbox()" class="absolute top-6 right-6 w-12 h-12 flex items-center justify-center rounded-2xl bg-white/10 text-white hover:bg-white/20 transition-all border border-white/10 z-[101]">
-                <i class="fas fa-times text-xl"></i>
-            </button>
+            class="fixed inset-0 z-[120]"
+            :class="{ 'hidden': !showLightbox }"
+            aria-labelledby="lightbox-modal-title"
+            role="dialog"
+            aria-modal="true">
 
-            <!-- Image Container -->
-            <div class="relative max-w-5xl w-full h-full flex flex-col items-center justify-center gap-6" @click.away="closeLightbox()">
-                <div class="relative group bg-white/5 p-2 rounded-[2.5rem] border border-white/10 shadow-2xl">
-                    <img :src="lightboxUrl" class="max-w-full max-h-[75vh] rounded-[2rem] object-contain shadow-2xl" :alt="lightboxTitle">
-                </div>
-                
-                <div class="text-center space-y-2 max-w-2xl px-6">
-                    <h4 class="text-xl sm:text-2xl font-display font-bold text-white tracking-tight uppercase" x-text="lightboxTitle"></h4>
-                    <p class="text-slate-400 text-xs sm:text-sm font-medium tracking-widest uppercase">Dokumentasi Implementasi Perjanjian</p>
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" @click="closeLightbox()"></div>
+
+            <!-- Modal Panel -->
+            <div class="fixed inset-0 z-10 overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                    <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl">
+                        <!-- Modal Header -->
+                        <div class="bg-linear-to-r from-sky-500 to-sky-600 px-6 py-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-display font-bold text-white" id="lightbox-modal-title">
+                                    <i class="fas fa-eye mr-2"></i>Preview Dokumentasi
+                                </h3>
+                                <button type="button" @click="closeLightbox()" class="text-white/80 hover:text-white transition-colors">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Modal Body -->
+                        <div class="px-6 py-5 bg-slate-50">
+                            <!-- Title Badge -->
+                            <div class="mb-4">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border bg-emerald-50 text-emerald-600 border-emerald-200">
+                                    <i class="fas fa-image text-[10px]"></i>
+                                    <span class="truncate max-w-[300px]" x-text="lightboxTitle || 'Dokumentasi'">Dokumentasi</span>
+                                </span>
+                            </div>
+
+                            <!-- Image Content -->
+                            <div class="rounded-xl overflow-hidden bg-white border border-slate-200 shadow-sm p-4 flex items-center justify-center min-h-[300px] max-h-[500px]">
+                                <img :src="lightboxUrl" class="max-w-full max-h-[450px] rounded-lg object-contain" :alt="lightboxTitle">
+                            </div>
+                        </div>
+
+                        <!-- Modal Footer -->
+                        <div class="bg-white px-6 py-4 flex justify-between items-center border-t border-slate-100">
+                            <div class="flex items-center gap-2 text-xs text-slate-400">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Dokumentasi Implementasi Perjanjian</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <a :href="lightboxUrl" target="_blank" class="btn-accent text-sm">
+                                    <i class="fas fa-external-link-alt mr-2"></i>Buka di Tab Baru
+                                </a>
+                                <button type="button" @click="closeLightbox()" class="btn-outline text-sm">
+                                    <i class="fas fa-times mr-2"></i>Tutup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -669,39 +709,43 @@
 
     <!-- Edit Item Modal -->
     <template x-teleport="body">
-        <div x-show="showEditItemModal" x-cloak
+        <div x-show="showEditItemModal"
             x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100"
             x-transition:leave="transition ease-in duration-200"
-            class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4">
-            
-            <div @click.away="showEditItemModal = false"
-                x-show="showEditItemModal"
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 translate-y-8 scale-95"
-                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                class="bg-white rounded-[2.5rem] shadow-2xl max-w-xl w-full overflow-hidden border border-slate-100">
-                
-                <!-- Modal Header -->
-                <div class="px-8 py-7 bg-linear-to-r from-sky-500 to-sky-600 text-white flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20">
-                            <i class="fas fa-pen-nib text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-display font-bold text-lg leading-tight uppercase tracking-tight">Perbarui Item</h3>
-                            <p class="text-[10px] text-white/70 font-bold uppercase tracking-widest">Master Data Implementasi</p>
-                        </div>
-                    </div>
-                    <button @click="showEditItemModal = false" class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 z-[100]"
+            :class="{ 'hidden': !showEditItemModal }"
+            aria-labelledby="edit-item-modal-title"
+            role="dialog"
+            aria-modal="true">
 
-                <!-- Modal Body -->
-                <form @submit.prevent="saveEditItem()" class="p-8 space-y-6">
-                    <div class="space-y-5">
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" @click="showEditItemModal = false"></div>
+
+            <!-- Modal Panel -->
+            <div class="fixed inset-0 z-10 overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                    <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-xl">
+
+                        <!-- Modal Header -->
+                        <div class="bg-linear-to-r from-sky-500 to-sky-600 px-6 py-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-display font-bold text-white" id="edit-item-modal-title">
+                                    <i class="fas fa-pen-nib mr-2"></i>Perbarui Item
+                                </h3>
+                                <button type="button" @click="showEditItemModal = false" class="text-white/80 hover:text-white transition-colors">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <p class="text-[10px] text-white/80 font-black uppercase tracking-widest mt-1">Master Data Implementasi</p>
+                        </div>
+
+                        <!-- Modal Body & Form -->
+                        <form @submit.prevent="saveEditItem()" class="space-y-0">
+                            <div class="px-6 py-5 space-y-5">
                         <div class="form-field">
                             <label class="form-label text-[10px] font-black uppercase text-slate-400 tracking-widest">Nama Komponen</label>
                             <div class="input-group group-focus-within:border-sky-500 transition-colors">
@@ -752,118 +796,151 @@
                         </div>
                     </div>
 
-                    <div class="flex gap-4 pt-4">
-                        <button type="button" @click="showEditItemModal = false" class="btn-outline flex-1 h-14 rounded-2xl font-bold uppercase tracking-widest text-[11px]">Batal</button>
-                        <button type="submit" :disabled="isLoadingEdit" class="btn-primary flex-2 h-14 rounded-2xl font-bold uppercase tracking-widest text-[11px] shadow-lg shadow-sky-500/20">
-                            <i class="fas fa-save mr-2" :class="isLoadingEdit ? 'fa-spin fa-spinner' : ''"></i>
-                            <span x-text="isLoadingEdit ? 'Menyimpan...' : 'Simpan Perubahan'"></span>
-                        </button>
+                            </div>
+
+                            <!-- Modal Footer -->
+                            <div class="bg-slate-50 px-6 py-4 flex gap-3 justify-end border-t border-slate-100">
+                                <button type="button" @click="showEditItemModal = false" class="btn-outline text-sm">
+                                    <i class="fas fa-times mr-2"></i>Batal
+                                </button>
+                                <button type="submit" :disabled="isLoadingEdit" class="btn-primary text-sm shadow-lg shadow-sky-500/20">
+                                    <i class="fas fa-save mr-2" :class="isLoadingEdit ? 'fa-spin fa-spinner' : ''"></i>
+                                    <span x-text="isLoadingEdit ? 'Menyimpan...' : 'Simpan Perubahan'"></span>
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </template>
 
     <!-- Edit Payment Modal -->
     <template x-teleport="body">
-        <div x-show="showEditPaymentModal" x-cloak
+        <div x-show="showEditPaymentModal"
             x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100"
             x-transition:leave="transition ease-in duration-200"
-            class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4">
-            
-            <div @click.away="showEditPaymentModal = false"
-                x-show="showEditPaymentModal"
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 translate-y-8 scale-95"
-                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                class="bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full overflow-hidden border border-slate-100">
-                
-                <div class="px-8 py-7 bg-linear-to-r from-emerald-500 to-teal-600 text-white flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20">
-                            <i class="fas fa-file-invoice text-xl"></i>
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 z-[100]"
+            :class="{ 'hidden': !showEditPaymentModal }"
+            aria-labelledby="edit-payment-modal-title"
+            role="dialog"
+            aria-modal="true">
+
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" @click="showEditPaymentModal = false"></div>
+
+            <!-- Modal Panel -->
+            <div class="fixed inset-0 z-10 overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                    <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md">
+
+                        <!-- Modal Header -->
+                        <div class="bg-linear-to-r from-emerald-500 to-teal-600 px-6 py-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-display font-bold text-white" id="edit-payment-modal-title">
+                                    <i class="fas fa-file-invoice mr-2"></i>Ubah Data Nota
+                                </h3>
+                                <button type="button" @click="showEditPaymentModal = false" class="text-white/80 hover:text-white transition-colors">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <p class="text-[10px] text-white/80 font-black uppercase tracking-widest mt-1">Update Bukti Transaksi</p>
                         </div>
-                        <div>
-                            <h3 class="font-display font-bold text-lg leading-tight uppercase tracking-tight">Ubah Data Nota</h3>
-                            <p class="text-[10px] text-white/70 font-bold uppercase tracking-widest">Update Bukti Transaksi</p>
-                        </div>
+
+                        <!-- Modal Body & Form -->
+                        <form @submit.prevent="saveEditPayment()" class="space-y-0">
+                            <div class="px-6 py-5">
+                                <div class="form-field">
+                                    <label class="form-label text-[10px] font-black uppercase text-slate-400 tracking-widest">Keterangan / Nama Nota</label>
+                                    <div class="input-group group-focus-within:border-emerald-500 transition-colors">
+                                        <div class="input-icon"><i class="fas fa-signature text-emerald-400"></i></div>
+                                        <input type="text" x-model="editPayment.payment_title" placeholder="Contoh: Nota Pembelian Alat..." required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Footer -->
+                            <div class="bg-slate-50 px-6 py-4 flex gap-3 justify-end border-t border-slate-100">
+                                <button type="button" @click="showEditPaymentModal = false" class="btn-outline text-sm">
+                                    <i class="fas fa-times mr-2"></i>Batal
+                                </button>
+                                <button type="submit" :disabled="isLoadingEditPayment" class="btn-primary text-sm shadow-lg shadow-emerald-500/20" style="background-color: #10b981; border: none;">
+                                    <i class="fas fa-check-circle mr-2" :class="isLoadingEditPayment ? 'fa-spin fa-spinner' : ''"></i>
+                                    <span x-text="isLoadingEditPayment ? 'Memproses...' : 'Terapkan'"></span>
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                    <button @click="showEditPaymentModal = false" class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
-                        <i class="fas fa-times"></i>
-                    </button>
                 </div>
-
-                <form @submit.prevent="saveEditPayment()" class="p-8 space-y-6">
-                    <div class="form-field">
-                        <label class="form-label text-[10px] font-black uppercase text-slate-400 tracking-widest">Keterangan / Nama Nota</label>
-                        <div class="input-group group-focus-within:border-emerald-500 transition-colors">
-                            <div class="input-icon"><i class="fas fa-signature text-emerald-400"></i></div>
-                            <input type="text" x-model="editPayment.payment_title" placeholder="Contoh: Nota Pembelian Alat..." required>
-                        </div>
-                    </div>
-
-                    <div class="flex gap-4 pt-4">
-                        <button type="button" @click="showEditPaymentModal = false" class="btn-outline flex-1 h-14 rounded-2xl font-bold uppercase tracking-widest text-[11px]">Batal</button>
-                        <button type="submit" :disabled="isLoadingEditPayment" class="btn-primary border-none! bg-emerald-500! hover:bg-emerald-600! flex-2 h-14 rounded-2xl font-bold uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-500/20">
-                            <i class="fas fa-check-circle mr-2" :class="isLoadingEditPayment ? 'fa-spin fa-spinner' : ''"></i>
-                            <span x-text="isLoadingEditPayment ? 'Memproses...' : 'Terapkan'"></span>
-                        </button>
-                    </div>
-                </form>
             </div>
         </div>
     </template>
 
     <!-- Edit Konsumsi Modal -->
     <template x-teleport="body">
-        <div x-show="showEditKonsumsiModal" x-cloak
+        <div x-show="showEditKonsumsiModal"
             x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100"
             x-transition:leave="transition ease-in duration-200"
-            class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4">
-            
-            <div @click.away="showEditKonsumsiModal = false"
-                x-show="showEditKonsumsiModal"
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 translate-y-8 scale-95"
-                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                class="bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full overflow-hidden border border-slate-100">
-                
-                <div class="px-8 py-7 bg-linear-to-r from-amber-500 to-orange-600 text-white flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20">
-                            <i class="fas fa-utensils text-xl"></i>
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 z-[100]"
+            :class="{ 'hidden': !showEditKonsumsiModal }"
+            aria-labelledby="edit-konsumsi-modal-title"
+            role="dialog"
+            aria-modal="true">
+
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" @click="showEditKonsumsiModal = false"></div>
+
+            <!-- Modal Panel -->
+            <div class="fixed inset-0 z-10 overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                    <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md">
+
+                        <!-- Modal Header -->
+                        <div class="bg-linear-to-r from-amber-500 to-orange-600 px-6 py-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-display font-bold text-white" id="edit-konsumsi-modal-title">
+                                    <i class="fas fa-utensils mr-2"></i>Data Konsumsi
+                                </h3>
+                                <button type="button" @click="showEditKonsumsiModal = false" class="text-white/80 hover:text-white transition-colors">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <p class="text-[10px] text-white/80 font-black uppercase tracking-widest mt-1">Update Dokumentasi</p>
                         </div>
-                        <div>
-                            <h3 class="font-display font-bold text-lg leading-tight uppercase tracking-tight">Data Konsumsi</h3>
-                            <p class="text-[10px] text-white/70 font-bold uppercase tracking-widest">Update Dokumentasi</p>
-                        </div>
+
+                        <!-- Modal Body & Form -->
+                        <form @submit.prevent="saveEditKonsumsi()" class="space-y-0">
+                            <div class="px-6 py-5">
+                                <div class="form-field">
+                                    <label class="form-label text-[10px] font-black uppercase text-slate-400 tracking-widest">Keterangan / Nama Kegiatan</label>
+                                    <div class="input-group group-focus-within:border-amber-500 transition-colors">
+                                        <div class="input-icon"><i class="fas fa-signature text-amber-500"></i></div>
+                                        <input type="text" x-model="editKonsumsi.konsumsi_title" placeholder="Contoh: Makan Siang Rapat..." required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Footer -->
+                            <div class="bg-slate-50 px-6 py-4 flex gap-3 justify-end border-t border-slate-100">
+                                <button type="button" @click="showEditKonsumsiModal = false" class="btn-outline text-sm">
+                                    <i class="fas fa-times mr-2"></i>Batal
+                                </button>
+                                <button type="submit" :disabled="isLoadingEditKonsumsi" class="btn-primary text-sm shadow-lg shadow-amber-500/20" style="background-color: #f59e0b; border: none;">
+                                    <i class="fas fa-check-circle mr-2" :class="isLoadingEditKonsumsi ? 'fa-spin fa-spinner' : ''"></i>
+                                    <span x-text="isLoadingEditKonsumsi ? 'Memproses...' : 'Terapkan'"></span>
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                    <button @click="showEditKonsumsiModal = false" class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
-                        <i class="fas fa-times"></i>
-                    </button>
                 </div>
-
-                <form @submit.prevent="saveEditKonsumsi()" class="p-8 space-y-6">
-                    <div class="form-field">
-                        <label class="form-label text-[10px] font-black uppercase text-slate-400 tracking-widest">Keterangan / Nama Kegiatan</label>
-                        <div class="input-group group-focus-within:border-amber-500 transition-colors">
-                            <div class="input-icon"><i class="fas fa-signature text-amber-500"></i></div>
-                            <input type="text" x-model="editKonsumsi.konsumsi_title" placeholder="Contoh: Makan Siang Rapat..." required>
-                        </div>
-                    </div>
-
-                    <div class="flex gap-4 pt-4">
-                        <button type="button" @click="showEditKonsumsiModal = false" class="btn-outline flex-1 h-14 rounded-2xl font-bold uppercase tracking-widest text-[11px]">Batal</button>
-                        <button type="submit" :disabled="isLoadingEditKonsumsi" class="btn-primary border-none! bg-amber-500! hover:bg-amber-600! flex-2 h-14 rounded-2xl font-bold uppercase tracking-widest text-[11px] shadow-lg shadow-amber-500/20">
-                            <i class="fas fa-check-circle mr-2" :class="isLoadingEditKonsumsi ? 'fa-spin fa-spinner' : ''"></i>
-                            <span x-text="isLoadingEditKonsumsi ? 'Memproses...' : 'Terapkan'"></span>
-                        </button>
-                    </div>
-                </form>
             </div>
         </div>
     </template>

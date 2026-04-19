@@ -42,7 +42,7 @@ class AuthController extends BaseController
             'nim' => 'required|min_length[5]|max_length[20]|is_unique[pmw_profiles.nim]',
             'username' => 'permit_empty|is_unique[users.username]',
             'email' => 'required|valid_email|is_unique[auth_identities.secret]',
-            'password' => 'required|min_length[8]|strong_password',
+            'password' => 'required|min_length[8]',
             'password_confirm' => 'required|matches[password]',
             'jurusan' => 'required',
             'prodi' => 'required|max_length[100]',
@@ -78,12 +78,28 @@ class AuthController extends BaseController
         $last4Nim = substr((string) $data['nim'], -4);
         $data['username'] = $middleName . $last4Nim;
 
-        // Handle foto upload
+        // Handle foto upload with security checks
         $fotoPath = null;
         $foto = $this->request->getFile('foto');
         if ($foto && $foto->isValid() && !$foto->hasMoved()) {
+            // Verify mime type matches extension (security check)
+            $mimeType = $foto->getMimeType();
+            $allowedMimes = ['image/jpeg', 'image/png', 'image/jpg'];
+            if (!in_array($mimeType, $allowedMimes)) {
+                return redirect()->back()->withInput()->with('error', 'Format file foto tidak valid.');
+            }
+            
+            // Ensure upload directory exists and is secure
+            $uploadDir = WRITEPATH . 'uploads/profiles';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+                // Create .htaccess to prevent direct access
+                file_put_contents($uploadDir . '/.htaccess', "deny from all\n");
+            }
+            
+            // Generate secure random filename
             $newName = $foto->getRandomName();
-            $foto->move(WRITEPATH . 'uploads/profiles', $newName);
+            $foto->move($uploadDir, $newName);
             $fotoPath = 'uploads/profiles/' . $newName;
         }
 

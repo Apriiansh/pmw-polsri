@@ -409,7 +409,7 @@
     <!-- RIGHT COLUMN: Sidebar Documents & Recent Feed -->
     <div class="space-y-6">
         
-        <!-- Document Sidebar (Premium Grid) -->
+        <!-- Document Sidebar -->
         <div class="card-premium overflow-hidden" @mousemove="handleMouseMove">
             <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
                 <h3 class="font-black text-slate-800 uppercase tracking-tight flex items-center gap-2 text-sm">
@@ -425,24 +425,36 @@
                     </div>
                 <?php else: ?>
                     <?php foreach ($documents as $doc): ?>
-                        <?php 
+                        <?php
                             $friendlyName = $docNames[$doc['doc_key']] ?? strtoupper(str_replace('_', ' ', $doc['doc_key']));
-                            $docUrl = '#';
+                            // Build preview URL based on user role
                             $currUser = auth()->user();
-                            if ($currUser?->inGroup('admin')) $docUrl = base_url('admin/administrasi/seleksi/doc/' . $doc['id']);
-                            elseif ($currUser?->inGroup('dosen')) $docUrl = base_url('dosen/pitching-desk/doc/' . $doc['id']);
-                            // Mentor doesn't have a direct route in the listing, use dosen as fallback or admin if possible
+                            $previewUrl = '#';
+                            // Build preview URL with ?inline=1 for iframe preview
+                            $docId = $doc['id'];
+                            if ($currUser?->inGroup('admin')) {
+                                $previewUrl = base_url("admin/administrasi/seleksi/doc/{$docId}?inline=1");
+                            } elseif ($currUser?->inGroup('dosen')) {
+                                $previewUrl = base_url("dosen/pitching-desk/doc/{$docId}?inline=1");
+                            } elseif ($currUser?->inGroup('mentor')) {
+                                // Mentor uses same controller as dosen for viewing docs
+                                $previewUrl = base_url("dosen/pitching-desk/doc/{$docId}?inline=1");
+                            } elseif ($currUser?->inGroup('mahasiswa')) {
+                                $previewUrl = base_url("mahasiswa/proposal/doc/{$docId}?inline=1");
+                            }
                         ?>
-                        <a href="<?= $docUrl ?>" target="_blank" class="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50/50 hover:bg-sky-50 border border-slate-100 hover:border-sky-200 transition-all group">
+                        <div x-data="{ docUrl: '<?= $previewUrl ?>', docTitle: '<?= esc($friendlyName) ?>' }"
+                             @click="docUrl !== '#' ? $dispatch('open-doc-modal', { url: docUrl, title: docTitle }) : alert('Dokumen tidak tersedia atau Anda tidak memiliki akses')"
+                             class="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50/50 hover:bg-sky-50 border border-slate-100 hover:border-sky-200 transition-all group cursor-pointer">
                             <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-500 flex items-center justify-center group-hover:bg-rose-500 group-hover:text-white shadow-sm transition-all duration-300">
                                 <i class="fas fa-file-pdf"></i>
                             </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-xs font-bold text-slate-700 truncate group-hover:text-sky-700 transition-colors"><?= esc($friendlyName) ?></p>
-                                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Berkas PDF</p>
+                                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Klik untuk preview</p>
                             </div>
-                            <i class="fas fa-arrow-down text-slate-300 group-hover:text-sky-500 group-hover:translate-y-0.5 transition-all text-xs mr-1"></i>
-                        </a>
+                            <i class="fas fa-eye text-slate-300 group-hover:text-sky-500 transition-all text-xs mr-1"></i>
+                        </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
@@ -644,3 +656,81 @@
         </div>
     </div>
 </div>
+
+<!-- ================================================================
+     DOCUMENT PREVIEW MODAL (PDF)
+================================================================= -->
+<div x-data="{ showDocModal: false, docUrl: '', docTitle: '' }"
+     x-show="showDocModal"
+     @open-doc-modal.window="showDocModal = true; docUrl = $event.detail.url; docTitle = $event.detail.title"
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     class="fixed inset-0 z-[120]"
+     :class="{ 'hidden': !showDocModal }"
+     aria-labelledby="doc-modal-title"
+     role="dialog"
+     aria-modal="true">
+
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" @click="showDocModal = false"></div>
+
+    <!-- Modal Panel -->
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl">
+                <!-- Modal Header -->
+                <div class="bg-linear-to-r from-rose-500 to-rose-600 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-display font-bold text-white" id="doc-modal-title">
+                            <i class="fas fa-file-pdf mr-2"></i>Preview Dokumen
+                        </h3>
+                        <button type="button" @click="showDocModal = false" class="text-white/80 hover:text-white transition-colors">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-white/80 font-black uppercase tracking-widest mt-1" x-text="docTitle">Berkas Proposal</p>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="px-6 py-5 bg-slate-50">
+                    <!-- Document Title Badge -->
+                    <div class="mb-4">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border bg-rose-50 text-rose-600 border-rose-200">
+                            <i class="fas fa-file-pdf text-[10px]"></i>
+                            <span class="truncate max-w-[300px]" x-text="docTitle || 'PDF Document'">PDF Document</span>
+                        </span>
+                    </div>
+
+                    <!-- PDF Preview Container -->
+                    <div class="rounded-xl overflow-hidden bg-white border border-slate-200 shadow-sm">
+                        <iframe :src="docUrl" class="w-full h-[500px] border-none"></iframe>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="bg-white px-6 py-4 flex justify-between items-center border-t border-slate-100">
+                    <div class="flex items-center gap-2 text-xs text-slate-400">
+                        <i class="fas fa-info-circle"></i>
+                        <span>PDF Document Preview</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <a :href="docUrl.replace('?inline=1', '')" target="_blank" class="btn-accent text-sm">
+                            <i class="fas fa-external-link-alt mr-2"></i>Buka di Tab Baru
+                        </a>
+                        <a :href="docUrl.replace('?inline=1', '')" download class="btn-primary text-sm">
+                            <i class="fas fa-download mr-2"></i>Download
+                        </a>
+                        <button type="button" @click="showDocModal = false" class="btn-outline text-sm">
+                            <i class="fas fa-times mr-2"></i>Tutup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

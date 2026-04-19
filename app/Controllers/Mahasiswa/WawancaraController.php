@@ -61,7 +61,7 @@ class WawancaraController extends BaseController
 
         // Get phase status for "Wawancara Perjanjian" (Phase ID 4)
         $phase = $this->scheduleModel->where('period_id', $activePeriod['id'])
-            ->where('id', 4) // Assuming 4 is Wawancara Perjanjian
+            ->where('phase_number', 4) // Assuming 4 is Wawancara Perjanjian
             ->first();
 
         $isPhaseOpen = $this->isPhaseOpen($phase);

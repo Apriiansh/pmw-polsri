@@ -383,7 +383,7 @@ class NotificationModel extends Model
     }
 
     /**
-     * Create notification for Activity logbook verification result
+     * Create notification for new Activity logbook verification result
      */
     public function createActivityVerificationNotification(int $leaderUserId, string $category, string $status, string $verifier = 'dosen')
     {
@@ -408,6 +408,84 @@ class NotificationModel extends Model
             'message' => "Logbook kegiatan '{$category}' telah di-review oleh {$verifierLabel}. Status: {$statusLabel}.",
             'link'    => 'mahasiswa/kegiatan',
             'type'    => 'activity_verified',
+            'is_read' => false,
+        ], true);
+    }
+
+    /**
+     * Create notification for Expo Schedule (Notify all students in period)
+     */
+    public function createExpoScheduleNotification(int $periodId, string $eventName, string $date)
+    {
+        $db = \Config\Database::connect();
+        $leaders = $db->table('pmw_proposals')
+            ->select('leader_user_id')
+            ->where('period_id', $periodId)
+            ->whereIn('status', ['approved', 'finalized'])
+            ->get()->getResult();
+
+        foreach ($leaders as $leader) {
+            $this->insert([
+                'user_id' => $leader->leader_user_id,
+                'title'   => "🏆 Jadwal Expo & Awarding",
+                'message' => "Jadwal kegiatan '{$eventName}' telah ditetapkan pada tanggal {$date}. Silakan persiapkan dokumentasi Anda.",
+                'link'    => 'mahasiswa/expo',
+                'type'    => 'expo_schedule',
+                'is_read' => false,
+            ]);
+        }
+        return true;
+    }
+
+    /**
+     * Create notification for Admin when student submits Expo documentation
+     */
+    public function createExpoSubmissionNotification(int $proposalId, string $teamName)
+    {
+        return $this->insert([
+            'user_id' => null, // Admin
+            'title'   => "📸 Dokumentasi Expo Baru",
+            'message' => "Tim '{$teamName}' telah mengirimkan dokumentasi dan ringkasan usaha untuk kegiatan Expo.",
+            'link'    => 'admin/expo',
+            'type'    => 'expo_submitted',
+            'data_id' => $proposalId,
+            'is_read' => false,
+        ], true);
+    }
+
+    /**
+     * Create notification for student when certificate is uploaded
+     */
+    public function createExpoCertificateNotification(int $leaderUserId, string $teamName)
+    {
+        return $this->insert([
+            'user_id' => $leaderUserId,
+            'title'   => "🎓 Sertifikat Expo Tersedia",
+            'message' => "Sertifikat untuk tim '{$teamName}' telah diunggah oleh Admin. Silakan unduh di menu Awarding & Expo.",
+            'link'    => 'mahasiswa/expo',
+            'type'    => 'expo_certificate',
+            'is_read' => false,
+        ], true);
+    }
+
+    /**
+     * Create notification for award winner
+     */
+    public function createExpoAwardNotification(int $leaderUserId, string $categoryName, int $rank)
+    {
+        $rankLabel = match ($rank) {
+            1 => 'Juara 1 🥇',
+            2 => 'Juara 2 🥈',
+            3 => 'Juara 3 🥉',
+            default => "Peringkat {$rank}",
+        };
+
+        return $this->insert([
+            'user_id' => $leaderUserId,
+            'title'   => "🎊 Selamat! Anda Memenangkan Award",
+            'message' => "Selamat! Tim Anda berhasil meraih {$rankLabel} pada kategori '{$categoryName}'. Teruslah berkarya!",
+            'link'    => 'mahasiswa/expo',
+            'type'    => 'expo_award',
             'is_read' => false,
         ], true);
     }

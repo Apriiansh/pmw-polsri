@@ -125,6 +125,10 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
             $routes->post('category', 'Admin\\ExpoController::saveCategory');
             $routes->get('category/delete/(:num)', 'Admin\\ExpoController::deleteCategory/$1');
             $routes->get('submission/(:num)', 'Admin\\ExpoController::submissionDetail/$1');
+            $routes->post('upload-certificate', 'Admin\\ExpoController::uploadCertificate');
+            $routes->get('delete-certificate/(:num)', 'Admin\\ExpoController::deleteCertificate/$1');
+            $routes->get('certificate/(:num)', 'Admin\\ExpoController::viewCertificate/$1');
+            $routes->get('attachment/(:num)', 'Admin\\ExpoController::viewAttachment/$1');
         });
         $routes->group('awards', static function ($routes) {
             $routes->get('/', 'Admin\\AwardController::index');
@@ -212,6 +216,9 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         // Tahap 10 - Expo & Awarding
         $routes->get('expo', 'Mahasiswa\\ExpoController::index');
         $routes->post('expo/submit', 'Mahasiswa\\ExpoController::submit');
+        $routes->get('expo/attachment/(:num)', 'Mahasiswa\\ExpoController::viewAttachment/$1');
+        $routes->delete('expo/attachment/(:num)', 'Mahasiswa\\ExpoController::deleteAttachment/$1');
+        $routes->get('expo/certificate', 'Mahasiswa\\ExpoController::viewCertificate');
     });
 
     // Reviewer Routes

@@ -418,33 +418,48 @@
 <!-- ================================================================
      BIODATA MODAL
 ================================================================= -->
-<div id="biodataModal" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">
+<div id="biodataModal" class="fixed inset-0 z-50 hidden" aria-labelledby="biodata-modal-title" role="dialog" aria-modal="true">
+    <!-- Backdrop -->
     <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeBiodataModal()"></div>
+
+    <!-- Modal Panel -->
     <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-            <div class="relative transform overflow-hidden rounded-[2.5rem] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md">
-                <div id="modal-header" class="px-8 py-6">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
+                <!-- Modal Header -->
+                <div class="bg-linear-to-r from-sky-500 to-sky-600 px-6 py-4">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-xl font-display font-bold text-white">Detail Mahasiswa</h3>
+                        <h3 class="text-lg font-display font-bold text-white" id="biodata-modal-title">
+                            <i class="fas fa-user-graduate mr-2"></i>Detail Mahasiswa
+                        </h3>
                         <button type="button" onclick="closeBiodataModal()" class="text-white/80 hover:text-white transition-colors">
-                            <i class="fas fa-times text-lg"></i>
+                            <i class="fas fa-times"></i>
                         </button>
                     </div>
                 </div>
-                <div class="px-8 py-8 font-display">
-                    <div class="text-center mb-8">
-                        <div id="modal-avatar" class="w-24 h-24 mx-auto rounded-3xl flex items-center justify-center text-white font-bold text-3xl mb-4 shadow-2xl">
+
+                <!-- Modal Body -->
+                <div class="px-6 py-5">
+                    <!-- Avatar & Info -->
+                    <div class="text-center mb-6">
+                        <div id="modal-avatar" class="w-20 h-20 mx-auto rounded-3xl flex items-center justify-center text-white font-display font-black text-2xl mb-4 shadow-xl">
                             --
                         </div>
-                        <h4 id="modal-nama" class="font-bold text-xl text-slate-800 leading-tight">--</h4>
-                        <span id="modal-role-badge" class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-black border mt-4 uppercase tracking-[0.2em]">
+                        <h4 id="modal-nama" class="font-display font-black text-xl text-slate-800">--</h4>
+                        <span id="modal-role-badge" class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-black border mt-3 uppercase tracking-widest">
                             --
                         </span>
                     </div>
-                    <div id="modal-content" class="space-y-3.5"></div>
+
+                    <!-- Details Grid -->
+                    <div id="modal-content" class="grid md:grid-cols-2 gap-4 px-4 pb-4"></div>
                 </div>
-                <div class="bg-slate-50 px-8 py-5 flex justify-end">
-                    <button type="button" onclick="closeBiodataModal()" class="btn-ghost font-black text-[10px] uppercase tracking-widest h-11 px-8 rounded-2xl border-2 border-slate-100 hover:bg-white transition-all">Tutup</button>
+
+                <!-- Modal Footer -->
+                <div class="bg-slate-50 px-6 py-4 flex justify-end border-t border-slate-100">
+                    <button type="button" onclick="closeBiodataModal()" class="btn-outline text-sm">
+                        <i class="fas fa-times mr-2"></i>Tutup
+                    </button>
                 </div>
             </div>
         </div>
@@ -454,74 +469,48 @@
 <script>
     function openBiodataModal(type, data) {
         const modal = document.getElementById('biodataModal');
-        const header = document.getElementById('modal-header');
         const avatar = document.getElementById('modal-avatar');
         const nama = document.getElementById('modal-nama');
         const roleBadge = document.getElementById('modal-role-badge');
         const content = document.getElementById('modal-content');
 
         const bgColor = 'bg-sky-500';
-        const shadowColor = 'shadow-sky-100';
         const roleLabel = data.role === 'ketua' ? 'Ketua Tim' : 'Anggota Tim';
 
-        header.className = `${bgColor} px-8 py-6 shadow-md`;
         const initials = (data.nama || '??').substring(0, 2).toUpperCase();
         avatar.textContent = initials;
-        avatar.className = `w-24 h-24 mx-auto rounded-3xl ${bgColor} flex items-center justify-center text-white font-bold text-3xl mb-4 shadow-2xl ${shadowColor}`;
+        avatar.className = `w-20 h-20 mx-auto rounded-3xl ${bgColor} flex items-center justify-center text-white font-display font-black text-2xl mb-4 shadow-xl`;
 
         nama.textContent = data.nama || '-';
         roleBadge.textContent = roleLabel;
-        roleBadge.className = `inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[9px] font-black border bg-sky-50 text-sky-600 border-sky-100`;
+        roleBadge.className = `inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-black border bg-sky-50 text-sky-600 border-sky-200 uppercase tracking-widest`;
 
         let html = '';
-        const fields = [{
-                icon: 'fa-id-card',
-                label: 'NIM',
-                value: data.nim
-            },
-            {
-                icon: 'fa-building',
-                label: 'Jurusan',
-                value: data.jurusan
-            },
-            {
-                icon: 'fa-graduation-cap',
-                label: 'Prodi',
-                value: data.prodi
-            },
-            {
-                icon: 'fa-calendar-alt',
-                label: 'Semester',
-                value: data.semester
-            },
-            {
-                icon: 'fa-phone',
-                label: 'No. HP',
-                value: data.phone
-            },
-            {
-                icon: 'fa-envelope',
-                label: 'Email',
-                value: data.email
-            },
+        const fields = [
+            { icon: 'fa-id-card', label: 'NIM', value: data.nim },
+            { icon: 'fa-building', label: 'Jurusan', value: data.jurusan },
+            { icon: 'fa-graduation-cap', label: 'Prodi', value: data.prodi },
+            { icon: 'fa-calendar-alt', label: 'Semester', value: data.semester },
+            { icon: 'fa-phone', label: 'No. HP', value: data.phone },
+            { icon: 'fa-envelope', label: 'Email', value: data.email },
         ];
 
         fields.forEach(f => {
             if (f.value) {
                 html += `
-            <div class="flex items-center gap-4 p-4 rounded-[1.5rem] bg-white border border-slate-50 shadow-sm">
-                <div class="w-11 h-11 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-50 shrink-0">
-                    <i class="fas ${f.icon} text-sm"></i>
-                </div>
-                <div class="min-w-0 flex-1">
-                    <p class="text-[9px] text-slate-400 font-black uppercase tracking-[0.1em] leading-none mb-1.5">${f.label}</p>
-                    <p class="text-[14px] font-bold text-slate-700 leading-tight truncate">${f.value}</p>
-                </div>
-            </div>`;
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 group/item hover:border-sky-200 transition-colors">
+                    <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-slate-400 shadow-sm border border-slate-100 group-hover/item:text-sky-500 transition-colors shrink-0">
+                        <i class="fas ${f.icon} text-xs"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">${f.label}</p>
+                        <p class="text-[12px] font-bold text-slate-700 truncate">${f.value}</p>
+                    </div>
+                </div>`;
             }
         });
 
-        content.innerHTML = html;
+        content.innerHTML = html || '<p class="text-center text-slate-400 py-4 font-bold uppercase text-[10px] tracking-widest">Tidak ada data tambahan</p>';
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
@@ -538,9 +527,16 @@
         const modal = document.getElementById('imagePreviewModal');
         const img = document.getElementById('previewImg');
         const titleEl = document.getElementById('previewTitle');
+        const downloadBtn = document.getElementById('downloadBtn');
 
         img.src = url;
-        titleEl.textContent = title || 'Preview Gambar';
+
+        // Update title badge
+        const titleSpan = titleEl.querySelector('span');
+        titleSpan.textContent = title || 'Preview Gambar';
+
+        // Update download button
+        downloadBtn.href = url;
 
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
@@ -563,29 +559,55 @@
 <!-- ================================================================
      IMAGE PREVIEW MODAL
 ================================================================= -->
-<div id="imagePreviewModal" class="fixed inset-0 z-[60] hidden" aria-modal="true" role="dialog">
-    <div class="fixed inset-0 bg-slate-900/90 backdrop-blur-md transition-opacity" onclick="closeImagePreview()"></div>
+<div id="imagePreviewModal" class="fixed inset-0 z-[120] hidden" aria-labelledby="preview-modal-title" role="dialog" aria-modal="true">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeImagePreview()"></div>
 
+    <!-- Modal Panel -->
     <div class="fixed inset-0 z-10 overflow-y-auto">
-        <div class="flex min-h-full items-center justify-center p-4">
-            <div class="relative max-w-5xl w-full animate-in zoom-in duration-300">
-                <!-- Close Button -->
-                <button type="button" onclick="closeImagePreview()" class="absolute -top-12 right-0 text-white/70 hover:text-white transition-colors flex items-center gap-2 font-black text-[10px] uppercase tracking-widest">
-                    <span>Tutup</span>
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-
-                <!-- Main Image Container -->
-                <div class="bg-white p-2 rounded-4xl shadow-2xl overflow-hidden">
-                    <div class="relative rounded-3xl overflow-hidden bg-slate-100 flex items-center justify-center min-h-[300px]">
-                        <img id="previewImg" src="" alt="Preview" class="max-w-full max-h-[85vh] object-contain">
+        <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl">
+                <!-- Modal Header -->
+                <div class="bg-linear-to-r from-sky-500 to-sky-600 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-display font-bold text-white" id="preview-modal-title">
+                            <i class="fas fa-eye mr-2"></i>Preview Gambar
+                        </h3>
+                        <button type="button" onclick="closeImagePreview()" class="text-white/80 hover:text-white transition-colors">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
-                    <div class="px-6 py-4 flex items-center justify-between">
-                        <p id="previewTitle" class="text-xs font-black text-slate-400 uppercase tracking-widest">Preview Gambar</p>
-                        <a id="downloadBtn" href="#" download class="text-sky-500 hover:text-sky-600 transition-colors flex items-center gap-2">
-                            <span class="text-[10px] font-black uppercase tracking-widest hidden sm:inline">Lihat Fullsize</span>
-                            <i class="fas fa-expand-alt pointer-events-none" onclick="window.open(document.getElementById('previewImg').src, '_blank')"></i>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="px-6 py-5 bg-slate-50">
+                    <!-- Image Title Badge -->
+                    <div class="mb-4">
+                        <span id="previewTitle" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border bg-emerald-50 text-emerald-600 border-emerald-200">
+                            <i class="fas fa-image text-[10px]"></i>
+                            <span class="truncate max-w-[300px]">Preview Gambar</span>
+                        </span>
+                    </div>
+
+                    <!-- Image Content -->
+                    <div class="rounded-xl overflow-hidden bg-white border border-slate-200 shadow-sm p-4 flex items-center justify-center min-h-[300px] max-h-[500px]">
+                        <img id="previewImg" src="" alt="Preview" class="max-w-full max-h-[450px] rounded-lg object-contain">
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="bg-white px-6 py-4 flex justify-between items-center border-t border-slate-100">
+                    <div class="flex items-center gap-2 text-xs text-slate-400">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Image Preview • Klik untuk memperbesar</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <a id="downloadBtn" href="#" target="_blank" class="btn-accent text-sm" onclick="window.open(document.getElementById('previewImg').src, '_blank'); return false;">
+                            <i class="fas fa-external-link-alt mr-2"></i>Buka di Tab Baru
                         </a>
+                        <button type="button" onclick="closeImagePreview()" class="btn-outline text-sm">
+                            <i class="fas fa-times mr-2"></i>Tutup
+                        </button>
                     </div>
                 </div>
             </div>

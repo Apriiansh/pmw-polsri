@@ -362,28 +362,70 @@
         <?php endif; ?>
     <!-- IMAGE PREVIEW MODAL -->
     <template x-teleport="body">
-        <div x-show="showImageModal" 
+        <div x-show="showImageModal"
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-[999] flex items-center justify-center bg-slate-900/90 backdrop-blur-sm p-4"
-             @keydown.escape.window="showImageModal = false">
-            
-            <div class="relative max-w-5xl w-full max-h-[90vh] flex flex-col items-center">
-                <button @click="showImageModal = false" class="absolute -top-12 right-0 text-white hover:text-sky-400 transition-colors flex items-center gap-2 group">
-                    <span class="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Tutup</span>
-                    <i class="fas fa-times text-2xl"></i>
-                </button>
-                
-                <img :src="modalImageUrl" class="w-full h-full object-contain rounded-2xl shadow-2xl">
-                
-                <div class="mt-4 flex gap-4">
-                    <a :href="modalImageUrl" download class="btn-primary py-2 px-6 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                        <i class="fas fa-download"></i> Simpan Gambar
-                    </a>
+             class="fixed inset-0 z-[120]"
+             :class="{ 'hidden': !showImageModal }"
+             aria-labelledby="image-modal-title"
+             role="dialog"
+             aria-modal="true">
+
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" @click="showImageModal = false"></div>
+
+            <!-- Modal Panel -->
+            <div class="fixed inset-0 z-10 overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                    <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl">
+                        <!-- Modal Header -->
+                        <div class="bg-linear-to-r from-sky-500 to-sky-600 px-6 py-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-display font-bold text-white" id="image-modal-title">
+                                    <i class="fas fa-eye mr-2"></i>Preview Gambar
+                                </h3>
+                                <button type="button" @click="showImageModal = false" class="text-white/80 hover:text-white transition-colors">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Modal Body -->
+                        <div class="px-6 py-5 bg-slate-50">
+                            <!-- Image Title Badge -->
+                            <div class="mb-4">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border bg-emerald-50 text-emerald-600 border-emerald-200">
+                                    <i class="fas fa-image text-[10px]"></i>
+                                    <span class="truncate max-w-[300px]">Dokumentasi Kegiatan</span>
+                                </span>
+                            </div>
+
+                            <!-- Image Content -->
+                            <div class="rounded-xl overflow-hidden bg-white border border-slate-200 shadow-sm p-4 flex items-center justify-center min-h-[300px] max-h-[500px]">
+                                <img :src="modalImageUrl" class="max-w-full max-h-[450px] rounded-lg object-contain">
+                            </div>
+                        </div>
+
+                        <!-- Modal Footer -->
+                        <div class="bg-white px-6 py-4 flex justify-between items-center border-t border-slate-100">
+                            <div class="flex items-center gap-2 text-xs text-slate-400">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Image Preview • Klik untuk memperbesar</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <a :href="modalImageUrl" download class="btn-accent text-sm">
+                                    <i class="fas fa-download mr-2"></i>Download
+                                </a>
+                                <button type="button" @click="showImageModal = false" class="btn-outline text-sm">
+                                    <i class="fas fa-times mr-2"></i>Tutup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

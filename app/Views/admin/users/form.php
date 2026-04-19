@@ -48,94 +48,9 @@
                 
                 <?= csrf_field() ?>
 
-                <!-- Username -->
-                <div class="form-field" x-data="{ usernameValue: '<?= old('username', $user->username ?? '') ?>' }">
-                    <label class="form-label">
-                        Username <span class="required">*</span>
-                    </label>
-                    <div class="flex gap-2">
-                        <div class="input-group flex-1 <?= session('errors.username') ? 'input-error' : '' ?>">
-                            <span class="input-icon">
-                                <i class="fas fa-user"></i>
-                            </span>
-                            <input type="text"
-                                   name="username"
-                                   x-model="usernameValue"
-                                   placeholder="Masukkan username"
-                                   required>
-                        </div>
-                        <!-- Generate Username Button -->
-                        <button type="button"
-                                @click="usernameValue = generateUsername()"
-                                class="px-4 py-2.5 bg-slate-100 hover:bg-sky-50 text-slate-500 hover:text-sky-600 rounded-xl border border-slate-200 hover:border-sky-200 transition-all duration-200 flex items-center gap-2 shrink-0"
-                                title="Generate username otomatis">
-                            <i class="fas fa-dice text-sm"></i>
-                            <span class="text-sm font-medium hidden sm:inline">Generate</span>
-                        </button>
-                    </div>
-                    <?php if (session('errors.username')): ?>
-                        <p class="form-error">
-                            <i class="fas fa-circle-exclamation"></i>
-                            <?= session('errors.username') ?>
-                        </p>
-                    <?php endif; ?>
-                </div>
-
-                <!-- Email -->
-                <div class="form-field">
-                    <label class="form-label">
-                        Email <span class="required">*</span>
-                    </label>
-                    <div class="input-group <?= session('errors.email') ? 'input-error' : '' ?>">
-                        <span class="input-icon">
-                            <i class="fas fa-envelope"></i>
-                        </span>
-                        <input type="email"
-                               name="email"
-                               value="<?= old('email', isset($user) ? $user->getEmail() : '') ?>"
-                               placeholder="nama@email.com"
-                               <?= isset($user) ? 'readonly' : 'required' ?>>
-                    </div>
-                    <?php if (isset($user)): ?>
-                        <p class="text-xs text-slate-400 mt-1">Email tidak dapat diubah</p>
-                    <?php endif; ?>
-                    <?php if (session('errors.email')): ?>
-                        <p class="form-error">
-                            <i class="fas fa-circle-exclamation"></i>
-                            <?= session('errors.email') ?>
-                        </p>
-                    <?php endif; ?>
-                </div>
-
-                <!-- Password -->
-                <div class="form-field">
-                    <label class="form-label">
-                        Password <?= isset($user) ? '' : '<span class="required">*</span>' ?>
-                    </label>
-                    <div class="input-group <?= session('errors.password') ? 'input-error' : '' ?>">
-                        <span class="input-icon">
-                            <i class="fas fa-lock"></i>
-                        </span>
-                        <input :type="showPassword ? 'text' : 'password'"
-                               name="password"
-                               placeholder="<?= isset($user) ? 'Kosongkan jika tidak ingin mengubah' : 'Minimal 8 karakter' ?>"
-                               <?= isset($user) ? '' : 'required' ?>>
-                        <button type="button"
-                                @click="showPassword = !showPassword"
-                                class="text-slate-400 hover:text-sky-500 transition-colors px-2">
-                            <i class="fas" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-                        </button>
-                    </div>
-                    <?php if (session('errors.password')): ?>
-                        <p class="form-error">
-                            <i class="fas fa-circle-exclamation"></i>
-                            <?= session('errors.password') ?>
-                        </p>
-                    <?php endif; ?>
-                </div>
-
-
-                <!-- Role Selection -->
+                <!-- ==========================================
+                    STEP 1: ROLE SELECTION
+                ========================================== -->
                 <div class="form-field">
                     <label class="form-label">
                         Role <span class="required">*</span>
@@ -223,7 +138,7 @@
                 </div>
 
                 <!-- ==========================================
-                     ROLE-SPECIFIC PROFILE FIELDS
+                    STEP 2: DATA PROFIL
                 ========================================== -->
                 <div class="border-t border-sky-50 pt-6 mt-6">
                     <h4 class="font-display font-bold text-sm text-(--text-heading) mb-4 flex items-center gap-2">
@@ -632,39 +547,20 @@
                                 </div>
                             </div>
 
-                            <div class="grid md:grid-cols-2 gap-4">
-                                <!-- Expertise -->
-                                <div class="form-field">
-                                    <label class="form-label">
-                                        Bidang Keahlian
-                                    </label>
-                                    <div class="input-group">
-                                        <span class="input-icon">
-                                            <i class="fas fa-brain"></i>
-                                        </span>
-                                        <input type="text"
-                                               name="reviewer_expertise"
-                                               value="<?= old('reviewer_expertise', $profileData['expertise'] ?? '') ?>"
-                                               placeholder="Contoh: Evaluasi Bisnis, Teknologi"
-                                               :disabled="selectedRole !== 'reviewer'">
-                                    </div>
-                                </div>
-
-                                <!-- Phone -->
-                                <div class="form-field">
-                                    <label class="form-label">
-                                        Nomor Telepon
-                                    </label>
-                                    <div class="input-group">
-                                        <span class="input-icon">
-                                            <i class="fas fa-phone"></i>
-                                        </span>
-                                        <input type="tel"
-                                               name="phone_reviewer"
-                                               value="<?= old('phone_reviewer', $profileData['phone'] ?? '') ?>"
-                                               placeholder="08xxxxxxxxx"
-                                               :disabled="selectedRole !== 'reviewer'">
-                                    </div>
+                            <!-- Expertise -->
+                            <div class="form-field">
+                                <label class="form-label">
+                                    Bidang Keahlian
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-icon">
+                                        <i class="fas fa-brain"></i>
+                                    </span>
+                                    <input type="text"
+                                           name="reviewer_expertise"
+                                           value="<?= old('reviewer_expertise', $profileData['expertise'] ?? '') ?>"
+                                           placeholder="Contoh: Evaluasi Bisnis, Teknologi"
+                                           :disabled="selectedRole !== 'reviewer'">
                                 </div>
                             </div>
 
@@ -691,6 +587,139 @@
                     </div>
                 </div>
 
+                <!-- ==========================================
+                    STEP 3: AKUN LOGIN
+                ========================================== -->
+                <div class="border-t border-sky-50 pt-6 mt-6">
+                    <h4 class="font-display font-bold text-sm text-(--text-heading) mb-4 flex items-center gap-2">
+                        <i class="fas fa-key text-sky-500"></i>
+                        Informasi Akun Login
+                    </h4>
+
+                    <!-- Username -->
+                    <div class="form-field mb-4" x-data="{ usernameValue: '<?= old('username', $user->username ?? '') ?>' }">
+                        <label class="form-label">
+                            Username <span class="required">*</span>
+                        </label>
+                        <div class="flex gap-2">
+                            <div class="input-group flex-1 <?= session('errors.username') ? 'input-error' : '' ?>">
+                                <span class="input-icon">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                                <input type="text"
+                                       name="username"
+                                       x-model="usernameValue"
+                                       placeholder="Masukkan username"
+                                       required>
+                            </div>
+                            <!-- Generate Username Button -->
+                            <button type="button"
+                                    @click="usernameValue = generateUsername()"
+                                    class="px-4 py-2.5 bg-slate-100 hover:bg-sky-50 text-slate-500 hover:text-sky-600 rounded-xl border border-slate-200 hover:border-sky-200 transition-all duration-200 flex items-center gap-2 shrink-0"
+                                    title="Generate username otomatis">
+                                <i class="fas fa-dice text-sm"></i>
+                                <span class="text-sm font-medium hidden sm:inline">Generate</span>
+                            </button>
+                        </div>
+                        <?php if (session('errors.username')): ?>
+                            <p class="form-error">
+                                <i class="fas fa-circle-exclamation"></i>
+                                <?= session('errors.username') ?>
+                            </p>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="form-field mb-4">
+                        <label class="form-label">
+                            Email <span class="required">*</span>
+                        </label>
+                        <div class="input-group <?= session('errors.email') ? 'input-error' : '' ?>">
+                            <span class="input-icon">
+                                <i class="fas fa-envelope"></i>
+                            </span>
+                            <input type="email"
+                                   name="email"
+                                   value="<?= old('email', isset($user) ? $user->getEmail() : '') ?>"
+                                   placeholder="nama@email.com"
+                                   <?= isset($user) ? 'readonly' : 'required' ?>>
+                        </div>
+                        <?php if (isset($user)): ?>
+                            <p class="text-xs text-slate-400 mt-1">Email tidak dapat diubah</p>
+                        <?php endif; ?>
+                        <?php if (session('errors.email')): ?>
+                            <p class="form-error">
+                                <i class="fas fa-circle-exclamation"></i>
+                                <?= session('errors.email') ?>
+                            </p>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-field" x-data="{ passwordValue: '' }">
+                        <label class="form-label flex items-center justify-between">
+                            <span>Password <?= isset($user) ? '' : '<span class="required">*</span>' ?></span>
+                            <?php if (!isset($user)): ?>
+                            <button type="button"
+                                    @click="passwordValue = generatePassword(); $refs.passwordInput.value = passwordValue; updatePasswordStrength(passwordValue)"
+                                    class="text-xs bg-sky-100 hover:bg-sky-200 text-sky-700 px-2 py-1 rounded-md transition-colors flex items-center gap-1">
+                                <i class="fas fa-magic"></i> Generate Otomatis
+                            </button>
+                            <?php endif; ?>
+                        </label>
+                        <div class="space-y-2">
+                            <div class="flex gap-2">
+                                <div class="input-group flex-1 <?= session('errors.password') ? 'input-error' : '' ?>">
+                                    <span class="input-icon">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    <input :type="showPassword ? 'text' : 'password'"
+                                           name="password"
+                                           x-ref="passwordInput"
+                                           x-model="passwordValue"
+                                           @input="updatePasswordStrength(passwordValue)"
+                                           placeholder="<?= isset($user) ? 'Kosongkan jika tidak ingin mengubah' : 'Minimal 8 karakter' ?>"
+                                           <?= isset($user) ? '' : 'required' ?>>
+                                    <button type="button"
+                                            @click="showPassword = !showPassword"
+                                            class="text-slate-400 hover:text-sky-500 transition-colors px-2">
+                                        <i class="fas" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                                    </button>
+                                </div>
+                                <!-- Copy Password Button -->
+                                <button type="button"
+                                        x-show="passwordValue"
+                                        x-cloak
+                                        @click="copyToClipboard(passwordValue)"
+                                        class="px-3 py-2.5 bg-slate-100 hover:bg-emerald-50 text-slate-500 hover:text-emerald-600 rounded-xl border border-slate-200 hover:border-emerald-200 transition-all duration-200 flex items-center gap-2 shrink-0"
+                                        title="Copy password">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            <!-- Password Strength Meter -->
+                            <div x-show="passwordValue && !<?= isset($user) ? 'true' : 'false' ?>" x-cloak class="space-y-1">
+                                <div class="flex gap-1 h-1.5">
+                                    <div class="flex-1 rounded-full transition-colors duration-300"
+                                         :class="passwordStrength >= 1 ? 'bg-red-400' : 'bg-slate-200'"></div>
+                                    <div class="flex-1 rounded-full transition-colors duration-300"
+                                         :class="passwordStrength >= 2 ? 'bg-yellow-400' : 'bg-slate-200'"></div>
+                                    <div class="flex-1 rounded-full transition-colors duration-300"
+                                         :class="passwordStrength >= 3 ? 'bg-blue-400' : 'bg-slate-200'"></div>
+                                    <div class="flex-1 rounded-full transition-colors duration-300"
+                                         :class="passwordStrength >= 4 ? 'bg-emerald-400' : 'bg-slate-200'"></div>
+                                </div>
+                                <p class="text-xs" :class="passwordStrengthTextColor" x-text="passwordStrengthText"></p>
+                            </div>
+                        </div>
+                        <?php if (session('errors.password')): ?>
+                            <p class="form-error">
+                                <i class="fas fa-circle-exclamation"></i>
+                                <?= session('errors.password') ?>
+                            </p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
                 <!-- Actions -->
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-4 border-t border-sky-50">
                     <a href="<?= base_url('admin/users') ?>" class="btn-outline px-6 text-center">
@@ -712,6 +741,9 @@
     function userForm() {
         return {
             showPassword: false,
+            passwordStrength: 0,
+            passwordStrengthText: '',
+            passwordStrengthTextColor: 'text-slate-400',
             selectedRole: '<?= old('role', isset($userGroups) && !empty($userGroups) ? $userGroups[0] : 'mahasiswa') ?>',
             jurusan: '<?= old('jurusan', $profileData['jurusan'] ?? '') ?>',
             prodiValue: '<?= old('prodi', $profileData['prodi'] ?? '') ?>',
@@ -725,11 +757,99 @@
                 return this.prodiList[this.jurusan] || [];
             },
             generateUsername() {
-                const prefixes = ['user', 'polsri', 'pmw', 'student', 'dosen', 'mentor', 'reviewer', 'admin'];
-                const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-                const randomNum = Math.floor(1000 + Math.random() * 9000);
-                const timestamp = Date.now().toString(36).slice(-2);
-                return prefix + randomNum + timestamp;
+                // Get nama from the form
+                const namaInput = document.querySelector('input[name="nama"]');
+                const nama = namaInput ? namaInput.value.trim() : '';
+                
+                if (nama) {
+                    // Generate username based on nama
+                    const namaParts = nama.toLowerCase().split(' ');
+                    let username = namaParts[0]; // First name
+                    
+                    // Add first letter of subsequent names if exists
+                    for (let i = 1; i < namaParts.length && i < 3; i++) {
+                        if (namaParts[i].length > 2) {
+                            username += namaParts[i].charAt(0);
+                        }
+                    }
+                    
+                    // Add random 3 digits
+                    username += Math.floor(100 + Math.random() * 900);
+                    
+                    // Clean username: remove special chars, max 20 chars
+                    username = username.replace(/[^a-z0-9]/g, '').substring(0, 20);
+                    
+                    return username;
+                } else {
+                    // Fallback: random username with role prefix
+                    const rolePrefixes = {
+                        'mahasiswa': 'mhs',
+                        'dosen': 'dsn',
+                        'mentor': 'mtr',
+                        'reviewer': 'rvw',
+                        'admin': 'adm'
+                    };
+                    const prefix = rolePrefixes[this.selectedRole] || 'user';
+                    const randomNum = Math.floor(1000 + Math.random() * 9000);
+                    return prefix + randomNum;
+                }
+            },
+            generatePassword() {
+                const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                const specialChars = '!@#$%^&*';
+                let password = '';
+                
+                // Ensure at least one of each type
+                password += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)];
+                password += 'abcdefghijklmnopqrstuvwxyz'[Math.floor(Math.random() * 26)];
+                password += '0123456789'[Math.floor(Math.random() * 10)];
+                password += specialChars[Math.floor(Math.random() * specialChars.length)];
+                
+                // Fill remaining with random chars (total 12 chars)
+                const allChars = chars + specialChars;
+                for (let i = 4; i < 12; i++) {
+                    password += allChars[Math.floor(Math.random() * allChars.length)];
+                }
+                
+                // Shuffle password
+                return password.split('').sort(() => 0.5 - Math.random()).join('');
+            },
+            updatePasswordStrength(password) {
+                let strength = 0;
+                if (password.length >= 8) strength++;
+                if (password.length >= 12) strength++;
+                if (/[A-Z]/.test(password) && /[a-z]/.test(password)) strength++;
+                if (/[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password)) strength++;
+                
+                this.passwordStrength = strength;
+                
+                const strengthLabels = [
+                    'Sangat Lemah',
+                    'Lemah',
+                    'Sedang',
+                    'Kuat',
+                    'Sangat Kuat'
+                ];
+                const strengthColors = [
+                    'text-red-500',
+                    'text-red-400',
+                    'text-yellow-500',
+                    'text-blue-500',
+                    'text-emerald-500'
+                ];
+                
+                this.passwordStrengthText = password.length > 0 ? strengthLabels[strength - 1] || '' : '';
+                this.passwordStrengthTextColor = strengthColors[strength - 1] || 'text-slate-400';
+            },
+            copyToClipboard(text) {
+                navigator.clipboard.writeText(text).then(() => {
+                    // Show toast notification
+                    const toast = document.createElement('div');
+                    toast.className = 'fixed bottom-4 right-4 bg-emerald-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 text-sm font-medium';
+                    toast.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Password disalin!';
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 2000);
+                });
             }
         }
     }

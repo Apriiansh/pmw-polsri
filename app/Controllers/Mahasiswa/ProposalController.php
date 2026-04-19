@@ -554,6 +554,17 @@ class ProposalController extends BaseController
             return redirect()->back()->with('error', 'File tidak ditemukan');
         }
 
+        // Handle inline preview for modal
+        if ($this->request->getGet('inline')) {
+            $file = new \CodeIgniter\Files\File($abs);
+            $mime = $file->getMimeType();
+            
+            return $this->response
+                ->setHeader('Content-Type', $mime)
+                ->setHeader('Content-Disposition', 'inline; filename="' . $doc['original_name'] . '"')
+                ->setBody(file_get_contents($abs));
+        }
+
         return $this->response->download($abs, null)->setFileName($doc['original_name'] ?? basename($abs));
     }
 

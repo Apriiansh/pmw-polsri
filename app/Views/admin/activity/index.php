@@ -254,10 +254,10 @@
                                                 <i class="fas fa-map-location-dot mr-1"></i> Monitoring
                                             </button>
                                             <a href="<?= base_url('admin/kegiatan/detail/' . $schedule->id) ?>" class="btn-outline btn-xs bg-sky-50 text-sky-600 border-sky-200 hover:bg-sky-500 hover:text-white transition-all">
-                                                <i class="fas fa-eye mr-1"></i> Detail
+                                                <i class="fas fa-eye mr-1.5"></i> Detail
                                             </a>
                                         </div>
-                                    </td>
+                                    </td>d>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>

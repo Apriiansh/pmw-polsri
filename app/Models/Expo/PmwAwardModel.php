@@ -24,8 +24,9 @@ class PmwAwardModel extends Model
 
     public function getWinnersByCategory(int $categoryId)
     {
-        return $this->select('pmw_awards.*, p.nama_usaha')
+        return $this->select('pmw_awards.*, p.nama_usaha, pm.nama as ketua_nama')
                     ->join('pmw_proposals p', 'p.id = pmw_awards.proposal_id')
+                    ->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left')
                     ->where('category_id', $categoryId)
                     ->orderBy('rank', 'ASC')
                     ->findAll();

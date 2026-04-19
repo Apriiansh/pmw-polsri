@@ -144,7 +144,7 @@ class AdminController extends BaseController
         $rules = [
             'username' => 'required|min_length[3]|max_length[30]|is_unique[users.username]',
             'email'    => 'required|valid_email|is_unique[auth_identities.secret]',
-            'password' => 'required|min_length[8]|strong_password',
+            'password' => 'required|min_length[8]',
             'role'     => 'required|in_list[admin,mahasiswa,dosen,mentor,reviewer]',
             'nama'     => 'required|min_length[3]|max_length[100]',
         ];
@@ -223,7 +223,7 @@ class AdminController extends BaseController
 
         // Only validate password if provided
         if ($this->request->getPost('password')) {
-            $rules['password'] = 'min_length[8]|strong_password';
+            $rules['password'] = 'min_length[8]';
         }
 
         // Role specific profile rules
@@ -647,7 +647,7 @@ class AdminController extends BaseController
                     'nip'         => $data['nip'] ?? '',
                     'institution' => $data['institution'] ?? '',
                     'expertise'   => $data['reviewer_expertise'] ?? $data['expertise'] ?? '',
-                    'phone'       => $data['phone_reviewer'] ?? $data['phone'] ?? '', // Handle phone name discrepancy
+                    'phone'       => $data['phone'] ?? '',
                     'bio'         => $data['reviewer_bio'] ?? $data['bio'] ?? '',
                 ]);
                 break;
@@ -751,7 +751,7 @@ class AdminController extends BaseController
                     'nip'         => $data['nip'] ?? '',
                     'institution' => $data['institution'] ?? '',
                     'expertise'   => $data['reviewer_expertise'] ?? $data['expertise'] ?? '',
-                    'phone'       => $data['phone_reviewer'] ?? $data['phone'] ?? '',
+                    'phone'       => $data['phone'] ?? '',
                     'bio'         => $data['reviewer_bio'] ?? $data['bio'] ?? '',
                 ];
                 if ($existing) {
