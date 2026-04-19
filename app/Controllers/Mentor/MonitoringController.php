@@ -34,8 +34,15 @@ class MonitoringController extends BaseController
             'header_title' => 'Monitoring Tim Mentoring',
             'header_subtitle' => 'Pantau kemajuan bisnis seluruh tim yang Anda bimbing',
             'teams' => $teams,
-            'mentor' => $mentor
+            'mentor' => $mentor,
+            'is_single_team' => count($teams) === 1
         ];
+
+        // If single team, fetch full summary to render dashboard directly
+        if ($data['is_single_team']) {
+            $summary = $this->monitoringService->getTeamSummary($teams[0]['proposal_id']);
+            $data = array_merge($data, $summary);
+        }
 
         return view('mentor/monitoring/index', $data);
     }

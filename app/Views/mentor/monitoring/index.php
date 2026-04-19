@@ -1,7 +1,9 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
-<div class="p-6 md:p-8 space-y-8" x-data="{
+<div class="space-y-6" x-data="{ 
+    showTeamModal: false,
+    selectedMember: null,
     handleMouseMove(e) {
         const card = e.currentTarget;
         const rect = card.getBoundingClientRect();
@@ -11,99 +13,116 @@
         card.style.setProperty('--mouse-y', `${y}px`);
     }
 }">
-    <!-- Header Section -->
-    <div class="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-600 p-8 md:p-12 shadow-2xl shadow-indigo-200/50 group">
-        <!-- Abstract Decorations -->
-        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-700"></div>
-        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-60 h-60 bg-indigo-400/20 rounded-full blur-2xl group-hover:bg-indigo-400/30 transition-all duration-700"></div>
-        
-        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div class="space-y-4">
-                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-md">
-                    <span class="relative flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                    </span>
-                    <span class="text-[10px] font-black text-white uppercase tracking-widest">Dashboard Mentoring</span>
-                </div>
-                <div>
-                    <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
-                        Tim <span class="text-amber-400">Mentoring</span>
-                    </h1>
-                    <p class="text-indigo-100/80 font-medium text-lg mt-2 max-w-xl">
-                        Selamat datang, <span class="text-white font-bold"><?= $mentor['nama'] ?></span>. Bantu tim Anda mencapai pertumbuhan bisnis yang maksimal.
-                    </p>
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-4 bg-black/10 backdrop-blur-xl p-4 rounded-3xl border border-white/10">
-                <div class="text-right">
-                    <p class="text-[10px] font-black text-indigo-200 uppercase tracking-widest leading-none mb-1">Total Tim</p>
-                    <p class="text-3xl font-black text-white leading-none"><?= count($teams) ?></p>
-                </div>
-                <div class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20">
-                    <i class="fas fa-briefcase text-white text-xl"></i>
-                </div>
-            </div>
+    <!-- Header Page -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-black text-slate-800 tracking-tight"><?= esc($header_title) ?></h1>
+            <p class="text-slate-500 text-sm"><?= esc($header_subtitle) ?></p>
         </div>
+        
+        <?php if (!$is_single_team && !empty($teams)): ?>
+            <div class="flex items-center gap-3">
+                <div class="px-4 py-2 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center gap-2">
+                    <i class="fas fa-briefcase text-indigo-500"></i>
+                    <span class="text-xs font-bold text-indigo-700"><?= count($teams) ?> Tim Mentoring</span>
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
 
-    <!-- Teams Grid -->
     <?php if (empty($teams)): ?>
-        <div class="card-premium p-16 text-center" @mousemove="handleMouseMove">
-            <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-100">
-                <i class="fas fa-folder-open text-slate-200 text-4xl"></i>
+        <!-- Empty State -->
+        <div class="card-premium p-20 text-center" @mousemove="handleMouseMove">
+            <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-100 shadow-inner">
+                <i class="fas fa-folder-open text-slate-200 text-3xl"></i>
             </div>
-            <h3 class="text-xl font-black text-slate-800 mb-2 uppercase tracking-tight">Belum Ada Tim</h3>
-            <p class="text-slate-500 max-w-md mx-auto italic">Anda belum memiliki tim yang ditugaskan untuk dimentoring pada periode ini.</p>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Belum Ada Tim</h3>
+            <p class="text-slate-400 max-w-md mx-auto italic text-sm">
+                Anda belum memiliki tim yang ditugaskan untuk dimentoring pada periode ini.
+            </p>
         </div>
-    <?php else: ?>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <?php foreach ($teams as $team): ?>
-                <div class="card-premium group p-6 hover:shadow-2xl hover:shadow-indigo-100 transition-all duration-500 border-b-4 border-b-transparent hover:border-b-indigo-500" @mousemove="handleMouseMove">
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-indigo-50 group-hover:border-indigo-100 transition-colors duration-500">
-                            <i class="fas fa-chart-line text-indigo-500 text-xl group-hover:scale-110 transition-transform"></i>
+
+    <?php elseif ($is_single_team): ?>
+        <!-- Single Team Focused Dashboard -->
+        <div class="space-y-6">
+            <!-- Team Quick Info Card -->
+            <div class="card-premium p-6 border-l-4 border-l-indigo-500" @mousemove="handleMouseMove">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="flex items-center gap-5">
+                        <div class="w-16 h-16 rounded-2xl bg-linear-to-br from-indigo-500 to-purple-500 text-white flex items-center justify-center font-bold text-2xl shadow-xl shadow-indigo-100">
+                            <?= substr(esc($proposal['nama_usaha']), 0, 1) ?>
                         </div>
-                        <div class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase border border-emerald-100">
-                            <?= esc($team['status']) ?>
+                        <div>
+                            <div class="flex items-center gap-3 mb-1">
+                                <h2 class="text-xl font-black text-slate-800 uppercase tracking-tight"><?= esc($proposal['nama_usaha']) ?></h2>
+                                <span class="px-2 py-0.5 rounded-lg bg-emerald-100 text-emerald-700 text-[9px] font-black uppercase">
+                                    <?= esc($proposal['status']) ?>
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-500 font-medium">
+                                <span class="text-indigo-500 font-bold"><?= esc($proposal['kategori_usaha']) ?></span> • 
+                                Ketua: <?= esc($teams[0]['ketua_nama']) ?> (<?= esc($teams[0]['ketua_nim']) ?>)
+                            </p>
                         </div>
                     </div>
-
-                    <div class="space-y-1 mb-6">
-                        <h3 class="font-black text-slate-800 text-lg leading-tight uppercase line-clamp-2 group-hover:text-indigo-600 transition-colors">
-                            <?= esc($team['nama_usaha']) ?>
-                        </h3>
-                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest"><?= esc($team['kategori_usaha']) ?></p>
-                    </div>
-
-                    <!-- Progress Stats -->
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 group-hover:bg-white transition-colors">
-                            <p class="text-[9px] text-slate-400 font-bold uppercase mb-1">Mentoring</p>
-                            <div class="flex items-end gap-1">
-                                <span class="text-xl font-black text-slate-800 leading-none"><?= $team['total_mentoring'] ?></span>
-                                <span class="text-[10px] text-slate-400 font-bold leading-none mb-1">/4</span>
-                            </div>
-                        </div>
-                        <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 group-hover:bg-white transition-colors">
-                            <p class="text-[9px] text-slate-400 font-bold uppercase mb-1">Kegiatan</p>
-                            <span class="text-xl font-black text-slate-800 leading-none"><?= $team['total_kegiatan'] ?></span>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between pt-4 border-t border-slate-100">
-                        <div class="flex -space-x-2">
-                            <div class="w-8 h-8 rounded-full bg-indigo-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-indigo-600" title="Ketua: <?= $team['ketua_nama'] ?>">
-                                <?= substr($team['ketua_nama'], 0, 1) ?>
-                            </div>
-                            <div class="w-8 h-8 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-slate-400">
-                                <i class="fas fa-users"></i>
-                            </div>
-                        </div>
-                        <a href="<?= base_url('mentor/monitoring/detail/' . $team['proposal_id']) ?>" class="inline-flex items-center gap-2 text-xs font-black text-indigo-500 hover:text-indigo-600 uppercase tracking-tighter group-hover:translate-x-1 transition-all">
-                            Lihat Progress <i class="fas fa-arrow-right text-[10px]"></i>
+                    <div class="flex items-center gap-3">
+                        <a href="<?= base_url('mentor/bimbingan') ?>" class="btn-primary btn-sm flex items-center gap-2">
+                            <i class="fas fa-calendar-check"></i> Jadwalkan Mentoring
                         </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Content -->
+            <?= $this->include('shared/_monitoring_team') ?>
+        </div>
+
+    <?php else: ?>
+        <!-- Multiple Teams Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <?php foreach ($teams as $team): ?>
+                <div class="card-premium group hover:border-indigo-200 transition-all duration-300" @mousemove="handleMouseMove">
+                    <div class="p-5">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-indigo-500 to-purple-500 text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-indigo-100">
+                                    <?= substr(esc($team['nama_usaha']), 0, 1) ?>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors line-clamp-1 uppercase"><?= esc($team['nama_usaha']) ?></h3>
+                                    <p class="text-xs text-slate-500 flex items-center gap-1">
+                                        <i class="fas fa-user-circle text-indigo-400"></i>
+                                        <?= esc($team['ketua_nama']) ?>
+                                    </p>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-[10px] font-black uppercase"><?= esc($team['status']) ?></span>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-3 mb-4">
+                            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                                <p class="text-[9px] text-slate-400 font-bold uppercase mb-1">Bimbingan</p>
+                                <p class="text-sm font-black text-slate-700"><?= $team['total_bimbingan'] ?></p>
+                            </div>
+                            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                                <p class="text-[9px] text-slate-400 font-bold uppercase mb-1">Mentoring</p>
+                                <p class="text-sm font-black text-slate-700"><?= $team['total_mentoring'] ?></p>
+                            </div>
+                            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                                <p class="text-[9px] text-slate-400 font-bold uppercase mb-1">Kegiatan</p>
+                                <p class="text-sm font-black text-slate-700"><?= $team['total_kegiatan'] ?></p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                            <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                <?= esc($team['kategori_usaha']) ?>
+                            </div>
+                            <a href="<?= base_url('mentor/monitoring/detail/' . $team['proposal_id']) ?>" 
+                               class="text-xs font-black text-indigo-500 hover:text-indigo-600 uppercase tracking-tighter">
+                                Detail Progress <i class="fas fa-arrow-right text-[10px] ml-1"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -114,7 +133,7 @@
 <style>
 .card-premium {
     background: white;
-    border-radius: 2rem;
+    border-radius: 1.5rem;
     border: 1px solid rgba(226, 232, 240, 0.8);
     position: relative;
     overflow: hidden;
@@ -126,18 +145,11 @@
     inset: 0;
     background: radial-gradient(
         800px circle at var(--mouse-x) var(--mouse-y),
-        rgba(79, 70, 229, 0.06),
+        rgba(79, 70, 229, 0.04),
         transparent 40%
     );
     z-index: 0;
     pointer-events: none;
-}
-
-.line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
 }
 </style>
 <?= $this->endSection() ?>

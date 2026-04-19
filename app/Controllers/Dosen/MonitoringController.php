@@ -28,14 +28,21 @@ class MonitoringController extends BaseController
         }
 
         $teams = $this->monitoringService->getTeamsByLecturer($lecturer['id']);
-
+        
         $data = [
             'title' => 'Monitoring Tim | PMW Polsri',
             'header_title' => 'Monitoring Tim Pendampingan',
             'header_subtitle' => 'Pantau kemajuan seluruh tim yang Anda dampingi',
             'teams' => $teams,
-            'lecturer' => $lecturer
+            'lecturer' => $lecturer,
+            'is_single_team' => count($teams) === 1
         ];
+
+        // If single team, fetch full summary to render dashboard directly
+        if ($data['is_single_team']) {
+            $summary = $this->monitoringService->getTeamSummary($teams[0]['proposal_id']);
+            $data = array_merge($data, $summary);
+        }
 
         return view('dosen/monitoring/index', $data);
     }

@@ -50,6 +50,9 @@ class PmwMonitoringService
                 '(SELECT COUNT(*) FROM pmw_guidance_schedules gs 
                   JOIN pmw_guidance_logbooks gl ON gl.schedule_id = gs.id 
                   WHERE gs.proposal_id = pmw_proposals.id AND gs.type = "bimbingan" AND gl.status = "approved") as total_bimbingan',
+                '(SELECT COUNT(*) FROM pmw_guidance_schedules gs 
+                  JOIN pmw_guidance_logbooks gl ON gl.schedule_id = gs.id 
+                  WHERE gs.proposal_id = pmw_proposals.id AND gs.type = "mentoring" AND gl.status = "approved") as total_mentoring',
                 '(SELECT COUNT(*) FROM pmw_activity_schedules pas 
                   JOIN pmw_activity_logbooks pal ON pal.schedule_id = pas.id 
                   WHERE pas.proposal_id = pmw_proposals.id AND pal.status = "approved") as total_kegiatan',
@@ -75,6 +78,9 @@ class PmwMonitoringService
                 'pmw_proposals.status',
                 'pm.nama as ketua_nama',
                 'pm.nim as ketua_nim',
+                '(SELECT COUNT(*) FROM pmw_guidance_schedules gs 
+                  JOIN pmw_guidance_logbooks gl ON gl.schedule_id = gs.id 
+                  WHERE gs.proposal_id = pmw_proposals.id AND gs.type = "bimbingan" AND gl.status = "approved") as total_bimbingan',
                 '(SELECT COUNT(*) FROM pmw_guidance_schedules gs 
                   JOIN pmw_guidance_logbooks gl ON gl.schedule_id = gs.id 
                   WHERE gs.proposal_id = pmw_proposals.id AND gs.type = "mentoring" AND gl.status = "approved") as total_mentoring',
