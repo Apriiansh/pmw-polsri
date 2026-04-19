@@ -8,6 +8,12 @@
     openPreview(url) {
         this.previewUrl = url;
         this.showPreview = true;
+    },
+    handleMouseMove(e) {
+        const card = e.currentTarget;
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+        card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
     }
 }" class="space-y-8">
 
@@ -43,7 +49,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in">
                 
                 <!-- Laporan Kemajuan Schedule -->
-                <div class="card-premium">
+                <div @mousemove="handleMouseMove" class="card-premium">
                     <div class="flex items-center gap-4 mb-6">
                         <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-xl">
                             <i class="fas fa-chart-line"></i>
@@ -94,7 +100,7 @@
                 </div>
 
                 <!-- Laporan Akhir Schedule -->
-                <div class="card-premium">
+                <div @mousemove="handleMouseMove" class="card-premium">
                     <div class="flex items-center gap-4 mb-6">
                         <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
                             <i class="fas fa-flag-checkered"></i>
@@ -149,7 +155,7 @@
 
         <!-- Tab 2: Monitoring -->
         <template x-if="activeTab === 'monitoring'">
-            <div class="card-premium p-0 animate-fade-in">
+            <div @mousemove="handleMouseMove" class="card-premium p-0 animate-fade-in">
                 <div class="p-6 border-b border-slate-50 flex items-center justify-between">
                     <div>
                         <h3 class="font-bold text-slate-800">Daftar Pengumpulan Tim</h3>

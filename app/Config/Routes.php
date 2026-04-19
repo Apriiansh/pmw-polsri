@@ -111,6 +111,11 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('milestone', 'Admin\\MilestoneReportController::index');
         $routes->post('milestone/schedule', 'Admin\\MilestoneReportController::saveSchedule');
         $routes->get('milestone/view/(:num)', 'Admin\\MilestoneReportController::viewFile/$1');
+
+        // Tahap Finalisasi Dana II
+        $routes->get('finalisasi', 'Admin\\FinalizationController::index');
+        $routes->get('finalisasi/(:num)', 'Admin\\FinalizationController::detail/$1');
+        $routes->post('finalisasi/validate', 'Admin\\FinalizationController::validateAction');
     });
 
     // Mahasiswa Routes
@@ -207,7 +212,8 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
 
     // Dosen Routes
     $routes->group('dosen', ['filter' => 'group:dosen'], static function ($routes) {
-        $routes->get('monitoring', 'DosenController::monitoring');
+        $routes->get('monitoring', 'Dosen\MonitoringController::index');
+        $routes->get('monitoring/detail/(:num)', 'Dosen\MonitoringController::detail/$1');
         $routes->get('validasi', 'DosenController::validasi');
         $routes->get('pitching-desk', 'Dosen\\PitchingDeskController::index');
         $routes->get('pitching-desk/(:num)', 'Dosen\\PitchingDeskController::detail/$1');
@@ -242,6 +248,9 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
 
     // Mentor Routes
     $routes->group('mentor', ['filter' => 'group:mentor'], static function ($routes) {
+        $routes->get('monitoring', 'Mentor\MonitoringController::index');
+        $routes->get('monitoring/detail/(:num)', 'Mentor\MonitoringController::detail/$1');
+
         // Tahap 8 - Manajemen Jadwal Mentoring
         $routes->get('mentoring', 'Mentor\\GuidanceController::index');
         $routes->post('mentoring/schedule', 'Mentor\\GuidanceController::createSchedule');

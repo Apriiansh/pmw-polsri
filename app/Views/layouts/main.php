@@ -177,6 +177,8 @@
                         ]
                     ];
 
+                    $navItems[] = ['route' => 'admin/finalisasi', 'icon' => 'fa-gavel', 'label' => 'Finalisasi Dana II', 'match' => 'admin/finalisasi'];
+
                     // 3. Manajemen Data
                     $navItems[] = [
                         'label' => 'Manajemen Data',
@@ -253,7 +255,7 @@
                             ['route' => 'dosen/milestone', 'icon' => 'fa-file-circle-check', 'label' => 'Laporan Milestone', 'match' => 'dosen/milestone'],
                         ]
                     ];
-                    // Monitoring Tim - Tahap x (Implementasi & Monev)
+                    // Monitoring Tim
                     $navItems[] = ['route' => 'dosen/monitoring', 'icon' => 'fa-users-viewfinder', 'label' => 'Monitoring Tim', 'match' => 'dosen/monitoring'];
                 }
 
