@@ -21,6 +21,7 @@ class PmwProposalMemberModel extends Model
         'semester',
         'phone',
         'email',
+        'foto',
     ];
 
     protected $useTimestamps = true;

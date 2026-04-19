@@ -75,6 +75,7 @@ class PitchingDeskController extends BaseController
             'header_title'    => 'Pitching Desk',
             'header_subtitle' => 'Tahap 3 - Presentasi proposal di depan reviewer',
             'proposal'        => $proposal,
+            'isSubmitted'     => !empty($proposal['student_submitted_at']),
             'activePeriod'    => $activePeriod,
             'phase'           => $phase,
             'isPhaseOpen'     => $isPhaseOpen,

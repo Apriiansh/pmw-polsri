@@ -47,34 +47,46 @@ class WawancaraController extends BaseController
                 'proposal'     => null,
                 'activePeriod' => null,
                 'phase'        => null,
-                'isPhaseOpen'  => false
+                'isPhaseOpen'  => false,
+                'isEligible'   => false,
+                'reason'       => 'Periode aktif tidak ditemukan.',
+                'isLocked'     => false,
+                'docsByKey'    => []
             ]);
         }
 
         // Get proposal
         $proposal = $this->proposalModel->findByPeriodAndLeader($activePeriod['id'], $user->id);
         
-        // Security check: Must exist and must be approved in Pitching Desk
-        if (!$proposal || $proposal['pitching_dosen_status'] !== 'approved' || $proposal['pitching_admin_status'] !== 'approved') {
-            return redirect()->to('mahasiswa/pitching-desk')->with('error', 'Anda harus menyelesaikan tahap Pitching Desk terlebih dahulu.');
+        // Eligibility check
+        $isEligible = true;
+        $reason = '';
+        
+        if (!$proposal) {
+            $isEligible = false;
+            $reason = 'Anda belum memiliki proposal yang disetujui untuk periode ini.';
+        } elseif (($proposal['pitching_dosen_status'] ?? '') !== 'approved' || ($proposal['pitching_admin_status'] ?? '') !== 'approved') {
+            $isEligible = false;
+            $reason = 'Anda harus menyelesaikan tahap Pitching Desk dan mendapatkan persetujuan Reviewer terlebih dahulu.';
         }
 
         // Get phase status for "Wawancara Perjanjian" (Phase ID 4)
         $phase = $this->scheduleModel->where('period_id', $activePeriod['id'])
-            ->where('phase_number', 4) // Assuming 4 is Wawancara Perjanjian
+            ->where('phase_number', 4) 
             ->first();
 
         $isPhaseOpen = $this->isPhaseOpen($phase);
 
         // Get documents
-        $docs = $this->documentModel->getProposalDocs($proposal['id']);
-
         $docsByKey = [];
-        foreach ($docs as $doc) {
-            $docsByKey[$doc['doc_key']] = $doc;
+        if ($proposal) {
+            $docs = $this->documentModel->getProposalDocs($proposal['id']);
+            foreach ($docs as $doc) {
+                $docsByKey[$doc['doc_key']] = $doc;
+            }
         }
 
-        $isLocked = ($proposal['wawancara_status'] ?? 'pending') === 'approved';
+        $isLocked = $proposal && ($proposal['wawancara_status'] ?? 'pending') === 'approved';
 
         return view('mahasiswa/wawancara', [
             'title'        => 'Perjanjian Implementasi',
@@ -82,6 +94,8 @@ class WawancaraController extends BaseController
             'activePeriod' => $activePeriod,
             'phase'        => $phase,
             'isPhaseOpen'  => $isPhaseOpen,
+            'isEligible'   => $isEligible,
+            'reason'       => $reason,
             'isLocked'     => $isLocked,
             'docsByKey'    => $docsByKey
         ]);

@@ -13,8 +13,8 @@
             nama: '<?= old('nama') ?? '' ?>',
             nim: '<?= old('nim') ?? '' ?>',
             username: '',
-            jurusan: '<?= old('jurusan') ?? '' ?>',
-            prodi: '<?= old('prodi') ?? '' ?>',
+            jurusan: '',
+            prodi: '',
             prodiList: <?= json_encode($prodiList) ?>,
             passwordValue: '',
             passwordStrength: 0,
@@ -25,11 +25,14 @@
 
             init() {
                 this.generateUsername();
-                // Restore prodi if jurusan is set (from old value)
+                
+                // Set initial values from PHP (handles flash/old values)
                 const oldJurusan = '<?= old('jurusan') ?? '' ?>';
                 const oldProdi = '<?= old('prodi') ?? '' ?>';
+                
                 if (oldJurusan) {
                     this.jurusan = oldJurusan;
+                    // Wait for next tick to ensure prodiOptions are updated
                     this.$nextTick(() => {
                         this.prodi = oldProdi;
                     });
@@ -40,9 +43,9 @@
                 const nama = (this.nama || '').trim().toLowerCase();
                 const nim = (this.nim || '').toString().trim();
                 const parts = nama.split(/\s+/).filter(Boolean).map(p => p.replace(/[^a-z]/g, ''));
-                const middle = (parts.length >= 2 ? parts[1] : (parts.length ? parts[parts.length - 1] : ''));
-                const last4 = nim.slice(-4);
-                this.username = (middle + last4).replace(/[^a-z0-9]/g, '');
+                const prefix = parts.length >= 1 ? parts[0] : '';
+                const last4 = nim.length >= 4 ? nim.slice(-4) : nim;
+                this.username = (prefix + last4).replace(/[^a-z0-9]/g, '');
             },
 
             jurusanList() {
@@ -93,6 +96,7 @@
             },
 
             copyPassword() {
+                if (!this.passwordValue) return;
                 navigator.clipboard.writeText(this.passwordValue).then(() => {
                     this.showToast('Password disalin ke clipboard!', 'success');
                 });
@@ -101,6 +105,13 @@
             handleFotoChange(event) {
                 const file = event.target.files[0];
                 if (file) {
+                    // Check size (2MB)
+                    if (file.size > 2 * 1024 * 1024) {
+                        this.showToast('Ukuran file maksimal 2MB', 'error');
+                        event.target.value = '';
+                        return;
+                    }
+                    
                     this.fotoName = file.name;
                     const reader = new FileReader();
                     reader.onload = (e) => {

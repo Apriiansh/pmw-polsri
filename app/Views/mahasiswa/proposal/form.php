@@ -357,10 +357,10 @@
                 </div>
 
                 <div class="flex items-center justify-between gap-4 flex-wrap">
-                    <p class="text-xs text-slate-500">Wajib 3–4 anggota.</p>
+                    <p class="text-xs text-slate-500">Wajib 3–4 anggota (Total tim 4-5 orang termasuk ketua).</p>
                     <?php if (!$isLocked): ?>
-                        <button type="button" class="btn-outline inline-flex items-center gap-2"
-                            x-show="(existingCount + newMembers.length) < 4"
+                        <button type="button" class="btn-outline btn-sm inline-flex items-center gap-2"
+                            x-show="members.length < 4"
                             @click="addMember()">
                             <i class="fas fa-user-plus"></i>
                             Tambah Anggota
@@ -368,195 +368,181 @@
                     <?php endif; ?>
                 </div>
 
-                <div class="space-y-4">
+                <div class="grid lg:grid-cols-2 gap-4">
+                    <template x-for="(m, idx) in members" :key="idx">
+                        <div class="p-5 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all relative group overflow-hidden"
+                             :class="{ 'ring-2 ring-sky-400/20 border-sky-100': m.editing }">
+                            
+                            <!-- Card Background Highlight -->
+                            <div class="absolute inset-0 bg-gradient-to-br from-sky-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
-                    <!-- PHP Loop: Existing Members (100% Reliable for Stored Data) -->
-                    <?php foreach ($anggotaOnly as $idx => $m): ?>
-                        <div class="p-4 rounded-xl bg-white border border-slate-100 member-row animate-in fade-in slide-in-from-top-2"
-                            x-data="{ 
-                                 show: true, 
-                                 jurusan: '<?= esc(old('members.' . $idx . '.jurusan', $m['jurusan'] ?? ''), 'js') ?>', 
-                                 prodi: '<?= esc(old('members.' . $idx . '.prodi', $m['prodi'] ?? ''), 'js') ?>' 
-                             }"
-                            x-init="$nextTick(() => { prodi = '<?= esc(old('members.' . $idx . '.prodi', $m['prodi'] ?? ''), 'js') ?>' })"
-                            x-show="show">
-                            <div class="flex items-center justify-between gap-3 mb-4">
-                                <p class="text-sm font-bold text-slate-800">Anggota <span x-text="<?= $idx + 1 ?>"></span></p>
-                                <?php if (!$isLocked): ?>
-                                    <button type="button" class="btn-ghost btn-sm text-rose-600 hover:text-rose-700"
-                                        x-show="(existingCount + newMembers.length) > 3"
-                                        @click="show = false">
-                                        <i class="fas fa-trash-alt mr-1"></i> Hapus
-                                    </button>
-                                <?php endif; ?>
-                            </div>
-                            <!-- Conditional inputs: only if show is true -->
-                            <template x-if="show">
-                                <div class="grid md:grid-cols-2 gap-4">
+                            <div class="relative z-10">
+                                <!-- Hidden Fields for Form Submission (Source of Truth) -->
+                                <input type="hidden" :name="`members[${idx}][id]`" :value="m.id">
+                                <input type="hidden" :name="`members[${idx}][role]`" value="anggota">
+                                <input type="hidden" :name="`members[${idx}][nama]`" :value="m.nama">
+                                <input type="hidden" :name="`members[${idx}][nim]`" :value="m.nim">
+                                <input type="hidden" :name="`members[${idx}][jurusan]`" :value="m.jurusan">
+                                <input type="hidden" :name="`members[${idx}][prodi]`" :value="m.prodi">
+                                <input type="hidden" :name="`members[${idx}][semester]`" :value="m.semester">
+                                <input type="hidden" :name="`members[${idx}][phone]`" :value="m.phone">
+                                <input type="hidden" :name="`members[${idx}][email]`" :value="m.email">
+
+                                <!-- Header Controls -->
+                                <div class="flex items-center justify-between gap-3 mb-4">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center text-xs font-bold">
+                                            <span x-text="idx + 1"></span>
+                                        </div>
+                                        <h4 class="text-sm font-bold text-slate-800" x-text="m.nama || 'Anggota Baru'"></h4>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <?php if (!$isLocked): ?>
+                                            <button type="button" 
+                                                class="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+                                                :class="m.editing ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'"
+                                                @click="m.editing = !m.editing"
+                                                :title="m.editing ? 'Simpan' : 'Edit'">
+                                                <i class="fas" :class="m.editing ? 'fa-check' : 'fa-edit'"></i>
+                                            </button>
+                                            <button type="button" 
+                                                class="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-100 flex items-center justify-center transition-colors"
+                                                x-show="members.length > 3"
+                                                @click="removeMember(idx)"
+                                                title="Hapus">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+
+                                <!-- VIEW MODE: Summary -->
+                                <div x-show="!m.editing && m.nama" class="space-y-3 animate-in fade-in zoom-in-95 duration-200">
+                                    <div class="grid grid-cols-2 gap-y-2">
+                                        <div>
+                                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">NIM</p>
+                                            <p class="text-xs font-semibold text-slate-700" x-text="m.nim || '-'"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Semester</p>
+                                            <p class="text-xs font-semibold text-slate-700" x-text="m.semester || '-'"></p>
+                                        </div>
+                                        <div class="col-span-2">
+                                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Program Studi</p>
+                                            <p class="text-xs font-semibold text-slate-700 truncate" x-text="`${m.jurusan} — ${m.prodi}`"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kontak</p>
+                                            <p class="text-xs font-semibold text-slate-700" x-text="m.phone || '-'"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Email</p>
+                                            <p class="text-xs font-semibold text-slate-700 truncate" x-text="m.email || '-'"></p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- EDIT MODE: Form Inputs -->
+                                <div x-show="m.editing || !m.nama" class="space-y-4 animate-in slide-in-from-top-2 duration-200">
                                     <div class="form-field">
-                                        <label class="form-label text-xs">Nama</label>
+                                        <label class="form-label text-[10px] uppercase tracking-wider">Nama Lengkap</label>
                                         <div class="input-group">
                                             <span class="input-icon"><i class="fas fa-user text-xs"></i></span>
-                                            <input type="text" name="members[<?= $idx ?>][nama]" value="<?= esc(old('members.' . $idx . '.nama', $m['nama'] ?? '')) ?>" placeholder="Nama lengkap" <?= $isLocked ? 'disabled' : '' ?> required>
-                                        </div>
-                                        <input type="hidden" name="members[<?= $idx ?>][role]" value="anggota">
-                                    </div>
-                                    <div class="form-field">
-                                        <label class="form-label text-xs">NIM <span class="text-[10px] opacity-70">(12 Digit)</span></label>
-                                        <div class="input-group">
-                                            <span class="input-icon"><i class="fas fa-id-card text-xs"></i></span>
-                                            <input type="text" name="members[<?= $idx ?>][nim]" value="<?= esc(old('members.' . $idx . '.nim', $m['nim'] ?? '')) ?>" placeholder="Nomor Induk Mahasiswa" maxlength="12" <?= $isLocked ? 'disabled' : '' ?> required>
+                                            <input type="text" x-model="m.nama" placeholder="Nama lengkap" <?= $isLocked ? 'disabled' : '' ?> required>
                                         </div>
                                     </div>
-                                    <div class="form-field">
-                                        <label class="form-label text-xs">Jurusan</label>
-                                        <div class="input-group">
-                                            <span class="input-icon"><i class="fas fa-building text-xs"></i></span>
-                                            <select name="members[<?= $idx ?>][jurusan]" x-model="jurusan" @change="prodi = ''"
-                                                class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all text-xs bg-white" <?= $isLocked ? 'disabled' : '' ?> required>
-                                                <option value="">Pilih Jurusan</option>
-                                                <?php foreach (array_keys($prodiList) as $j): ?>
-                                                    <option value="<?= esc($j) ?>"><?= esc($j) ?></option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-field">
-                                        <label class="form-label text-xs">Prodi</label>
-                                        <div class="input-group">
-                                            <span class="input-icon"><i class="fas fa-graduation-cap text-xs"></i></span>
-                                            <select name="members[<?= $idx ?>][prodi]" x-model="prodi"
-                                                class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all text-xs bg-white disabled:bg-slate-50 disabled:text-slate-400"
-                                                :disabled="!jurusan || <?= $isLocked ? 'true' : 'false' ?>" required>
-                                                <option value="">Pilih Program Studi</option>
 
-                                                <!-- PHP Seed for initial display and validation errors -->
-                                                <?php $currentJurusan = old('members.' . $idx . '.jurusan', $m['jurusan'] ?? ''); ?>
-                                                <?php if (!empty($currentJurusan) && isset($prodiList[$currentJurusan])): ?>
-                                                    <?php foreach ($prodiList[$currentJurusan] as $p): ?>
-                                                        <option value="<?= esc($p) ?>"><?= esc($p) ?></option>
-                                                    <?php endforeach; ?>
-                                                <?php endif; ?>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div class="form-field">
+                                            <label class="form-label text-[10px] uppercase tracking-wider">NIM</label>
+                                            <div class="input-group">
+                                                <span class="input-icon"><i class="fas fa-id-card text-xs"></i></span>
+                                                <input type="text" x-model="m.nim" placeholder="NIM" maxlength="12" <?= $isLocked ? 'disabled' : '' ?> required>
+                                            </div>
+                                        </div>
+                                        <div class="form-field">
+                                            <label class="form-label text-[10px] uppercase tracking-wider">Semester</label>
+                                            <div class="input-group">
+                                                <span class="input-icon"><i class="fas fa-calendar-alt text-xs"></i></span>
+                                                <select x-model="m.semester" <?= $isLocked ? 'disabled' : '' ?> required>
+                                                    <option value="">Pilih</option>
+                                                    <option value="1">1</option>
+                                                    <option value="2">2</option>
+                                                    <option value="3">3</option>
+                                                    <option value="4">4</option>
+                                                    <option value="5">5</option>
+                                                    <option value="6">6</option>
+                                                    <option value="7">7</option>
+                                                    <option value="8">8</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                                <!-- Alpine template for dynamic changes -->
-                                                <template x-for="p in prodiOptions(jurusan)" :key="p">
-                                                    <option :value="p" x-text="p"></option>
+                                    <div class="form-field" x-data="{ open: false }">
+                                        <label class="form-label text-[10px] uppercase tracking-wider">Jurusan</label>
+                                        <div class="search-select-container" :class="open ? 'is-open' : ''" @click.away="open = false">
+                                            <div class="input-group" @click="open = !open">
+                                                <span class="input-icon"><i class="fas fa-building text-xs"></i></span>
+                                                <input type="text" x-model="m.jurusan" placeholder="Pilih Jurusan" readonly 
+                                                    class="cursor-pointer text-xs" <?= $isLocked ? 'disabled' : '' ?> required>
+                                                <span class="input-icon">
+                                                    <i class="fas" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                                                </span>
+                                            </div>
+                                            <input type="hidden" :name="`members[${idx}][jurusan]`" :value="m.jurusan">
+                                            
+                                            <div x-show="open" x-transition x-cloak class="search-select-dropdown">
+                                                <template x-for="j in jurusanList()" :key="j">
+                                                    <div class="search-select-item" 
+                                                        :class="{ 'selected': m.jurusan === j }"
+                                                        @click="m.jurusan = j; m.prodi = ''; open = false" x-text="j"></div>
                                                 </template>
-                                            </select>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="form-field">
-                                        <label class="form-label text-xs">Semester</label>
-                                        <div class="input-group">
-                                            <span class="input-icon"><i class="fas fa-calendar-alt text-xs"></i></span>
-                                            <select name="members[<?= $idx ?>][semester]"
-                                                class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all text-xs bg-white" <?= $isLocked ? 'disabled' : '' ?> required>
-                                                <option value="">Pilih Semester</option>
-                                                <?php $currSemester = (int) old('members.' . $idx . '.semester', $m['semester'] ?? 0); ?>
-                                                <?php for ($i = 1; $i <= 8; $i++): ?>
-                                                    <option value="<?= $i ?>" <?= $currSemester === $i ? 'selected' : '' ?>><?= $i ?></option>
-                                                <?php endfor; ?>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-field">
-                                        <label class="form-label text-xs">No. HP <span class="text-[10px] opacity-70">(10-13 Digit)</span></label>
-                                        <div class="input-group">
-                                            <span class="input-icon"><i class="fas fa-phone text-xs"></i></span>
-                                            <input type="tel" name="members[<?= $idx ?>][phone]" value="<?= esc(old('members.' . $idx . '.phone', $m['phone'] ?? '')) ?>" placeholder="08xxxxxxxxxx" maxlength="13" <?= $isLocked ? 'disabled' : '' ?> required>
-                                        </div>
-                                    </div>
-                                    <div class="form-field">
-                                        <label class="form-label text-xs">Email</label>
-                                        <div class="input-group">
-                                            <span class="input-icon"><i class="fas fa-envelope text-xs"></i></span>
-                                            <input type="email" name="members[<?= $idx ?>][email]" value="<?= esc(old('members.' . $idx . '.email', $m['email'] ?? '')) ?>" placeholder="email@student.polsri.ac.id" <?= $isLocked ? 'disabled' : '' ?> required>
-                                        </div>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-                    <?php endforeach; ?>
 
-                    <!-- Alpine Loop: New Members (Dynamic Interactivity) -->
-                    <template x-for="(m, idx) in newMembers" :key="idx">
-                        <div class="p-4 rounded-xl bg-sky-50/30 border border-sky-100/50 member-row">
-                            <div class="flex items-center justify-between gap-3 mb-4">
-                                <p class="text-sm font-bold text-sky-800">Baru: Anggota <span x-text="<?= $existingCount ?> + idx + 1"></span></p>
-                                <button type="button" class="btn-ghost btn-sm text-rose-600 hover:text-rose-700"
-                                    x-show="(existingCount + newMembers.length) > 3"
-                                    @click="removeMember(idx)">
-                                    <i class="fas fa-trash-alt mr-1"></i> Hapus
-                                </button>
-                            </div>
-                            <div class="grid md:grid-cols-2 gap-4">
-                                <div class="form-field">
-                                    <label class="form-label text-xs">Nama</label>
-                                    <div class="input-group">
-                                        <span class="input-icon"><i class="fas fa-user text-xs"></i></span>
-                                        <input type="text" :name="`members[${<?= $existingCount ?> + idx}][nama]`" x-model="m.nama" placeholder="Nama lengkap" required>
+                                    <div class="form-field" x-data="{ open: false }">
+                                        <label class="form-label text-[10px] uppercase tracking-wider">Prodi</label>
+                                        <div class="search-select-container" :class="open ? 'is-open' : ''" @click.away="open = false">
+                                            <div class="input-group" @click="if(m.jurusan && !<?= $isLocked ? 'true' : 'false' ?>) open = !open">
+                                                <span class="input-icon"><i class="fas fa-graduation-cap text-xs"></i></span>
+                                                <input type="text" x-model="m.prodi" placeholder="Pilih Program Studi" readonly 
+                                                    class="cursor-pointer text-xs" :disabled="!m.jurusan || <?= $isLocked ? 'true' : 'false' ?>" required>
+                                                <span class="input-icon">
+                                                    <i class="fas" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                                                </span>
+                                            </div>
+                                            <input type="hidden" :name="`members[${idx}][prodi]`" :value="m.prodi">
+                                            
+                                            <div x-show="open" x-transition x-cloak class="search-select-dropdown">
+                                                <template x-for="p in prodiOptions(m.jurusan)" :key="p">
+                                                    <div class="search-select-item" 
+                                                        :class="{ 'selected': m.prodi === p }"
+                                                        @click="m.prodi = p; open = false" x-text="p"></div>
+                                                </template>
+                                                <div x-show="prodiOptions(m.jurusan).length === 0" class="p-3 text-[10px] text-slate-400 text-center">
+                                                    Pilih jurusan terlebih dahulu
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <input type="hidden" :name="`members[${<?= $existingCount ?> + idx}][role]`" value="anggota">
-                                </div>
-                                <div class="form-field">
-                                    <label class="form-label text-xs">NIM <span class="text-[10px] opacity-70">(12 Digit)</span></label>
-                                    <div class="input-group">
-                                        <span class="input-icon"><i class="fas fa-id-card text-xs"></i></span>
-                                        <input type="text" :name="`members[${<?= $existingCount ?> + idx}][nim]`" x-model="m.nim" placeholder="Nomor Induk Mahasiswa" maxlength="12" required>
-                                    </div>
-                                </div>
-                                <div class="form-field">
-                                    <label class="form-label text-xs">Jurusan</label>
-                                    <div class="input-group">
-                                        <span class="input-icon"><i class="fas fa-building text-xs"></i></span>
-                                        <select :name="`members[${<?= $existingCount ?> + idx}][jurusan]`" x-model="m.jurusan" @change="m.prodi = ''"
-                                            class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all text-xs bg-white" required>
-                                            <option value="">Pilih Jurusan</option>
-                                            <template x-for="j in jurusanList()" :key="j">
-                                                <option :value="j" x-text="j"></option>
-                                            </template>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-field">
-                                    <label class="form-label text-xs">Prodi</label>
-                                    <div class="input-group">
-                                        <span class="input-icon"><i class="fas fa-graduation-cap text-xs"></i></span>
-                                        <select :name="`members[${<?= $existingCount ?> + idx}][prodi]`" x-model="m.prodi" :key="m.jurusan"
-                                            class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all text-xs bg-white disabled:bg-slate-50 disabled:text-slate-400"
-                                            :disabled="!m.jurusan" required>
-                                            <option value="">Pilih Program Studi</option>
-                                            <template x-for="p in prodiOptions(m.jurusan)" :key="p">
-                                                <option :value="p" x-text="p"></option>
-                                            </template>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-field">
-                                    <label class="form-label text-xs">Semester</label>
-                                    <div class="input-group">
-                                        <span class="input-icon"><i class="fas fa-calendar-alt text-xs"></i></span>
-                                        <select :name="`members[${<?= $existingCount ?> + idx}][semester]`" x-model="m.semester"
-                                            class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all text-xs bg-white" required>
-                                            <option value="">Pilih Semester</option>
-                                            <?php for ($i = 1; $i <= 8; $i++): ?>
-                                                <option value="<?= $i ?>"><?= $i ?></option>
-                                            <?php endfor; ?>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-field">
-                                    <label class="form-label text-xs">No. HP <span class="text-[10px] opacity-70">(10-13 Digit)</span></label>
-                                    <div class="input-group">
-                                        <span class="input-icon"><i class="fas fa-phone text-xs"></i></span>
-                                        <input type="tel" :name="`members[${<?= $existingCount ?> + idx}][phone]`" x-model="m.phone" placeholder="08xxxxxxxxxx" maxlength="13" required>
-                                    </div>
-                                </div>
-                                <div class="form-field">
-                                    <label class="form-label text-xs">Email</label>
-                                    <div class="input-group">
-                                        <span class="input-icon"><i class="fas fa-envelope text-xs"></i></span>
-                                        <input type="email" :name="`members[${<?= $existingCount ?> + idx}][email]`" x-model="m.email" placeholder="email@student.polsri.ac.id" required>
+
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div class="form-field">
+                                            <label class="form-label text-[10px] uppercase tracking-wider">WhatsApp</label>
+                                            <div class="input-group">
+                                                <span class="input-icon"><i class="fas fa-phone text-xs"></i></span>
+                                                <input type="tel" x-model="m.phone" placeholder="08..." maxlength="13" <?= $isLocked ? 'disabled' : '' ?> required>
+                                            </div>
+                                        </div>
+                                        <div class="form-field">
+                                            <label class="form-label text-[10px] uppercase tracking-wider">Email</label>
+                                            <div class="input-group">
+                                                <span class="input-icon"><i class="fas fa-envelope text-xs"></i></span>
+                                                <input type="email" x-model="m.email" placeholder="Email" <?= $isLocked ? 'disabled' : '' ?> required>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -566,16 +552,22 @@
             </div>
 
             <!-- Section 2: Profil Usaha -->
-            <div class="card-premium p-5 sm:p-7 space-y-6" @mousemove="handleMouseMove">
-                <h3 class="font-display text-base font-bold text-slate-800">2) Profil Usaha</h3>
+            <div class="card-premium p-6 sm:p-8 space-y-8" @mousemove="handleMouseMove">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl shadow-sm">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-lg font-bold text-slate-800">Identitas & Profil Usaha</h3>
+                        <p class="text-xs text-slate-500">Detail ide bisnis, kategori, dan rencana anggaran.</p>
+                    </div>
+                </div>
 
                 <div class="grid md:grid-cols-2 gap-6">
                     <div class="form-field">
-                        <label class="form-label">
-                            Kategori Usaha <span class="required">*</span>
-                        </label>
+                        <label class="form-label text-[10px] uppercase tracking-wider">Kategori Usaha <span class="text-rose-500">*</span></label>
                         <div class="input-group">
-                            <span class="input-icon"><i class="fas fa-tags"></i></span>
+                            <span class="input-icon"><i class="fas fa-tag text-xs"></i></span>
                             <select name="kategori_usaha" x-model="formData.kategori_usaha" <?= $isLocked ? 'disabled' : '' ?> required>
                                 <?php $kategori = old('kategori_usaha', $proposal['kategori_usaha'] ?? ''); ?>
                                 <option value="">Pilih Kategori</option>
@@ -589,82 +581,82 @@
                     </div>
 
                     <div class="form-field">
-                        <label class="form-label">
-                            Nama Usaha/Produk <span class="required">*</span>
-                        </label>
+                        <label class="form-label text-[10px] uppercase tracking-wider">Nama Usaha/Produk <span class="text-rose-500">*</span></label>
                         <div class="input-group">
-                            <span class="input-icon"><i class="fas fa-store"></i></span>
+                            <span class="input-icon"><i class="fas fa-store text-xs"></i></span>
                             <input type="text" name="nama_usaha" x-model="formData.nama_usaha" value="<?= esc(old('nama_usaha', $proposal['nama_usaha'] ?? '')) ?>" placeholder="Nama usaha atau produk" <?= $isLocked ? 'disabled' : '' ?> required>
                         </div>
                     </div>
 
                     <div class="form-field">
-                        <label class="form-label">
-                            Kategori Wirausaha <span class="required">*</span>
-                        </label>
+                        <label class="form-label text-[10px] uppercase tracking-wider">Status Wirausaha <span class="text-rose-500">*</span></label>
                         <div class="input-group">
-                            <span class="input-icon"><i class="fas fa-layer-group"></i></span>
+                            <span class="input-icon"><i class="fas fa-layer-group text-xs"></i></span>
                             <select name="kategori_wirausaha" x-model="formData.kategori_wirausaha" <?= $isLocked ? 'disabled' : '' ?> required>
-                                <?php $kategoriWirausaha = old('kategori_wirausaha', $proposal['kategori_wirausaha'] ?? 'pemula'); ?>
-                                <option value="pemula" <?= $kategoriWirausaha === 'pemula' ? 'selected' : '' ?>>Pemula</option>
-                                <option value="berkembang" <?= $kategoriWirausaha === 'berkembang' ? 'selected' : '' ?>>Berkembang</option>
+                                <option value="pemula">Pemula</option>
+                                <option value="berkembang">Berkembang</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="form-field">
-                        <label class="form-label">
-                            Total RAB (Rp)
-                        </label>
+                        <label class="form-label text-[10px] uppercase tracking-wider">Total RAB (Rp)</label>
                         <div class="input-group">
-                            <span class="input-icon"><i class="fas fa-money-bill-wave"></i></span>
-                            <input type="number" name="total_rab" x-model="formData.total_rab" value="<?= esc(old('total_rab', $proposal['total_rab'] ?? '')) ?>" placeholder="0.00" min="0" step="0.01" <?= $isLocked ? 'disabled' : '' ?>>
+                            <span class="input-icon"><i class="fas fa-money-bill-wave text-xs"></i></span>
+                            <input type="number" name="total_rab" x-model="formData.total_rab" placeholder="0.00" min="0" step="0.01" <?= $isLocked ? 'disabled' : '' ?>>
                         </div>
                     </div>
 
-                    <!-- Detail Keterangan -->
                     <div class="form-field md:col-span-2">
-                        <label class="form-label">
-                            Detail Keterangan Usaha / Ide Bisnis
-                        </label>
+                        <label class="form-label text-[10px] uppercase tracking-wider">Detail Keterangan Usaha / Ide Bisnis</label>
                         <div class="input-group">
                             <span class="input-icon self-start mt-3"><i class="fas fa-align-left text-xs"></i></span>
                             <textarea name="detail_keterangan" x-model="formData.detail_keterangan" rows="4"
-                                class="w-full py-2.5 outline-none resize-none bg-transparent" <?= $isLocked ? 'disabled' : '' ?>
-                                placeholder="Jelaskan secara singkat mengenai detil usaha atau ide bisnis Anda..."><?= esc(old('detail_keterangan', $proposal['detail_keterangan'] ?? '')) ?></textarea>
+                                class="w-full py-2.5 outline-none resize-none bg-transparent text-sm" <?= $isLocked ? 'disabled' : '' ?>
+                                placeholder="Jelaskan secara singkat mengenai detil usaha atau ide bisnis Anda..."></textarea>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between pt-4 border-t border-sky-50">
-                    <p class="text-[10px] text-slate-400 italic">* Kolom bertanda merah wajib diisi</p>
+                <div class="flex items-center justify-between pt-4 border-t border-slate-50">
+                    <p class="text-[10px] text-slate-400 italic">* Pastikan seluruh data yang diinput sudah sesuai dengan rencana bisnis Anda.</p>
                 </div>
             </div>
 
             <!-- Section 3: Dokumen -->
-            <div class="card-premium p-5 sm:p-7 space-y-6" @mousemove="handleMouseMove">
-                <h3 class="font-display text-base font-bold text-slate-800">3) Unggah Dokumen (PDF, max 5MB)</h3>
+            <div class="card-premium p-6 sm:p-8 space-y-8" @mousemove="handleMouseMove">
+                <div class="flex items-center justify-between gap-4 flex-wrap">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl shadow-sm">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-display text-lg font-bold text-slate-800">Unggah Dokumen</h3>
+                            <p class="text-xs text-slate-500">Unggah lampiran wajib dalam format PDF (Maks. 5MB).</p>
+                        </div>
+                    </div>
+                </div>
 
                 <?php if (!$proposal): ?>
-                    <div class="p-4 rounded-xl bg-sky-50 border border-sky-100">
-                        <p class="text-sm text-slate-600 flex items-center gap-2">
-                            <i class="fas fa-info-circle text-sky-500"></i>
-                            Simpan draft terlebih dahulu untuk membuka fitur unggah dokumen.
-                        </p>
+                    <div class="p-6 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col items-center text-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-slate-400 shadow-sm">
+                            <i class="fas fa-lock text-lg"></i>
+                        </div>
+                        <p class="text-xs font-bold text-slate-600">Simpan draft terlebih dahulu untuk mengaktifkan fitur unggah dokumen.</p>
                     </div>
                 <?php else: ?>
-                    <div class="space-y-4">
+                    <div class="grid md:grid-cols-2 gap-4">
                         <?php
                         $labels = [
-                            'proposal_utama' => 'Dokumen Proposal Utama',
-                            'biodata' => 'Lampiran Biodata',
-                            'surat_pernyataan_ketua' => 'Surat Pernyataan Ketua',
-                            'surat_kesediaan_dosen' => 'Surat Kesediaan Dosen Pendamping',
-                            'ktm' => 'Scan KTM (gabungan)',
+                            'proposal_utama' => 'Proposal Utama',
+                            'biodata' => 'Biodata Tim',
+                            'surat_pernyataan_ketua' => 'Pernyataan Ketua',
+                            'surat_kesediaan_dosen' => 'Kesediaan Dosen',
+                            'ktm' => 'KTM Gabungan',
                         ];
                         $icons = [
                             'proposal_utama' => 'fa-file-alt',
-                            'biodata' => 'fa-id-card',
+                            'biodata' => 'fa-users',
                             'surat_pernyataan_ketua' => 'fa-signature',
                             'surat_kesediaan_dosen' => 'fa-user-check',
                             'ktm' => 'fa-id-badge',
@@ -672,63 +664,55 @@
                         ?>
                         <?php foreach ($requiredDocKeys as $key): ?>
                             <?php $doc = $docsByKey[$key] ?? null; ?>
-                            <div class="p-4 rounded-xl bg-white border border-slate-100 transition-all hover:border-sky-100 group">
-                                <div class="flex items-start justify-between gap-4 flex-wrap">
-                                    <div class="flex items-start gap-4">
-                                        <div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 shrink-0 group-hover:bg-sky-50 group-hover:text-sky-500 transition-colors">
-                                            <i class="fas <?= $icons[$key] ?? 'fa-file' ?> text-lg"></i>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-bold text-slate-800"><?= esc($labels[$key] ?? $key) ?></p>
-
-                                            <!-- Status Badge -->
-                                            <div class="flex items-center gap-2 mt-1">
-                                                <template x-if="docStatus['<?= $key ?>'] === 'uploaded'">
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">
-                                                        <i class="fas fa-check-circle mr-1"></i> Tersimpan
-                                                    </span>
-                                                </template>
-                                                <template x-if="docStatus['<?= $key ?>'] === 'selected'">
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 animate-pulse">
-                                                        <i class="fas fa-clock mr-1"></i> Siap Unggah
-                                                    </span>
-                                                </template>
-                                                <template x-if="docStatus['<?= $key ?>'] === 'missing'">
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700">
-                                                        <i class="fas fa-exclamation-triangle mr-1"></i> Belum Ada
-                                                    </span>
-                                                </template>
-                                            </div>
-
-                                            <p class="text-xs text-slate-500 mt-1">
-                                                <span x-text="docFilename['<?= $key ?>'] || 'Belum ada file terpilih'"></span>
-                                            </p>
-
-                                            <?php if ($doc): ?>
-                                                <a class="text-xs font-bold text-sky-600 hover:text-sky-700 inline-flex items-center gap-1 mt-2" href="<?= base_url('mahasiswa/proposal/doc/' . $doc['id']) ?>">
-                                                    <i class="fas fa-download text-[10px]"></i> Download Draft File
-                                                </a>
-                                            <?php endif; ?>
-                                        </div>
+                            <div class="p-4 rounded-xl bg-white border border-slate-100 transition-all hover:border-sky-100 hover:shadow-sm group relative overflow-hidden">
+                                <div class="absolute top-0 right-0 p-3">
+                                    <template x-if="docStatus['<?= $key ?>'] === 'uploaded'">
+                                        <i class="fas fa-check-circle text-emerald-500 text-sm"></i>
+                                    </template>
+                                </div>
+                                
+                                <div class="flex items-start gap-4">
+                                    <div class="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-sky-50 group-hover:text-sky-500 transition-colors shrink-0">
+                                        <i class="fas <?= $icons[$key] ?? 'fa-file' ?>"></i>
                                     </div>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"><?= esc($labels[$key] ?? $key) ?></p>
+                                        
+                                        <div class="mt-1">
+                                            <template x-if="docStatus['<?= $key ?>'] === 'uploaded'">
+                                                <div class="flex flex-col gap-1">
+                                                    <span class="text-xs font-bold text-slate-700 truncate" x-text="docFilename['<?= $key ?>']"></span>
+                                                    <?php if ($doc): ?>
+                                                        <a href="<?= base_url('mahasiswa/proposal/doc/' . $doc['id']) ?>" 
+                                                           class="text-[10px] font-bold text-sky-600 hover:underline flex items-center gap-1">
+                                                           <i class="fas fa-download"></i> Download File
+                                                        </a>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </template>
+                                            <template x-if="docStatus['<?= $key ?>'] === 'selected'">
+                                                <div class="flex flex-col gap-1 animate-pulse">
+                                                    <span class="text-xs font-bold text-amber-600 truncate" x-text="docFilename['<?= $key ?>']"></span>
+                                                    <span class="text-[10px] font-bold text-amber-500 uppercase tracking-tighter">Siap Diunggah...</span>
+                                                </div>
+                                            </template>
+                                            <template x-if="docStatus['<?= $key ?>'] === 'missing'">
+                                                <span class="text-xs font-semibold text-rose-400 italic">Belum ada file</span>
+                                            </template>
+                                        </div>
 
-                                    <div class="flex flex-col items-end gap-2">
                                         <?php if (!$isLocked): ?>
-                                            <label class="relative cursor-pointer">
-                                                <span class="btn-outline btn-sm inline-flex items-center gap-2 bg-white">
-                                                    <i class="fas fa-folder-open"></i>
-                                                    Pilih File
-                                                </span>
-                                                <input type="file" name="<?= esc($key) ?>"
-                                                    accept="application/pdf"
-                                                    class="hidden"
-                                                    @change="handleFileChange($event, '<?= $key ?>')">
-                                            </label>
-                                            <p class="text-[10px] text-slate-400">PDF, Maks 5MB</p>
-                                        <?php else: ?>
-                                            <div class="text-[10px] text-slate-400 font-bold flex items-center gap-1">
-                                                <i class="fas fa-lock text-[8px]"></i>
-                                                Terkunci
+                                            <div class="mt-4 flex items-center gap-2">
+                                                <label class="cursor-pointer">
+                                                    <span class="px-3 py-1.5 rounded-lg bg-sky-50 text-sky-600 text-[10px] font-bold hover:bg-sky-100 transition-colors inline-flex items-center gap-1.5">
+                                                        <i class="fas fa-upload"></i>
+                                                        Pilih PDF
+                                                    </span>
+                                                    <input type="file" name="<?= esc($key) ?>"
+                                                        accept="application/pdf"
+                                                        class="hidden"
+                                                        @change="handleFileChange($event, '<?= $key ?>')">
+                                                </label>
                                             </div>
                                         <?php endif; ?>
                                     </div>
@@ -737,28 +721,30 @@
                         <?php endforeach; ?>
                     </div>
 
-                    <div class="pt-8 border-t border-sky-50">
-                        <div class="flex flex-col md:flex-row items-center justify-between gap-6 p-6 rounded-2xl bg-slate-50 border border-slate-100">
-                            <div class="space-y-1 max-w-2xl text-center md:text-left">
+                    <div class="pt-8 border-t border-slate-50">
+                        <div class="flex flex-col md:flex-row items-center justify-between gap-6 p-6 rounded-3xl bg-gradient-to-br from-slate-50 to-white border border-slate-100">
+                            <div class="space-y-1.5 max-w-2xl text-center md:text-left">
                                 <h4 class="text-sm font-black text-slate-800 uppercase tracking-tight">Kirim Proposal Final</h4>
-                                <p class="text-xs text-slate-500">Pastikan semua data dan dokumen sudah benar. Proposal dapat diubah kembali selama jadwal pendaftaran belum berakhir.</p>
+                                <p class="text-xs text-slate-500 leading-relaxed">Pastikan semua data dan lampiran sudah sesuai. Anda tidak dapat melakukan perubahan setelah proposal dikirim.</p>
 
-                                <div class="flex items-center justify-center md:justify-start gap-4 mt-3">
-                                    <div class="flex items-center gap-1.5 text-[10px] font-bold transition-colors" :class="isFormComplete ? 'text-emerald-600' : 'text-slate-400'">
-                                        <i class="fas" :class="isFormComplete ? 'fa-check-circle' : 'fa-circle'"></i>
-                                        Data Lengkap
+                                <div class="flex items-center justify-center md:justify-start gap-4 mt-4">
+                                    <div class="flex items-center gap-2 text-[10px] font-bold py-1 px-3 rounded-full border transition-all" 
+                                         :class="isFormComplete ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-100'">
+                                        <i class="fas" :class="isFormComplete ? 'fa-check-circle' : 'fa-circle-notch fa-spin'"></i>
+                                        Data Utama
                                     </div>
-                                    <div class="flex items-center gap-1.5 text-[10px] font-bold transition-colors" :class="allDocsReady ? 'text-emerald-600' : 'text-slate-400'">
-                                        <i class="fas" :class="allDocsReady ? 'fa-check-circle' : 'fa-circle'"></i>
-                                        Dokumen Lengkap
+                                    <div class="flex items-center gap-2 text-[10px] font-bold py-1 px-3 rounded-full border transition-all" 
+                                         :class="allDocsReady ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-100'">
+                                        <i class="fas" :class="allDocsReady ? 'fa-check-circle' : 'fa-circle-notch fa-spin'"></i>
+                                        Lampiran PDF
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="shrink-0 flex items-center gap-3 ml-auto">
+                            <div class="shrink-0 flex items-center gap-3">
                                 <?php if ($proposal['status'] === 'rejected'): ?>
                                     <button type="button" 
-                                        class="px-6 py-3 bg-white border-2 border-rose-500 text-rose-500 hover:bg-rose-50 rounded-xl font-bold text-sm transition-all flex items-center gap-2 group"
+                                        class="px-6 py-3 bg-white border-2 border-rose-500 text-rose-500 hover:bg-rose-50 rounded-2xl font-bold text-sm transition-all flex items-center gap-2 group"
                                         @click="confirmReset(<?= $proposal['id'] ?>)">
                                         <i class="fas fa-trash-alt group-hover:shake"></i>
                                         Buat Ulang Proposal
@@ -766,24 +752,25 @@
                                 <?php endif; ?>
 
                                 <?php if ($isLocked && $proposal['status'] !== 'rejected'): ?>
-                                    <div class="px-6 py-3 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-600 font-bold text-sm flex items-center gap-2">
+                                    <div class="px-8 py-3.5 bg-emerald-50 border border-emerald-100 rounded-2xl text-emerald-600 font-bold text-sm flex items-center gap-2 shadow-sm">
                                         <i class="fas fa-check-circle"></i>
                                         Finalisasi Selesai
                                     </div>
                                 <?php elseif ($isPhaseOpen && $proposal['status'] !== 'rejected'): ?>
                                     <button type="button"
-                                        class="btn-primary py-3.5 px-10 shadow-xl shadow-sky-200/50 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed group relative overflow-hidden"
+                                        class="btn-primary py-4 px-10 shadow-xl shadow-sky-200/50 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed group relative overflow-hidden"
                                         :disabled="!isFormComplete || !allDocsReady"
                                         @click="confirmSubmit()">
-                                        <span class="flex items-center gap-2 relative z-10">
+                                        <span class="flex items-center gap-3 relative z-10 font-bold">
                                             <i class="fas fa-paper-plane group-hover:rotate-12 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
-                                            Kirim Proposal Sekarang
+                                            Kirim Proposal Final
                                         </span>
                                     </button>
                                 <?php elseif (!$isPhaseOpen): ?>
-                                    <p class="text-xs text-rose-600 flex items-center gap-2 font-bold bg-rose-50 px-4 py-2 rounded-lg border border-rose-100">
-                                        <i class="fas fa-lock"></i> Pengiriman ditutup
-                                    </p>
+                                    <div class="px-6 py-3 bg-rose-50 border border-rose-100 text-rose-600 rounded-2xl font-bold text-sm flex items-center gap-2">
+                                        <i class="fas fa-lock"></i>
+                                        Pendaftaran Ditutup
+                                    </div>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -791,15 +778,12 @@
                 <?php endif; ?>
             </div>
         </form>
-
     </div>
 </div>
 
-<?= $this->endSection() ?>
-
-<?= $this->section('scripts') ?>
 <script>
     function proposalForm() {
+
         <?php
         $jsDocStatus = [];
         $jsDocFilename = [];
@@ -807,6 +791,24 @@
             $jsDocStatus[$key] = isset($docsByKey[$key]) ? 'uploaded' : 'missing';
             $jsDocFilename[$key] = isset($docsByKey[$key]) ? $docsByKey[$key]['original_name'] : '';
         }
+
+        // Prepare existing members for Alpine
+        $anggotaData = [];
+        $existingAnggota = array_values(array_filter($members ?? [], fn($m) => ($m['role'] ?? '') === 'anggota'));
+        foreach ($existingAnggota as $idx => $m) {
+            $anggotaData[] = [
+                'id'       => $m['id'] ?? null,
+                'nama'     => old('members.' . $idx . '.nama', $m['nama'] ?? ''),
+                'nim'      => old('members.' . $idx . '.nim', $m['nim'] ?? ''),
+                'jurusan'  => old('members.' . $idx . '.jurusan', $m['jurusan'] ?? ''),
+                'prodi'    => old('members.' . $idx . '.prodi', $m['prodi'] ?? ''),
+                'semester' => old('members.' . $idx . '.semester', $m['semester'] ?? ''),
+                'phone'    => old('members.' . $idx . '.phone', $m['phone'] ?? ''),
+                'email'    => old('members.' . $idx . '.email', $m['email'] ?? ''),
+                'editing'  => false
+            ];
+        }
+
         $currentLecName = '';
         $targetId = old('lecturer_id', $proposal['lecturer_id'] ?? '');
         if ($targetId) {
@@ -819,10 +821,9 @@
         }
         ?>
         return {
-            newMembers: [],
+            members: <?= json_encode($anggotaData) ?>,
             prodiList: <?= json_encode($prodiList) ?>,
             lecturers: <?= json_encode($lecturers) ?>,
-            existingCount: <?= $existingCount ?>,
             lecturerSearch: <?= json_encode($currentLecName) ?>,
             isOpen: false,
 
@@ -860,23 +861,16 @@
 
             init() {
                 // Ensure at least 3 members (total) are visible
-                let currentTotal = this.existingCount + this.newMembers.length;
-                while (currentTotal < 3) {
-                    this.addMember();
-                    currentTotal++;
+                if (this.members.length < 3) {
+                    for (let i = this.members.length; i < 3; i++) {
+                        this.addMember();
+                    }
                 }
             },
 
-            // Computed-like getters for completeness
             get isFormComplete() {
-                // Get number of existing members that are NOT hidden
-                const activeExisting = document.querySelectorAll('#mainProposalForm .member-row:not([style*="display: none"])').length - this.newMembers.length;
-                const totalMembers = activeExisting + this.newMembers.length;
-
-                // 3 to 4 anggota (Total team = anggota + 1 ketua = 4 to 5)
-                const membersValid = totalMembers >= 3 && totalMembers <= 4;
+                const membersValid = this.members.length >= 3 && this.members.length <= 4;
                 const fieldsValid = this.formData.lecturer_id && this.formData.kategori_usaha && this.formData.nama_usaha && this.formData.kategori_wirausaha;
-
                 return membersValid && fieldsValid;
             },
 
@@ -890,7 +884,6 @@
                     this.docStatus[key] = 'selected';
                     this.docFilename[key] = file.name;
 
-                    // Trigger toast for feedback
                     this.$dispatch('toast-notify', {
                         message: `File ${file.name} terpilih. Tekan Simpan Draft untuk mengunggah.`,
                         type: 'info'
@@ -943,25 +936,28 @@
             },
 
             addMember() {
-                if (this.existingCount + this.newMembers.length >= 4) {
+                if (this.members.length >= 4) {
                     this.$dispatch('toast-notify', {
-                        message: 'Jumlah anggota maksimal adalah 4 orang (Total 5 orang termasuk ketua).',
+                        message: 'Jumlah anggota maksimal adalah 4 orang.',
                         type: 'warning'
                     });
                     return;
                 }
-                this.newMembers.push({
+                this.members.push({
+                    id: null,
                     nama: '',
                     nim: '',
                     jurusan: '',
                     prodi: '',
                     semester: '',
                     phone: '',
-                    email: ''
+                    email: '',
+                    editing: true
                 });
             },
+
             removeMember(idx) {
-                this.newMembers.splice(idx, 1);
+                this.members.splice(idx, 1);
             }
         }
     }

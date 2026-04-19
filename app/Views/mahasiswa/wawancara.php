@@ -26,6 +26,24 @@ use App\Models\Proposal\PmwProposalModel;
         </div>
     </div>
 
+    <?php if (!$isEligible): ?>
+        <div class="card-premium p-12 text-center animate-stagger">
+            <div class="w-20 h-20 rounded-3xl bg-slate-50 flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-file-signature text-3xl text-slate-300"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800">Tahap Belum Tersedia</h3>
+            <p class="text-slate-500 max-w-md mx-auto mt-2"><?= esc($reason) ?></p>
+            <div class="flex flex-wrap justify-center gap-4 mt-8">
+                <a href="<?= base_url('mahasiswa/pitching-desk') ?>" class="btn-primary">
+                    Ke Pitching Desk <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+                <a href="<?= base_url('dashboard') ?>" class="btn-outline">
+                    Kembali ke Dashboard
+                </a>
+            </div>
+        </div>
+    <?php else: ?>
+
     <!-- ─── STICKY ACTION BAR ────────────────────────────────────────── -->
     <div class="sticky top-4 z-40 bg-white/90 backdrop-blur-md shadow-lg border border-sky-100 rounded-2xl p-4 mb-6 animate-stagger delay-150 flex items-center justify-between gap-4 flex-wrap">
         
@@ -214,6 +232,7 @@ use App\Models\Proposal\PmwProposalModel;
         </div>
     </div>
 
+    <?php endif; ?>
 </div><!-- /page wrapper -->
 
 <?= $this->endSection() ?>
@@ -228,7 +247,7 @@ function wawancaraForm() {
     return {
         perjanjianStatus: '<?= $perjanjianDoc ? 'uploaded' : 'missing' ?>',
         perjanjianFilename: <?= json_encode($perjanjianDoc['original_name'] ?? '') ?>,
-        isLocked: <?= $isLocked ? 'true' : 'false' ?>,
+        isLocked: <?= ($isLocked ?? false) ? 'true' : 'false' ?>,
 
         handleMouseMove(e) {
             const card = e.currentTarget;

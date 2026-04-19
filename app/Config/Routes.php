@@ -290,6 +290,16 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('kegiatan/gallery/(:num)', 'Mentor\\ActivityController::viewGalleryFile/$1');
     });
 
+    // Profile Settings Routes - All authenticated users
+    $routes->get('profile', 'ProfileController::index');
+    $routes->post('profile/update', 'ProfileController::updateProfile');
+    $routes->post('profile/password', 'ProfileController::updatePassword');
+    $routes->post('profile/foto', 'ProfileController::updateFoto');
+    $routes->post('profile/foto/delete', 'ProfileController::deleteFoto');
+    $routes->get('profile/foto/(:num)', 'ProfileController::viewFoto/$1');
+    $routes->get('profile/foto/member/(:num)', 'ProfileController::viewMemberFoto/$1');
+    $routes->post('profile/team', 'ProfileController::updateTeam');
+
     // Notifications Routes - All authenticated users
     $routes->get('notifications', 'NotificationsController::index');
     $routes->post('notifications/mark-read/(:num)', 'NotificationsController::markAsRead/$1');

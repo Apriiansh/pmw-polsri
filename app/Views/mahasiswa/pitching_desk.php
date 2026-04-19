@@ -568,7 +568,6 @@
         </div>
 
     <?php endif; ?>
-
 </div><!-- /page wrapper -->
 
 <?= $this->endSection() ?>
@@ -577,7 +576,7 @@
 <script>
     function pitchingDeskForm() {
         <?php
-        $isBerkembang = isset($proposal) && $proposal['kategori_wirausaha'] === 'berkembang';
+        $isBerkembang = isset($proposal) && ($proposal['kategori_wirausaha'] ?? '') === 'berkembang';
         $pptDoc = $docsByKey['pitching_ppt'] ?? null;
         $videoDoc = $docsByKey['pitching_video'] ?? null;
         ?>
@@ -588,10 +587,11 @@
             detailKeterangan: <?= json_encode($proposal['detail_keterangan'] ?? '') ?>,
             isSavingDetail: false,
             isSavingVideo: false,
-            isSubmitted: <?= $isSubmitted ? 'true' : 'false' ?>,
+            isSubmitted: <?= ($isSubmitted ?? false) ? 'true' : 'false' ?>,
 
             handleMouseMove(e) {
                 const card = e.currentTarget;
+                if (!card) return;
                 const rect = card.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
