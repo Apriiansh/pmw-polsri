@@ -45,36 +45,9 @@
     <?php elseif ($is_single_team): ?>
         <!-- Single Team Focused Dashboard -->
         <div class="space-y-6">
-            <!-- Team Quick Info Card -->
-            <div class="card-premium p-6 border-l-4 border-l-sky-500" @mousemove="handleMouseMove">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div class="flex items-center gap-5">
-                        <div class="w-16 h-16 rounded-2xl bg-linear-to-br from-sky-500 to-indigo-500 text-white flex items-center justify-center font-bold text-2xl shadow-xl shadow-sky-100">
-                            <?= substr(esc($proposal['nama_usaha']), 0, 1) ?>
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-3 mb-1">
-                                <h2 class="text-xl font-black text-slate-800 uppercase tracking-tight"><?= esc($proposal['nama_usaha']) ?></h2>
-                                <span class="px-2 py-0.5 rounded-lg bg-emerald-100 text-emerald-700 text-[9px] font-black uppercase">
-                                    <?= esc($proposal['status']) ?>
-                                </span>
-                            </div>
-                            <p class="text-xs text-slate-500 font-medium">
-                                <span class="text-sky-500 font-bold"><?= esc($proposal['kategori_usaha']) ?></span> • 
-                                Ketua: <?= esc($teams[0]['ketua_nama']) ?> (<?= esc($teams[0]['ketua_nim']) ?>)
-                            </p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <a href="<?= base_url('dosen/bimbingan') ?>" class="btn-primary btn-sm flex items-center gap-2">
-                            <i class="fas fa-calendar-check"></i> Jadwalkan Bimbingan
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Dashboard Content -->
-            <?= $this->include('shared/_monitoring_team') ?>
+            <?= $this->include('shared/_monitoring_team', [
+                'headerBadge'  => 'Monitoring Tim',
+            ]) ?>
         </div>
 
     <?php else: ?>

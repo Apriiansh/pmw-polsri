@@ -173,11 +173,12 @@
                         'children' => [
                             ['route' => 'admin/teams', 'label' => 'Peserta PMW', 'match' => 'admin/teams'],
                             ['route' => 'admin/kegiatan',     'label' => 'Kegiatan Wirausaha',   'match' => 'admin/kegiatan'],
-                            ['route' => 'admin/milestone', 'label' => 'Laporan Milestone', 'match' => 'admin/milestone']
+                            ['route' => 'admin/milestone', 'label' => 'Laporan Milestone', 'match' => 'admin/milestone'],
                         ]
                     ];
 
                     $navItems[] = ['route' => 'admin/finalisasi', 'icon' => 'fa-gavel', 'label' => 'Finalisasi Dana II', 'match' => 'admin/finalisasi'];
+                    $navItems[] = ['route' => 'admin/expo', 'icon' => 'fa-gavel', 'label' => 'Awarding & Expo', 'match' => 'admin/expo'];
 
                     // 3. Manajemen Data
                     $navItems[] = [
@@ -226,6 +227,9 @@
                     ];
                     // Laporan Milestone (Kemajuan & Akhir)
                     $navItems[] = ['route' => 'mahasiswa/milestone', 'icon' => 'fa-file-arrow-up', 'label' => 'Laporan Milestone', 'match' => 'mahasiswa/milestone'];
+
+                    // Tahap 10
+                    $navItems[] = ['route' => 'mahasiswa/expo', 'icon' => 'fa-trophy', 'label' => 'Awarding & Expo', 'match' => 'mahasiswa/expo'];
                 }
                 if ($mainRole === 'reviewer') {
                     // Penilaian Proposal - Tahap 2-3 (Seleksi Administrasi & Pitching Desk)

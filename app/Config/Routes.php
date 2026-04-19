@@ -116,6 +116,21 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('finalisasi', 'Admin\\FinalizationController::index');
         $routes->get('finalisasi/(:num)', 'Admin\\FinalizationController::detail/$1');
         $routes->post('finalisasi/validate', 'Admin\\FinalizationController::validateAction');
+
+        // Tahap 10 - Awarding & Expo Kewirausahaan
+        $routes->group('expo', static function ($routes) {
+            $routes->get('/', 'Admin\\ExpoController::index');
+            $routes->post('schedule', 'Admin\\ExpoController::saveSchedule');
+            $routes->post('status', 'Admin\\ExpoController::toggleStatus');
+            $routes->post('category', 'Admin\\ExpoController::saveCategory');
+            $routes->get('category/delete/(:num)', 'Admin\\ExpoController::deleteCategory/$1');
+            $routes->get('submission/(:num)', 'Admin\\ExpoController::submissionDetail/$1');
+        });
+        $routes->group('awards', static function ($routes) {
+            $routes->get('/', 'Admin\\AwardController::index');
+            $routes->post('assign', 'Admin\\AwardController::assignWinner');
+            $routes->get('delete/(:num)', 'Admin\\AwardController::deleteWinner/$1');
+        });
     });
 
     // Mahasiswa Routes
@@ -193,6 +208,10 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('implementasi/photo/(:num)', 'Mahasiswa\\ImplementasiController::viewPhoto/$1');
         $routes->get('implementasi/payment/(:num)', 'Mahasiswa\\ImplementasiController::viewPayment/$1');
         $routes->get('implementasi/konsumsi/(:num)', 'Mahasiswa\\ImplementasiController::viewKonsumsi/$1');
+
+        // Tahap 10 - Expo & Awarding
+        $routes->get('expo', 'Mahasiswa\\ExpoController::index');
+        $routes->post('expo/submit', 'Mahasiswa\\ExpoController::submit');
     });
 
     // Reviewer Routes

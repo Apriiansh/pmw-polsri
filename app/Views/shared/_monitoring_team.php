@@ -51,8 +51,14 @@
 <!-- 1. Header Card (Premium Summary) -->
 <div class="card-premium p-6 mb-6" @mousemove="handleMouseMove">
     <div class="flex flex-col md:flex-row gap-6">
-        <!-- Avatar / Initials -->
-        <div class="shrink-0">
+        <!-- Avatar / Back Button Section -->
+        <div class="shrink-0 flex items-start gap-4">
+            <?php if (!empty($backUrl)): ?>
+                <a href="<?= $backUrl ?>" class="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-sky-500 hover:border-sky-200 hover:shadow-lg hover:shadow-sky-50 transition-all group mt-4 md:mt-0">
+                    <i class="fas fa-arrow-left text-sm transition-transform group-hover:-translate-x-1"></i>
+                </a>
+            <?php endif; ?>
+            
             <div class="w-20 h-20 rounded-2xl bg-linear-to-tr from-sky-500 to-indigo-500 flex items-center justify-center text-white font-display font-bold text-3xl shadow-xl shadow-sky-200">
                 <?= substr(esc($proposal['nama_usaha'] ?? '?'), 0, 1) ?>
             </div>
@@ -62,26 +68,51 @@
         <div class="flex-1">
             <div class="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                    <h2 class="text-xl font-black text-slate-800 tracking-tight uppercase"><?= esc($proposal['nama_usaha'] ?? 'Tanpa Nama') ?></h2>
+                    <div class="flex items-center gap-3 mb-1">
+                        <span class="px-2 py-0.5 rounded-lg bg-sky-50 text-[10px] font-black text-sky-600 uppercase tracking-widest border border-sky-100/50"><?= $headerBadge ?? 'Monitoring Tim' ?></span>
+                        <span class="w-1 h-1 rounded-full bg-slate-300"></span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"><?= esc($proposal['skema'] ?? 'PMW') ?></span>
+                    </div>
+                    <h2 class="text-2xl font-black text-slate-800 tracking-tight uppercase"><?= esc($proposal['nama_usaha'] ?? 'Tanpa Nama') ?></h2>
                     <p class="text-slate-500 mt-1 flex items-center gap-2">
-                        <i class="fas fa-crown text-amber-400"></i>
                         <span class="font-bold text-slate-700"><?= esc($members[0]['nama'] ?? '-') ?></span>
                         <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded-full font-black text-slate-400">KETUA</span>
                     </p>
                 </div>
-                <?php
-                $statusMap = [
-                    'draft'     => ['bg-slate-100', 'text-slate-600', 'Draft'],
-                    'submitted' => ['bg-amber-100', 'text-amber-700', 'Menunggu Validasi'],
-                    'revision'  => ['bg-orange-100', 'text-orange-700', 'Perlu Revisi'],
-                    'approved'  => ['bg-emerald-100', 'text-emerald-700', 'Disetujui'],
-                    'rejected'  => ['bg-rose-100', 'text-rose-700', 'Ditolak'],
-                ];
-                $st = $statusMap[$proposal['status']] ?? $statusMap['draft'];
-                ?>
-                <span class="px-4 py-1.5 rounded-xl <?= $st[0] ?> <?= $st[1] ?> text-[10px] font-black uppercase tracking-widest border border-current/10">
-                    <?= $st[2] ?>
-                </span>
+                
+                <div class="flex flex-col items-end gap-3">
+                    <?php
+                    $statusMap = [
+                        'draft'     => ['bg-slate-100', 'text-slate-600', 'Draft'],
+                        'submitted' => ['bg-amber-100', 'text-amber-700', 'Menunggu Validasi'],
+                        'revision'  => ['bg-orange-100', 'text-orange-700', 'Perlu Revisi'],
+                        'approved'  => ['bg-emerald-100', 'text-emerald-700', 'Disetujui'],
+                        'rejected'  => ['bg-rose-100', 'text-rose-700', 'Ditolak'],
+                    ];
+                    $st = $statusMap[$proposal['status']] ?? $statusMap['draft'];
+                    ?>
+                    <span class="px-4 py-1.5 rounded-xl <?= $st[0] ?> <?= $st[1] ?> text-[10px] font-black uppercase tracking-widest border border-current/10">
+                        <?= $st[2] ?>
+                    </span>
+
+                    <div class="flex items-center gap-2 mt-1">
+                        <?php if (!empty($extraActions)): ?>
+                            <?= $extraActions ?>
+                        <?php else: ?>
+                            <?php if (function_exists('auth') && auth()->user()): ?>
+                                <?php if (auth()->user()->inGroup('dosen')): ?>
+                                    <a href="<?= base_url('dosen/bimbingan') ?>" class="btn-primary btn-sm flex items-center gap-2 shadow-lg shadow-sky-200" style="background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%); border: none;">
+                                        <i class="fas fa-calendar-plus"></i> Jadwalkan Bimbingan
+                                    </a>
+                                <?php elseif (auth()->user()->inGroup('mentor')): ?>
+                                    <a href="<?= base_url('mentor/mentoring') ?>" class="btn-primary btn-sm flex items-center gap-2 shadow-lg shadow-amber-200" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none;">
+                                        <i class="fas fa-calendar-plus"></i> Jadwalkan Mentoring
+                                    </a>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-100">
@@ -475,67 +506,140 @@
 
 <!-- ================================================================
      STUDENT PROFILE MODAL (ALPINE.JS)
-     Referenced from mahasiswa/pitching_desk.php
+     Optimized for smoothness and aligned with validation_detail.php design
 ================================================================= -->
 <div x-show="showTeamModal" 
-     class="fixed inset-0 z-[99] flex items-center justify-center p-4 sm:p-6"
+     class="fixed inset-0 z-[100] overflow-y-auto" 
      x-cloak
-     x-transition:enter="transition ease-out duration-300"
-     x-transition:enter-start="opacity-0 scale-95"
-     x-transition:enter-end="opacity-100 scale-100"
-     x-transition:leave="transition ease-in duration-200"
-     x-transition:leave-start="opacity-100 scale-100"
-     x-transition:leave-end="opacity-0 scale-95">
+     @keydown.escape.window="showTeamModal = false">
     
-    <!-- Backdrop -->
-    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showTeamModal = false"></div>
+    <!-- Backdrop with separate fade -->
+    <div x-show="showTeamModal"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-slate-900/60 backdrop-blur-md" 
+         @click="showTeamModal = false"></div>
 
-    <!-- Modal Content -->
-    <div class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-        <div class="absolute top-0 left-0 w-full h-24 bg-linear-to-br from-sky-500 to-indigo-600"></div>
+    <!-- Modal Container for Centering -->
+    <div class="flex min-h-full items-center justify-center p-4 sm:p-6">
         
-        <div class="relative pt-12 px-6 pb-8">
-            <!-- Close Button -->
-            <button @click="showTeamModal = false" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all">
-                <i class="fas fa-times"></i>
-            </button>
-
-            <!-- Profile Info -->
-            <div class="flex flex-col items-center">
-                <div class="w-24 h-24 rounded-3xl bg-white p-1.5 shadow-xl mb-4">
-                    <div class="w-full h-full rounded-2xl bg-linear-to-br from-slate-100 to-slate-50 flex items-center justify-center text-sky-500">
-                        <i class="fas fa-user-graduate text-4xl"></i>
+        <!-- Modal Content with separate scale/fade -->
+        <div x-show="showTeamModal"
+             x-transition:enter="transition ease-out duration-400"
+             x-transition:enter-start="opacity-0 scale-95 translate-y-8"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+             x-transition:leave-end="opacity-0 scale-95 translate-y-8"
+             class="relative w-full max-w-xl bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-white/20">
+            
+            <!-- Modal Header (Sky Gradient) -->
+            <div class="px-6 py-5 bg-linear-to-br from-sky-500 to-indigo-600 relative overflow-hidden">
+                <!-- Decorative Circle -->
+                <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10 blur-xl"></div>
+                
+                <div class="flex items-center justify-between relative z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center text-white">
+                            <i class="fas fa-user-graduate text-xs"></i>
+                        </div>
+                        <h3 class="text-sm font-black text-white uppercase tracking-widest">Detail Mahasiswa</h3>
+                    </div>
+                    <button @click="showTeamModal = false" class="w-8 h-8 rounded-full bg-black/10 hover:bg-black/20 text-white flex items-center justify-center transition-all group">
+                        <i class="fas fa-times text-xs transition-transform group-hover:rotate-90"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="px-6 py-8">
+                <!-- Profile Avatar & Identity -->
+                <div class="text-center mb-8">
+                    <div class="relative inline-block mb-4">
+                        <div class="w-20 h-20 rounded-3xl bg-linear-to-br from-slate-100 to-slate-50 p-1 shadow-inner border border-slate-100">
+                            <div class="w-full h-full rounded-2xl bg-white flex items-center justify-center text-sky-500 shadow-sm">
+                                <i class="fas fa-user-graduate text-3xl"></i>
+                            </div>
+                        </div>
+                        <div class="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-emerald-500 border-4 border-white flex items-center justify-center text-white shadow-sm">
+                            <i class="fas fa-check text-[8px]"></i>
+                        </div>
+                    </div>
+                    <h4 class="text-xl font-black text-slate-800 uppercase tracking-tight leading-tight" x-text="selectedMember?.nama || '-'"></h4>
+                    <div class="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-50 border border-sky-100">
+                        <span class="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span>
+                        <span class="text-[10px] font-black text-sky-600 uppercase tracking-widest" x-text="selectedMember?.role || '-'"></span>
                     </div>
                 </div>
-                <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight text-center" x-text="selectedMember?.nama || '-'"></h3>
-                <p class="text-xs font-black text-sky-500 uppercase tracking-widest mt-1" x-text="selectedMember?.role || '-'"></p>
-                
-                <div class="grid grid-cols-2 gap-3 w-full mt-8">
-                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Nomor Induk</p>
-                        <p class="text-sm font-bold text-slate-700" x-text="selectedMember?.nim || '-'"></p>
+
+                <!-- Fields (Aligned with validation_detail style) -->
+                <div class="space-y-3">
+                    <template x-if="selectedMember?.nim">
+                        <div class="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50/50 border border-slate-100 group hover:border-sky-100 transition-colors">
+                            <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-slate-400 shadow-sm border border-slate-100 group-hover:text-sky-500 transition-colors">
+                                <i class="fas fa-id-card text-xs"></i>
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Nomor Induk Mahasiswa</p>
+                                <p class="text-sm font-bold text-slate-700 leading-tight" x-text="selectedMember.nim"></p>
+                            </div>
+                        </div>
+                    </template>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50/50 border border-slate-100 group hover:border-sky-100 transition-colors">
+                            <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-slate-400 shadow-sm border border-slate-100 group-hover:text-sky-500 transition-colors">
+                                <i class="fas fa-calendar-alt text-xs"></i>
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Semester</p>
+                                <p class="text-sm font-bold text-slate-700 leading-tight" x-text="selectedMember?.semester || '-'"></p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50/50 border border-slate-100 group hover:border-sky-100 transition-colors">
+                            <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-slate-400 shadow-sm border border-slate-100 group-hover:text-sky-500 transition-colors">
+                                <i class="fas fa-building text-xs"></i>
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Jurusan</p>
+                                <p class="text-sm font-bold text-slate-700 leading-tight truncate w-full" x-text="selectedMember?.jurusan || '-'"></p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Semester</p>
-                        <p class="text-sm font-bold text-slate-700" x-text="selectedMember?.semester || '-'"></p>
-                    </div>
-                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 col-span-2">
-                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Program Studi</p>
-                        <p class="text-sm font-bold text-slate-700" x-text="(selectedMember?.prodi || '-') + ' (' + (selectedMember?.jurusan || '-') + ')'"></p>
+
+                    <div class="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50/50 border border-slate-100 group hover:border-sky-100 transition-colors">
+                        <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-slate-400 shadow-sm border border-slate-100 group-hover:text-sky-500 transition-colors">
+                            <i class="fas fa-graduation-cap text-xs"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Program Studi</p>
+                            <p class="text-sm font-bold text-slate-700 leading-tight truncate" x-text="selectedMember?.prodi || '-'"></p>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Contact Actions -->
-                <div class="flex gap-3 w-full mt-6">
-                    <a :href="`https://wa.me/${selectedMember?.phone?.replace(/^0/, '62')}`" target="_blank" class="flex-1 btn-primary bg-emerald-500 hover:bg-emerald-600 shadow-emerald-100 flex items-center justify-center gap-2 py-3.5 rounded-2xl">
-                        <i class="fab fa-whatsapp text-lg"></i>
-                        <span class="text-xs font-black uppercase tracking-widest">WhatsApp</span>
+                <div class="grid grid-cols-2 gap-4 mt-8 pt-6 border-t border-slate-50">
+                    <a :href="`https://wa.me/${selectedMember?.phone?.replace(/^0/, '62')}`" 
+                       target="_blank" 
+                       class="flex items-center justify-center gap-2 p-3.5 rounded-2xl bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100 active:scale-95 group">
+                        <i class="fab fa-whatsapp text-lg group-hover:scale-110 transition-transform"></i>
+                        <span class="text-[10px] font-black uppercase tracking-widest">WhatsApp</span>
                     </a>
-                    <a :href="`mailto:${selectedMember?.email}`" class="flex-1 btn-primary bg-sky-500 hover:bg-sky-600 shadow-sky-100 flex items-center justify-center gap-2 py-3.5 rounded-2xl">
-                        <i class="fas fa-envelope text-lg"></i>
-                        <span class="text-xs font-black uppercase tracking-widest">Email</span>
+                    <a :href="`mailto:${selectedMember?.email}`" 
+                       class="flex items-center justify-center gap-2 p-3.5 rounded-2xl bg-sky-500 text-white hover:bg-sky-600 transition-all shadow-lg shadow-sky-100 active:scale-95 group">
+                        <i class="fas fa-envelope text-lg group-hover:scale-110 transition-transform"></i>
+                        <span class="text-[10px] font-black uppercase tracking-widest">Email</span>
                     </a>
                 </div>
+            </div>
+            
+            <!-- Modal Footer Hint -->
+            <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 text-center">
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Klik area luar untuk menutup</p>
             </div>
         </div>
     </div>

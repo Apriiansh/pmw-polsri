@@ -134,6 +134,19 @@ class PitchingDeskController extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('File tidak ditemukan di server');
         }
 
-        return $this->response->download($path, null)->inline();
+        $inline = $this->request->getGet('inline');
+        
+        // If inline viewing is requested (e.g. from iframe)
+        if ($inline) {
+            $file = new \CodeIgniter\Files\File($path);
+            $mime = $file->getMimeType();
+            
+            return $this->response
+                ->setHeader('Content-Type', $mime)
+                ->setHeader('Content-Disposition', 'inline; filename="' . $doc['original_name'] . '"')
+                ->setBody(file_get_contents($path));
+        }
+
+        return $this->response->download($path, null)->setFileName($doc['original_name']);
     }
 }

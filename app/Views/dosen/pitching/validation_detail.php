@@ -202,8 +202,9 @@
             <div class="p-0">
                 <?php if (isset($docsByKey['pitching_ppt'])): ?>
                 <?php 
-                    // Gunakan original_name karena file_path bisa saja memiliki ekstensi yang di-guess oleh server
-                    $fileExtension = strtolower(pathinfo($docsByKey['pitching_ppt']['original_name'], PATHINFO_EXTENSION));
+                    // Gunakan original_name atau file_path sebagai fallback untuk deteksi ekstensi
+                    $fileNameForExt = !empty($docsByKey['pitching_ppt']['original_name']) ? $docsByKey['pitching_ppt']['original_name'] : $docsByKey['pitching_ppt']['file_path'];
+                    $fileExtension = strtolower(pathinfo($fileNameForExt, PATHINFO_EXTENSION));
                     $isPdf = ($fileExtension === 'pdf');
                 ?>
                 <div class="aspect-3/4 sm:aspect-square w-full bg-slate-50 relative group flex items-center justify-center">
