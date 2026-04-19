@@ -173,6 +173,7 @@
                         'children' => [
                             ['route' => 'admin/teams', 'label' => 'Peserta PMW', 'match' => 'admin/teams'],
                             ['route' => 'admin/kegiatan',     'label' => 'Kegiatan Wirausaha',   'match' => 'admin/kegiatan'],
+                            ['route' => 'admin/milestone', 'label' => 'Laporan Milestone', 'match' => 'admin/milestone']
                         ]
                     ];
 
@@ -186,8 +187,6 @@
                             ['route' => 'admin/cms',    'label' => 'Manajemen Konten', 'match' => 'admin/cms'],
                         ]
                     ];
-
-                    $navItems[] = ['route' => 'admin/laporan', 'icon' => 'fa-file-contract', 'label' => 'Laporan Akhir', 'match' => 'admin/laporan'];
                 }
 
                 if ($mainRole === 'mahasiswa') {
@@ -223,12 +222,8 @@
                             ['route' => 'mahasiswa/kegiatan', 'icon' => 'fa-store', 'label' => 'Kegiatan Wirausaha', 'match' => 'mahasiswa/kegiatan'],
                         ]
                     ];
-
-                    // Laporan Kemajuan - Tahap xx (Monev 1 & 2)
-                    $navItems[] = ['route' => 'mahasiswa/laporan-kemajuan', 'icon' => 'fa-chart-pie', 'label' => 'Laporan Kemajuan', 'match' => 'mahasiswa/laporan-kemajuan'];
-
-                    // Laporan Akhir - Tahap xx (Laporan Akhir & Awarding)
-                    $navItems[] = ['route' => 'mahasiswa/laporan-akhir', 'icon' => 'fa-box-archive', 'label' => 'Laporan Akhir', 'match' => 'mahasiswa/laporan-akhir'];
+                    // Laporan Milestone (Kemajuan & Akhir)
+                    $navItems[] = ['route' => 'mahasiswa/milestone', 'icon' => 'fa-file-arrow-up', 'label' => 'Laporan Milestone', 'match' => 'mahasiswa/milestone'];
                 }
                 if ($mainRole === 'reviewer') {
                     // Penilaian Proposal - Tahap 2-3 (Seleksi Administrasi & Pitching Desk)
@@ -255,6 +250,7 @@
                         'children' => [
                             ['route' => 'dosen/bimbingan', 'icon' => 'fa-signature', 'label' => 'Bimbingan Mahasiswa', 'match' => 'dosen/bimbingan'],
                             ['route' => 'dosen/kegiatan', 'icon' => 'fa-store', 'label' => 'Kegiatan Wirausaha', 'match' => 'dosen/kegiatan'],
+                            ['route' => 'dosen/milestone', 'icon' => 'fa-file-circle-check', 'label' => 'Laporan Milestone', 'match' => 'dosen/milestone'],
                         ]
                     ];
                     // Monitoring Tim - Tahap x (Implementasi & Monev)

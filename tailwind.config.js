@@ -7,19 +7,19 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Primary — Sky Blue
+        // Primary — Bright Yellow (Premium Amber)
         primary: {
+          DEFAULT: '#F59E0B',
+          light:   '#FBBF24',
+          dark:    '#D97706',
+          50:      '#FFFBEB',
+          100:     '#FEF3C7',
+        },
+        // Accent — Sky Blue
+        accent: {
           DEFAULT: '#0EA5E9',
           light:   '#38BDF8',
           dark:    '#0284C7',
-          50:      '#F0F9FF',
-          100:     '#E0F2FE',
-        },
-        // Accent — Bright Yellow
-        accent: {
-          DEFAULT: '#FACC15',
-          light:   '#FEF08A',
-          dark:    '#EAB308',
         },
       },
       fontFamily: {

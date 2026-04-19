@@ -410,7 +410,7 @@
                 <i class="fas fa-route mr-2"></i>
                 Lihat Tahapan Program
             </a>
-            <a href="<?= base_url('daftar') ?>" class="btn-ghost text-white border-white/30 hover:bg-white/10 text-base px-8 py-4">
+            <a href="<?= base_url('register') ?>" class="btn-ghost text-white border-white/30 hover:bg-white/10 text-base px-8 py-4">
                 <i class="fas fa-paper-plane mr-2"></i>
                 Daftar Sekarang
             </a>

@@ -30,7 +30,7 @@
         <?php else: ?>
             <div class="divide-y divide-slate-100">
                 <?php foreach ($notifications as $notif): ?>
-                    <div class="flex items-start gap-4 p-4 hover:bg-slate-50 transition-colors <?= !$notif['is_read'] ? 'bg-sky-50/30' : '' ?>">
+                    <div class="notification-row flex items-start gap-4 p-4 hover:bg-slate-50 transition-colors <?= !$notif['is_read'] ? 'unread bg-sky-50/30' : '' ?>">
                         <!-- Icon -->
                         <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0
                             <?= match($notif['type']) {
@@ -98,15 +98,19 @@ async function markAsRead(id, btn) {
         const response = await fetch(`<?= base_url('notifications/mark-read/') ?>${id}`, {
             method: 'POST',
             headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                '<?= csrf_header() ?>': '<?= csrf_hash() ?>'
             }
         });
         const result = await response.json();
 
         if (result.success) {
-            const row = btn.closest('.flex');
-            row.classList.remove('bg-sky-50/30');
-            row.querySelector('.font-bold').classList.remove('text-sky-700');
+            const row = btn.closest('.notification-row');
+            if (row) {
+                row.classList.remove('unread', 'bg-sky-50/30');
+                const title = row.querySelector('.font-bold');
+                if (title) title.classList.remove('text-sky-700');
+            }
             btn.remove();
         }
     } catch (error) {
@@ -121,17 +125,20 @@ async function markAllAsRead() {
         const response = await fetch('<?= base_url('notifications/mark-all-read') ?>', {
             method: 'POST',
             headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                '<?= csrf_header() ?>': '<?= csrf_hash() ?>'
             }
         });
         const result = await response.json();
 
         if (result.success) {
-            document.querySelectorAll('.bg-sky-50\/30').forEach(el => {
-                el.classList.remove('bg-sky-50/30');
-                el.querySelector('.font-bold')?.classList.remove('text-sky-700');
+            document.querySelectorAll('.notification-row.unread').forEach(row => {
+                row.classList.remove('unread', 'bg-sky-50/30');
+                const title = row.querySelector('.font-bold');
+                if (title) title.classList.remove('text-sky-700');
+                const btn = row.querySelector('button[onclick^="markAsRead"]');
+                if (btn) btn.remove();
             });
-            document.querySelectorAll('button[onclick^="markAsRead"]').forEach(btn => btn.remove());
         }
     } catch (error) {
         console.error('Error:', error);

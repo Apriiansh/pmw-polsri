@@ -74,8 +74,8 @@ class NotificationsController extends BaseController
         $result = $notificationModel->markAllAsRead($userId);
 
         return $this->response->setJSON([
-            'success' => true,
-            'message' => 'Semua notifikasi ditandai dibaca',
+            'success' => $result,
+            'message' => $result ? 'Semua notifikasi ditandai dibaca' : 'Gagal memperbarui notifikasi',
         ]);
     }
 

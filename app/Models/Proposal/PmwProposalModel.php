@@ -75,6 +75,15 @@ class PmwProposalModel extends Model
             ->first();
     }
 
+    public function getProposalByUserId(int $userId): ?array
+    {
+        return $this->select('pmw_proposals.*, pm.nama as ketua_nama, pm.nim as ketua_nim')
+            ->join('pmw_proposal_members pm', 'pm.proposal_id = pmw_proposals.id AND pm.role = "ketua"', 'left')
+            ->where('pmw_proposals.leader_user_id', $userId)
+            ->orderBy('pmw_proposals.created_at', 'DESC')
+            ->first();
+    }
+
     /**
      * Get proposals with details for seleksi administrasi
      */
@@ -327,7 +336,7 @@ class PmwProposalModel extends Model
     {
         $db = \Config\Database::connect();
         $builder = $db->table($this->table . ' p');
-        $builder->select('p.*, pm.nama as ketua_nama');
+        $builder->select('p.*, p.kategori_wirausaha as category, pm.nama as ketua_nama');
         $builder->join('pmw_selection_implementasi psi', 'psi.proposal_id = p.id');
         $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
         $builder->where('p.period_id', $periodId);

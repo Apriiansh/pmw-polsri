@@ -63,7 +63,7 @@
                             Pendaftaran Program Mahasiswa Wirausaha tahun 2026 resmi dibuka mulai hari ini. Seluruh mahasiswa aktif Politeknik Negeri Sriwijaya diundang untuk mendaftarkan tim dan mengajukan proposal usaha. Deadline pengumpulan proposal hingga <strong>30 Mei 2026</strong>.
                         </p>
                         <div class="flex flex-wrap gap-3">
-                            <a href="<?= base_url('daftar') ?>" class="btn-primary text-sm py-2 px-4">
+                            <a href="<?= base_url('register') ?>" class="btn-primary text-sm py-2 px-4">
                                 <i class="fas fa-external-link-alt mr-2"></i>
                                 Daftar Sekarang
                             </a>

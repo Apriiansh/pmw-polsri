@@ -4,8 +4,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= esc($title ?? 'PMW Polsri') ?> — Program Mahasiswa Wirausaha</title>
-    <meta name="description" content="Program Mahasiswa Wirausaha Politeknik Negeri Sriwijaya - Mengembangkan jiwa kewirausahaan mahasiswa melalui pendanaan, mentoring, dan pelatihan.">
+    <title><?= esc($title ?? 'PMW Polsri') ?> — Program Mahasiswa Wirausaha Politeknik Negeri Sriwijaya</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="<?= esc($meta_description ?? 'Program Mahasiswa Wirausaha Politeknik Negeri Sriwijaya - Mengembangkan jiwa kewirausahaan mahasiswa melalui pendanaan, mentoring, dan pelatihan.') ?>">
+    <meta name="keywords" content="<?= esc($meta_keywords ?? 'PMW Polsri, Wirausaha Mahasiswa, Polsri, Kewirausahaan, Palembang') ?>">
+    <meta name="author" content="PMW Politeknik Negeri Sriwijaya">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="<?= current_url() ?>">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<?= current_url() ?>">
+    <meta property="og:title" content="<?= esc($title ?? 'PMW Polsri') ?> — Program Mahasiswa Wirausaha">
+    <meta property="og:description" content="<?= esc($meta_description ?? 'Program Mahasiswa Wirausaha Politeknik Negeri Sriwijaya - Mengembangkan jiwa kewirausahaan mahasiswa.') ?>">
+    <meta property="og:image" content="<?= base_url('assets/img/og-image.jpg') ?>">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="<?= current_url() ?>">
+    <meta property="twitter:title" content="<?= esc($title ?? 'PMW Polsri') ?> — Program Mahasiswa Wirausaha">
+    <meta property="twitter:description" content="<?= esc($meta_description ?? 'Program Mahasiswa Wirausaha Politeknik Negeri Sriwijaya - Mengembangkan jiwa kewirausahaan mahasiswa.') ?>">
+    <meta property="twitter:image" content="<?= base_url('assets/img/og-image.jpg') ?>">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="<?= base_url('favicon.ico') ?>">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -141,12 +164,10 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
             </div>
         </nav>
 
-        <!-- Spacer for fixed nav -->
-        <div class="h-20"></div>
     <?php endif; ?>
 
     <!-- Main Content -->
-    <main class="<?= $isAuthPage ? '' : 'pt-20' ?>">
+    <main class="<?= $isAuthPage ? '' : '' ?>">
         <?= $this->renderSection('content') ?>
     </main>
 
@@ -177,7 +198,7 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
                             <a href="#" class="social-link" aria-label="YouTube">
                                 <i class="fab fa-youtube"></i>
                             </a>
-                            <a href="#" class="social-link" aria-label="Website Polsri">
+                            <a href="polsri.ac.id" class="social-link" aria-label="Website Polsri">
                                 <i class="fas fa-globe"></i>
                             </a>
                         </div>
@@ -232,7 +253,7 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
                         <?= date('Y') ?> Politeknik Negeri Sriwijaya. Hak Cipta Dilindungi.
                     </p>
                     <p class="text-sm text-slate-500">
-                        Dikembangkan dengan <i class="fas fa-heart text-rose-500 mx-1"></i> oleh Tim PMW Polsri
+                        Dikembangkan dengan <i class="fas fa-heart-broken text-rose-500 mx-1"></i> oleh Tim PMW Polsri
                     </p>
                 </div>
             </div>

@@ -392,7 +392,7 @@
         <p class="text-lg text-sky-100 mb-8">
             Daftarkan tim Anda sekarang dan mulai perjalanan kewirausahaan.
         </p>
-        <a href="<?= base_url('daftar') ?>" class="btn-accent text-base px-8 py-4">
+        <a href="<?= base_url('register') ?>" class="btn-accent text-base px-8 py-4">
             <i class="fas fa-paper-plane mr-2"></i>
             Daftar Sekarang
         </a>

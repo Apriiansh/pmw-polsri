@@ -865,9 +865,10 @@ class AdminController extends BaseController
             '(SELECT COUNT(*) FROM pmw_activity_schedules pas 
               JOIN pmw_activity_logbooks pal ON pal.schedule_id = pas.id 
               WHERE pas.proposal_id = p.id AND pal.status = "approved") as total_kegiatan',
-            'sp.dosen_status as pitching_dosen_status',
             'sp.admin_status as pitching_admin_status',
             'sp.student_submitted_at',
+            '(SELECT status FROM pmw_reports WHERE proposal_id = p.id AND type = "kemajuan" ORDER BY created_at DESC LIMIT 1) as kemajuan_status',
+            '(SELECT status FROM pmw_reports WHERE proposal_id = p.id AND type = "akhir" ORDER BY created_at DESC LIMIT 1) as akhir_status',
         ]);
         $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
         $builder->join('pmw_proposal_assignments pa', 'pa.proposal_id = p.id', 'left');
@@ -968,6 +969,10 @@ class AdminController extends BaseController
             ->orderBy('pas.activity_date', 'DESC')
             ->findAll();
 
+        // Get Milestone Reports
+        $reportModel = new \App\Models\Milestone\PmwReportModel();
+        $milestoneReports = $reportModel->where('proposal_id', $id)->findAll();
+
         return view('admin/teams/detail', [
             'title'        => 'Detail TIM | PMW Polsri',
             'header_title' => 'Detail TIM Peserta',
@@ -978,6 +983,7 @@ class AdminController extends BaseController
             'documents'    => $documents,
             'guidanceLogs' => $guidanceLogs,
             'activityLogs' => $activityLogs,
+            'milestoneReports' => $milestoneReports,
         ]);
     }
 }

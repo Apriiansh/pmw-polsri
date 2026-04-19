@@ -21,6 +21,7 @@ $routes->get('tentang', 'PublicPages::tentang');
 $routes->get('tahapan', 'PublicPages::tahapan');
 $routes->get('galeri', 'PublicPages::galeri');
 $routes->get('pengumuman', 'PublicPages::pengumuman');
+$routes->get('sitemap.xml', 'Sitemap::index');
 
 $routes->group('', ['filter' => 'session'], static function ($routes) {
     $routes->get('dashboard', 'Dashboard::index');
@@ -105,6 +106,11 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->post('kegiatan/quick-update-status', 'Admin\\ActivityController::quickUpdateStatus');
         $routes->get('kegiatan/file/(:segment)/(:num)', 'Admin\\ActivityController::viewFile/$1/$2');
         $routes->get('kegiatan/gallery/(:num)', 'Admin\\ActivityController::viewGalleryFile/$1');
+
+        // Milestone Reports
+        $routes->get('milestone', 'Admin\\MilestoneReportController::index');
+        $routes->post('milestone/schedule', 'Admin\\MilestoneReportController::saveSchedule');
+        $routes->get('milestone/view/(:num)', 'Admin\\MilestoneReportController::viewFile/$1');
     });
 
     // Mahasiswa Routes
@@ -141,8 +147,10 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('kegiatan/gallery/(:num)', 'Mahasiswa\\ActivityController::viewGalleryFile/$1');
         $routes->delete('kegiatan/photo/(:num)', 'Mahasiswa\\ActivityController::deletePhoto/$1');
 
-        $routes->get('laporan-kemajuan', 'MahasiswaController::laporanKemajuan');
-        $routes->get('laporan-akhir', 'MahasiswaController::laporanAkhir');
+        // Milestone Reports
+        $routes->get('milestone', 'Mahasiswa\\MilestoneReportController::index');
+        $routes->post('milestone/submit', 'Mahasiswa\\MilestoneReportController::submit');
+        $routes->get('milestone/view/(:num)', 'Admin\\MilestoneReportController::viewFile/$1'); // Share view logic
 
         // Tahap 4 - Perjanjian Implementasi
         $routes->get('perjanjian', 'Mahasiswa\\WawancaraController::index');
@@ -225,6 +233,11 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->post('kegiatan/verify/(:num)', 'Dosen\\ActivityController::verify/$1');
         $routes->get('kegiatan/file/(:any)/(:num)', 'Dosen\\ActivityController::viewFile/$1/$2');
         $routes->get('kegiatan/gallery/(:num)', 'Dosen\\ActivityController::viewGalleryFile/$1');
+
+        // Milestone Reports
+        $routes->get('milestone', 'Dosen\\MilestoneReportController::index');
+        $routes->post('milestone/verify', 'Dosen\\MilestoneReportController::verify');
+        $routes->get('milestone/view/(:num)', 'Admin\\MilestoneReportController::viewFile/$1'); // Share view logic
     });
 
     // Mentor Routes

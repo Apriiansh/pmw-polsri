@@ -262,6 +262,9 @@
                         <button @click="activeTab = 'kegiatan'" :class="activeTab === 'kegiatan' ? 'border-violet-500 text-violet-600 bg-white' : 'border-transparent text-slate-500 hover:text-slate-700'" class="px-6 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all">
                             Log Kegiatan
                         </button>
+                        <button @click="activeTab = 'milestone'" :class="activeTab === 'milestone' ? 'border-sky-500 text-sky-600 bg-white' : 'border-transparent text-slate-500 hover:text-slate-700'" class="px-6 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all">
+                            Laporan Milestone
+                        </button>
                     </div>
 
                     <div class="p-0">
@@ -342,6 +345,100 @@
                                         <p class="text-[11px] text-slate-500 line-clamp-2"><?= esc($log->activity_description) ?></p>
                                     </div>
                                 <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+
+                        <!-- Milestone Tab -->
+                        <div x-show="activeTab === 'milestone'" class="p-6" style="display: none;">
+                            <?php if (empty($milestoneReports)): ?>
+                                <div class="py-8 text-center text-slate-400">
+                                    <i class="fas fa-file-invoice text-3xl mb-2 opacity-20"></i>
+                                    <p class="text-sm">Belum ada laporan milestone yang diunggah</p>
+                                </div>
+                            <?php else: ?>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <?php
+                                    $reportTypes = [
+                                        'kemajuan' => [
+                                            'title' => 'Laporan Kemajuan',
+                                            'icon' => 'fa-tasks',
+                                            'color' => 'amber'
+                                        ],
+                                        'akhir' => [
+                                            'title' => 'Laporan Akhir',
+                                            'icon' => 'fa-check-double',
+                                            'color' => 'emerald'
+                                        ]
+                                    ];
+                                    ?>
+                                    <?php foreach (['kemajuan', 'akhir'] as $type): ?>
+                                        <?php
+                                        $report = array_filter($milestoneReports, fn($r) => $r['type'] === $type);
+                                        $report = !empty($report) ? array_values($report)[0] : null;
+                                        $config = $reportTypes[$type];
+                                        ?>
+                                        <div class="p-4 rounded-2xl border <?= $report ? 'bg-white border-slate-200 shadow-sm' : 'bg-slate-50 border-slate-100 border-dashed' ?>">
+                                            <div class="flex items-center justify-between mb-4">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-10 h-10 rounded-xl bg-<?= $config['color'] ?>-100 text-<?= $config['color'] ?>-600 flex items-center justify-center">
+                                                        <i class="fas <?= $config['icon'] ?>"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h4 class="text-sm font-bold text-slate-800"><?= $config['title'] ?></h4>
+                                                        <p class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Status Laporan</p>
+                                                    </div>
+                                                </div>
+                                                <?php if ($report): ?>
+                                                    <?php
+                                                    $statusStyles = [
+                                                        'pending' => 'bg-amber-100 text-amber-700',
+                                                        'approved' => 'bg-emerald-100 text-emerald-700',
+                                                        'rejected' => 'bg-rose-100 text-rose-700',
+                                                    ];
+                                                    ?>
+                                                    <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase <?= $statusStyles[$report['status']] ?? 'bg-slate-100 text-slate-600' ?>">
+                                                        <?= $report['status'] ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-400 text-[10px] font-black uppercase tracking-tight">Belum Ada</span>
+                                                <?php endif; ?>
+                                            </div>
+
+                                            <?php if ($report): ?>
+                                                <div class="space-y-3">
+                                                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                                        <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Catatan Mahasiswa</p>
+                                                        <p class="text-xs text-slate-600 italic"><?= esc($report['student_notes'] ?: 'Tidak ada catatan') ?></p>
+                                                    </div>
+
+                                                    <?php if ($report['lecturer_notes']): ?>
+                                                        <div class="p-3 rounded-xl bg-violet-50 border border-violet-100">
+                                                            <p class="text-[10px] text-violet-400 font-bold uppercase mb-1">Catatan Dosen</p>
+                                                            <p class="text-xs text-violet-600"><?= esc($report['lecturer_notes']) ?></p>
+                                                        </div>
+                                                    <?php endif; ?>
+
+                                                    <div class="flex items-center justify-between pt-2">
+                                                        <p class="text-[10px] text-slate-400">
+                                                            <i class="far fa-clock mr-1"></i>
+                                                            <?= date('d M Y H:i', strtotime($report['created_at'])) ?>
+                                                        </p>
+                                                        <a href="<?= base_url('admin/milestone/view/' . $report['id']) ?>"
+                                                            target="_blank"
+                                                            class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-sky-50 text-sky-600 hover:bg-sky-600 hover:text-white transition-all text-[11px] font-bold">
+                                                            <i class="fas fa-file-pdf"></i>
+                                                            Lihat PDF
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            <?php else: ?>
+                                                <div class="py-6 text-center">
+                                                    <p class="text-[11px] text-slate-400 italic">Laporan belum diunggah oleh mahasiswa</p>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
                             <?php endif; ?>
                         </div>
                     </div>

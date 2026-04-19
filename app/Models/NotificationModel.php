@@ -27,6 +27,22 @@ class NotificationModel extends Model
     protected $updatedField  = 'updated_at';
 
     /**
+     * Send a notification
+     */
+    public function send(int|null $userId, string $title, string $message, string $link = '', string $type = 'info', int $dataId = 0): bool
+    {
+        return $this->insert([
+            'user_id' => $userId,
+            'title'   => $title,
+            'message' => $message,
+            'link'    => $link,
+            'type'    => $type,
+            'data_id' => $dataId,
+            'is_read' => false,
+        ]) !== false;
+    }
+
+    /**
      * Get unread notifications for a user
      */
     public function getUnread(?int $userId = null, int $limit = 10): array
