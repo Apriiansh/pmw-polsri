@@ -14,6 +14,7 @@ export default defineConfig({
       input: {
         app: path.resolve(__dirname, 'app/Views/js/app.js'),
         style: path.resolve(__dirname, 'app/Views/css/input.css'),
+        style_v2: path.resolve(__dirname, 'app/Views/css/input-v2.css'),
       },
       output: {
         entryFileNames: '[name].js',

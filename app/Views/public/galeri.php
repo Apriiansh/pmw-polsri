@@ -58,17 +58,23 @@
 </style>
 
 <!-- Hero Section -->
-<section id="section-galeri-hero" class="relative overflow-hidden hero-gradient hero-pattern">
-    <div class="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-28">
-        <div class="text-center max-w-3xl mx-auto">
-            <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-4">
+<section id="section-galeri-hero" class="relative overflow-hidden pt-32 pb-20 lg:pt-48 lg:pb-32">
+    <!-- Premium Background Elements -->
+    <div class="absolute inset-0 -z-10">
+        <div class="absolute top-0 right-1/4 w-96 h-96 bg-sky-500/10 rounded-full blur-[120px] animate-float"></div>
+        <div class="absolute bottom-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] animate-float" style="animation-delay: -3s"></div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto reveal-blur">
+            <p class="text-sky-500 font-bold text-sm uppercase tracking-[0.2em] mb-4">
                 <?= cms('galeri_hero_badge', 'Dokumentasi') ?>
             </p>
-            <h1 class="font-display text-4xl sm:text-5xl font-bold text-slate-900 mb-6">
-                <?= cms('galeri_hero_title', 'Galeri <span class="text-gradient">Kegiatan</span>') ?>
+            <h1 class="font-display text-5xl lg:text-7xl font-bold text-(--text-heading) mb-8 leading-tight">
+                Galeri <span class="text-gradient text-shimmer">Kegiatan</span>
             </h1>
-            <p class="text-lg text-slate-600 max-w-2xl mx-auto">
-                <?= cms('galeri_hero_description', 'Momen-momen berkesan dari Program Mahasiswa Wirausaha Polsri. Lihat aktivitas mentoring, pitching, bazaar, dan awarding.') ?>
+            <p class="text-xl text-(--text-body) leading-relaxed">
+                <?= cms('galeri_hero_description', 'Momen-momen inspiratif dari perjalanan wirausaha mahasiswa Polsri. Dari ide kreatif hingga realisasi bisnis yang nyata.') ?>
             </p>
         </div>
     </div>
@@ -90,22 +96,12 @@ if (empty($rawItems)) {
         ['img' => 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80','badge' => 'Dokumentasi',    'title' => 'Kunjungan Industri',         'desc' => 'Melihat langsung proses produksi.'],
         ['img' => 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80','badge' => 'Mentoring',      'title' => 'Team Building Session',      'desc' => 'Memperkuat kolaborasi internal tim.'],
         ['img' => 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&q=80','badge' => 'Bazaar',         'title' => 'Expo Kewirausahaan 2024',    'desc' => 'Puncak acara pameran bisnis mahasiswa.'],
-        ['img' => 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&q=80','badge' => 'Workshop',       'title' => 'Financial Literacy',         'desc' => 'Manajemen keuangan untuk UMKM.'],
-        ['img' => 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=600&q=80','badge' => 'Pitching',       'title' => 'Internal Review Stage 1',    'desc' => 'Evaluasi awal proposal bisnis.'],
-        ['img' => 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&q=80','badge' => 'Awarding',       'title' => 'Sertifikasi Peserta',        'desc' => 'Penyerahan sertifikat kelulusan program.'],
-        ['img' => 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&q=80','badge' => 'Dokumentasi',    'title' => 'Rapat Koordinasi Mentor',    'desc' => 'Penyelarasan kurikulum pembinaan.'],
-        ['img' => 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&q=80','badge' => 'Mentoring',      'title' => 'One-on-One Mentoring',       'desc' => 'Sesi privat dengan pakar bisnis.'],
-        ['img' => 'https://images.unsplash.com/photo-1491975474562-1f4e30bc9468?w=600&q=80',  'badge' => 'Mentoring',      'title' => 'Legalitas Usaha',            'desc' => 'Pengurusan izin dan HAKI.'],
-        ['img' => 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&q=80','badge' => 'Pitching',       'title' => 'Final Presentation',         'desc' => 'Penentuan pemenang hibah tahap 2.'],
-        ['img' => 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&q=80','badge' => 'Awarding',       'title' => 'Penyaluran Dana Hibah',      'desc' => 'Simbolis penyerahan dana pengembangan.'],
     ];
 }
 
-// Resolve image URLs server-side (bukan di Alpine) supaya cms_img() bisa dipanggil
+// Resolve image URLs server-side
 $items = array_map(function ($item) {
     $item['preview_img'] = cms_img($item['img']);
-    // Buang field 'size' dari data lama — layout sekarang diatur Alpine
-    unset($item['size']);
     return $item;
 }, $rawItems);
 ?>
@@ -127,7 +123,6 @@ $items = array_map(function ($item) {
             return this.filteredItems.slice(0, this.visibleCount).map((item, i) => {
                 const blockNum  = Math.floor(i / 5);
                 const posInBlock = i % 5;
-                // Genap → large di posisi 0, Ganjil → large di posisi 2
                 const largeAt = blockNum % 2 === 0 ? 0 : 2;
                 return { ...item, isLarge: posInBlock === largeAt };
             });
@@ -139,19 +134,19 @@ $items = array_map(function ($item) {
 
         changeFilter(f) {
             this.activeFilter = f;
-            this.visibleCount = 10; // Reset ke default saat filter berubah
+            this.visibleCount = 10;
         }
     }'>
 
     <!-- Filter Buttons -->
-    <div class="max-w-7xl mx-auto px-6 lg:px-8 mb-10">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 mb-16 reveal-blur">
         <div class="flex flex-wrap justify-center gap-3">
             <template x-for="filter in ['Semua', 'Mentoring', 'Pitching', 'Bazaar', 'Awarding', 'Workshop', 'Dokumentasi']" :key="filter">
                 <button @click="changeFilter(filter)"
                         :class="activeFilter === filter
-                            ? 'bg-sky-500 text-white shadow-md shadow-sky-200'
-                            : 'bg-white text-slate-600 border border-slate-200 hover:border-sky-300 hover:text-sky-600'"
-                        class="px-5 py-2.5 rounded-full text-sm font-medium transition-all"
+                            ? "bg-sky-500 text-white shadow-xl shadow-sky-200"
+                            : "bg-white text-slate-600 border border-slate-100 hover:border-sky-300 hover:text-sky-600""
+                        class="px-8 py-3 rounded-full text-sm font-bold transition-all btn-magnetic"
                         x-text="filter">
                 </button>
             </template>
@@ -160,31 +155,31 @@ $items = array_map(function ($item) {
 
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
 
-        <!--
-            Grid 4 kolom, dense flow.
-            Setiap item mendapat class col-span-2 row-span-2 kalau isLarge = true.
-            Dense filling memastikan small item mengisi gap di samping large.
-        -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 auto-rows-[200px] mb-12"
+        <!-- Grid with Dense Flow -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[220px] mb-16"
              style="grid-auto-flow: dense;">
 
-            <template x-for="(item, index) in layoutItems" :key="index">
-                <div class="gallery-item"
+            <template x-for="(item, i) in layoutItems" :key="i">
+                <div class="gallery-item group relative overflow-hidden rounded-[2rem] bg-slate-100 cursor-pointer"
                      :class="item.isLarge ? 'col-span-2 row-span-2 is-large' : ''"
-                     x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="opacity-0 scale-95"
-                     x-transition:enter-end="opacity-100 scale-100">
+                     x-show="true"
+                     x-transition:enter="transition-liquid duration-700"
+                     x-transition:enter-start="opacity-0 scale-90 translate-y-10"
+                     x-transition:enter-end="opacity-100 scale-100 translate-y-0">
 
-                    <img :src="item.preview_img" :alt="item.title" loading="lazy">
+                    <img :src="item.preview_img" 
+                         :alt="item.title" 
+                         loading="lazy"
+                         class="w-full h-full object-cover transition-liquid group-hover:scale-110 group-hover:rotate-1">
 
-                    <div class="gallery-overlay">
-                        <div class="overlay-content">
-                            <span class="badge badge-sky mb-2 w-fit text-xs" x-text="item.badge"></span>
-                            <p class="text-white font-semibold leading-snug"
-                               :class="item.isLarge ? 'text-base' : 'text-sm'"
-                               x-text="item.title"></p>
+                    <div class="gallery-overlay absolute inset-0 bg-linear-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-liquid flex flex-col justify-end p-6 lg:p-8">
+                        <div class="overlay-content translate-y-4 group-hover:translate-y-0 transition-liquid delay-75">
+                            <span class="inline-block px-3 py-1 rounded-full bg-sky-500/20 border border-sky-400/30 backdrop-blur-md text-sky-300 text-[10px] font-bold uppercase tracking-wider mb-3" x-text="item.badge"></span>
+                            <h3 class="text-white font-display font-bold leading-tight"
+                               :class="item.isLarge ? 'text-2xl mb-2' : 'text-sm'"
+                               x-text="item.title"></h3>
                             <template x-if="item.desc && item.isLarge">
-                                <p class="text-slate-100 text-xs mt-1" x-text="item.desc"></p>
+                                <p class="text-slate-300 text-sm line-clamp-2" x-text="item.desc"></p>
                             </template>
                         </div>
                     </div>
@@ -194,13 +189,13 @@ $items = array_map(function ($item) {
 
         <!-- Empty State -->
         <template x-if="filteredItems.length === 0">
-            <div class="text-center py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200 mt-4">
-                <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-300">
-                    <i class="fas fa-images text-2xl"></i>
+            <div class="text-center py-32 bg-slate-50 rounded-[3rem] border border-dashed border-slate-200 mt-4 reveal-zoom">
+                <div class="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-300 shadow-sm">
+                    <i class="fas fa-images text-3xl"></i>
                 </div>
-                <h3 class="text-lg font-bold text-slate-800 mb-1">Tidak ada dokumentasi</h3>
-                <p class="text-slate-500 text-sm">Belum ada foto untuk kategori ini.</p>
-                <button @click="changeFilter('Semua')" class="mt-4 px-5 py-2 rounded-full bg-sky-100 text-sky-700 text-sm font-semibold hover:bg-sky-200 transition-all">
+                <h3 class="text-2xl font-display font-bold text-slate-800 mb-2">Tidak ada dokumentasi</h3>
+                <p class="text-slate-500 max-w-sm mx-auto mb-8">Belum ada foto untuk kategori ini. Kami akan segera memperbaruinya.</p>
+                <button @click="changeFilter('Semua')" class="btn-ghost btn-magnetic">
                     Lihat semua foto
                 </button>
             </div>
@@ -208,53 +203,58 @@ $items = array_map(function ($item) {
 
         <!-- Load More -->
         <div class="text-center mt-16" x-show="hasMore" x-transition>
-            <button @click="visibleCount += 10" class="btn-outline">
-                <i class="fas fa-plus-circle mr-2"></i>
+            <button @click="visibleCount += 8" class="btn-outline btn-magnetic px-10 py-4 group">
+                <i class="fas fa-plus-circle mr-3 group-hover:rotate-180 transition-transform duration-700"></i>
                 Muat Lebih Banyak
-                <span class="ml-1 text-xs opacity-60" x-text="'(' + (filteredItems.length - visibleCount) + ' lagi)'"></span>
+                <span class="ml-2 text-xs opacity-50" x-text="'(' + (filteredItems.length - visibleCount) + ' lagi)'"></span>
             </button>
         </div>
     </div>
 </section>
 
 <!-- Video Section -->
-<section class="py-20 lg:py-32 bg-linear-to-b from-sky-50/30 to-white">
-    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+<section class="py-20 lg:py-40 bg-linear-to-b from-sky-50/50 to-white relative overflow-hidden">
+    <div class="absolute top-1/2 left-0 -translate-y-1/2 w-64 h-64 bg-sky-400/5 rounded-full blur-[100px]"></div>
 
-        <div class="text-center max-w-2xl mx-auto mb-12">
-            <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3">Video</p>
-            <h2 class="font-display text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+
+        <div class="text-center max-w-2xl mx-auto mb-20 reveal-on-scroll">
+            <p class="text-sky-500 font-bold text-sm uppercase tracking-wider mb-3">Video Highlights</p>
+            <h2 class="font-display text-4xl lg:text-5xl font-bold text-(--text-heading) mb-6">
                 Dokumentasi <span class="text-gradient">Video</span>
             </h2>
-            <p class="text-slate-600">
-                Tonton video highlight dan testimonial dari program PMW.
+            <p class="text-lg text-(--text-muted)">
+                Saksikan keseruan program PMW melalui lensa dokumentasi video kami.
             </p>
         </div>
 
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
 
             <?php
             $videos = [
-                ['thumb' => 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&q=80', 'badge' => 'badge-sky',     'badge_label' => 'Highlight',    'title' => 'PMW 2024 Highlight',    'meta' => '3:45 menit • 1.2K views'],
-                ['thumb' => 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=600&q=80', 'badge' => 'badge-yellow',  'badge_label' => 'Testimonial',  'title' => 'Cerita Sukses Alumni',  'meta' => '5:20 menit • 890 views'],
-                ['thumb' => 'https://images.unsplash.com/photo-1531058020387-3be344556be6?w=600&q=80','badge' => 'badge-emerald', 'badge_label' => 'Tutorial',     'title' => 'Tips Menulis Proposal', 'meta' => '8:15 menit • 2.1K views'],
+                ['thumb' => 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&q=80', 'color' => 'sky',     'badge' => 'Highlight',    'title' => 'PMW 2024 Highlight',    'meta' => '3:45 menit • 1.2K views'],
+                ['thumb' => 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=600&q=80', 'color' => 'amber',   'badge' => 'Testimonial',  'title' => 'Cerita Sukses Alumni',  'meta' => '5:20 menit • 890 views'],
+                ['thumb' => 'https://images.unsplash.com/photo-1531058020387-3be344556be6?w=600&q=80','color' => 'emerald', 'badge' => 'Tutorial',     'title' => 'Tips Menulis Proposal', 'meta' => '8:15 menit • 2.1K views'],
             ];
             ?>
 
-            <?php foreach ($videos as $video): ?>
-            <div class="bg-white rounded-2xl overflow-hidden shadow-lg border border-sky-100 group cursor-pointer hover:-translate-y-1 transition-all duration-300">
+            <?php foreach ($videos as $index => $video): ?>
+            <div class="group bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-slate-100 hover:shadow-2xl hover:border-sky-100 transition-liquid reveal-on-scroll stagger-<?= $index + 1 ?>">
                 <div class="relative aspect-video overflow-hidden">
-                    <img src="<?= $video['thumb'] ?>" alt="<?= esc($video['title']) ?>" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                    <div class="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-all">
-                        <div class="w-14 h-14 rounded-full bg-white/90 backdrop-blur flex items-center justify-center group-hover:scale-110 transition-transform shadow-xl">
-                            <i class="fas fa-play text-sky-500 text-lg ml-1"></i>
+                    <img src="<?= $video['thumb'] ?>" alt="<?= esc($video['title']) ?>" class="w-full h-full object-cover transition-liquid group-hover:scale-110">
+                    <div class="absolute inset-0 bg-slate-900/20 group-hover:bg-slate-900/40 transition-colors flex items-center justify-center">
+                        <div class="w-16 h-16 rounded-full bg-white/90 backdrop-blur flex items-center justify-center group-hover:scale-110 group-hover:bg-white transition-liquid shadow-2xl">
+                            <i class="fas fa-play text-sky-500 text-xl ml-1"></i>
                         </div>
                     </div>
                 </div>
-                <div class="p-5">
-                    <span class="badge <?= $video['badge'] ?> mb-2"><?= esc($video['badge_label']) ?></span>
-                    <h3 class="font-display text-base font-bold text-slate-900 mb-1"><?= esc($video['title']) ?></h3>
-                    <p class="text-xs text-slate-500"><?= esc($video['meta']) ?></p>
+                <div class="p-8">
+                    <span class="inline-block px-3 py-1 rounded-full bg-<?= $video['color'] ?>-50 text-<?= $video['color'] ?>-600 text-[10px] font-bold uppercase tracking-wider mb-4 border border-<?= $video['color'] ?>-100"><?= esc($video['badge']) ?></span>
+                    <h3 class="font-display text-xl font-bold text-(--text-heading) mb-2 group-hover:text-sky-600 transition-colors"><?= esc($video['title']) ?></h3>
+                    <div class="flex items-center text-slate-400 text-xs font-medium">
+                        <i class="far fa-clock mr-2"></i>
+                        <span><?= esc($video['meta']) ?></span>
+                    </div>
                 </div>
             </div>
             <?php endforeach; ?>

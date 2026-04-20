@@ -1,0 +1,176 @@
+/* =============================================================================
+   PMW POLSRI — premium-effects.css
+   Advanced Animations & Interactive Effects System
+   ============================================================================= */
+
+@theme {
+  /* ─── 1. ADVANCED EASING (The "Premium" Feel) ─── */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-expo: cubic-bezier(0.87, 0, 0.13, 1);
+  --ease-elastic: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+  --ease-soft-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ─── 2. NEW ANIMATIONS ─── */
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-reveal-up: revealUp 1s var(--ease-out-expo) both;
+  --animate-shimmer-fast: shimmer 2s linear infinite;
+  --animate-pulse-glow: pulseGlow 3s ease-in-out infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  @keyframes revealUp {
+    from { opacity: 0; transform: translateY(40px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+    50% { box-shadow: 0 0 20px 5px rgba(14, 165, 233, 0.15); }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+}
+
+/* ─── 3. INTERACTIVE COMPONENTS ─── */
+
+/* Magnetic Card Effect (Subtle depth on hover) */
+.card-magnetic {
+  transition: all 0.6s var(--ease-out-expo) !important;
+  perspective: 1000px;
+}
+
+.card-magnetic:hover {
+  transform: translateY(-12px) rotateX(4deg) rotateY(2deg) !important;
+  box-shadow: 0 30px 60px -12px rgba(14, 165, 233, 0.18),
+              0 18px 36px -18px rgba(0, 0, 0, 0.15) !important;
+  border-color: rgba(14, 165, 233, 0.4) !important;
+}
+
+/* Glassmorphism v2 (More premium than standard glass) */
+.glass-premium {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+}
+
+/* Text Shimmer Effect for Headings */
+.text-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-primary) 0%,
+    var(--color-primary-light) 25%,
+    var(--color-accent) 50%,
+    var(--color-primary-light) 75%,
+    var(--color-primary) 100%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 6s linear infinite;
+}
+
+/* Magnetic Button Feel */
+.btn-magnetic {
+  transition: transform 0.3s var(--ease-soft-bounce),
+              box-shadow 0.3s var(--ease-soft-bounce);
+}
+.btn-magnetic:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.4);
+}
+.btn-magnetic:active {
+  transform: scale(0.96);
+}
+
+/* ─── 4. SCROLL REVEAL ENGINE ─── */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 1.2s var(--ease-out-expo),
+              transform 1.2s var(--ease-out-expo);
+  will-change: transform, opacity;
+}
+
+.reveal-on-scroll.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Staggered Delay Utilities */
+.stagger-1 { transition-delay: 100ms; }
+.stagger-2 { transition-delay: 200ms; }
+.stagger-3 { transition-delay: 300ms; }
+.stagger-4 { transition-delay: 400ms; }
+.stagger-5 { transition-delay: 500ms; }
+
+/* Horizontal Reveals */
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-60px);
+}
+.reveal-right {
+  opacity: 0;
+  transform: translateX(60px);
+}
+
+/* ─── 5. NEW PROFESSIONAL TRANSITIONS ─── */
+
+/* Zoom Reveal (Apple Style) */
+.reveal-zoom {
+  opacity: 0;
+  transform: scale(0.92) translateY(20px);
+  filter: blur(10px);
+  transition: opacity 1.4s var(--ease-out-expo),
+              transform 1.4s var(--ease-out-expo),
+              filter 1.2s var(--ease-out-expo);
+}
+.reveal-zoom.active {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  filter: blur(0);
+}
+/* ─── 6. EXTRA SMOOTH UTILITIES ─── */
+.transition-liquid {
+  transition: all 0.6s var(--ease-out-expo) !important;
+}
+.hover-slide-right:hover {
+  transform: translateX(12px) !important;
+}
+
+/* Blur Reveal (Stripe Style) */
+.reveal-blur {
+  opacity: 0;
+  filter: blur(15px);
+  transform: translateY(30px);
+  transition: opacity 1.5s var(--ease-out-expo),
+              filter 1.5s var(--ease-out-expo),
+              transform 1.5s var(--ease-out-expo);
+}
+.reveal-blur.active {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0);
+}
+
+/* Mask Reveal (Modern Design) */
+.reveal-mask {
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 1.5s var(--ease-out-expo);
+}
+.reveal-mask.active {
+  clip-path: inset(0 0 0 0);
+}
+
+.reveal-left.active, .reveal-right.active {
+  opacity: 1;
+  transform: translateX(0);
+}

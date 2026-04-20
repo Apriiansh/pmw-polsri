@@ -1,0 +1,56 @@
+/* =============================================================================
+   PMW POLSRI — input-v2.css (Improved Version)
+   Base on input.css + Premium Effects System
+   ============================================================================= */
+
+/* 1. Import original input styles (Base, Components, Utilities) */
+@import "./input.css";
+
+/* 2. Import our new premium effects system */
+@import "./premium-effects.css";
+
+/* 3. Global Enhancements */
+
+@supports (scroll-behavior: smooth) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Custom Scrollbar Upgrade */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface-page);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary-light);
+  border-radius: 10px;
+  border: 2px solid var(--surface-page);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* Base Body Improvements */
+body {
+  text-rendering: optimizeSpeed; /* Better for scroll performance with animations */
+}
+
+/* Upgrade existing card styles to use magnetic feel by default if desired */
+.card-premium-v2 {
+    @extend .card-premium; /* If using tool that supports extend, otherwise manually use both classes */
+}
+
+/* Image Hover Zoom effect */
+.img-zoom-container {
+    overflow: hidden;
+    border-radius: inherit;
+}
+.img-zoom-container img {
+    transition: transform 1.2s var(--ease-out-expo);
+}
+.img-zoom-container:hover img {
+    transform: scale(1.1);
+}

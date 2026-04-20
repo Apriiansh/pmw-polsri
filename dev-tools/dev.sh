@@ -9,6 +9,8 @@
 PORT=${1:-8080}
 CSS_INPUT="./app/Views/css/input.css"
 CSS_OUTPUT="./public/assets/css/app.css"
+CSS_INPUT_V2="./app/Views/css/input-v2.css"
+CSS_OUTPUT_V2="./public/assets/css/app-v2.css"
 CSS_DIR="./public/assets/css"
 
 # --- Colors ---
@@ -123,10 +125,11 @@ mkdir -p "$CSS_DIR"
 success "Directories and dependencies verified."
 
 # 3. Initial Build
-log "Performing initial CSS build..."
+log "Performing initial CSS builds..."
 npx @tailwindcss/cli -i "$CSS_INPUT" -o "$CSS_OUTPUT" 2>/dev/null
+npx @tailwindcss/cli -i "$CSS_INPUT_V2" -o "$CSS_OUTPUT_V2" 2>/dev/null
 if [ $? -eq 0 ]; then
-    success "Initial CSS build successful."
+    success "Initial CSS builds successful (v1 & v2)."
 else
     warn "Initial CSS build had warnings/errors. Check your CSS files."
 fi

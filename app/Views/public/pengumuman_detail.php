@@ -83,117 +83,136 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-<div class="max-w-4xl mx-auto py-12 px-4">
-    <!-- Breadcrumb -->
-    <nav class="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest mb-8">
-        <a href="<?= base_url() ?>" class="hover:text-sky-500 transition-colors">Beranda</a>
-        <i class="fas fa-chevron-right text-[8px]"></i>
-        <a href="<?= base_url('pengumuman') ?>" class="hover:text-sky-500 transition-colors">Pengumuman</a>
-        <i class="fas fa-chevron-right text-[8px]"></i>
-        <span class="text-slate-500">Detail</span>
-    </nav>
+<!-- Header Section -->
+<section class="relative overflow-hidden pt-32 pb-16 lg:pt-48 lg:pb-24">
+    <!-- Premium Background Elements -->
+    <div class="absolute inset-0 -z-10">
+        <div class="absolute top-0 right-1/4 w-96 h-96 bg-sky-500/10 rounded-full blur-[120px] animate-float"></div>
+        <div class="absolute bottom-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] animate-float" style="animation-delay: -3s"></div>
+    </div>
 
-    <!-- Header Section -->
-    <header class="mb-10">
-        <div class="flex items-center gap-3 mb-4">
-            <span class="px-3 py-1 rounded-full bg-sky-50 text-sky-600 text-[10px] font-black uppercase tracking-widest border border-sky-100">
-                <?= esc($announcement['category']) ?>
-            </span>
-            <span class="text-xs text-slate-400 font-medium">
-                <i class="far fa-calendar-alt mr-1"></i>
-                <?= date('d F Y', strtotime($announcement['date'])) ?>
-            </span>
+    <div class="max-w-4xl mx-auto px-6 lg:px-8">
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-3 text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-12 reveal-blur">
+            <a href="<?= base_url() ?>" class="hover:text-sky-500 transition-liquid">Beranda</a>
+            <i class="fas fa-chevron-right text-[8px] opacity-30"></i>
+            <a href="<?= base_url('pengumuman') ?>" class="hover:text-sky-500 transition-liquid">Pengumuman</a>
+            <i class="fas fa-chevron-right text-[8px] opacity-30"></i>
+            <span class="text-sky-500/60">Detail</span>
+        </nav>
+
+        <div class="reveal-blur">
+            <div class="flex items-center gap-4 mb-6">
+                <span class="px-4 py-1.5 rounded-full bg-sky-500/10 text-sky-600 text-[10px] font-black uppercase tracking-[0.2em] border border-sky-100">
+                    <?= esc($announcement['category']) ?>
+                </span>
+                <span class="text-xs text-slate-400 font-bold uppercase tracking-wider flex items-center gap-2">
+                    <i class="far fa-calendar-alt text-sky-400"></i>
+                    <?= date('d F Y', strtotime($announcement['date'])) ?>
+                </span>
+            </div>
+            <h1 class="font-display text-4xl lg:text-6xl font-bold text-(--text-heading) leading-[1.1] tracking-tight mb-8">
+                <?= esc($announcement['title']) ?>
+            </h1>
+            
+            <div class="w-24 h-2 bg-linear-to-r from-sky-500 to-indigo-500 rounded-full shadow-lg shadow-sky-200"></div>
         </div>
-        <h1 class="font-display text-3xl md:text-4xl font-bold text-slate-800 leading-tight tracking-tight mb-6">
-            <?= esc($announcement['title']) ?>
-        </h1>
-        
-        <!-- Decorative Line -->
-        <div class="w-20 h-1.5 bg-linear-to-r from-sky-500 to-indigo-500 rounded-full"></div>
-    </header>
+    </div>
+</section>
 
-    <!-- Main Content -->
-    <article class="bg-white rounded-[2.5rem] border border-slate-100 p-8 md:p-12 shadow-xl shadow-slate-200/50 mb-8">
-        <div id="announcement-content" class="prose prose-slate max-w-none text-justify hyphens-auto
-                    prose-headings:font-display prose-headings:font-bold prose-headings:text-slate-800
-                    prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl
-                    prose-p:text-slate-600 prose-p:leading-relaxed prose-p:text-sm md:prose-p:text-base prose-p:mb-4
-                    prose-a:text-sky-600 prose-a:no-underline hover:prose-a:underline
-                    prose-strong:text-slate-800 prose-strong:font-bold
-                    prose-em:text-slate-700 prose-em:italic
-                    prose-li:text-slate-600 prose-li:text-sm md:prose-li:text-base
-                    prose-blockquote:border-l-4 prose-blockquote:border-sky-500 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-slate-500">
-            <!-- Content will be rendered here by JS if it is Delta, otherwise raw HTML fallback -->
-            <div id="delta-fallback">
-                <?= $announcement['content'] ?>
+<!-- Main Content Area -->
+<section class="pb-20 lg:pb-32 px-6">
+    <div class="max-w-4xl mx-auto">
+        <!-- Main Article Body -->
+        <article class="reveal-zoom bg-white rounded-[3rem] border border-slate-100 p-10 lg:p-20 shadow-2xl shadow-slate-200/40 mb-12">
+            <div id="announcement-content" class="prose prose-slate lg:prose-lg max-w-none text-justify
+                        prose-headings:font-display prose-headings:font-bold prose-headings:text-slate-800
+                        prose-p:text-slate-600 prose-p:leading-relaxed
+                        prose-a:text-sky-600 prose-a:font-bold prose-a:no-underline hover:prose-a:underline
+                        prose-strong:text-slate-900 prose-strong:font-bold
+                        prose-blockquote:border-l-4 prose-blockquote:border-sky-500 prose-blockquote:bg-sky-50/50 prose-blockquote:p-6 prose-blockquote:rounded-r-2xl prose-blockquote:italic prose-blockquote:text-slate-500">
+                <!-- Content fallback -->
+                <div id="delta-fallback">
+                    <?= $announcement['content'] ?>
+                </div>
+            </div>
+        </article>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const contentDiv = document.getElementById('announcement-content');
+                const rawContent = <?= json_encode($announcement['content']) ?>;
+                
+                if (rawContent && (rawContent.startsWith('{') || rawContent.startsWith('['))) {
+                    try {
+                        const delta = JSON.parse(rawContent);
+                        const tempCont = document.createElement('div');
+                        const tempQuill = new Quill(tempCont, { readOnly: true });
+                        tempQuill.setContents(delta);
+                        contentDiv.innerHTML = tempQuill.root.innerHTML;
+                    } catch (e) {
+                        console.error('Error parsing Delta:', e);
+                    }
+                }
+            });
+        </script>
+
+        <!-- Attachments Section -->
+        <?php if (!empty($attachments)): ?>
+        <div class="reveal-on-scroll mt-20">
+            <h3 class="text-xs font-black text-slate-800 uppercase tracking-[0.2em] mb-8 flex items-center gap-4">
+                <span class="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-500">
+                    <i class="fas fa-paperclip"></i>
+                </span>
+                Lampiran Dokumen
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <?php foreach ($attachments as $index => $file): ?>
+                <a href="<?= $file->getUrl() ?>" 
+                   target="_blank"
+                   class="group flex items-center justify-between p-6 bg-white border border-slate-100 rounded-[2rem] hover:border-sky-400 hover:shadow-2xl transition-liquid reveal-on-scroll stagger-<?= $index + 1 ?>">
+                    <div class="flex items-center gap-5">
+                        <div class="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-sky-50 group-hover:text-sky-500 transition-liquid shadow-inner">
+                            <i class="fas <?= $file->getIcon() ?> text-2xl"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                            <p class="text-base font-bold text-slate-700 truncate w-48 group-hover:text-sky-600 transition-liquid">
+                                <?= esc($file->file_name) ?>
+                            </p>
+                            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-black mt-1">
+                                <?= number_format($file->file_size / 1024 / 1024, 2) ?> MB
+                            </p>
+                        </div>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-sky-500 group-hover:text-white transition-liquid group-hover:scale-110">
+                        <i class="fas fa-download text-xs"></i>
+                    </div>
+                </a>
+                <?php endforeach; ?>
             </div>
         </div>
-    </article>
+        <?php endif; ?>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const contentDiv = document.getElementById('announcement-content');
-            const fallbackDiv = document.getElementById('delta-fallback');
-            const rawContent = <?= json_encode($announcement['content']) ?>;
-            
-            if (rawContent && (rawContent.startsWith('{') || rawContent.startsWith('['))) {
-                try {
-                    const delta = JSON.parse(rawContent);
-                    // Create a temporary Quill instance in read-only mode to render the Delta
-                    const tempCont = document.createElement('div');
-                    const tempQuill = new Quill(tempCont, { readOnly: true });
-                    tempQuill.setContents(delta);
-                    
-                    // Replace fallback with rendered HTML
-                    contentDiv.innerHTML = tempQuill.root.innerHTML;
-                } catch (e) {
-                    console.error('Error parsing Delta:', e);
-                    // Fallback to raw content if parsing fails
-                }
-            }
-        });
-    </script>
-
-    <!-- Attachments Section -->
-    <?php if (!empty($attachments)): ?>
-    <section class="mt-12">
-        <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-3">
-            <i class="fas fa-paperclip text-sky-500"></i>
-            Lampiran Dokumen
-        </h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <?php foreach ($attachments as $file): ?>
-            <a href="<?= $file->getUrl() ?>" 
-               target="_blank"
-               class="group flex items-center justify-between p-4 bg-white border border-slate-100 rounded-3xl hover:border-sky-400 hover:shadow-lg hover:shadow-sky-500/10 transition-all duration-300">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-sky-50 group-hover:text-sky-500 transition-colors">
-                        <i class="fas <?= $file->getIcon() ?> text-xl"></i>
-                    </div>
-                    <div class="overflow-hidden">
-                        <p class="text-sm font-bold text-slate-700 truncate w-48 group-hover:text-sky-600 transition-colors">
-                            <?= esc($file->file_name) ?>
-                        </p>
-                        <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
-                            <?= number_format($file->file_size / 1024 / 1024, 2) ?> MB
-                        </p>
-                    </div>
-                </div>
-                <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-sky-500 group-hover:text-white transition-all">
-                    <i class="fas fa-download text-[10px]"></i>
-                </div>
+        <!-- Footer Actions -->
+        <div class="mt-24 pt-12 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-8 reveal-on-scroll">
+            <a href="<?= base_url('pengumuman') ?>" class="btn-ghost btn-magnetic group px-10 py-4 font-bold text-slate-600 border-slate-200">
+                <i class="fas fa-arrow-left mr-3 group-hover:-translate-x-1 transition-transform"></i>
+                Kembali ke Pengumuman
             </a>
-            <?php endforeach; ?>
+            
+            <div class="flex items-center gap-4">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Bagikan:</span>
+                <button class="w-12 h-12 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-sky-500 hover:text-white hover:border-sky-500 transition-liquid">
+                    <i class="fab fa-facebook-f"></i>
+                </button>
+                <button class="w-12 h-12 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-sky-400 hover:text-white hover:border-sky-400 transition-liquid">
+                    <i class="fab fa-twitter"></i>
+                </button>
+                <button class="w-12 h-12 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-liquid">
+                    <i class="fab fa-whatsapp"></i>
+                </button>
+            </div>
         </div>
-    </section>
-    <?php endif; ?>
-
-    <!-- Back Button Footer -->
-    <div class="mt-16 flex justify-center">
-        <a href="<?= base_url('pengumuman') ?>" class="inline-flex items-center gap-2 px-8 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-bold rounded-2xl transition-all active:scale-95">
-            <i class="fas fa-arrow-left text-xs"></i>
-            Kembali ke Pengumuman
-        </a>
     </div>
-</div>
+</section>
 <?= $this->endSection() ?>

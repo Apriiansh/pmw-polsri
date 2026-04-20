@@ -42,11 +42,45 @@
     <?php if (ENVIRONMENT === 'development'): ?>
         <script type="module" src="http://localhost:5173/@vite/client"></script>
         <script type="module" src="http://localhost:5173/app/Views/js/app.js"></script>
-        <link rel="stylesheet" href="http://localhost:5173/app/Views/css/input.css">
+        <link rel="stylesheet" href="http://localhost:5173/app/Views/css/input-v2.css">
     <?php else: ?>
         <script type="module" src="<?= base_url('build/app.js') ?>"></script>
         <link rel="stylesheet" href="<?= base_url('build/style.css') ?>">
     <?php endif; ?>
+
+    <!-- Global Premium Interaction Engine -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Scroll Reveal Logic
+            const observerOptions = { threshold: 0.15 };
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, observerOptions);
+            
+            document.querySelectorAll('.reveal-on-scroll, .reveal-left, .reveal-right, .reveal-zoom, .reveal-blur, .reveal-mask').forEach(el => observer.observe(el));
+
+            // 2. Magnetic Mouse Effect (Optional for extra polish)
+            document.querySelectorAll('.card-magnetic').forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = (y - centerY) / 15;
+                    const rotateY = (centerX - x) / 15;
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-10px)`;
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = `perspective(1000px) rotateX(0) rotateY(0) translateY(0)`;
+                });
+            });
+        });
+    </script>
 
     <!-- Page-specific styles -->
     <?= $this->renderSection('styles') ?>
@@ -61,7 +95,7 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
 
     <?php if (!$isAuthPage): ?>
         <!-- Navigation -->
-        <nav class="fixed top-0 left-0 right-0 z-50 glass-header" x-data="{ mobileOpen: false }">
+        <nav class="fixed top-0 left-0 right-0 z-50 glass-premium transition-all duration-300" x-data="{ mobileOpen: false, scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 20)">
             <div class="max-w-7xl mx-auto px-6 lg:px-8">
                 <div class="flex items-center justify-between h-20">
 

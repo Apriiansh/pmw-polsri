@@ -4,26 +4,30 @@
 
 <!-- Hero Section -->
 <section id="section-hero" class="relative overflow-hidden hero-gradient hero-pattern">
-    <div class="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-32">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-32 relative z-10">
+        <!-- Floating Decorative Blobs -->
+        <div class="absolute top-0 -left-20 w-72 h-72 bg-sky-400/20 rounded-full blur-3xl animate-float"></div>
+        <div class="absolute bottom-0 -right-20 w-96 h-96 bg-indigo-400/10 rounded-full blur-3xl animate-float" style="animation-delay: -2s"></div>
+
         <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             
             <!-- Content -->
-            <div class="animate-stagger">
+            <div class="reveal-on-scroll stagger-1">
                 <div class="badge badge-sky mb-4">
                     <i class="fas fa-rocket text-xs"></i>
                     <span><?= cms('home_hero_badge', 'Program Tahun 2026') ?></span>
                 </div>
                 
-                <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-(--text-heading) leading-tight mb-6">
+                <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-(--text-heading) leading-tight mb-6 text-shimmer">
                     <?= cms('home_hero_title_1', 'Program Mahasiswa') ?> <br>
                     <span class="text-gradient"><?= cms('home_hero_title_2', 'Wirausaha') ?></span>
                 </h1>
                 
-                <p class="text-lg text-(--text-body) leading-relaxed mb-8 max-w-xl">
+                <p class="text-lg text-(--text-body) leading-relaxed mb-8 max-w-xl reveal-on-scroll stagger-2">
                     <?= cms('home_hero_description', 'Politeknik Negeri Sriwijaya memfasilitasi mahasiswa untuk mengembangkan ide bisnis menjadi usaha nyata melalui program pembinaan kewirausahaan.') ?>
                 </p>
                 
-                <div class="flex flex-wrap gap-4">
+                <div class="flex flex-wrap gap-4 reveal-on-scroll stagger-3">
                     <a href="<?= base_url('register') ?>" class="btn-accent text-base px-8 py-4">
                         <i class="fas fa-paper-plane mr-2"></i>
                         Daftar Sekarang
@@ -35,16 +39,16 @@
                 </div>
                 
                 <!-- Stats -->
-                <div class="flex flex-wrap gap-8 mt-12 pt-8 border-t border-sky-200/50">
+                <div class="flex flex-wrap gap-8 mt-12 pt-8 border-t border-sky-200/50 reveal-on-scroll stagger-4">
                     <?php 
                     $stats = cms('home_hero_stats', [
                         ['number' => '7+', 'label' => 'Tahun Berdiri'],
                         ['number' => '100+', 'label' => 'Tim Terbina'],
                         ['number' => '50+', 'label' => 'Usaha Aktif'],
                     ]);
-                    foreach ($stats as $stat): 
+                    foreach ($stats as $idx => $stat): 
                     ?>
-                    <div>
+                    <div class="reveal-zoom stagger-<?= $idx + 1 ?>">
                         <div class="stat-number"><?= $stat['number'] ?></div>
                         <div class="stat-label"><?= $stat['label'] ?></div>
                     </div>
@@ -53,8 +57,8 @@
             </div>
             
             <!-- Hero Image -->
-            <div class="relative lg:pl-8 animate-stagger delay-200">
-                <div class="relative rounded-2xl overflow-hidden shadow-2xl shadow-sky-200/50">
+            <div class="relative lg:pl-8 reveal-zoom">
+                <div class="relative rounded-2xl overflow-hidden shadow-2xl shadow-sky-200/50 card-magnetic reveal-mask">
                     <img 
                         src="<?= cms_img(cms('home_hero_image'), 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80') ?>" 
                         alt="Mahasiswa berkolaborasi" 
@@ -102,9 +106,9 @@
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
         
         <!-- Section Header -->
-        <div class="text-center max-w-2xl mx-auto mb-16">
+        <div class="text-center max-w-2xl mx-auto mb-16 reveal-on-scroll">
             <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3"><?= cms('home_features_badge', 'Mengapa PMW?') ?></p>
-            <h2 class="font-display text-3xl lg:text-4xl font-bold text-(--text-heading) mb-4">
+            <h2 class="font-display text-3xl lg:text-4xl font-bold text-(--text-heading) mb-4 text-shimmer">
                 <?= cms('home_features_title', 'Program Pembinaan Komprehensif') ?>
             </h2>
             <p class="text-(--text-muted)">
@@ -118,14 +122,26 @@
             $features = cms('home_features_list', []);
             foreach ($features as $index => $feature): 
             ?>
-            <div class="feature-card animate-stagger" style="animation-delay: <?= $index * 100 ?>ms">
-                <div class="feature-icon <?= $feature['color'] ?? 'sky' ?>">
-                    <i class="fas <?= $feature['icon'] ?? 'fa-rocket' ?>"></i>
+            <div class="group relative p-8 rounded-3xl glass-premium reveal-zoom card-magnetic stagger-<?= ($index % 4) + 1 ?> hover:border-sky-400/50 transition-all duration-500">
+                <!-- Decorative Light Glow -->
+                <div class="absolute -top-10 -right-10 w-24 h-24 bg-sky-400/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                
+                <div class="feature-icon <?= $feature['color'] ?? 'sky' ?> mb-6 transform group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
+                    <i class="fas <?= $feature['icon'] ?? 'fa-rocket' ?> text-2xl"></i>
                 </div>
-                <h3 class="font-display text-lg font-bold text-(--text-heading) mb-2"><?= $feature['title'] ?></h3>
+                
+                <h3 class="font-display text-xl font-bold text-(--text-heading) mb-3 group-hover:text-sky-600 transition-colors">
+                    <?= $feature['title'] ?>
+                </h3>
+                
                 <p class="text-sm text-(--text-muted) leading-relaxed">
                     <?= $feature['desc'] ?>
                 </p>
+                
+                <!-- Bottom indicator -->
+                <div class="mt-6 w-10 h-1 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="w-0 group-hover:w-full h-full bg-sky-500 transition-all duration-700 ease-out-expo"></div>
+                </div>
             </div>
             <?php endforeach; ?>
         </div>
@@ -139,8 +155,8 @@
         <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             
             <!-- Image -->
-            <div class="relative order-2 lg:order-1">
-                <div class="relative rounded-2xl overflow-hidden shadow-xl">
+            <div class="relative order-2 lg:order-1 reveal-left">
+                <div class="relative rounded-2xl overflow-hidden shadow-xl reveal-mask">
                     <img 
                         src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80" 
                         alt="Workshop PMW" 
@@ -158,7 +174,7 @@
             </div>
             
             <!-- Content -->
-            <div class="order-1 lg:order-2">
+            <div class="order-1 lg:order-2 reveal-right stagger-1">
                 <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3"><?= cms('home_workflow_badge', 'Alur Program') ?></p>
                 <h2 class="font-display text-3xl lg:text-4xl font-bold text-(--text-heading) mb-6">
                     <?= cms('home_workflow_title', '11 Tahapan Menuju Wirausaha Mandiri') ?>
@@ -172,21 +188,23 @@
                 <div class="space-y-4 mb-8">
                     <?php 
                     $workflow = cms('home_workflow_list', []);
-                    foreach ($workflow as $item): 
+                    foreach ($workflow as $idx => $item): 
                     ?>
-                    <div class="flex items-center gap-4 p-3 rounded-xl bg-white border border-sky-100 shadow-sm">
-                        <div class="w-10 h-10 rounded-full bg-<?= $item['color'] ?? 'sky' ?>-100 flex items-center justify-center text-<?= $item['color'] ?? 'sky' ?>-600 font-bold text-sm"><?= $item['num'] ?></div>
+                    <div class="group flex items-center gap-4 p-4 rounded-2xl bg-white border border-sky-100 shadow-sm hover:shadow-lg hover:border-sky-300 transition-liquid hover-slide-right reveal-on-scroll stagger-<?= ($idx % 5) + 1 ?>">
+                        <div class="w-12 h-12 shrink-0 rounded-full bg-<?= $item['color'] ?? 'sky' ?>-100 flex items-center justify-center text-<?= $item['color'] ?? 'sky' ?>-600 font-bold text-sm group-hover:scale-110 transition-liquid">
+                            <?= $item['num'] ?>
+                        </div>
                         <div>
-                            <p class="font-semibold text-slate-800"><?= $item['title'] ?></p>
-                            <p class="text-xs text-slate-500"><?= $item['desc'] ?></p>
+                            <p class="font-bold text-slate-800 group-hover:text-sky-600 transition-liquid"><?= $item['title'] ?></p>
+                            <p class="text-xs text-slate-500 leading-relaxed"><?= $item['desc'] ?></p>
                         </div>
                     </div>
                     <?php endforeach; ?>
                 </div>
                 
-                <a href="<?= base_url('tahapan') ?>" class="btn-outline">
+                <a href="<?= base_url('tahapan') ?>" class="btn-outline btn-magnetic group">
                     <span>Lihat Seluruh Tahapan</span>
-                    <i class="fas fa-arrow-right ml-2"></i>
+                    <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
                 </a>
             </div>
         </div>
@@ -213,32 +231,32 @@
         
         <!-- Gallery Grid -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="gallery-item col-span-2 row-span-2">
-                <img src="https://images.unsplash.com/photo-1531545514256-b1400bc00f31?w=800&q=80" alt="Mentoring session">
+            <div class="gallery-item col-span-2 row-span-2 reveal-zoom">
+                <img src="https://images.unsplash.com/photo-1531545514256-b1400bc00f31?w=800&q=80" alt="Mentoring session" class="reveal-mask">
                 <div class="gallery-overlay">
                     <p class="text-white font-semibold">Sesi Mentoring 2025</p>
                     <p class="text-white/80 text-sm">Dosen dan mentor berbagi pengalaman</p>
                 </div>
             </div>
-            <div class="gallery-item">
+            <div class="gallery-item reveal-blur stagger-1">
                 <img src="https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=400&q=80" alt="Team collaboration">
                 <div class="gallery-overlay">
                     <p class="text-white font-semibold text-sm">Team Work</p>
                 </div>
             </div>
-            <div class="gallery-item">
+            <div class="gallery-item reveal-blur stagger-2">
                 <img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400&q=80" alt="Pitching event">
                 <div class="gallery-overlay">
                     <p class="text-white font-semibold text-sm">Pitching Day</p>
                 </div>
             </div>
-            <div class="gallery-item">
+            <div class="gallery-item reveal-blur stagger-3">
                 <img src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400&q=80" alt="Award ceremony">
                 <div class="gallery-overlay">
                     <p class="text-white font-semibold text-sm">Awarding</p>
                 </div>
             </div>
-            <div class="gallery-item">
+            <div class="gallery-item reveal-blur stagger-4">
                 <img src="https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=400&q=80" alt="Bazaar">
                 <div class="gallery-overlay">
                     <p class="text-white font-semibold text-sm">Bazaar Monev</p>
@@ -272,11 +290,11 @@
                     ['icon' => 'fa-hand-holding-dollar', 'val' => '2.5M', 'label' => 'Total Dana Terdistribusi', 'color' => 'amber'],
                 ];
             }
-            foreach ($stats as $stat): 
+            foreach ($stats as $idx => $stat): 
                 $bgColor = "bg-{$stat['color']}-100";
                 $textColor = "text-{$stat['color']}-600";
             ?>
-                <div class="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-yellow-100">
+                <div class="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-yellow-100 reveal-zoom card-magnetic stagger-<?= ($idx % 4) + 1 ?>">
                     <div class="w-12 h-12 rounded-xl <?= $bgColor ?> flex items-center justify-center mx-auto mb-3">
                         <i class="fas <?= $stat['icon'] ?> <?= $textColor ?> text-xl"></i>
                     </div>
@@ -316,14 +334,14 @@
                         <p class="text-slate-500">Belum ada pengumuman terbaru.</p>
                     </div>
                 <?php else: ?>
-                    <?php foreach ($latestAnnouncements as $ann): ?>
-                        <div class="announcement-card <?= $ann['type'] === 'urgent' ? 'urgent' : ($ann['type'] === 'success' ? 'success' : ($ann['type'] === 'warning' ? 'warning' : '')) ?>">
+                    <?php foreach ($latestAnnouncements as $idx => $ann): ?>
+                        <a href="<?= base_url('pengumuman/' . $ann['slug']) ?>" class="announcement-card block group transition-liquid hover-slide-right reveal-on-scroll reveal-right stagger-<?= ($idx % 4) + 1 ?> <?= $ann['type'] === 'urgent' ? 'urgent' : ($ann['type'] === 'success' ? 'success' : ($ann['type'] === 'warning' ? 'warning' : '')) ?>">
                             <div class="flex items-start gap-4">
                                 <div class="w-12 h-12 rounded-xl <?= 
                                     $ann['type'] === 'urgent' ? 'bg-rose-100 text-rose-500' : (
                                     $ann['type'] === 'success' ? 'bg-emerald-100 text-emerald-500' : (
                                     $ann['type'] === 'warning' ? 'bg-amber-100 text-amber-500' : 'bg-sky-100 text-sky-500')) 
-                                ?> flex items-center justify-center shrink-0">
+                                ?> flex items-center justify-center shrink-0 group-hover:scale-110 transition-liquid">
                                     <i class="fas <?= 
                                         $ann['type'] === 'urgent' ? 'fa-exclamation' : (
                                         $ann['type'] === 'success' ? 'fa-trophy' : (
@@ -339,20 +357,13 @@
                                         ?>"><?= $ann['category'] ?></span>
                                         <span class="text-xs text-slate-400"><?= date('d F Y', strtotime($ann['date'])) ?></span>
                                     </div>
-                                    <h3 class="font-semibold text-slate-800 mb-1"><?= $ann['title'] ?></h3>
-                                    <p class="text-sm text-slate-600 line-clamp-2">
-                                        <?php 
-                                            $content = trim($ann['content']);
-                                            if (str_starts_with($content, '{') || str_starts_with($content, '[')) {
-                                                echo "Lihat detail pengumuman...";
-                                            } else {
-                                                echo strip_tags($content);
-                                            }
-                                        ?>
-                                    </p>
+                                    <h3 class="font-semibold text-slate-800 mb-1 group-hover:text-sky-600 transition-liquid"><?= $ann['title'] ?></h3>
+                                    <div class="flex items-center gap-1 text-[10px] font-bold text-sky-500 uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-liquid">
+                                        Baca Selengkapnya <i class="fas fa-chevron-right text-[8px]"></i>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
@@ -361,34 +372,44 @@
 </section>
 
 <!-- CTA Section -->
-<section id="section-cta" class="py-20 lg:py-24 cta-gradient cta-pattern relative overflow-hidden">
-    <!-- Decorative elements -->
-    <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-    <div class="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+<section id="section-cta" class="py-20 lg:py-28 relative overflow-hidden">
+    <!-- Base Gradient Layer -->
+    <div class="absolute inset-0 cta-gradient opacity-90"></div>
+    <div class="absolute inset-0 cta-pattern opacity-30"></div>
+
+    <!-- Floating Decorative Blobs (More dynamic) -->
+    <div class="absolute -top-24 -left-24 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-float"></div>
+    <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-amber-400/20 rounded-full blur-3xl animate-float" style="animation-delay: -3s"></div>
     
-    <div class="max-w-4xl mx-auto px-6 lg:px-8 text-center relative z-10">
-        <div class="badge badge-yellow mb-6 mx-auto">
-            <i class="fas fa-rocket text-xs"></i>
-            <span><?= cms('home_cta_badge', 'Siap Memulai?') ?></span>
-        </div>
-        
-        <h2 class="font-display text-3xl lg:text-5xl font-bold text-white mb-6">
-            <?= cms('home_cta_title', 'Bersiaplah untuk PMW Berikutnya') ?>
-        </h2>
-        
-        <p class="text-lg text-black-100 mb-10 max-w-2xl mx-auto">
-            <?= cms('home_cta_description', 'Pelajari tahapan program dan persiapkan diri Anda untuk pendaftaran periode berikutnya. Tim kami siap membimbing Anda.') ?>
-        </p>
-        
-        <div class="flex flex-wrap justify-center gap-4">
-            <a href="<?= base_url('register') ?>" class="btn-accent text-base px-8 py-4">
-                <i class="fas fa-paper-plane mr-2"></i>
-                Daftar Sekarang
-            </a>
-            <a href="<?= base_url('tentang') ?>" class="btn-ghost text-white border-white/30 hover:bg-white/10 text-base px-8 py-4">
-                <i class="fas fa-info-circle mr-2"></i>
-                Pelajari Program
-            </a>
+    <div class="max-w-5xl mx-auto px-6 lg:px-8 relative z-10">
+        <div class="reveal-zoom glass-premium p-10 lg:p-16 rounded-[40px] border-white/20 shadow-2xl text-center backdrop-blur-xl">
+            <div class="badge badge-yellow mb-8 mx-auto reveal-on-scroll stagger-1">
+                <i class="fas fa-rocket text-xs animate-bounce"></i>
+                <span><?= cms('home_cta_badge', 'Siap Memulai?') ?></span>
+            </div>
+            
+            <h2 class="font-display text-4xl lg:text-6xl font-bold text-white mb-8 leading-tight reveal-on-scroll stagger-2">
+                <?= cms('home_cta_title', 'Bersiaplah untuk PMW Berikutnya') ?>
+            </h2>
+            
+            <p class="text-xl text-white/80 mb-12 max-w-2xl mx-auto reveal-on-scroll stagger-3">
+                <?= cms('home_cta_description', 'Pelajari tahapan program dan persiapkan diri Anda untuk pendaftaran periode berikutnya. Tim kami siap membimbing Anda.') ?>
+            </p>
+            
+            <div class="flex flex-wrap justify-center gap-6 reveal-on-scroll stagger-4">
+                <a href="<?= base_url('register') ?>" class="btn-accent btn-magnetic group relative overflow-hidden text-lg px-10 py-5 shadow-xl shadow-amber-500/25">
+                    <span class="relative z-10 flex items-center">
+                        <i class="fas fa-paper-plane mr-3 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                        Daftar Sekarang
+                    </span>
+                    <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                </a>
+                
+                <a href="<?= base_url('tentang') ?>" class="btn-ghost btn-magnetic text-white border-white/40 hover:bg-white/10 text-lg px-10 py-5">
+                    <i class="fas fa-info-circle mr-3"></i>
+                    Pelajari Program
+                </a>
+            </div>
         </div>
     </div>
 </section>

@@ -3,15 +3,21 @@
 <?= $this->section('content') ?>
 
 <!-- Hero Section -->
-<section id="section-pengumuman-hero" class="relative overflow-hidden hero-gradient hero-pattern">
-    <div class="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-28">
-        <div class="text-center max-w-3xl mx-auto">
-            <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-4"><?= cms('pengumuman_hero_badge', 'Informasi') ?></p>
-            <h1 class="font-display text-4xl sm:text-5xl font-bold text-slate-900 mb-6">
-                <?= cms('pengumuman_hero_title', 'Pengumuman <span class="text-gradient">Terbaru</span>') ?>
+<section id="section-pengumuman-hero" class="relative overflow-hidden pt-32 pb-20 lg:pt-48 lg:pb-32">
+    <!-- Premium Background Elements -->
+    <div class="absolute inset-0 -z-10">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-sky-500/10 rounded-full blur-[120px] animate-float"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px] animate-float" style="animation-delay: -3s"></div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto reveal-blur">
+            <p class="text-sky-500 font-bold text-sm uppercase tracking-[0.2em] mb-4"><?= cms('pengumuman_hero_badge', 'Pusat Informasi') ?></p>
+            <h1 class="font-display text-5xl lg:text-7xl font-bold text-(--text-heading) mb-8 leading-tight">
+                Pengumuman <span class="text-gradient text-shimmer">Terbaru</span>
             </h1>
-            <p class="text-lg text-slate-600 max-w-2xl mx-auto">
-                <?= cms('pengumuman_hero_description', 'Informasi terbaru seputar Program Mahasiswa Wirausaha Politeknik Negeri Sriwijaya. Pantau terus pengumuman penting dan jadwal kegiatan.') ?>
+            <p class="text-xl text-(--text-body) leading-relaxed">
+                <?= cms('pengumuman_hero_description', 'Pantau terus informasi strategis, jadwal kegiatan, dan prestasi gemilang dari ekosistem wirausaha Polsri.') ?>
             </p>
         </div>
     </div>
@@ -22,68 +28,64 @@
     <div class="max-w-5xl mx-auto px-6 lg:px-8">
         
         <!-- Filter Tabs -->
-        <div class="flex flex-wrap gap-3 mb-10">
+        <div class="flex flex-wrap justify-center gap-3 mb-16 reveal-blur">
             <?php 
             $categories = ['Semua', 'Penting', 'Info', 'Jadwal', 'Prestasi', 'Umum'];
             foreach ($categories as $cat):
                 $isActive = $currentCategory === $cat;
             ?>
                 <a href="<?= base_url('pengumuman' . ($cat === 'Semua' ? '' : '?category=' . $cat)) ?>" 
-                   class="px-5 py-2.5 rounded-full text-sm font-medium transition-all <?= $isActive ? 'bg-sky-500 text-white shadow-md shadow-sky-200' : 'bg-white text-slate-600 border border-slate-200 hover:border-sky-300 hover:text-sky-600' ?>">
+                   class="px-8 py-3 rounded-full text-sm font-bold transition-all btn-magnetic <?= $isActive ? 'bg-sky-500 text-white shadow-xl shadow-sky-200' : 'bg-white text-slate-600 border border-slate-100 hover:border-sky-300 hover:text-sky-600' ?>">
                     <?= $cat ?>
                 </a>
             <?php endforeach; ?>
         </div>
         
         <!-- Announcements List -->
-        <div class="space-y-6">
+        <div class="space-y-8">
             <?php if (empty($announcements)): ?>
-                <div class="bg-white rounded-[2rem] border border-slate-200 p-16 text-center shadow-xs">
-                    <div class="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-6 text-slate-300">
-                        <i class="fas fa-bullhorn text-3xl animate-pulse"></i>
+                <div class="bg-white rounded-[3rem] border border-dashed border-slate-200 p-20 text-center reveal-zoom">
+                    <div class="w-24 h-24 rounded-3xl bg-slate-50 flex items-center justify-center mx-auto mb-8 text-slate-300 shadow-sm">
+                        <i class="fas fa-bullhorn text-4xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-slate-800 mb-2">Belum Ada Pengumuman</h3>
-                    <p class="text-slate-500 max-w-sm mx-auto">Saat ini belum ada pengumuman untuk kategori <strong><?= $currentCategory ?></strong>. Silakan cek kembali nanti.</p>
+                    <h3 class="text-2xl font-display font-bold text-slate-800 mb-3">Belum Ada Pengumuman</h3>
+                    <p class="text-slate-500 max-w-sm mx-auto">Saat ini belum ada pengumuman untuk kategori <strong><?= $currentCategory ?></strong>. Silakan cek kategori lainnya.</p>
                 </div>
             <?php else: ?>
-                <?php foreach ($announcements as $ann): ?>
-                    <div class="announcement-card <?= $ann['type'] === 'urgent' ? 'urgent' : ($ann['type'] === 'success' ? 'success' : ($ann['type'] === 'warning' ? 'warning' : '')) ?>">
-                        <div class="flex flex-col md:flex-row md:items-start gap-6">
-                            <div class="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 <?= 
-                                $ann['type'] === 'urgent' ? 'bg-rose-100 text-rose-500' : (
-                                $ann['type'] === 'success' ? 'bg-emerald-100 text-emerald-500' : (
-                                $ann['type'] === 'warning' ? 'bg-amber-100 text-amber-500' : 'bg-sky-100 text-sky-500')) 
+                <?php foreach ($announcements as $index => $ann): ?>
+                    <div class="bg-white rounded-[2.5rem] p-8 lg:p-10 border border-slate-100 hover:border-sky-200 hover:shadow-2xl hover:shadow-sky-500/5 transition-liquid group reveal-on-scroll stagger-<?= ($index % 5) + 1 ?>">
+                        <div class="flex flex-col md:flex-row md:items-center gap-8">
+                            <div class="w-20 h-20 rounded-3xl flex items-center justify-center shrink-0 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-liquid <?= 
+                                $ann['type'] === 'urgent' ? 'bg-linear-to-br from-rose-500 to-rose-600 text-white shadow-rose-200' : (
+                                $ann['type'] === 'success' ? 'bg-linear-to-br from-emerald-500 to-emerald-600 text-white shadow-emerald-200' : (
+                                $ann['type'] === 'warning' ? 'bg-linear-to-br from-amber-500 to-amber-600 text-white shadow-amber-200' : 'bg-linear-to-br from-sky-500 to-sky-600 text-white shadow-sky-200')) 
                             ?>">
                                 <i class="fas <?= 
-                                    $ann['type'] === 'urgent' ? 'fa-exclamation-circle' : (
-                                    $ann['type'] === 'success' ? 'fa-trophy' : (
-                                    $ann['type'] === 'warning' ? 'fa-calendar-check' : 'fa-info-circle')) 
-                                ?> text-2xl"></i>
+                                    $ann['type'] === 'urgent' ? 'fa-bolt' : (
+                                    $ann['type'] === 'success' ? 'fa-award' : (
+                                    $ann['type'] === 'warning' ? 'fa-calendar-alt' : 'fa-info-circle')) 
+                                ?> text-3xl"></i>
                             </div>
                             <div class="flex-1">
-                                <div class="flex flex-wrap items-center gap-3 mb-2">
-                                    <span class="badge <?= 
-                                        $ann['type'] === 'urgent' ? 'bg-rose-100 text-rose-700' : (
-                                        $ann['type'] === 'success' ? 'badge-emerald' : (
-                                        $ann['type'] === 'warning' ? 'badge-yellow' : 'badge-sky')) 
+                                <div class="flex flex-wrap items-center gap-4 mb-4">
+                                    <span class="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider <?= 
+                                        $ann['type'] === 'urgent' ? 'bg-rose-50 text-rose-600 border border-rose-100' : (
+                                        $ann['type'] === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : (
+                                        $ann['type'] === 'warning' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-sky-50 text-sky-600 border border-sky-100')) 
                                     ?>">
-                                        <i class="fas <?= 
-                                            $ann['type'] === 'urgent' ? 'fa-exclamation' : (
-                                            $ann['type'] === 'success' ? 'fa-trophy' : (
-                                            $ann['type'] === 'warning' ? 'fa-calendar' : 'fa-info')) 
-                                        ?> mr-1.5"></i><?= $ann['category'] ?>
+                                        <?= $ann['category'] ?>
                                     </span>
-                                    <span class="text-xs font-medium text-slate-400">
-                                        <i class="far fa-calendar-alt mr-1.5"></i>
-                                        <?= date('d F Y', strtotime($ann['date'])) ?>
+                                    <span class="text-xs font-semibold text-slate-400">
+                                        <i class="far fa-calendar-alt mr-2"></i>
+                                        <?= date('d M Y', strtotime($ann['date'])) ?>
                                     </span>
                                 </div>
-                                <a href="<?= base_url('pengumuman/' . $ann['slug']) ?>" class="group/title">
-                                    <h3 class="font-display text-2xl font-bold text-slate-800 mb-3 leading-tight group-hover/title:text-sky-600 transition-colors"><?= $ann['title'] ?></h3>
+                                <a href="<?= base_url('pengumuman/' . $ann['slug']) ?>" class="block">
+                                    <h3 class="font-display text-2xl lg:text-3xl font-bold text-(--text-heading) mb-4 leading-tight group-hover:text-sky-600 transition-colors"><?= $ann['title'] ?></h3>
                                 </a>
-                                <a href="<?= base_url('pengumuman/' . $ann['slug']) ?>" class="inline-flex items-center gap-2 text-xs font-black text-sky-500 uppercase tracking-widest hover:text-sky-600 transition-colors">
-                                    Baca Selengkapnya
-                                    <i class="fas fa-arrow-right text-[10px]"></i>
+                                <a href="<?= base_url('pengumuman/' . $ann['slug']) ?>" class="inline-flex items-center gap-3 text-xs font-black text-sky-500 uppercase tracking-widest hover:gap-5 transition-all">
+                                    Selengkapnya
+                                    <i class="fas fa-chevron-right"></i>
                                 </a>
                             </div>
                         </div>
@@ -95,76 +97,83 @@
 </section>
 
 <!-- Subscribe Section -->
-<section id="section-pengumuman-subscribe" class="py-20 lg:py-32 bg-linear-to-b from-sky-50/30 to-white">
-    <div class="max-w-4xl mx-auto px-6 lg:px-8 text-center">
-        
-        <div class="w-16 h-16 rounded-2xl bg-sky-100 flex items-center justify-center mx-auto mb-6">
-            <i class="fas fa-bell text-sky-500 text-2xl"></i>
+<section id="section-pengumuman-subscribe" class="py-20 lg:py-32 relative overflow-hidden">
+    <!-- Blobs for depth -->
+    <div class="absolute top-1/2 left-0 -translate-y-1/2 w-64 h-64 bg-sky-400/10 rounded-full blur-[100px]"></div>
+    
+    <div class="max-w-5xl mx-auto px-6 lg:px-8 text-center relative z-10">
+        <div class="reveal-zoom glass-premium p-10 lg:p-20 rounded-[3rem] border-white/20 shadow-2xl backdrop-blur-2xl">
+            <div class="w-20 h-20 rounded-3xl bg-sky-500/10 flex items-center justify-center mx-auto mb-8 shadow-inner">
+                <i class="fas fa-paper-plane text-sky-500 text-3xl animate-float"></i>
+            </div>
+            
+            <h2 class="font-display text-4xl lg:text-5xl font-bold text-(--text-heading) mb-6">
+                <?= cms('pengumuman_subscribe_title', 'Update Informasi Langsung') ?>
+            </h2>
+            <p class="text-xl text-(--text-body) mb-10 max-w-2xl mx-auto leading-relaxed">
+                <?= cms('pengumuman_subscribe_description', 'Dapatkan notifikasi pengumuman terbaru langsung di inbox Anda. Jadilah yang pertama tahu setiap perkembangan program.') ?>
+            </p>
+            
+            <form class="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
+                <input 
+                    type="email" 
+                    placeholder="Masukkan alamat email Anda" 
+                    class="flex-1 px-8 py-4 rounded-2xl bg-white/80 border border-slate-200 focus:border-sky-400 focus:ring-4 focus:ring-sky-100 outline-none transition-liquid text-lg shadow-sm"
+                >
+                <button type="submit" class="btn-primary btn-magnetic px-10 py-4 text-lg shadow-xl shadow-sky-500/20">
+                    <i class="fas fa-bell mr-3"></i>
+                    Berlangganan
+                </button>
+            </form>
+            
+            <p class="text-sm text-slate-400 mt-8 font-medium">
+                <i class="fas fa-shield-alt mr-2"></i>
+                Kami menghargai privasi Anda. Berhenti berlangganan kapan saja.
+            </p>
         </div>
-        
-        <h2 class="font-display text-4xl font-bold text-slate-900 mb-4">
-            <?= cms('pengumuman_subscribe_title', 'Dapatkan Notifikasi Pengumuman') ?>
-        </h2>
-        <p class="text-slate-600 mb-6 max-w-xl mx-auto">
-            <?= cms('pengumuman_subscribe_description', 'Masukkan email Anda untuk mendapatkan notifikasi langsung ketika ada pengumuman baru dari PMW Polsri.') ?>
-        </p>
-        
-        <form class="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
-            <input 
-                type="email" 
-                placeholder="Alamat email Anda" 
-                class="flex-1 px-5 py-3 rounded-xl border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 outline-none transition-all"
-            >
-            <button type="submit" class="btn-primary whitespace-nowrap px-6 py-3">
-                <i class="fas fa-bell mr-2"></i>
-                Berlangganan
-            </button>
-        </form>
-        
-        <p class="text-xs text-slate-400 mt-4">
-            Kami tidak akan mengirim spam. Anda dapat berhenti berlangganan kapan saja.
-        </p>
     </div>
 </section>
 
 <!-- Contact Section -->
-<section id="section-pengumuman-kontak" class="py-20 lg:py-24 bg-linear-to-b from-white to-sky-50 border-t border-sky-100 relative overflow-hidden">
-    <div class="max-w-4xl mx-auto px-6 lg:px-8 text-center relative z-10">
-        <h2 class="font-display text-3xl font-bold text-slate-900 mb-4">
-            <?= cms('pengumuman_contact_title', 'Ada Pertanyaan?') ?>
-        </h2>
-        <p class="text-lg text-slate-600 mb-12">
-            <?= cms('pengumuman_contact_description', 'Hubungi tim PMW Polsri untuk informasi lebih lanjut.') ?>
-        </p>
+<section id="section-pengumuman-kontak" class="py-20 lg:py-32 bg-linear-to-b from-white to-sky-50/50 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 text-center relative z-10">
+        <div class="reveal-on-scroll">
+            <h2 class="font-display text-4xl lg:text-5xl font-bold text-(--text-heading) mb-6">
+                <?= cms('pengumuman_contact_title', 'Ada Pertanyaan Spesifik?') ?>
+            </h2>
+            <p class="text-xl text-(--text-muted) mb-16 max-w-2xl mx-auto">
+                <?= cms('pengumuman_contact_description', 'Tim sekretariat PMW Polsri siap membantu Anda memberikan informasi yang Anda butuhkan.') ?>
+            </p>
+        </div>
         
-        <div class="flex flex-wrap justify-center gap-8">
-            <a href="mailto:pmw@polsri.ac.id" class="group flex items-center gap-4 p-4 rounded-2xl bg-white shadow-sm border border-slate-100 hover:border-sky-300 hover:shadow-md transition-all">
-                <div class="w-12 h-12 rounded-xl bg-sky-100 flex items-center justify-center group-hover:bg-sky-500 transition-colors">
-                    <i class="fas fa-envelope text-xl text-sky-600 group-hover:text-white"></i>
-                </div>
-                <div class="text-left">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Email</p>
-                    <p class="font-bold text-slate-900">pmw@polsri.ac.id</p>
-                </div>
-            </a>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="reveal-on-scroll stagger-1">
+                <a href="mailto:pmw@polsri.ac.id" class="group flex flex-col items-center p-10 rounded-[2.5rem] bg-white shadow-sm border border-slate-100 hover:border-sky-300 hover:shadow-2xl transition-liquid">
+                    <div class="w-20 h-20 rounded-3xl bg-sky-50 flex items-center justify-center mb-6 group-hover:bg-sky-500 transition-liquid shadow-inner">
+                        <i class="fas fa-envelope text-3xl text-sky-600 group-hover:text-white transition-liquid"></i>
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">Hubungi Melalui Email</p>
+                    <p class="text-xl font-bold text-slate-900">pmw@polsri.ac.id</p>
+                </a>
+            </div>
             
-            <a href="tel:0711353414" class="group flex items-center gap-4 p-4 rounded-2xl bg-white shadow-sm border border-slate-100 hover:border-sky-300 hover:shadow-md transition-all">
-                <div class="w-12 h-12 rounded-xl bg-sky-100 flex items-center justify-center group-hover:bg-sky-500 transition-colors">
-                    <i class="fas fa-phone text-xl text-sky-600 group-hover:text-white"></i>
-                </div>
-                <div class="text-left">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Telepon</p>
-                    <p class="font-bold text-slate-900">(0711) 353414</p>
-                </div>
-            </a>
+            <div class="reveal-on-scroll stagger-2">
+                <a href="tel:0711353414" class="group flex flex-col items-center p-10 rounded-[2.5rem] bg-white shadow-sm border border-slate-100 hover:border-sky-300 hover:shadow-2xl transition-liquid">
+                    <div class="w-20 h-20 rounded-3xl bg-emerald-50 flex items-center justify-center mb-6 group-hover:bg-emerald-500 transition-liquid shadow-inner">
+                        <i class="fas fa-phone-alt text-3xl text-emerald-600 group-hover:text-white transition-liquid"></i>
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">Layanan Telepon</p>
+                    <p class="text-xl font-bold text-slate-900">(0711) 353414</p>
+                </a>
+            </div>
             
-            <div class="group flex items-center gap-4 p-4 rounded-2xl bg-white shadow-sm border border-slate-100">
-                <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center">
-                    <i class="fas fa-map-marker-alt text-xl text-amber-600"></i>
-                </div>
-                <div class="text-left">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Lokasi</p>
-                    <p class="font-bold text-slate-900">Gedung Rektorat Lt. 1</p>
+            <div class="reveal-on-scroll stagger-3">
+                <div class="group flex flex-col items-center p-10 rounded-[2.5rem] bg-white shadow-sm border border-slate-100 hover:border-sky-300 hover:shadow-2xl transition-liquid">
+                    <div class="w-20 h-20 rounded-3xl bg-amber-50 flex items-center justify-center mb-6 group-hover:bg-amber-500 transition-liquid shadow-inner">
+                        <i class="fas fa-map-marker-alt text-3xl text-amber-600 group-hover:text-white transition-liquid"></i>
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">Lokasi Sekretariat</p>
+                    <p class="text-xl font-bold text-slate-900">Gedung Rektorat Lt. 1</p>
                 </div>
             </div>
         </div>

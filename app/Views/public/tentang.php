@@ -4,13 +4,13 @@
 
 <!-- Hero Section -->
 <section id="section-tentang-hero" class="relative overflow-hidden hero-gradient hero-pattern">
-    <div class="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-28">
-        <div class="text-center max-w-3xl mx-auto">
-            <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-4"><?= cms('tentang_hero_badge', 'Tentang Program') ?></p>
-            <h1 class="font-display text-4xl sm:text-5xl font-bold text-(--text-heading)] mb-6">
-                <?= cms('tentang_hero_title', 'Program Mahasiswa <span class="text-gradient">Wirausaha</span>') ?>
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-32">
+        <div class="text-center max-w-3xl mx-auto reveal-zoom">
+            <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-4 stagger-1"><?= cms('tentang_hero_badge', 'Tentang Program') ?></p>
+            <h1 class="font-display text-4xl sm:text-6xl font-bold text-(--text-heading) mb-6 stagger-2 text-shimmer">
+                <?= cms('tentang_hero_title', 'Program Mahasiswa Wirausaha') ?>
             </h1>
-            <p class="text-lg text-(--text-body)] leading-relaxed">
+            <p class="text-lg text-(--text-body) leading-relaxed stagger-3">
                 <?= cms('tentang_hero_description', 'Program pembinaan kewirausahaan bagi mahasiswa Politeknik Negeri Sriwijaya untuk mengembangkan usaha berbasis inovasi dan kreativitas.') ?>
             </p>
         </div>
@@ -18,37 +18,37 @@
 </section>
 
 <!-- Vision & Mission -->
-<section id="section-tentang-vision" class="py-20 lg:py-32">
+<section id="section-tentang-vision" class="py-20 lg:py-32 overflow-hidden">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
-        <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <div class="grid lg:grid-cols-2 gap-12 lg:gap-24 items-center">
             
             <!-- Content -->
-            <div>
-                <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3">Visi & Misi</p>
-                <h2 class="font-display text-3xl lg:text-4xl font-bold text-(--text-heading)] mb-6">
-                    <?= cms('tentang_vision_title', 'Mengembangkan <span class="text-gradient">Entrepreneur Muda</span>') ?>
+            <div class="reveal-left">
+                <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3">Filosofi & Tujuan</p>
+                <h2 class="font-display text-3xl lg:text-5xl font-bold text-(--text-heading) mb-8">
+                    <?= cms('tentang_vision_title', 'Mencetak <span class="text-gradient">Wirausaha Muda</span>') ?>
                 </h2>
                 
-                <div class="space-y-6">
-                    <div class="flex gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-sky-100 flex items-center justify-center shrink-0">
-                            <i class="fas fa-eye text-sky-500 text-xl"></i>
+                <div class="space-y-8">
+                    <div class="flex gap-6 group">
+                        <div class="w-14 h-14 rounded-2xl bg-sky-100 flex items-center justify-center shrink-0 group-hover:scale-110 transition-liquid">
+                            <i class="fas fa-eye text-sky-500 text-2xl"></i>
                         </div>
                         <div>
-                            <h3 class="font-display text-xl font-bold text-(--text-heading)] mb-2">Visi</h3>
-                            <p class="text-(--text-body)] leading-relaxed">
+                            <h3 class="font-display text-2xl font-bold text-(--text-heading) mb-2">Visi</h3>
+                            <p class="text-(--text-body) leading-relaxed">
                                 <?= cms('tentang_vision_content', 'Menjadikan Politeknik Negeri Sriwijaya sebagai pusat unggulan pengembangan kewirausahaan yang menghasilkan entrepreneur muda berdaya saing tinggi, inovatif, dan berkontribusi pada pertumbuhan ekonomi lokal maupun nasional.') ?>
                             </p>
                         </div>
                     </div>
                     
-                    <div class="flex gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-yellow-100 flex items-center justify-center shrink-0">
-                            <i class="fas fa-bullseye text-yellow-600 text-xl"></i>
+                    <div class="flex gap-6 group">
+                        <div class="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center shrink-0 group-hover:scale-110 transition-liquid">
+                            <i class="fas fa-bullseye text-amber-600 text-2xl"></i>
                         </div>
                         <div>
-                            <h3 class="font-display text-xl font-bold text-(--text-heading)] mb-2">Misi</h3>
-                            <ul class="space-y-3 text-(--text-body)]">
+                            <h3 class="font-display text-2xl font-bold text-(--text-heading) mb-2">Misi</h3>
+                            <ul class="space-y-4">
                                 <?php 
                                 $missions = cms('tentang_mission_list', []);
                                 if (empty($missions)) {
@@ -59,10 +59,12 @@
                                         'Membangun ekosistem kewirausahaan yang kolaboratif dan berkelanjutan'
                                     ];
                                 }
-                                foreach ($missions as $mission): ?>
-                                    <li class="flex items-start gap-3">
-                                        <i class="fas fa-check-circle text-emerald-500 mt-1 shrink-0"></i>
-                                        <span><?= $mission ?></span>
+                                foreach ($missions as $idx => $mission): ?>
+                                    <li class="flex items-start gap-3 reveal-on-scroll stagger-<?= ($idx % 5) + 1 ?>">
+                                        <div class="mt-1 w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                                            <i class="fas fa-check text-emerald-500 text-[10px]"></i>
+                                        </div>
+                                        <span class="text-(--text-body)"><?= $mission ?></span>
                                     </li>
                                 <?php endforeach; ?>
                             </ul>
@@ -72,20 +74,20 @@
             </div>
             
             <!-- Image -->
-            <div class="relative">
-                <div class="rounded-2xl overflow-hidden shadow-xl">
+            <div class="relative reveal-right">
+                <div class="rounded-[2.5rem] overflow-hidden shadow-2xl rotate-2 hover:rotate-0 transition-liquid group">
                     <img 
                         src="<?= cms_img(cms('tentang_vision_image', 'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&q=80')) ?>" 
                         alt="Entrepreneur workspace" 
-                        class="w-full h-auto object-cover aspect-4/3"
+                        class="w-full h-auto object-cover aspect-4/3 group-hover:scale-105 transition-liquid duration-1000"
                     >
                 </div>
                 
-                <!-- Stats Card -->
-                <div class="absolute -bottom-6 -left-6 bg-white rounded-xl p-6 shadow-lg border border-sky-100">
+                <!-- Floating Stats Card -->
+                <div class="absolute -bottom-10 -left-10 glass-premium rounded-3xl p-8 shadow-2xl border-white/40 reveal-zoom stagger-4">
                     <div class="text-center">
-                        <div class="stat-number mb-1">2019</div>
-                        <div class="text-sm text-slate-600">Program Berdiri</div>
+                        <div class="text-4xl font-black text-sky-600 mb-1">2019</div>
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-widest">Program Berdiri</div>
                     </div>
                 </div>
             </div>
@@ -94,13 +96,13 @@
 </section>
 
 <!-- Program Objectives -->
-<section id="section-tentang-objectives" class="py-20 lg:py-32 bg-linear-to-b from-white to-sky-50/30">
+<section id="section-tentang-objectives" class="py-20 lg:py-32 bg-linear-to-b from-white to-sky-50/50">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
         
-        <div class="text-center max-w-2xl mx-auto mb-16">
+        <div class="text-center max-w-2xl mx-auto mb-20 reveal-on-scroll">
             <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3">Target & Capaian</p>
-            <h2 class="font-display text-3xl lg:text-4xl font-bold text-(--text-heading)] mb-6">
-                <?= cms('tentang_objectives_title', 'Apa yang Kami Capai') ?>
+            <h2 class="font-display text-3xl lg:text-5xl font-bold text-(--text-heading) mb-6">
+                <?= cms('tentang_objectives_title', 'Apa yang Kami Kejar') ?>
             </h2>
         </div>
 
@@ -117,16 +119,16 @@
                     ['icon' => 'fa-globe-asia', 'color' => 'emerald', 'title' => 'Dampak Sosial', 'desc' => 'Mengembangkan usaha yang berdampak positif bagi masyarakat.'],
                 ];
             }
-            foreach ($objectives as $obj): 
-                $bgColor = $obj['color'] === 'sky' ? 'bg-sky-50' : ($obj['color'] === 'yellow' ? 'bg-yellow-50' : 'bg-emerald-50');
-                $iconColor = $obj['color'] === 'sky' ? 'text-sky-500' : ($obj['color'] === 'yellow' ? 'text-yellow-600' : 'text-emerald-500');
+            foreach ($objectives as $idx => $obj): 
+                $bgColor = $obj['color'] === 'sky' ? 'bg-sky-50' : ($obj['color'] === 'yellow' ? 'bg-amber-50' : 'bg-emerald-50');
+                $iconColor = $obj['color'] === 'sky' ? 'text-sky-500' : ($obj['color'] === 'yellow' ? 'text-amber-600' : 'text-emerald-500');
             ?>
-                <div class="bg-white p-8 rounded-2xl border border-slate-100 hover:border-sky-200 hover:shadow-xl hover:shadow-sky-500/5 transition-all group">
-                    <div class="w-14 h-14 rounded-xl <?= $bgColor ?> flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <i class="fas <?= $obj['icon'] ?> <?= $iconColor ?> text-2xl"></i>
+                <div class="bg-white p-10 rounded-[2.5rem] border border-slate-100 reveal-zoom card-magnetic stagger-<?= ($idx % 3) + 1 ?> group hover:border-sky-300/50 transition-liquid">
+                    <div class="w-16 h-16 rounded-2xl <?= $bgColor ?> flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-6 transition-liquid">
+                        <i class="fas <?= $obj['icon'] ?> <?= $iconColor ?> text-3xl"></i>
                     </div>
-                    <h3 class="font-display text-xl font-bold text-(--text-heading)] mb-3"><?= $obj['title'] ?></h3>
-                    <p class="text-(--text-body)] leading-relaxed">
+                    <h3 class="font-display text-2xl font-bold text-(--text-heading) mb-4 group-hover:text-sky-600 transition-colors"><?= $obj['title'] ?></h3>
+                    <p class="text-(--text-body) leading-relaxed">
                         <?= $obj['desc'] ?>
                     </p>
                 </div>
@@ -136,84 +138,100 @@
 </section>
 
 <!-- Program Categories -->
-<section class="py-20 lg:py-32">
+<section class="py-20 lg:py-32 overflow-hidden">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
         
-        <div class="text-center max-w-2xl mx-auto mb-16">
+        <div class="text-center max-w-2xl mx-auto mb-20 reveal-on-scroll">
             <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3">Kategori</p>
-            <h2 class="font-display text-3xl lg:text-4xl font-bold text-(--text-heading)] mb-4">
-                Pilih Kategori <span class="text-gradient">Sesuai Usaha</span>
+            <h2 class="font-display text-3xl lg:text-5xl font-bold text-(--text-heading) mb-6">
+                Pilih Jalur <span class="text-gradient">Usaha Anda</span>
             </h2>
-            <p class="text-(--text-muted)]">
-                PMW menawarkan dua kategori pendanaan yang disesuaikan dengan tahap pengembangan usaha Anda.
+            <p class="text-(--text-muted)">
+                PMW menawarkan dua kategori pendanaan yang disesuaikan dengan tahap pengembangan usaha Anda saat ini.
             </p>
         </div>
         
-        <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div class="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto">
             
             <!-- Usaha Pemula -->
-            <div class="bg-linear-to-br from-orange-50 to-amber-50 rounded-2xl p-8 border border-orange-100 relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-orange-200/30 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div class="bg-linear-to-br from-orange-50 to-amber-50 rounded-[3rem] p-10 lg:p-12 border border-orange-100 relative overflow-hidden reveal-left group hover:shadow-2xl hover:shadow-orange-200/50 transition-liquid">
+                <div class="absolute top-0 right-0 w-48 h-48 bg-orange-200/30 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:scale-125 transition-transform duration-1000"></div>
                 
-                <div class="relative">
-                    <div class="w-14 h-14 rounded-xl bg-linear-to-br from-orange-400 to-amber-500 flex items-center justify-center mb-6">
-                        <i class="fas fa-seedling text-white text-2xl"></i>
+                <div class="relative z-10">
+                    <div class="w-16 h-16 rounded-2xl bg-linear-to-br from-orange-400 to-amber-500 flex items-center justify-center mb-8 shadow-lg shadow-orange-200">
+                        <i class="fas fa-seedling text-white text-3xl animate-float"></i>
                     </div>
                     
-                    <h3 class="font-display text-2xl font-bold text-(--text-heading)] mb-2">Usaha Pemula</h3>
-                    <p class="text-orange-600 font-medium text-sm mb-4">Pendanaan hingga Rp 5.000.000</p>
+                    <h3 class="font-display text-3xl font-bold text-(--text-heading) mb-2">Usaha Pemula</h3>
+                    <p class="text-orange-600 font-bold text-lg mb-6">Pendanaan hingga Rp 5.000.000</p>
                     
-                    <p class="text-(--text-body)] mb-6 leading-relaxed">
+                    <p class="text-(--text-body) mb-8 leading-relaxed text-lg">
                         Untuk peserta yang baru memiliki ide atau belum memiliki usaha. Fokus pada validasi ide dan pengembangan prototype.
                     </p>
                     
-                    <ul class="space-y-3 text-sm text-(--text-body)]">
-                        <li class="flex items-center gap-2">
-                            <i class="fas fa-check text-orange-500"></i>
-                            <span>Ide bisnis yang inovatif</span>
+                    <ul class="space-y-4 mb-10">
+                        <li class="flex items-center gap-3">
+                            <div class="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+                                <i class="fas fa-check text-orange-600 text-[10px]"></i>
+                            </div>
+                            <span class="font-medium text-slate-700">Ide bisnis yang inovatif</span>
                         </li>
-                        <li class="flex items-center gap-2">
-                            <i class="fas fa-check text-orange-500"></i>
-                            <span>Belum beroperasi secara komersial</span>
+                        <li class="flex items-center gap-3">
+                            <div class="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+                                <i class="fas fa-check text-orange-600 text-[10px]"></i>
+                            </div>
+                            <span class="font-medium text-slate-700">Belum beroperasi secara komersial</span>
                         </li>
-                        <li class="flex items-center gap-2">
-                            <i class="fas fa-check text-orange-500"></i>
-                            <span>Tim minimal 2 orang</span>
+                        <li class="flex items-center gap-3">
+                            <div class="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+                                <i class="fas fa-check text-orange-600 text-[10px]"></i>
+                            </div>
+                            <span class="font-medium text-slate-700">Tim minimal 2-3 orang</span>
                         </li>
                     </ul>
+                    
+                    <a href="<?= base_url('register') ?>" class="btn-primary bg-orange-500 hover:bg-orange-600 border-none shadow-orange-200">Daftar Jalur Pemula</a>
                 </div>
             </div>
             
             <!-- Usaha Berkembang -->
-            <div class="bg-linear-to-br from-emerald-50 to-teal-50 rounded-2xl p-8 border border-emerald-100 relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-200/30 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div class="bg-linear-to-br from-emerald-50 to-teal-50 rounded-[3rem] p-10 lg:p-12 border border-emerald-100 relative overflow-hidden reveal-right group hover:shadow-2xl hover:shadow-emerald-200/50 transition-liquid">
+                <div class="absolute top-0 right-0 w-48 h-48 bg-emerald-200/30 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:scale-125 transition-transform duration-1000"></div>
                 
-                <div class="relative">
-                    <div class="w-14 h-14 rounded-xl bg-linear-to-br from-emerald-500 to-teal-500 flex items-center justify-center mb-6">
-                        <i class="fas fa-chart-line text-white text-2xl"></i>
+                <div class="relative z-10">
+                    <div class="w-16 h-16 rounded-2xl bg-linear-to-br from-emerald-500 to-teal-500 flex items-center justify-center mb-8 shadow-lg shadow-emerald-200">
+                        <i class="fas fa-chart-line text-white text-3xl animate-float" style="animation-delay: -2s"></i>
                     </div>
                     
-                    <h3 class="font-display text-2xl font-bold text-(--text-heading)] mb-2">Usaha Berkembang</h3>
-                    <p class="text-emerald-600 font-medium text-sm mb-4">Pendanaan hingga Rp 15.000.000</p>
+                    <h3 class="font-display text-3xl font-bold text-(--text-heading) mb-2">Usaha Berkembang</h3>
+                    <p class="text-emerald-600 font-bold text-lg mb-6">Pendanaan hingga Rp 15.000.000</p>
                     
-                    <p class="text-(--text-body)] mb-6 leading-relaxed">
+                    <p class="text-(--text-body) mb-8 leading-relaxed text-lg">
                         Untuk peserta yang telah memiliki usaha dan ingin mengembangkan skala. Fokus pada ekspansi dan optimalisasi bisnis.
                     </p>
                     
-                    <ul class="space-y-3 text-sm text-(--text-body)]">
-                        <li class="flex items-center gap-2">
-                            <i class="fas fa-check text-emerald-500"></i>
-                            <span>Usaha berjalan minimal 6 bulan</span>
+                    <ul class="space-y-4 mb-10">
+                        <li class="flex items-center gap-3">
+                            <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                                <i class="fas fa-check text-emerald-600 text-[10px]"></i>
+                            </div>
+                            <span class="font-medium text-slate-700">Usaha berjalan minimal 6 bulan</span>
                         </li>
-                        <li class="flex items-center gap-2">
-                            <i class="fas fa-check text-emerald-500"></i>
-                            <span>Memiliki revenue track record</span>
+                        <li class="flex items-center gap-3">
+                            <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                                <i class="fas fa-check text-emerald-600 text-[10px]"></i>
+                            </div>
+                            <span class="font-medium text-slate-700">Memiliki revenue track record</span>
                         </li>
-                        <li class="flex items-center gap-2">
-                            <i class="fas fa-check text-emerald-500"></i>
-                            <span>Tim terstruktur dengan jelas</span>
+                        <li class="flex items-center gap-3">
+                            <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                                <i class="fas fa-check text-emerald-600 text-[10px]"></i>
+                            </div>
+                            <span class="font-medium text-slate-700">Tim terstruktur dengan jelas</span>
                         </li>
                     </ul>
+                    
+                    <a href="<?= base_url('register') ?>" class="btn-primary bg-emerald-600 hover:bg-emerald-700 border-none shadow-emerald-200">Daftar Jalur Berkembang</a>
                 </div>
             </div>
         </div>
@@ -221,57 +239,54 @@
 </section>
 
 <!-- Benefits -->
-<section class="py-20 lg:py-32 bg-gradient text-white relative overflow-hidden">
-    <div class="absolute inset-0 opacity-20">
-        <div class="absolute top-0 right-0 w-96 h-96 bg-sky-500 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-0 left-0 w-96 h-96 bg-yellow-500 rounded-full blur-3xl"></div>
+<section class="py-20 lg:py-32 bg-white relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-sky-500/20 rounded-full blur-[120px] animate-float"></div>
+        <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] animate-float" style="animation-delay: -3s"></div>
     </div>
     
     <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
         
-        <div class="text-center max-w-2xl mx-auto mb-16">
-            <p class="text-sky-400 font-semibold text-sm uppercase tracking-wider mb-3">Benefit Program</p>
-            <h2 class="font-display text-sky-200 text-3xl lg:text-4xl font-bold mb-4">
-                Apa yang Anda <span class="text-gradient-accent">Dapatkan</span>
+        <div class="text-center max-w-2xl mx-auto mb-20 reveal-on-scroll">
+            <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3">Keunggulan</p>
+            <h2 class="font-display text-4xl lg:text-5xl font-bold text-(--text-heading) mb-6">
+                Apa yang Anda <span class="text-gradient">Dapatkan</span>
             </h2>
-            <p class="text-slate-800">
-                Bergabung dengan PMW membuka akses ke berbagai fasilitas dan dukungan pengembangan usaha.
+            <p class="text-(--text-body) text-lg">
+                Bergabung dengan PMW membuka akses ke berbagai fasilitas dan ekosistem pengembangan usaha yang matang.
             </p>
         </div>
         
-        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            
-            <div class="bg-emerald-400/70 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-emerald-500/20 transition-all">
-                <div class="w-12 h-12 rounded-xl bg-emerald-500/50 flex items-center justify-center mb-4">
-                    <i class="fas fa-coins text-emerald-900 text-xl"></i>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <?php 
+            $benefits = [
+                ['icon' => 'fa-coins', 'color' => 'emerald', 'title' => 'Dana Hibah', 'desc' => 'Akses pendanaan modal usaha tanpa bunga untuk pengembangan prototype.'],
+                ['icon' => 'fa-user-tie', 'color' => 'amber', 'title' => 'Mentoring', 'desc' => 'Dampingan langsung dari mentor bisnis profesional dan praktisi industri.'],
+                ['icon' => 'fa-chalkboard-teacher', 'color' => 'fuchsia', 'title' => 'Bootcamp', 'desc' => 'Pelatihan intensif manajemen bisnis, marketing, dan keuangan.'],
+                ['icon' => 'fa-handshake', 'color' => 'sky', 'title' => 'Networking', 'desc' => 'Koneksi dengan alumni sukses, investor, dan mitra bisnis potensial.'],
+            ];
+            foreach ($benefits as $idx => $ben): 
+                $iconColor = match($ben['color']) {
+                    'emerald' => 'text-emerald-500',
+                    'amber' => 'text-amber-500',
+                    'fuchsia' => 'text-fuchsia-500',
+                    default => 'text-sky-500',
+                };
+                $bgColor = match($ben['color']) {
+                    'emerald' => 'bg-emerald-50',
+                    'amber' => 'bg-amber-50',
+                    'fuchsia' => 'bg-fuchsia-50',
+                    default => 'bg-sky-50',
+                };
+            ?>
+            <div class="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 hover:bg-white hover:border-sky-300/50 hover:shadow-2xl hover:shadow-sky-500/5 transition-liquid reveal-zoom stagger-<?= $idx + 1 ?> group">
+                <div class="w-14 h-14 rounded-2xl <?= $bgColor ?> flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-liquid">
+                    <i class="fas <?= $ben['icon'] ?> <?= $iconColor ?> text-2xl"></i>
                 </div>
-                <h3 class="font-semibold text-teal-200 text-lg mb-2">Dana Ilham</h3>
-                <p class="text-sm text-slate-700">Akses pendanaan tahap 1 dan tahap 2 untuk pengembangan usaha Anda.</p>
+                <h3 class="font-bold text-xl mb-3 text-(--text-heading)"><?= $ben['title'] ?></h3>
+                <p class="text-sm text-(--text-body) leading-relaxed"><?= $ben['desc'] ?></p>
             </div>
-            
-            <div class="bg-lime-400/70 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-lime-500/20 transition-all">
-                <div class="w-12 h-12 rounded-xl bg-lime-500/50 flex items-center justify-center mb-4">
-                    <i class="fas fa-user-tie text-lime-900 text-xl"></i>
-                </div>
-                <h3 class="font-semibold text-lg mb-2">Mentoring Intensif</h3>
-                <p class="text-sm text-slate-700">Dampingan dari mentor bisnis profesional dan dosen berpengalaman.</p>
-            </div>
-            
-            <div class="bg-fuchsia-400/70 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-fuchsia-500/20 transition-all">
-                <div class="w-12 h-12 rounded-xl bg-fuchsia-500/50 flex items-center justify-center mb-4">
-                    <i class="fas fa-chalkboard-teacher text-fuchsia-900 text-xl"></i>
-                </div>
-                <h3 class="font-semibold text-lg mb-2">Pelatihan Berkelas</h3>
-                <p class="text-sm text-slate-700">Workshop kewirausahaan, administrasi, dan keuangan bisnis.</p>
-            </div>
-            
-            <div class="bg-cyan-400/70 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-cyan-500/20 transition-all">
-                <div class="w-12 h-12 rounded-xl bg-cyan-500/50 flex items-center justify-center mb-4">
-                    <i class="fas fa-handshake text-cyan-900 text-xl"></i>
-                </div>
-                <h3 class="font-semibold text-lg mb-2">Networking Luas</h3>
-                <p class="text-sm text-slate-700">Koneksi dengan alumni PMW, investor, dan komunitas entrepreneur.</p>
-            </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>
@@ -280,103 +295,70 @@
 <section class="py-20 lg:py-32">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
         
-        <div class="text-center max-w-2xl mx-auto mb-16">
-            <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3">Struktur Tim</p>
-            <h2 class="font-display text-3xl lg:text-4xl font-bold text-(--text-heading)] mb-4">
+        <div class="text-center max-w-2xl mx-auto mb-20 reveal-on-scroll">
+            <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3">Ekosistem</p>
+            <h2 class="font-display text-3xl lg:text-5xl font-bold text-(--text-heading) mb-6">
                 Siapa Saja di <span class="text-gradient">PMW</span>
             </h2>
-            <p class="text-(--text-muted)]">
-                Program ini melibatkan berbagai pihak yang berkolaborasi untuk kesuksesan peserta.
+            <p class="text-(--text-muted)">
+                Program ini melibatkan berbagai pihak yang berkolaborasi secara aktif untuk kesuksesan setiap peserta.
             </p>
         </div>
         
-        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            
-            <div class="feature-card">
-                <div class="feature-icon sky">
-                    <i class="fas fa-user-graduate"></i>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <?php 
+            $teams = [
+                ['icon' => 'fa-user-graduate', 'color' => 'sky', 'title' => 'Mahasiswa', 'desc' => 'Peserta utama program yang mengembangkan ide menjadi usaha nyata.', 'tasks' => ['Submit proposal', 'Implementasi usaha', 'Laporan progress']],
+                ['icon' => 'fa-user-tie', 'color' => 'amber', 'title' => 'Dosen', 'desc' => 'Pembimbing akademik dari internal Politeknik Negeri Sriwijaya.', 'tasks' => ['Verifikasi bimbingan', 'Monitoring akademik', 'Site visit']],
+                ['icon' => 'fa-briefcase', 'color' => 'emerald', 'title' => 'Mentor', 'desc' => 'Praktisi industri eksternal dengan pengalaman bisnis nyata.', 'tasks' => ['Sharing best practices', 'Koneksi industri', 'Evaluasi bisnis']],
+                ['icon' => 'fa-gavel', 'color' => 'sky', 'title' => 'Reviewer', 'desc' => 'Assessor yang menilai kelayakan proposal dan progress usaha.', 'tasks' => ['Penilaian proposal', 'Pitching desk', 'Monev berkala']],
+            ];
+            foreach ($teams as $idx => $t): ?>
+            <div class="bg-white group p-8 rounded-[2.5rem] border border-slate-100 hover:border-sky-300/50 hover:shadow-2xl hover:shadow-sky-500/10 transition-liquid reveal-on-scroll stagger-<?= $idx + 1 ?>">
+                <div class="w-16 h-16 rounded-2xl bg-<?= $t['color'] ?>-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-liquid">
+                    <i class="fas <?= $t['icon'] ?> text-<?= $t['color'] ?>-500 text-2xl"></i>
                 </div>
-                <h3 class="font-display text-lg font-bold text-(--text-heading)] mb-2">Mahasiswa</h3>
-                <p class="text-sm text-(--text-muted)] mb-4">
-                    Peserta utama program yang mengembangkan ide menjadi usaha nyata.
+                <h3 class="font-display text-xl font-bold text-(--text-heading) mb-3"><?= $t['title'] ?></h3>
+                <p class="text-sm text-(--text-muted) mb-6 leading-relaxed">
+                    <?= $t['desc'] ?>
                 </p>
-                <ul class="text-xs text-slate-500 space-y-1">
-                    <li>• Submit proposal</li>
-                    <li>• Implementasi usaha</li>
-                    <li>• Laporan progress</li>
-                </ul>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon yellow">
-                    <i class="fas fa-user-tie"></i>
+                <div class="space-y-2">
+                    <?php foreach ($t['tasks'] as $task): ?>
+                    <div class="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <div class="w-1 h-1 rounded-full bg-<?= $t['color'] ?>-400"></div>
+                        <span><?= $task ?></span>
+                    </div>
+                    <?php endforeach; ?>
                 </div>
-                <h3 class="font-display text-lg font-bold text-(--text-heading)] mb-2">Dosen</h3>
-                <p class="text-sm text-(--text-muted)] mb-4">
-                    Dosen pembimbing akademik dari Politeknik Negeri Sriwijaya.
-                </p>
-                <ul class="text-xs text-slate-500 space-y-1">
-                    <li>• Verifikasi bimbingan</li>
-                    <li>• Monitoring akademik</li>
-                    <li>• Site visit</li>
-                </ul>
             </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon emerald">
-                    <i class="fas fa-briefcase"></i>
-                </div>
-                <h3 class="font-display text-lg font-bold text-(--text-heading)] mb-2">Mentor</h3>
-                <p class="text-sm text-(--text-muted)] mb-4">
-                    Praktisi industri eksternal dengan pengalaman bisnis nyata.
-                </p>
-                <ul class="text-xs text-slate-500 space-y-1">
-                    <li>• Sharing praktik terbaik</li>
-                    <li>• Koneksi industri</li>
-                    <li>• Evaluasi bisnis</li>
-                </ul>
-            </div>
-            
-            <div class="feature-card">
-                <div class="feature-icon sky">
-                    <i class="fas fa-gavel"></i>
-                </div>
-                <h3 class="font-display text-lg font-bold text-(--text-heading)] mb-2">Reviewer</h3>
-                <p class="text-sm text-(--text-muted)] mb-4">
-                    Assessor yang menilai kelayakan proposal dan progress usaha.
-                </p>
-                <ul class="text-xs text-slate-500 space-y-1">
-                    <li>• Penilaian proposal</li>
-                    <li>• Pitching desk</li>
-                    <li>• Monitoring evaluasi</li>
-                </ul>
-            </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>
 
-<!-- CTA Section -->
-<section id="section-tentang-cta" class="py-20 lg:py-24 cta-gradient cta-pattern relative overflow-hidden">
-    <div class="absolute inset-0 opacity-20">
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white rounded-full blur-3xl"></div>
-    </div>
+<!-- Final CTA Section -->
+<section id="section-tentang-cta" class="py-20 lg:py-32 relative overflow-hidden">
+    <div class="absolute inset-0 cta-gradient opacity-95"></div>
+    <div class="absolute inset-0 cta-pattern opacity-30"></div>
     
-    <div class="max-w-4xl mx-auto px-6 lg:px-8 text-center relative z-10">
-        <h2 class="font-display text-3xl lg:text-4xl font-bold text-white mb-6">
-            <?= cms('tentang_cta_title', 'Siap Bergabung dengan PMW?') ?>
-        </h2>
-        <p class="text-lg text-black mb-8 max-w-2xl mx-auto">
-            <?= cms('tentang_cta_description', 'Pelajari tahapan program selengkapnya dan persiapkan proposal terbaik Anda.') ?>
-        </p>
-        <div class="flex flex-wrap justify-center gap-4">
-            <a href="<?= base_url('tahapan') ?>" class="btn-accent text-base px-8 py-4">
-                <i class="fas fa-route mr-2"></i>
-                Lihat Tahapan Program
-            </a>
-            <a href="<?= base_url('register') ?>" class="btn-ghost text-white border-white/30 hover:bg-white/10 text-base px-8 py-4">
-                <i class="fas fa-paper-plane mr-2"></i>
-                Daftar Sekarang
-            </a>
+    <div class="max-w-5xl mx-auto px-6 lg:px-8 relative z-10">
+        <div class="reveal-zoom glass-premium p-10 lg:p-20 rounded-[40px] border-white/20 shadow-2xl text-center backdrop-blur-2xl">
+            <h2 class="font-display text-4xl lg:text-6xl font-bold text-white mb-8 leading-tight">
+                <?= cms('tentang_cta_title', 'Mulai Perjalanan Wirausaha Anda Hari Ini') ?>
+            </h2>
+            <p class="text-xl text-white/80 mb-12 max-w-2xl mx-auto leading-relaxed">
+                <?= cms('tentang_cta_description', 'Jangan biarkan ide cemerlang Anda menguap begitu saja. Bergabunglah dengan ribuan mahasiswa lainnya di PMW Polsri.') ?>
+            </p>
+            <div class="flex flex-wrap justify-center gap-6">
+                <a href="<?= base_url('register') ?>" class="btn-accent btn-magnetic group px-10 py-5 text-lg shadow-xl shadow-amber-500/30">
+                    <i class="fas fa-paper-plane mr-3 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                    Daftar Sekarang
+                </a>
+                <a href="<?= base_url('tahapan') ?>" class="btn-ghost btn-magnetic border-white/40 text-white hover:bg-white/10 px-10 py-5 text-lg">
+                    <i class="fas fa-route mr-3"></i>
+                    Lihat Tahapan
+                </a>
+            </div>
         </div>
     </div>
 </section>
