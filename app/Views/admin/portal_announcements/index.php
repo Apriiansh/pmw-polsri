@@ -29,6 +29,13 @@
         </div>
     <?php endif; ?>
 
+    <?php if (session()->getFlashdata('error')): ?>
+        <div class="bg-rose-50 border border-rose-100 text-rose-600 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-3">
+            <i class="fas fa-exclamation-circle"></i>
+            <?= session()->getFlashdata('error') ?>
+        </div>
+    <?php endif; ?>
+
     <!-- Announcements List -->
     <div class="grid grid-cols-1 gap-4">
         <?php if (empty($announcements)): ?>
@@ -77,6 +84,11 @@
 
                     <!-- Actions -->
                     <div class="flex items-center gap-2 shrink-0">
+                        <a href="<?= base_url('admin/portal-announcements/send-push/' . $ann['id']) ?>" 
+                                class="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-all"
+                                title="Kirim Notifikasi Push">
+                            <i class="fas fa-paper-plane"></i>
+                        </a>
                         <button type="button" 
                                 onclick="confirmDelete('<?= base_url('admin/portal-announcements/delete/' . $ann['id']) ?>')"
                                 class="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-all">

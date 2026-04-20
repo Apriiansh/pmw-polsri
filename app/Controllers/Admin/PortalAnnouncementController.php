@@ -5,17 +5,22 @@ namespace App\Controllers\Admin;
 use App\Controllers\BaseController;
 use App\Models\PortalAnnouncementModel;
 use App\Models\AnnouncementAttachmentModel;
+use App\Models\PushSubscriptionModel;
 use CodeIgniter\HTTP\ResponseInterface;
+use Minishlink\WebPush\WebPush;
+use Minishlink\WebPush\Subscription;
 
 class PortalAnnouncementController extends BaseController
 {
     protected $announcementModel;
     protected $attachmentModel;
+    protected $pushModel;
 
     public function __construct()
     {
         $this->announcementModel = new PortalAnnouncementModel();
         $this->attachmentModel = new AnnouncementAttachmentModel();
+        $this->pushModel = new PushSubscriptionModel();
     }
 
     public function index(): string
@@ -60,6 +65,11 @@ class PortalAnnouncementController extends BaseController
         log_message('debug', 'New Announcement Content: ' . $data['content']);
 
         $announcementId = $this->announcementModel->insert($data);
+
+        // Send Push Notification if requested
+        if ($this->request->getPost('send_push')) {
+            $this->sendPushNotification($data);
+        }
 
         // Handle Attachments
         $files = $this->request->getFileMultiple('attachments');
@@ -114,5 +124,70 @@ class PortalAnnouncementController extends BaseController
 
         $this->announcementModel->delete($id);
         return redirect()->to(base_url('admin/portal-announcements'))->with('success', 'Pengumuman berhasil dihapus.');
+    }
+
+    public function sendPushManual($id)
+    {
+        $announcement = $this->announcementModel->find($id);
+        if (!$announcement) {
+            return redirect()->back()->with('error', 'Pengumuman tidak ditemukan.');
+        }
+
+        $this->sendPushNotification($announcement);
+        return redirect()->back()->with('success', 'Notifikasi berhasil dikirim ulang ke semua subscriber.');
+    }
+
+    private function sendPushNotification($data)
+    {
+        $subscriptions = $this->pushModel->findAll();
+        if (empty($subscriptions)) return;
+
+        $auth = [
+            'VAPID' => [
+                'subject'    => 'mailto:pmw@polsri.ac.id',
+                'publicKey'  => env('webpush.publicKey'),
+                'privateKey' => env('webpush.privateKey'),
+            ],
+        ];
+
+        // Temporarily suppress notices for WebPush (BCMath/GMP warning)
+        $oldErrorReporting = error_reporting();
+        error_reporting($oldErrorReporting & ~E_USER_NOTICE);
+        
+        $webPush = new WebPush($auth);
+        
+        error_reporting($oldErrorReporting); // Restore error reporting
+        
+        $payload = json_encode([
+            'title' => 'Pengumuman: ' . $data['title'],
+            'body'  => 'Ada informasi terbaru di portal PMW Polsri. Cek sekarang!',
+            'url'   => base_url('pengumuman/' . $data['slug']),
+            'icon'  => base_url('assets/img/logo-polsri.png'), // Pastikan path logo benar
+        ]);
+
+        foreach ($subscriptions as $sub) {
+            $webPush->queueNotification(
+                Subscription::create([
+                    'endpoint' => $sub['endpoint'],
+                    'keys'     => [
+                        'p256dh' => $sub['p256dh'],
+                        'auth'   => $sub['auth'],
+                    ],
+                ]),
+                $payload
+            );
+        }
+
+        // Send all notifications in the queue
+        foreach ($webPush->flush() as $report) {
+            $endpoint = $report->getEndpoint();
+            if (!$report->isSuccess()) {
+                // If notification fails because subscription is expired/invalid, delete it
+                if ($report->isSubscriptionExpired()) {
+                    $this->pushModel->where('endpoint', $endpoint)->delete();
+                }
+                log_message('error', "Push Notification failed for {$endpoint}: {$report->getReason()}");
+            }
+        }
     }
 }

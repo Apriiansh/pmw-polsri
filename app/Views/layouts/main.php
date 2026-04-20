@@ -188,7 +188,8 @@
                         'children' => [
                             ['route' => 'admin/users/', 'label' => 'Users',   'match' => 'admin/users'],
                             ['route' => 'admin/portal-announcements', 'label' => 'Pengumuman', 'match' => 'admin/portal-announcements'],
-                            ['route' => 'admin/cms',    'label' => 'Konten', 'match' => 'admin/cms'],
+                            ['route' => 'admin/gallery', 'label' => 'Kelola Galeri', 'match' => 'admin/gallery'],
+                            ['route' => 'admin/cms',    'label' => 'Konten CMS', 'match' => 'admin/cms'],
                         ]
                     ];
                 }

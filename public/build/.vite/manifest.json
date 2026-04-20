@@ -1,4 +1,13 @@
 {
+  "app/Views/css/input-v2.css": {
+    "file": "style_v2.css",
+    "name": "style_v2",
+    "names": [
+      "style_v2.css"
+    ],
+    "src": "app/Views/css/input-v2.css",
+    "isEntry": true
+  },
   "app/Views/css/input.css": {
     "file": "style.css",
     "name": "style",

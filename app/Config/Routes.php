@@ -24,6 +24,10 @@ $routes->get('pengumuman', 'PublicPages::pengumuman');
 $routes->get('pengumuman/(:segment)', 'PublicPages::detail/$1');
 $routes->get('sitemap.xml', 'Sitemap::index');
 
+// API Push Notification Routes
+$routes->post('api/push-subscribe', 'Public\PushSubscriptionController::subscribe');
+$routes->post('api/push-unsubscribe', 'Public\PushSubscriptionController::unsubscribe');
+
 $routes->group('', ['filter' => 'session'], static function ($routes) {
     $routes->get('dashboard', 'Dashboard::index');
     
@@ -62,10 +66,21 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
             $routes->get('/', 'Admin\\PortalAnnouncementController::index');
             $routes->get('create', 'Admin\\PortalAnnouncementController::create');
             $routes->post('store', 'Admin\\PortalAnnouncementController::store');
+            $routes->get('send-push/(:num)', 'Admin\\PortalAnnouncementController::sendPushManual/$1');
             $routes->get('edit/(:num)', 'Admin\\PortalAnnouncementController::edit/$1');
             $routes->post('update/(:num)', 'Admin\\PortalAnnouncementController::update/$1');
             $routes->get('delete/(:num)', 'Admin\\PortalAnnouncementController::delete/$1');
             $routes->delete('deleteAttachment/(:num)', 'Admin\\PortalAnnouncementController::deleteAttachment/$1');
+        });
+        
+        // Portal Gallery
+        $routes->group('gallery', static function ($routes) {
+            $routes->get('/', 'Admin\GalleryController::index');
+            $routes->get('create', 'Admin\GalleryController::create');
+            $routes->post('store', 'Admin\GalleryController::store');
+            $routes->get('edit/(:num)', 'Admin\GalleryController::edit/$1');
+            $routes->post('update/(:num)', 'Admin\GalleryController::update/$1');
+            $routes->get('delete/(:num)', 'Admin\GalleryController::delete/$1');
         });
 
         // PMW System - Master Jadwal

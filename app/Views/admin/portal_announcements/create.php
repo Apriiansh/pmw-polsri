@@ -81,12 +81,21 @@
                            class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:border-sky-500 outline-none transition-all">
                 </div>
 
-                <!-- Status -->
-                <div class="flex items-center gap-3 h-full pt-6">
+                <!-- Status & Push -->
+                <div class="flex flex-col gap-4 pt-4">
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" name="is_published" value="1" class="sr-only peer" checked>
                         <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-500"></div>
                         <span class="ml-3 text-sm font-bold text-slate-700">Publikasikan Sekarang</span>
+                    </label>
+
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="send_push" value="1" class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <span class="ml-3 text-sm font-bold text-emerald-700">
+                            <i class="fas fa-paper-plane mr-1 text-xs"></i>
+                            Kirim Notifikasi ke Perangkat Mahasiswa
+                        </span>
                     </label>
                 </div>
 

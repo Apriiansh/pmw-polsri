@@ -114,25 +114,158 @@
                 <?= cms('pengumuman_subscribe_description', 'Dapatkan notifikasi pengumuman terbaru langsung di inbox Anda. Jadilah yang pertama tahu setiap perkembangan program.') ?>
             </p>
             
-            <form class="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
-                <input 
-                    type="email" 
-                    placeholder="Masukkan alamat email Anda" 
-                    class="flex-1 px-8 py-4 rounded-2xl bg-white/80 border border-slate-200 focus:border-sky-400 focus:ring-4 focus:ring-sky-100 outline-none transition-liquid text-lg shadow-sm"
-                >
-                <button type="submit" class="btn-primary btn-magnetic px-10 py-4 text-lg shadow-xl shadow-sky-500/20">
-                    <i class="fas fa-bell mr-3"></i>
-                    Berlangganan
-                </button>
-            </form>
-            
-            <p class="text-sm text-slate-400 mt-8 font-medium">
+            <div x-data="pushNotification()" x-init="checkSubscription()" class="max-w-xl mx-auto">
+                <!-- Status Notifikasi -->
+                <div class="mb-10 flex items-center justify-center gap-4">
+                    <template x-if="isSubscribed">
+                        <div class="flex items-center gap-3 px-6 py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 animate-fade-in">
+                            <span class="relative flex h-3 w-3">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                            </span>
+                            <span class="text-sm font-bold uppercase tracking-widest">Notifikasi Aktif</span>
+                        </div>
+                    </template>
+                    <template x-if="!isSubscribed && permission === 'granted'">
+                        <div class="px-6 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 animate-fade-in">
+                            <span class="text-sm font-bold uppercase tracking-widest">Izin Diberikan, Belum Terdaftar</span>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="flex flex-col gap-6 items-center">
+                    <!-- Tombol Utama -->
+                    <button 
+                        @click="toggleSubscription"
+                        :disabled="loading || !supported"
+                        class="btn-primary btn-magnetic group relative px-12 py-5 text-xl shadow-2xl shadow-sky-500/20 disabled:opacity-50"
+                        :class="isSubscribed ? 'bg-linear-to-r from-rose-500 to-pink-600 shadow-rose-500/20' : 'bg-linear-to-r from-sky-500 to-indigo-600 shadow-sky-500/20'"
+                    >
+                        <div class="flex items-center gap-4">
+                            <i class="fas text-2xl" :class="loading ? 'fa-circle-notch animate-spin' : (isSubscribed ? 'fa-bell-slash' : 'fa-bell animate-float')"></i>
+                            <span x-text="loading ? 'Memproses...' : (isSubscribed ? 'Matikan Notifikasi' : 'Aktifkan Notifikasi Perangkat')"></span>
+                        </div>
+                    </button>
+
+                    <!-- Pesan Error/Unsupported -->
+                    <p x-show="!supported" class="text-sm text-rose-500 font-bold bg-rose-50 px-4 py-2 rounded-xl">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Browser Anda tidak mendukung Web Push.
+                    </p>
+                </div>
+            </div>
+
+            <p class="text-sm text-slate-400 mt-10 font-medium">
                 <i class="fas fa-shield-alt mr-2"></i>
-                Kami menghargai privasi Anda. Berhenti berlangganan kapan saja.
+                Privasi terjaga. Kami hanya mengirimkan informasi resmi program PMW.
             </p>
         </div>
     </div>
 </section>
+
+<script>
+    function pushNotification() {
+        return {
+            supported: ('serviceWorker' in navigator) && ('PushManager' in window),
+            isSubscribed: false,
+            permission: Notification.permission,
+            loading: false,
+            registration: null,
+            publicKey: 'BEndsLB-_vstDfHVtshcVgxse9AaI2ELIxYohO0BOEZcTn_pWy8EXcpiM7kUFRyqF1D1AKmQlER5mEhtIcreML4',
+
+            async checkSubscription() {
+                if (!this.supported) return;
+
+                this.registration = await navigator.serviceWorker.register('/sw.js');
+                const subscription = await this.registration.pushManager.getSubscription();
+                this.isSubscribed = !!subscription;
+                this.permission = Notification.permission;
+            },
+
+            async toggleSubscription() {
+                this.loading = true;
+                try {
+                    if (this.isSubscribed) {
+                        await this.unsubscribeUser();
+                    } else {
+                        await this.subscribeUser();
+                    }
+                } catch (error) {
+                    console.error('Push Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Terjadi kesalahan saat memproses notifikasi.'
+                    });
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            async subscribeUser() {
+                const permission = await Notification.requestPermission();
+                this.permission = permission;
+
+                if (permission !== 'granted') {
+                    throw new Error('Permission not granted');
+                }
+
+                const subscription = await this.registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: this.urlBase64ToUint8Array(this.publicKey)
+                });
+
+                const response = await fetch('/api/push-subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(subscription)
+                });
+
+                if (response.ok) {
+                    this.isSubscribed = true;
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Notifikasi Aktif!',
+                        text: 'Anda akan menerima pengumuman terbaru langsung di perangkat ini.',
+                        confirmButtonText: 'Keren!',
+                        customClass: { confirmButton: 'btn-primary px-8 py-3 rounded-xl' }
+                    });
+                }
+            },
+
+            async unsubscribeUser() {
+                const subscription = await this.registration.pushManager.getSubscription();
+                if (subscription) {
+                    await subscription.unsubscribe();
+                    
+                    await fetch('/api/push-unsubscribe', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(subscription)
+                    });
+
+                    this.isSubscribed = false;
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Notifikasi Dimatikan',
+                        text: 'Anda tidak akan lagi menerima notifikasi di perangkat ini.'
+                    });
+                }
+            },
+
+            urlBase64ToUint8Array(base64String) {
+                const padding = '='.repeat((4 - base64String.length % 4) % 4);
+                const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+                const rawData = window.atob(base64);
+                const outputArray = new Uint8Array(rawData.length);
+                for (let i = 0; i < rawData.length; ++i) {
+                    outputArray[i] = rawData.charCodeAt(i);
+                }
+                return outputArray;
+            }
+        }
+    }
+</script>
 
 <!-- Contact Section -->
 <section id="section-pengumuman-kontak" class="py-20 lg:py-32 bg-linear-to-b from-white to-sky-50/50 relative overflow-hidden">
@@ -172,8 +305,8 @@
                     <div class="w-20 h-20 rounded-3xl bg-amber-50 flex items-center justify-center mb-6 group-hover:bg-amber-500 transition-liquid shadow-inner">
                         <i class="fas fa-map-marker-alt text-3xl text-amber-600 group-hover:text-white transition-liquid"></i>
                     </div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">Lokasi Sekretariat</p>
-                    <p class="text-xl font-bold text-slate-900">Gedung Rektorat Lt. 1</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">UPTKK POLSRI</p>
+                    <p class="text-xl font-bold text-slate-900">Gedung KPA Lt. 1</p>
                 </div>
             </div>
         </div>

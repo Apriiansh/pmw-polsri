@@ -61,10 +61,17 @@ class PublicPages extends BaseController
      */
     public function galeri(): string
     {
+        $galleryModel = new \App\Models\PortalGalleryModel();
+        $galleries = $galleryModel->where('is_published', 1)
+                                 ->orderBy('sort_order', 'ASC')
+                                 ->orderBy('created_at', 'DESC')
+                                 ->findAll();
+
         return view('public/galeri', [
-            'title' => 'Galeri Kegiatan',
+            'title'            => 'Galeri Kegiatan',
+            'galleries'        => $galleries,
             'meta_description' => 'Dokumentasi kegiatan Program Mahasiswa Wirausaha Polsri, termasuk sesi mentoring, bazaar, dan malam penganugerahan.',
-            'meta_keywords' => 'Foto PMW Polsri, Dokumentasi Wirausaha, Kegiatan Mahasiswa Polsri'
+            'meta_keywords'    => 'Foto PMW Polsri, Dokumentasi Wirausaha, Kegiatan Mahasiswa Polsri'
         ]);
     }
 

@@ -82,28 +82,35 @@
 
 <!-- Gallery Grid & Filter -->
 <?php
-$rawItems = cms('galeri_items_list', []);
+$items = [];
 
-if (empty($rawItems)) {
-    $rawItems = [
-        ['img' => 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&q=80',  'badge' => 'Mentoring 2025', 'title' => 'Sesi Mentoring Intensif',     'desc' => 'Dosen dan mentor berbagi pengalaman.'],
-        ['img' => 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=600&q=80',  'badge' => 'Pitching',       'title' => 'Pitching Desk 2025',         'desc' => 'Presentasi ide bisnis di depan reviewer.'],
-        ['img' => 'https://images.unsplash.com/photo-1531058020387-3be344556be6?w=600&q=80','badge' => 'Awarding',       'title' => 'Awarding 2024',              'desc' => 'Malam penganugerahan bagi tim terbaik.'],
-        ['img' => 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=600&q=80',  'badge' => 'Workshop',       'title' => 'Workshop Business Plan',     'desc' => 'Pelatihan menyusun strategi bisnis.'],
-        ['img' => 'https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=600&q=80','badge' => 'Bazaar',         'title' => 'Bazaar Monev 2025',          'desc' => 'Pameran produk peserta PMW.'],
-        ['img' => 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&q=80','badge' => 'Mentoring',      'title' => 'Coaching Clinic 2025',       'desc' => 'Konsultasi teknis pengembangan produk.'],
-        ['img' => 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80',  'badge' => 'Workshop',       'title' => 'Digital Marketing Class',    'desc' => 'Strategi pemasaran di era digital.'],
-        ['img' => 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80','badge' => 'Dokumentasi',    'title' => 'Kunjungan Industri',         'desc' => 'Melihat langsung proses produksi.'],
-        ['img' => 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80','badge' => 'Mentoring',      'title' => 'Team Building Session',      'desc' => 'Memperkuat kolaborasi internal tim.'],
-        ['img' => 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&q=80','badge' => 'Bazaar',         'title' => 'Expo Kewirausahaan 2024',    'desc' => 'Puncak acara pameran bisnis mahasiswa.'],
+if (!empty($galleries)) {
+    foreach ($galleries as $g) {
+        $imgUrl = (filter_var($g['image_url'], FILTER_VALIDATE_URL)) 
+                  ? $g['image_url'] 
+                  : base_url($g['image_url']);
+                  
+        $items[] = [
+            'img'   => $imgUrl,
+            'badge' => $g['category'],
+            'title' => $g['title'],
+            'desc'  => $g['description']
+        ];
+    }
+} else {
+    // Fallback static items if DB is empty
+    $items = [
+        ['img' => 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&q=80',  'badge' => 'Mentoring', 'title' => 'Sesi Mentoring Intensif',     'desc' => 'Dosen dan mentor berbagi pengalaman.'],
+        ['img' => 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=600&q=80',  'badge' => 'Pitching',  'title' => 'Pitching Desk 2025',         'desc' => 'Presentasi ide bisnis di depan reviewer.'],
+        ['img' => 'https://images.unsplash.com/photo-1531058020387-3be344556be6?w=600&q=80', 'badge' => 'Awarding',  'title' => 'Awarding 2024',              'desc' => 'Malam penganugerahan bagi tim terbaik.'],
     ];
 }
 
-// Resolve image URLs server-side
+// Map for preview
 $items = array_map(function ($item) {
-    $item['preview_img'] = cms_img($item['img']);
+    $item['preview_img'] = $item['img'];
     return $item;
-}, $rawItems);
+}, $items);
 ?>
 
 <section id="section-galeri-grid" class="py-12 lg:py-24"
@@ -141,11 +148,11 @@ $items = array_map(function ($item) {
     <!-- Filter Buttons -->
     <div class="max-w-7xl mx-auto px-6 lg:px-8 mb-16 reveal-blur">
         <div class="flex flex-wrap justify-center gap-3">
-            <template x-for="filter in ['Semua', 'Mentoring', 'Pitching', 'Bazaar', 'Awarding', 'Workshop', 'Dokumentasi']" :key="filter">
+            <template x-for="filter in ['Semua', 'Mentoring', 'Pitching', 'Bazaar', 'Awarding', 'Workshop', 'Dokumentasi', 'Produk Binaan']" :key="filter">
                 <button @click="changeFilter(filter)"
                         :class="activeFilter === filter
-                            ? "bg-sky-500 text-white shadow-xl shadow-sky-200"
-                            : "bg-white text-slate-600 border border-slate-100 hover:border-sky-300 hover:text-sky-600""
+                            ? 'bg-sky-500 text-white shadow-xl shadow-sky-200'
+                            : 'text-slate-600 bg-white border border-slate-100 hover:border-sky-300 hover:text-sky-600'"
                         class="px-8 py-3 rounded-full text-sm font-bold transition-all btn-magnetic"
                         x-text="filter">
                 </button>
@@ -172,14 +179,14 @@ $items = array_map(function ($item) {
                          loading="lazy"
                          class="w-full h-full object-cover transition-liquid group-hover:scale-110 group-hover:rotate-1">
 
-                    <div class="gallery-overlay absolute inset-0 bg-linear-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-liquid flex flex-col justify-end p-6 lg:p-8">
+                    <div class="gallery-overlay absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-liquid flex flex-col justify-end p-6 lg:p-8">
                         <div class="overlay-content translate-y-4 group-hover:translate-y-0 transition-liquid delay-75">
                             <span class="inline-block px-3 py-1 rounded-full bg-sky-500/20 border border-sky-400/30 backdrop-blur-md text-sky-300 text-[10px] font-bold uppercase tracking-wider mb-3" x-text="item.badge"></span>
-                            <h3 class="text-white font-display font-bold leading-tight"
+                            <h3 class="!text-white font-display font-black leading-tight drop-shadow-md"
                                :class="item.isLarge ? 'text-2xl mb-2' : 'text-sm'"
                                x-text="item.title"></h3>
                             <template x-if="item.desc && item.isLarge">
-                                <p class="text-slate-300 text-sm line-clamp-2" x-text="item.desc"></p>
+                                <p class="text-slate-200 text-sm line-clamp-2 drop-shadow-sm" x-text="item.desc"></p>
                             </template>
                         </div>
                     </div>
