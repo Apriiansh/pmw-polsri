@@ -53,6 +53,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
 
         $routes->get('cms', 'AdminController::cms');
         $routes->post('cms/save', 'AdminController::saveCms');
+        $routes->post('cms/upload-image', 'AdminController::uploadCmsImage');
         $routes->get('cms/image/(:any)', 'AdminController::viewCmsImage/$1');
 
         // Portal Announcements (News/Blog)

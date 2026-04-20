@@ -414,13 +414,28 @@ class CmsContentSeeder extends Seeder
                 'key'     => 'galeri_items_list',
                 'content' => json_encode([
                     ['img' => 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&q=80', 'badge' => 'Mentoring 2025', 'title' => 'Sesi Mentoring Intensif', 'desc' => 'Dosen dan mentor berbagi pengalaman', 'size' => 'large'],
-                    ['img' => 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&q=80', 'badge' => 'Pitching', 'title' => 'Pitching Desk 2025', 'desc' => '', 'size' => 'small'],
-                    ['img' => 'https://images.unsplash.com/photo-1531058020387-3be344556be6?w=400&q=80', 'badge' => 'Awarding', 'title' => 'Awarding 2024', 'desc' => '', 'size' => 'small'],
-                    ['img' => 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&q=80', 'badge' => 'Workshop', 'title' => 'Workshop Business Plan', 'desc' => '', 'size' => 'small'],
-                    ['img' => 'https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=400&q=80', 'badge' => 'Bazaar', 'title' => 'Bazaar Monev 2025', 'desc' => '', 'size' => 'small'],
+                    ['img' => 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&q=80', 'badge' => 'Pitching', 'title' => 'Pitching Desk 2025', 'desc' => 'Presentasi ide bisnis di depan reviewer.', 'size' => 'small'],
+                    ['img' => 'https://images.unsplash.com/photo-1531058020387-3be344556be6?w=400&q=80', 'badge' => 'Awarding', 'title' => 'Awarding 2024', 'desc' => 'Malam penganugerahan bagi tim terbaik.', 'size' => 'small'],
+                    ['img' => 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&q=80', 'badge' => 'Workshop', 'title' => 'Workshop Business Plan', 'desc' => 'Pelatihan menyusun strategi bisnis.', 'size' => 'small'],
+                    ['img' => 'https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=400&q=80', 'badge' => 'Bazaar', 'title' => 'Bazaar Monev 2025', 'desc' => 'Pameran produk peserta PMW.', 'size' => 'small'],
+                    ['img' => 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&q=80', 'badge' => 'Mentoring', 'title' => 'Coaching Clinic 2025', 'desc' => 'Konsultasi teknis pengembangan produk.', 'size' => 'large'],
+                    ['img' => 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80', 'badge' => 'Workshop', 'title' => 'Digital Marketing Class', 'desc' => 'Strategi pemasaran di era digital.', 'size' => 'small'],
+                    ['img' => 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400&q=80', 'badge' => 'Dokumentasi', 'title' => 'Kunjungan Industri', 'desc' => 'Melihat langsung proses produksi.', 'size' => 'small'],
+                    ['img' => 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80', 'badge' => 'Mentoring', 'title' => 'Team Building Session', 'desc' => 'Memperkuat kolaborasi internal tim.', 'size' => 'small'],
+                    ['img' => 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&q=80', 'badge' => 'Bazaar', 'title' => 'Expo Kewirausahaan 2024', 'desc' => 'Puncak acara pameran bisnis mahasiswa.', 'size' => 'large'],
+                    ['img' => 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400&q=80', 'badge' => 'Workshop', 'title' => 'Financial Literacy', 'desc' => 'Manajemen keuangan untuk UMKM.', 'size' => 'small'],
+                    ['img' => 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&q=80', 'badge' => 'Pitching', 'title' => 'Internal Review Stage 1', 'desc' => 'Evaluasi awal proposal bisnis.', 'size' => 'small'],
+                    ['img' => 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400&q=80', 'badge' => 'Awarding', 'title' => 'Sertifikasi Peserta', 'desc' => 'Penyerahan sertifikat kelulusan program.', 'size' => 'small'],
+                    ['img' => 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=400&q=80', 'badge' => 'Mentoring', 'title' => 'One-on-One Mentoring', 'desc' => 'Sesi privat dengan pakar bisnis.', 'size' => 'small'],
+                    ['img' => 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800&q=80', 'badge' => 'Dokumentasi', 'title' => 'Rapat Koordinasi Mentor', 'desc' => 'Penyelarasan kurikulum pembinaan.', 'size' => 'large'],
+                    ['img' => 'https://images.unsplash.com/photo-1557426272-fc759fbb7a8d?w=400&q=80', 'badge' => 'Workshop', 'title' => 'Branding & Design', 'desc' => 'Membangun identitas brand yang kuat.', 'size' => 'small'],
+                    ['img' => 'https://images.unsplash.com/photo-1475721027187-4001777c1032?w=400&q=80', 'badge' => 'Dokumentasi', 'title' => 'Booth Bazaar 2025', 'desc' => 'Tampilan stan peserta terbaik.', 'size' => 'small'],
+                    ['img' => 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400&q=80', 'badge' => 'Pitching', 'title' => 'Final Presentation', 'desc' => 'Penentuan pemenang hibah tahap 2.', 'size' => 'small'],
+                    ['img' => 'https://images.unsplash.com/photo-1491975474562-1f4e30bc9468?w=400&q=80', 'badge' => 'Mentoring', 'title' => 'Legalitas Usaha', 'desc' => 'Pengurusan izin dan HAKI.', 'size' => 'small'],
+                    ['img' => 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80', 'badge' => 'Awarding', 'title' => 'Penyaluran Dana Hibah', 'desc' => 'Simbolis penyerahan dana pengembangan.', 'size' => 'large'],
                 ]),
                 'type'    => 'json',
-                'group'   => 'galeri_grid',
+                'group'   => 'galeri_items',
                 'label'   => 'Gallery Items',
             ],
 
@@ -478,6 +493,13 @@ class CmsContentSeeder extends Seeder
             ],
         ];
 
-        $this->db->table('cms_content')->ignore(true)->insertBatch($data);
+        foreach ($data as $row) {
+            $existing = $this->db->table('cms_content')->where('key', $row['key'])->get()->getRow();
+            if ($existing) {
+                $this->db->table('cms_content')->where('key', $row['key'])->update($row);
+            } else {
+                $this->db->table('cms_content')->insert($row);
+            }
+        }
     }
 }

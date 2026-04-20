@@ -60,8 +60,8 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
 
                     <!-- Logo -->
                     <a href="<?= base_url() ?>" class="flex items-center gap-3 group">
-                        <div class="w-10 h-10 rounded-xl bg-linear-to-br from-sky-500 to-sky-400 flex items-center justify-center shadow-md shadow-sky-200 group-hover:shadow-lg group-hover:shadow-sky-300 transition-all">
-                            <i class="fas fa-graduation-cap text-white text-lg"></i>
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md shadow-sky-200 group-hover:shadow-lg group-hover:shadow-sky-300 transition-all">
+                            <img src="<?= base_url('favicon.png') ?>" alt="PMW Polsri" class="w-9 h-9 object-contain">
                         </div>
                         <div class="hidden sm:block">
                             <h1 class="font-display text-xl font-bold text-(--text-heading) leading-tight">

@@ -249,10 +249,10 @@
 </section>
 
 <!-- Statistics -->
-<section id="section-stats" class="py-20 lg:py-24 bg-linear-to-br from-yellow-400 to-amber-500 p-8 rounded-2xl text-center">
-    <div class="absolute inset-0 opacity-30">
-        <div class="absolute top-0 right-0 w-96 h-96 bg-yellow-300 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-0 left-0 w-96 h-96 bg-amber-300 rounded-full blur-3xl"></div>
+<section id="section-stats" class="py-20 lg:py-24 bg-linear-to-br from-yellow-400 to-amber-500 p-6 lg:p-8 rounded-2xl text-center relative overflow-hidden">
+    <div class="absolute inset-0 opacity-20 lg:opacity-30">
+        <div class="absolute -top-12 -right-12 w-64 h-64 lg:w-96 lg:h-96 bg-yellow-300 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-12 -left-12 w-64 h-64 lg:w-96 lg:h-96 bg-amber-300 rounded-full blur-3xl"></div>
     </div>
     
     <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
@@ -384,6 +384,18 @@
     </div>
 </section>
 
+<?= $this->endSection() ?>
+
+<?= $this->section('styles') ?>
+<style>
+    /* Tone down the yellowish glow in hero on mobile */
+    @media (max-width: 1024px) {
+        .hero-pattern {
+            background-image: radial-gradient(circle at 20% 80%, rgba(14, 165, 233, 0.08) 0%, transparent 50%), 
+                              radial-gradient(circle at 80% 20%, rgba(250, 204, 21, 0.04) 0%, transparent 40%) !important;
+        }
+    }
+</style>
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>

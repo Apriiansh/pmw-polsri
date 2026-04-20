@@ -428,7 +428,8 @@ class AdminController extends BaseController
             
             // Galeri Page
             'galeri_hero'          => 30,
-            'galeri_grid'          => 31,
+            'galeri_items'          => 31,
+            'galeri_stats'         => 32,
             
             // Pengumuman Page
             'pengumuman_hero'      => 40,
@@ -510,9 +511,25 @@ class AdminController extends BaseController
 
                 // Handle based on type
                 if ($existing['type'] === 'json') {
-                    // Content from form should already be JSON string if using JS repeater,
-                    // or we might need to encode it if it's an array from standard form
-                    $updateData['content'] = is_array($content) ? json_encode($content) : $content;
+                    $newContent = is_array($content) ? json_encode($content) : $content;
+                    $oldContent = $existing['content'];
+
+                    // Cleanup images within JSON if they are removed
+                    if (!empty($oldContent)) {
+                        preg_match_all('/uploads\/cms\/[a-zA-Z0-9._-]+/', $oldContent, $oldMatches);
+                        preg_match_all('/uploads\/cms\/[a-zA-Z0-9._-]+/', $newContent, $newMatches);
+                        
+                        $oldPaths = array_unique($oldMatches[0] ?? []);
+                        $newPaths = array_unique($newMatches[0] ?? []);
+                        $removedPaths = array_diff($oldPaths, $newPaths);
+                        
+                        foreach ($removedPaths as $path) {
+                            $fullPath = WRITEPATH . $path;
+                            if (is_file($fullPath)) @unlink($fullPath);
+                        }
+                    }
+
+                    $updateData['content'] = $newContent;
                 } else if ($existing['type'] === 'image') {
                     // Image logic: Check for upload first
                     $file = $this->request->getFile("cms_file.{$key}");
@@ -540,6 +557,15 @@ class AdminController extends BaseController
                     $updateData['content'] = $content;
                 }
 
+                // Cleanup old file if content changed and it was a local file
+                if ($existing['type'] === 'image' && $updateData['content'] !== $existing['content']) {
+                    if (!empty($existing['content']) && !str_starts_with($existing['content'], 'http')) {
+                        $oldPath = WRITEPATH . $existing['content'];
+                        // Only delete if the new content is also different (avoid deleting if same file)
+                        if (is_file($oldPath)) @unlink($oldPath);
+                    }
+                }
+
                 $cmsModel->update($existing['id'], $updateData);
             }
 
@@ -547,8 +573,15 @@ class AdminController extends BaseController
 
             // Invalidate Cache
             if ($group === 'all') {
-                // Broad clear for homepage and general groups
-                $targetGroups = ['home_hero', 'home_features', 'home_workflow', 'home_gallery', 'home_announcements', 'home_cta', 'general'];
+                // Broad clear for all known public groups
+                $targetGroups = [
+                    'home_hero', 'home_features', 'home_workflow', 'home_gallery', 'home_announcements', 'home_cta', 'home_stats',
+                    'tahapan_hero', 'tahapan_flow', 'tahapan_cta',
+                    'tentang_hero', 'tentang_vision', 'tentang_objectives', 'tentang_cta',
+                    'galeri_hero', 'galeri_items',
+                    'pengumuman_hero', 'pengumuman_subscribe',
+                    'general'
+                ];
                 foreach ($targetGroups as $tg) {
                     cache()->delete("cms_group_{$tg}");
                 }
@@ -562,6 +595,48 @@ class AdminController extends BaseController
             $db->transRollback();
             return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Upload CMS image via AJAX (Instant)
+     */
+    public function uploadCmsImage()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Direct access not allowed']);
+        }
+
+        $file = $this->request->getFile('image');
+        if (!$file || !$file->isValid()) {
+            return $this->response->setJSON(['success' => false, 'message' => 'File tidak valid']);
+        }
+
+        // Validate type (images only)
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg', 'image/gif', 'image/svg+xml'];
+        if (!in_array($file->getMimeType(), $allowedTypes)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Format file tidak didukung. Gunakan JPG, PNG, WEBP, atau SVG.']);
+        }
+
+        // Validate size (max 2MB)
+        if ($file->getSize() > 2 * 1024 * 1024) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Ukuran file maksimal 2MB']);
+        }
+
+        $uploadDir = WRITEPATH . 'uploads/cms';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+            file_put_contents($uploadDir . '/.htaccess', "deny from all\n");
+        }
+
+        $newName = $file->getRandomName();
+        $file->move($uploadDir, $newName);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Gambar berhasil diunggah',
+            'path' => 'uploads/cms/' . $newName,
+            'url' => base_url('admin/cms/image/' . $newName)
+        ]);
     }
 
     /**

@@ -11,19 +11,18 @@ if (!function_exists('cms')) {
      * Get CMS content by key
      * 
      * @param string $key
-     * @param string $default
+     * @param mixed $default
      * @return mixed
      */
     function cms(string $key, $default = '')
     {
         static $cms_data = [];
 
-        // Identify group from key (e.g., home_hero_title -> group: home_hero)
+        // Identify group from key (e.g., galeri_hero_title -> group: galeri_hero)
         $parts = explode('_', $key);
         
-        // Custom logic for PMW group pattern: home_{section}_{key}
-        if ($parts[0] === 'home' && isset($parts[1])) {
-            $group = "home_{$parts[1]}";
+        if (count($parts) >= 2) {
+            $group = "{$parts[0]}_{$parts[1]}";
         } else {
             $group = $parts[0] ?? 'general';
         }

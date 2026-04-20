@@ -152,7 +152,7 @@
         <div class="text-center mb-6 sm:mb-8">
             <a href="<?= base_url() ?>" class="inline-flex items-center gap-3 group">
                 <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-linear-to-br from-sky-500 to-sky-400 flex items-center justify-center shadow-lg shadow-sky-200 group-hover:shadow-xl transition-all">
-                    <i class="fas fa-graduation-cap text-white text-xl sm:text-2xl"></i>
+                    <img src="<?= base_url('favicon.png') ?>" alt="PMW Polsri" class="w-11 h-11 sm:w-10 sm:h-10 object-contain">
                 </div>
                 <div class="text-left">
                     <h1 class="font-display text-xl sm:text-2xl font-bold text-slate-800">PMW <span class="text-sky-500">Polsri</span></h1>

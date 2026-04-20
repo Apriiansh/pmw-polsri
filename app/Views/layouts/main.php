@@ -71,7 +71,7 @@
                 <!-- Logo icon + Text -->
                 <div class="flex items-center gap-3 min-w-0">
                     <div class="w-10 h-10 rounded-xl bg-linear-to-br from-sky-500 to-sky-400 flex items-center justify-center shadow-md shadow-sky-200 shrink-0">
-                        <i class="fas fa-graduation-cap text-white text-base"></i>
+                        <img src="<?= base_url('favicon.png') ?>" alt="PMW Polsri" class="w-6 h-6 object-contain">
                     </div>
                     <!-- Logo text (hidden when collapsed) -->
                     <div
@@ -698,7 +698,7 @@
         <div class="h-16 flex items-center justify-between px-4 border-b border-sky-50 shrink-0">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-xl bg-linear-to-br from-sky-500 to-sky-400 flex items-center justify-center shadow-md shadow-sky-200">
-                    <i class="fas fa-graduation-cap text-white text-sm"></i>
+                    <img src="<?= base_url('favicon.png') ?>" alt="PMW Polsri" class="w-8 h-8 object-contain">
                 </div>
                 <div>
                     <h1 class="font-display text-sm font-bold text-(--text-heading)">Polsri <span class="text-sky-500">PMW</span></h1>
