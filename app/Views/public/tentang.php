@@ -64,7 +64,7 @@
                                         <div class="mt-1 w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
                                             <i class="fas fa-check text-emerald-500 text-[10px]"></i>
                                         </div>
-                                        <span class="text-(--text-body)"><?= $mission ?></span>
+                                        <span class="text-(--text-body)"><?= is_array($mission) ? ($mission['misi'] ?? ($mission['text'] ?? '')) : $mission ?></span>
                                     </li>
                                 <?php endforeach; ?>
                             </ul>

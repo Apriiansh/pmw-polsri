@@ -425,18 +425,7 @@ class AdminController extends BaseController
             'tentang_vision'       => 21,
             'tentang_objectives'   => 22,
             'tentang_cta'          => 23,
-            
-            // Galeri Page
-            'galeri_hero'          => 30,
-            'galeri_items'          => 31,
-            'galeri_stats'         => 32,
-            
-            // Pengumuman Page
             'pengumuman_hero'      => 40,
-            'pengumuman_subscribe' => 41,
-            
-            // General Settings
-            'general'              => 100,
         ];
 
         // Group contents by their group field
@@ -474,11 +463,7 @@ class AdminController extends BaseController
                 'tentang_vision'       => 'Tentang: Visi & Misi',
                 'tentang_objectives'   => 'Tentang: Tujuan Program',
                 'tentang_cta'          => 'Tentang: CTA',
-                'galeri_hero'          => 'Galeri: Hero',
-                'galeri_grid'          => 'Galeri: Foto Kegiatan',
                 'pengumuman_hero'      => 'Pengumuman: Hero',
-                'pengumuman_subscribe' => 'Pengumuman: Langganan',
-                'general'              => 'Umum',
             ]
         ];
 
@@ -578,8 +563,7 @@ class AdminController extends BaseController
                     'home_hero', 'home_features', 'home_workflow', 'home_gallery', 'home_announcements', 'home_cta', 'home_stats',
                     'tahapan_hero', 'tahapan_flow', 'tahapan_cta',
                     'tentang_hero', 'tentang_vision', 'tentang_objectives', 'tentang_cta',
-                    'galeri_hero', 'galeri_items',
-                    'pengumuman_hero', 'pengumuman_subscribe',
+                    'pengumuman_hero',
                     'general'
                 ];
                 foreach ($targetGroups as $tg) {

@@ -46,10 +46,7 @@
                 'tentang_vision':         'section-tentang-vision',
                 'tentang_objectives':     'section-tentang-objectives',
                 'tentang_cta':            'section-tentang-cta',
-                'galeri_hero':            'section-galeri-hero',
-                'galeri_grid':            'section-galeri-grid',
-                'pengumuman_hero':        'section-pengumuman-hero',
-                'pengumuman_subscribe':   'section-pengumuman-subscribe'
+                'pengumuman_hero':        'section-pengumuman-hero'
             },
             selectedPage: window.__cmsData.selectedPage,
             pages: <?= json_encode($pages ?? []) ?>,
@@ -98,7 +95,7 @@
                 const urls = window.__cmsData.urls;
                 const map = {
                     home: urls.home, tahapan: urls.tahapan, tentang: urls.tentang, 
-                    galeri: urls.galeri, pengumuman: urls.pengumuman, all: urls.home, general: urls.home
+                    pengumuman: urls.pengumuman, all: urls.home, general: urls.home
                 };
                 const target = map[this.selectedPage] ?? urls.home;
                 this.$refs.previewFrame.src = target;
@@ -126,7 +123,6 @@
                     let targetPage = urls.home;
                     if (group.startsWith('tahapan_'))    targetPage = urls.tahapan;
                     else if (group.startsWith('tentang_'))    targetPage = urls.tentang;
-                    else if (group.startsWith('galeri_'))     targetPage = urls.galeri;
                     else if (group.startsWith('pengumuman_')) targetPage = urls.pengumuman;
 
                     try {
@@ -151,9 +147,7 @@
         'home'       => ['label' => 'Beranda (Home)',     'icon' => 'fa-home'],
         'tahapan'    => ['label' => 'Halaman Tahapan',    'icon' => 'fa-route'],
         'tentang'    => ['label' => 'Halaman Tentang',    'icon' => 'fa-info-circle'],
-        'galeri'     => ['label' => 'Halaman Galeri',     'icon' => 'fa-images'],
         'pengumuman' => ['label' => 'Halaman Pengumuman', 'icon' => 'fa-bullhorn'],
-        'general'    => ['label' => 'Pengaturan Umum',    'icon' => 'fa-cog']
     ];
 ?>
 

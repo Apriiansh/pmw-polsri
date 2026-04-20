@@ -158,107 +158,12 @@
     </form>
 </div>
 </div>
+<?= $this->endSection() ?>
 
-<style>
-/* Quill Theme Adjustments */
-.ql-toolbar.ql-snow {
-    border: none !important;
-    background: white !important;
-    padding: 1rem !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    border-radius: 1.25rem 1.25rem 0 0 !important;
-}
-.ql-container.ql-snow {
-    border: none !important;
-    font-family: 'Inter', sans-serif !important;
-    font-size: 0.875rem !important;
-}
-.ql-editor {
-    min-height: 250px !important;
-    padding: 1.5rem !important;
-}
-.ql-editor.ql-blank::before {
-    color: #94a3b8 !important;
-    font-style: normal !important;
-}
-</style>
+<?= $this->section('styles') ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/quill-custom.css') ?>">
+<?= $this->endSection() ?>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const titleInput = document.getElementById('title');
-    const slugInput = document.getElementById('slug');
-    const form = document.getElementById('announcementForm');
-    const contentInput = document.getElementById('contentInput');
-    const alpineEl = document.querySelector('[x-data]');
-
-    // Slug Logic (Keep automatic for Create mode)
-    titleInput.addEventListener('input', function() {
-        const title = this.value;
-        const slug = title.toLowerCase()
-            .replace(/[^\w ]+/g, '')
-            .replace(/ +/g, '-');
-        slugInput.value = slug;
-    });
-
-    // QuillJS Initialization
-    const quill = new Quill('#quillEditor', {
-        theme: 'snow',
-        placeholder: 'Tulis detail pengumuman di sini...',
-        modules: {
-            toolbar: [
-                [{ 'header': [1, 2, 3, false] }],
-                ['bold', 'italic', 'underline', 'strike'],
-                [{ 'list': 'ordered' }],
-                ['link', 'blockquote', 'code-block'],
-                ['clean']
-            ]
-        }
-    });
-
-    // Helper to update Alpine preview
-    function updatePreview() {
-        const delta = quill.getContents();
-        const json = JSON.stringify(delta);
-
-        // Sync to hidden input immediately for robustness
-        contentInput.value = json;
-    }
-
-    // Sync on every change
-    quill.on('text-change', function() {
-        updatePreview();
-    });
-
-    // Initial sync
-    if (window.Alpine) {
-        updatePreview();
-    } else {
-        document.addEventListener('alpine:initialized', updatePreview);
-    }
-    
-    // Fallback initial sync
-    setTimeout(updatePreview, 100);
-
-    // Form Submit handling
-    form.addEventListener('submit', function(e) {
-        // Final sync check
-        const delta = quill.getContents();
-        contentInput.value = JSON.stringify(delta);
-        
-        // Validation check for content (check if delta has actual content)
-        const isBlank = delta.ops.length === 0 || (delta.ops.length === 1 && delta.ops[0].insert === '\n');
-        
-        if (isBlank) {
-            e.preventDefault();
-            Swal.fire({
-                title: 'Konten Kosong',
-                text: 'Isi pengumuman tidak boleh kosong!',
-                icon: 'error',
-                borderRadius: '1.5rem'
-            });
-            return;
-        }
-    });
-});
-</script>
+<?= $this->section('scripts') ?>
+<script src="<?= base_url('assets/js/announcement-form.js') ?>"></script>
 <?= $this->endSection() ?>

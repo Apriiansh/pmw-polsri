@@ -1,0 +1,24 @@
+/* Quill Theme Adjustments for PMW Polsri Admin */
+.ql-toolbar.ql-snow {
+    border: none !important;
+    background: white !important;
+    padding: 1rem !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    border-radius: 1.25rem 1.25rem 0 0 !important;
+}
+
+.ql-container.ql-snow {
+    border: none !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.875rem !important;
+}
+
+.ql-editor {
+    min-height: 250px !important;
+    padding: 1.5rem !important;
+}
+
+.ql-editor.ql-blank::before {
+    color: #94a3b8 !important;
+    font-style: normal !important;
+}

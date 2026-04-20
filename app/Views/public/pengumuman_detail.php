@@ -180,7 +180,7 @@
                                 <?= esc($file->file_name) ?>
                             </p>
                             <p class="text-[10px] text-slate-400 uppercase tracking-widest font-black mt-1">
-                                <?= number_format($file->file_size / 1024 / 1024, 2) ?> MB
+                                Klik untuk mengunduh
                             </p>
                         </div>
                     </div>
