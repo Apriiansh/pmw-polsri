@@ -72,6 +72,7 @@ rm -rf "$TEMP_APP/pmw-app/writable/cache/"* 2>/dev/null || true
 rm -rf "$TEMP_APP/pmw-app/writable/debugbar/"* 2>/dev/null || true
 rm -rf "$TEMP_APP/pmw-app/writable/logs/"* 2>/dev/null || true
 rm -rf "$TEMP_APP/pmw-app/writable/session/"* 2>/dev/null || true
+rm -rf "$TEMP_APP/pmw-app/writable/uploads/"* 2>/dev/null || true
 
 # Maintain directory structure
 touch "$TEMP_APP/pmw-app/writable/cache/.gitkeep"

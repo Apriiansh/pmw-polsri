@@ -73,24 +73,10 @@
                             <?php endif; ?>
                         </div>
                         <h3 class="font-bold text-slate-800 text-lg group-hover:text-sky-600 transition-colors truncate"><?= $ann['title'] ?></h3>
-                        <p class="text-xs text-slate-500 line-clamp-1 mt-1">
-                            <?php 
-                                $content = trim($ann['content']);
-                                if (str_starts_with($content, '{') || str_starts_with($content, '[')) {
-                                    echo "Lihat detail pengumuman...";
-                                } else {
-                                    echo strip_tags($content);
-                                }
-                            ?>
-                        </p>
                     </div>
 
                     <!-- Actions -->
                     <div class="flex items-center gap-2 shrink-0">
-                        <a href="<?= base_url('admin/portal-announcements/edit/' . $ann['id']) ?>" 
-                           class="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-400 hover:text-sky-600 hover:border-sky-200 hover:bg-sky-50 transition-all">
-                            <i class="fas fa-edit"></i>
-                        </a>
                         <button type="button" 
                                 onclick="confirmDelete('<?= base_url('admin/portal-announcements/delete/' . $ann['id']) ?>')"
                                 class="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-all">

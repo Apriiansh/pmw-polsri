@@ -123,9 +123,36 @@
                     prose-em:text-slate-700 prose-em:italic
                     prose-li:text-slate-600 prose-li:text-sm md:prose-li:text-base
                     prose-blockquote:border-l-4 prose-blockquote:border-sky-500 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-slate-500">
-            <?= $announcement['content'] ?>
+            <!-- Content will be rendered here by JS if it is Delta, otherwise raw HTML fallback -->
+            <div id="delta-fallback">
+                <?= $announcement['content'] ?>
+            </div>
         </div>
     </article>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const contentDiv = document.getElementById('announcement-content');
+            const fallbackDiv = document.getElementById('delta-fallback');
+            const rawContent = <?= json_encode($announcement['content']) ?>;
+            
+            if (rawContent && (rawContent.startsWith('{') || rawContent.startsWith('['))) {
+                try {
+                    const delta = JSON.parse(rawContent);
+                    // Create a temporary Quill instance in read-only mode to render the Delta
+                    const tempCont = document.createElement('div');
+                    const tempQuill = new Quill(tempCont, { readOnly: true });
+                    tempQuill.setContents(delta);
+                    
+                    // Replace fallback with rendered HTML
+                    contentDiv.innerHTML = tempQuill.root.innerHTML;
+                } catch (e) {
+                    console.error('Error parsing Delta:', e);
+                    // Fallback to raw content if parsing fails
+                }
+            }
+        });
+    </script>
 
     <!-- Attachments Section -->
     <?php if (!empty($attachments)): ?>

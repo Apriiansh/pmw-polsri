@@ -25,10 +25,6 @@
     <?php endif; ?>
 
 <div x-data="{ 
-    previewTitle: '',
-    previewCategory: 'Info',
-    previewDate: '<?= date('Y-m-d') ?>',
-    previewContent: '', 
     files: []
 }">
     <form action="<?= base_url('admin/portal-announcements/store') ?>" method="POST" enctype="multipart/form-data" class="space-y-6" id="announcementForm">
@@ -39,7 +35,7 @@
                 <!-- Title -->
                 <div class="md:col-span-2">
                     <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-wider">Judul Pengumuman</label>
-                    <input type="text" name="title" id="title" required x-model="previewTitle"
+                    <input type="text" name="title" id="title" required
                            placeholder="Contoh: Pendaftaran PMW 2026 Resmi Dibuka"
                            class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:bg-white focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all">
                 </div>
@@ -57,7 +53,7 @@
                 <!-- Category -->
                 <div>
                     <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-wider">Kategori</label>
-                    <select name="category" required x-model="previewCategory"
+                    <select name="category" required
                             class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:border-sky-500 outline-none transition-all">
                         <option value="Penting">Penting</option>
                         <option value="Info">Info</option>
@@ -81,7 +77,7 @@
                 <!-- Date -->
                 <div>
                     <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-wider">Tanggal</label>
-                    <input type="date" name="date" required x-model="previewDate"
+                    <input type="date" name="date" required
                            class="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:border-sky-500 outline-none transition-all">
                 </div>
 
@@ -150,16 +146,6 @@
             </button>
         </div>
 
-        <!-- Layout Preview (Live) -->
-        <div class="mt-16">
-            <div class="flex items-center gap-3 mb-6">
-                <div class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
-                    <i class="fas fa-eye text-xs"></i>
-                </div>
-                <h3 class="text-sm font-black text-slate-800 uppercase tracking-[0.2em]">Pratinjau Live Tata Letak Publik</h3>
-            </div>
-            <?= $this->include('admin/portal_announcements/_preview') ?>
-        </div>
     </form>
 </div>
 </div>
@@ -222,20 +208,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Helper to update Alpine preview
     function updatePreview() {
-        const html = quill.root.innerHTML;
+        const delta = quill.getContents();
+        const json = JSON.stringify(delta);
+
         // Sync to hidden input immediately for robustness
-        contentInput.value = html;
-        
-        if (window.Alpine && alpineEl) {
-            const data = Alpine.$data(alpineEl);
-            if (data) data.previewContent = html;
-        }
+        contentInput.value = json;
     }
 
     // Sync on every change
     quill.on('text-change', function() {
         updatePreview();
-        console.log('Quill content synced to hidden input and preview');
     });
 
     // Initial sync
@@ -251,11 +233,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Form Submit handling
     form.addEventListener('submit', function(e) {
         // Final sync check
-        const html = quill.root.innerHTML;
-        contentInput.value = html;
+        const delta = quill.getContents();
+        contentInput.value = JSON.stringify(delta);
         
-        // Validation check for content
-        if (html === '<p><br></p>' || html.trim() === '') {
+        // Validation check for content (check if delta has actual content)
+        const isBlank = delta.ops.length === 0 || (delta.ops.length === 1 && delta.ops[0].insert === '\n');
+        
+        if (isBlank) {
             e.preventDefault();
             Swal.fire({
                 title: 'Konten Kosong',
@@ -265,8 +249,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             return;
         }
-        
-        console.log('Form submitting, HTML length:', contentInput.value.length);
     });
 });
 </script>

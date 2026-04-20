@@ -340,7 +340,16 @@
                                         <span class="text-xs text-slate-400"><?= date('d F Y', strtotime($ann['date'])) ?></span>
                                     </div>
                                     <h3 class="font-semibold text-slate-800 mb-1"><?= $ann['title'] ?></h3>
-                                    <p class="text-sm text-slate-600 line-clamp-2"><?= strip_tags($ann['content']) ?></p>
+                                    <p class="text-sm text-slate-600 line-clamp-2">
+                                        <?php 
+                                            $content = trim($ann['content']);
+                                            if (str_starts_with($content, '{') || str_starts_with($content, '[')) {
+                                                echo "Lihat detail pengumuman...";
+                                            } else {
+                                                echo strip_tags($content);
+                                            }
+                                        ?>
+                                    </p>
                                 </div>
                             </div>
                         </div>
