@@ -17,7 +17,7 @@ use CodeIgniter\Shield\Entities\User;
 
 class AdminController extends BaseController
 {
-    protected $helpers = ['form', 'url', 'text', 'pmw'];
+    protected $helpers = ['form', 'url', 'text', 'pmw', 'cms'];
 
     /**
      * User list page
@@ -385,7 +385,199 @@ class AdminController extends BaseController
 
     public function cms()
     {
-        return view('dashboard/placeholder', ['title' => 'Manajemen Konten (CMS)']);
+        $group = $this->request->getGet('group') ?: 'all';
+        $pageFilter = $this->request->getGet('page') ?: 'all';
+        $cmsModel = new \App\Models\CmsContentModel();
+        
+        if ($group === 'all') {
+            if ($pageFilter !== 'all') {
+                $contents = $cmsModel->groupStart()
+                    ->where('group', $pageFilter)
+                    ->orLike('group', $pageFilter . '_', 'after')
+                    ->groupEnd()
+                    ->orderBy('group', 'ASC')
+                    ->findAll();
+            } else {
+                $contents = $cmsModel->orderBy('group', 'ASC')->findAll();
+            }
+        } else {
+            $contents = $cmsModel->where('group', $group)->findAll();
+        }
+        
+        // Define logical order for groups based on public page layout
+        $groupOrder = [
+            // Home Page
+            'home_hero'            => 1,
+            'home_features'        => 2,
+            'home_workflow'        => 3,
+            'home_gallery'         => 4,
+            'home_stats'           => 5,
+            'home_announcements'   => 6,
+            'home_cta'             => 7,
+            
+            // Tahapan Page
+            'tahapan_hero'         => 10,
+            'tahapan_flow'         => 11,
+            'tahapan_cta'          => 12,
+            
+            // Tentang Page
+            'tentang_hero'         => 20,
+            'tentang_vision'       => 21,
+            'tentang_objectives'   => 22,
+            'tentang_cta'          => 23,
+            
+            // Galeri Page
+            'galeri_hero'          => 30,
+            'galeri_grid'          => 31,
+            
+            // Pengumuman Page
+            'pengumuman_hero'      => 40,
+            'pengumuman_subscribe' => 41,
+            
+            // General Settings
+            'general'              => 100,
+        ];
+
+        // Group contents by their group field
+        $groupedContents = [];
+        foreach ($contents as $content) {
+            $groupedContents[$content['group']][] = $content;
+        }
+
+        // Sort grouped contents based on our defined logical order
+        uksort($groupedContents, function($a, $b) use ($groupOrder) {
+            $orderA = $groupOrder[$a] ?? 999;
+            $orderB = $groupOrder[$b] ?? 999;
+            return $orderA <=> $orderB;
+        });
+        
+        $data = [
+            'title'           => 'Manajemen Konten (CMS) | PMW Polsri',
+            'header_title'    => 'Manajemen Konten',
+            'header_subtitle' => 'Kelola konten dinamis halaman publik',
+            'groupedContents' => $groupedContents,
+            'activeGroup'     => $group,
+            'pageFilter'      => $pageFilter,
+            'groups'          => [
+                'home_hero'            => 'Beranda: Hero',
+                'home_features'        => 'Beranda: Fitur',
+                'home_workflow'        => 'Beranda: Alur',
+                'home_gallery'         => 'Beranda: Galeri (Preview)',
+                'home_stats'           => 'Beranda: Statistik',
+                'home_announcements'   => 'Beranda: Pengumuman',
+                'home_cta'             => 'Beranda: Kontak & CTA',
+                'tahapan_hero'         => 'Tahapan: Hero',
+                'tahapan_flow'         => 'Tahapan: Alur Pendaftaran',
+                'tahapan_cta'          => 'Tahapan: CTA',
+                'tentang_hero'         => 'Tentang: Hero',
+                'tentang_vision'       => 'Tentang: Visi & Misi',
+                'tentang_objectives'   => 'Tentang: Tujuan Program',
+                'tentang_cta'          => 'Tentang: CTA',
+                'galeri_hero'          => 'Galeri: Hero',
+                'galeri_grid'          => 'Galeri: Foto Kegiatan',
+                'pengumuman_hero'      => 'Pengumuman: Hero',
+                'pengumuman_subscribe' => 'Pengumuman: Langganan',
+                'general'              => 'Umum',
+            ]
+        ];
+
+        return view('admin/cms/index', $data);
+    }
+
+    /**
+     * Save CMS content updates
+     */
+    public function saveCms()
+    {
+        $cmsModel = new \App\Models\CmsContentModel();
+        $group = $this->request->getPost('group');
+        $inputs = $this->request->getPost('cms'); // Array of [key => content]
+        
+        if (!$group || !is_array($inputs)) {
+            return redirect()->back()->with('error', 'Data tidak valid');
+        }
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        try {
+            foreach ($inputs as $key => $content) {
+                // Find existing
+                $existing = $cmsModel->where('key', $key)->first();
+                if (!$existing) continue;
+
+                $updateData = [];
+
+                // Handle based on type
+                if ($existing['type'] === 'json') {
+                    // Content from form should already be JSON string if using JS repeater,
+                    // or we might need to encode it if it's an array from standard form
+                    $updateData['content'] = is_array($content) ? json_encode($content) : $content;
+                } else if ($existing['type'] === 'image') {
+                    // Image logic: Check for upload first
+                    $file = $this->request->getFile("cms_file.{$key}");
+                    if ($file && $file->isValid() && !$file->hasMoved()) {
+                        $uploadDir = WRITEPATH . 'uploads/cms';
+                        if (!is_dir($uploadDir)) {
+                            mkdir($uploadDir, 0755, true);
+                            file_put_contents($uploadDir . '/.htaccess', "deny from all\n");
+                        }
+                        
+                        // Delete old local file if exists
+                        if (!empty($existing['content']) && !str_starts_with($existing['content'], 'http')) {
+                            $oldPath = WRITEPATH . $existing['content'];
+                            if (is_file($oldPath)) @unlink($oldPath);
+                        }
+
+                        $newName = $file->getRandomName();
+                        $file->move($uploadDir, $newName);
+                        $updateData['content'] = 'uploads/cms/' . $newName;
+                    } else {
+                        // If no file, use the text input (URL/Link)
+                        $updateData['content'] = $content;
+                    }
+                } else {
+                    $updateData['content'] = $content;
+                }
+
+                $cmsModel->update($existing['id'], $updateData);
+            }
+
+            $db->transComplete();
+
+            // Invalidate Cache
+            if ($group === 'all') {
+                // Broad clear for homepage and general groups
+                $targetGroups = ['home_hero', 'home_features', 'home_workflow', 'home_gallery', 'home_announcements', 'home_cta', 'general'];
+                foreach ($targetGroups as $tg) {
+                    cache()->delete("cms_group_{$tg}");
+                }
+            } else {
+                cache()->delete("cms_group_{$group}");
+            }
+
+            $page = $this->request->getPost('page') ?: 'all';
+            return redirect()->to("admin/cms?group={$group}&page={$page}")->with('success', 'Konten berhasil diperbarui');
+        } catch (\Exception $e) {
+            $db->transRollback();
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * View CMS image (serve file securely)
+     */
+    public function viewCmsImage($filename)
+    {
+        $filePath = WRITEPATH . 'uploads/cms/' . $filename;
+        if (!file_exists($filePath)) {
+            return $this->response->setStatusCode(404);
+        }
+
+        $mimeType = mime_content_type($filePath);
+        return $this->response
+            ->setContentType($mimeType)
+            ->setBody(file_get_contents($filePath));
     }
 
     public function pmwSystem()

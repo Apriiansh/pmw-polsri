@@ -52,6 +52,18 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         });
 
         $routes->get('cms', 'AdminController::cms');
+        $routes->post('cms/save', 'AdminController::saveCms');
+        $routes->get('cms/image/(:any)', 'AdminController::viewCmsImage/$1');
+
+        // Portal Announcements (News/Blog)
+        $routes->group('portal-announcements', static function ($routes) {
+            $routes->get('/', 'Admin\\PortalAnnouncementController::index');
+            $routes->get('create', 'Admin\\PortalAnnouncementController::create');
+            $routes->post('store', 'Admin\\PortalAnnouncementController::store');
+            $routes->get('edit/(:num)', 'Admin\\PortalAnnouncementController::edit/$1');
+            $routes->post('update/(:num)', 'Admin\\PortalAnnouncementController::update/$1');
+            $routes->get('delete/(:num)', 'Admin\\PortalAnnouncementController::delete/$1');
+        });
 
         // PMW System - Master Jadwal
         $routes->get('pmw-system', 'AdminController::pmwSystem');

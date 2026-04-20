@@ -35,10 +35,24 @@ class PublicPages extends BaseController
      */
     public function tahapan(): string
     {
+        $periodModel = new \App\Models\PmwPeriodModel();
+        $scheduleModel = new \App\Models\PmwScheduleModel();
+
+        $activePeriod = $periodModel->where('is_active', 1)->first();
+        $schedules = [];
+
+        if ($activePeriod) {
+            $schedules = $scheduleModel->where('period_id', $activePeriod['id'])
+                ->orderBy('phase_number', 'ASC')
+                ->findAll();
+        }
+
         return view('public/tahapan', [
-            'title' => 'Tahapan Program',
+            'title'            => 'Tahapan Program',
+            'activePeriod'     => $activePeriod,
+            'schedules'        => $schedules,
             'meta_description' => 'Alur dan tahapan Program Mahasiswa Wirausaha Polsri mulai dari pendaftaran, seleksi, hingga awarding dan expo.',
-            'meta_keywords' => 'Tahapan PMW, Seleksi PMW Polsri, Jadwal PMW 2026, Pitching Desk'
+            'meta_keywords'    => 'Tahapan PMW, Seleksi PMW Polsri, Jadwal PMW 2026, Pitching Desk'
         ]);
     }
 
@@ -59,10 +73,23 @@ class PublicPages extends BaseController
      */
     public function pengumuman(): string
     {
+        $announcementModel = new \App\Models\PortalAnnouncementModel();
+        
+        $category = $this->request->getGet('category');
+        $query = $announcementModel->where('is_published', 1);
+
+        if ($category && $category !== 'Semua') {
+            $query->where('category', $category);
+        }
+
+        $announcements = $query->orderBy('date', 'DESC')->findAll();
+
         return view('public/pengumuman', [
-            'title' => 'Pengumuman',
+            'title'            => 'Pengumuman',
+            'announcements'    => $announcements,
+            'currentCategory'  => $category ?? 'Semua',
             'meta_description' => 'Dapatkan informasi terbaru, jadwal seleksi, dan pengumuman kelolosan dana Program Mahasiswa Wirausaha Polsri.',
-            'meta_keywords' => 'Pengumuman PMW Polsri, Hasil Seleksi PMW, Berita Wirausaha Kampus'
+            'meta_keywords'    => 'Pengumuman PMW Polsri, Hasil Seleksi PMW, Berita Wirausaha Kampus'
         ]);
     }
 }

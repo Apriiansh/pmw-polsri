@@ -3,22 +3,22 @@
 <?= $this->section('content') ?>
 
 <!-- Hero Section -->
-<section class="relative overflow-hidden hero-gradient hero-pattern">
+<section id="section-tentang-hero" class="relative overflow-hidden hero-gradient hero-pattern">
     <div class="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-28">
         <div class="text-center max-w-3xl mx-auto">
-            <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-4">Tentang Program</p>
+            <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-4"><?= cms('tentang_hero_badge', 'Tentang Program') ?></p>
             <h1 class="font-display text-4xl sm:text-5xl font-bold text-(--text-heading)] mb-6">
-                Program Mahasiswa <span class="text-gradient">Wirausaha</span>
+                <?= cms('tentang_hero_title', 'Program Mahasiswa <span class="text-gradient">Wirausaha</span>') ?>
             </h1>
             <p class="text-lg text-(--text-body)] leading-relaxed">
-                Program pembinaan kewirausahaan bagi mahasiswa Politeknik Negeri Sriwijaya untuk mengembangkan usaha berbasis inovasi dan kreativitas.
+                <?= cms('tentang_hero_description', 'Program pembinaan kewirausahaan bagi mahasiswa Politeknik Negeri Sriwijaya untuk mengembangkan usaha berbasis inovasi dan kreativitas.') ?>
             </p>
         </div>
     </div>
 </section>
 
 <!-- Vision & Mission -->
-<section class="py-20 lg:py-32">
+<section id="section-tentang-vision" class="py-20 lg:py-32">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
         <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             
@@ -26,7 +26,7 @@
             <div>
                 <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3">Visi & Misi</p>
                 <h2 class="font-display text-3xl lg:text-4xl font-bold text-(--text-heading)] mb-6">
-                    Mengembangkan <span class="text-gradient">Entrepreneur Muda</span>
+                    <?= cms('tentang_vision_title', 'Mengembangkan <span class="text-gradient">Entrepreneur Muda</span>') ?>
                 </h2>
                 
                 <div class="space-y-6">
@@ -37,7 +37,7 @@
                         <div>
                             <h3 class="font-display text-xl font-bold text-(--text-heading)] mb-2">Visi</h3>
                             <p class="text-(--text-body)] leading-relaxed">
-                                Menjadikan Politeknik Negeri Sriwijaya sebagai pusat unggulan pengembangan kewirausahaan yang menghasilkan entrepreneur muda berdaya saing tinggi, inovatif, dan berkontribusi pada pertumbuhan ekonomi lokal maupun nasional.
+                                <?= cms('tentang_vision_content', 'Menjadikan Politeknik Negeri Sriwijaya sebagai pusat unggulan pengembangan kewirausahaan yang menghasilkan entrepreneur muda berdaya saing tinggi, inovatif, dan berkontribusi pada pertumbuhan ekonomi lokal maupun nasional.') ?>
                             </p>
                         </div>
                     </div>
@@ -49,22 +49,22 @@
                         <div>
                             <h3 class="font-display text-xl font-bold text-(--text-heading)] mb-2">Misi</h3>
                             <ul class="space-y-3 text-(--text-body)]">
-                                <li class="flex items-start gap-3">
-                                    <i class="fas fa-check-circle text-emerald-500 mt-1 shrink-0"></i>
-                                    <span>Memfasilitasi mahasiswa dalam mengembangkan ide bisnis menjadi usaha nyata</span>
-                                </li>
-                                <li class="flex items-start gap-3">
-                                    <i class="fas fa-check-circle text-emerald-500 mt-1 shrink-0"></i>
-                                    <span>Memberikan pendanaan dan akses permodalan untuk pengembangan usaha</span>
-                                </li>
-                                <li class="flex items-start gap-3">
-                                    <i class="fas fa-check-circle text-emerald-500 mt-1 shrink-0"></i>
-                                    <span>Menyediakan mentoring dan pendampingan dari praktisi berpengalaman</span>
-                                </li>
-                                <li class="flex items-start gap-3">
-                                    <i class="fas fa-check-circle text-emerald-500 mt-1 shrink-0"></i>
-                                    <span>Membangun ekosistem kewirausahaan yang kolaboratif dan berkelanjutan</span>
-                                </li>
+                                <?php 
+                                $missions = cms('tentang_mission_list', []);
+                                if (empty($missions)) {
+                                    $missions = [
+                                        'Memfasilitasi mahasiswa dalam mengembangkan ide bisnis menjadi usaha nyata',
+                                        'Memberikan pendanaan dan akses permodalan untuk pengembangan usaha',
+                                        'Menyediakan mentoring dan pendampingan dari praktisi berpengalaman',
+                                        'Membangun ekosistem kewirausahaan yang kolaboratif dan berkelanjutan'
+                                    ];
+                                }
+                                foreach ($missions as $mission): ?>
+                                    <li class="flex items-start gap-3">
+                                        <i class="fas fa-check-circle text-emerald-500 mt-1 shrink-0"></i>
+                                        <span><?= $mission ?></span>
+                                    </li>
+                                <?php endforeach; ?>
                             </ul>
                         </div>
                     </div>
@@ -75,7 +75,7 @@
             <div class="relative">
                 <div class="rounded-2xl overflow-hidden shadow-xl">
                     <img 
-                        src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&q=80" 
+                        src="<?= cms_img(cms('tentang_vision_image', 'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&q=80')) ?>" 
                         alt="Entrepreneur workspace" 
                         class="w-full h-auto object-cover aspect-4/3"
                     >
@@ -94,80 +94,43 @@
 </section>
 
 <!-- Program Objectives -->
-<section class="py-20 lg:py-32 bg-linear-to-b from-white to-sky-50/30">
+<section id="section-tentang-objectives" class="py-20 lg:py-32 bg-linear-to-b from-white to-sky-50/30">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
         
         <div class="text-center max-w-2xl mx-auto mb-16">
-            <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3">Tujuan Program</p>
-            <h2 class="font-display text-3xl lg:text-4xl font-bold text-(--text-heading)] mb-4">
-                Apa yang Kami <span class="text-gradient">Capai</span>
+            <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3">Target & Capaian</p>
+            <h2 class="font-display text-3xl lg:text-4xl font-bold text-(--text-heading)] mb-6">
+                <?= cms('tentang_objectives_title', 'Apa yang Kami Capai') ?>
             </h2>
-            <p class="text-(--text-muted)]">
-                PMW Polsri berkomitmen untuk memberikan dampak nyata bagi mahasiswa dan masyarakat.
-            </p>
         </div>
-        
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            
-            <div class="feature-card text-center">
-                <div class="feature-icon sky mx-auto">
-                    <i class="fas fa-lightbulb"></i>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <?php 
+            $objectives = cms('tentang_objectives_list', []);
+            if (empty($objectives)) {
+                $objectives = [
+                    ['icon' => 'fa-lightbulb', 'color' => 'sky', 'title' => 'Inovasi & Kreativitas', 'desc' => 'Mendorong mahasiswa mengembangkan produk/jasa inovatif.'],
+                    ['icon' => 'fa-hand-holding-usd', 'color' => 'yellow', 'title' => 'Kemandirian Ekonomi', 'desc' => 'Membantu mahasiswa membangun sumber penghasilan mandiri.'],
+                    ['icon' => 'fa-network-wired', 'color' => 'emerald', 'title' => 'Networking Bisnis', 'desc' => 'Membangun jaringan dengan pelaku usaha dan investor.'],
+                    ['icon' => 'fa-graduation-cap', 'color' => 'sky', 'title' => 'Skill Development', 'desc' => 'Pelatihan manajemen bisnis dan financial literacy.'],
+                    ['icon' => 'fa-users', 'color' => 'yellow', 'title' => 'Job Creation', 'desc' => 'Menciptakan lapangan kerja melalui usaha berkelanjutan.'],
+                    ['icon' => 'fa-globe-asia', 'color' => 'emerald', 'title' => 'Dampak Sosial', 'desc' => 'Mengembangkan usaha yang berdampak positif bagi masyarakat.'],
+                ];
+            }
+            foreach ($objectives as $obj): 
+                $bgColor = $obj['color'] === 'sky' ? 'bg-sky-50' : ($obj['color'] === 'yellow' ? 'bg-yellow-50' : 'bg-emerald-50');
+                $iconColor = $obj['color'] === 'sky' ? 'text-sky-500' : ($obj['color'] === 'yellow' ? 'text-yellow-600' : 'text-emerald-500');
+            ?>
+                <div class="bg-white p-8 rounded-2xl border border-slate-100 hover:border-sky-200 hover:shadow-xl hover:shadow-sky-500/5 transition-all group">
+                    <div class="w-14 h-14 rounded-xl <?= $bgColor ?> flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas <?= $obj['icon'] ?> <?= $iconColor ?> text-2xl"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-bold text-(--text-heading)] mb-3"><?= $obj['title'] ?></h3>
+                    <p class="text-(--text-body)] leading-relaxed">
+                        <?= $obj['desc'] ?>
+                    </p>
                 </div>
-                <h3 class="font-display text-lg font-bold text-(--text-heading)] mb-2">Inovasi & Kreativitas</h3>
-                <p class="text-sm text-(--text-muted)]">
-                    Mendorong mahasiswa mengembangkan produk/jasa inovatif yang berbasis teknologi dan kreativitas.
-                </p>
-            </div>
-            
-            <div class="feature-card text-center">
-                <div class="feature-icon yellow mx-auto">
-                    <i class="fas fa-hand-holding-usd"></i>
-                </div>
-                <h3 class="font-display text-lg font-bold text-(--text-heading)] mb-2">Kemandirian Ekonomi</h3>
-                <p class="text-sm text-(--text-muted)]">
-                    Membantu mahasiswa membangun sumber penghasilan mandiri sejak masa studi.
-                </p>
-            </div>
-            
-            <div class="feature-card text-center">
-                <div class="feature-icon emerald mx-auto">
-                    <i class="fas fa-network-wired"></i>
-                </div>
-                <h3 class="font-display text-lg font-bold text-(--text-heading)] mb-2">Networking Bisnis</h3>
-                <p class="text-sm text-(--text-muted)]">
-                    Membangun jaringan dengan pelaku usaha, investor, dan stakeholder industri.
-                </p>
-            </div>
-            
-            <div class="feature-card text-center">
-                <div class="feature-icon sky mx-auto">
-                    <i class="fas fa-graduation-cap"></i>
-                </div>
-                <h3 class="font-display text-lg font-bold text-(--text-heading)] mb-2">Skill Development</h3>
-                <p class="text-sm text-(--text-muted)]">
-                    Pelatihan manajemen bisnis, pemasaran digital, financial literacy, dan leadership.
-                </p>
-            </div>
-            
-            <div class="feature-card text-center">
-                <div class="feature-icon yellow mx-auto">
-                    <i class="fas fa-users"></i>
-                </div>
-                <h3 class="font-display text-lg font-bold text-(--text-heading)] mb-2">Job Creation</h3>
-                <p class="text-sm text-(--text-muted)]">
-                    Menciptakan lapangan kerja melalui pengembangan usaha yang berkelanjutan.
-                </p>
-            </div>
-            
-            <div class="feature-card text-center">
-                <div class="feature-icon emerald mx-auto">
-                    <i class="fas fa-globe-asia"></i>
-                </div>
-                <h3 class="font-display text-lg font-bold text-(--text-heading)] mb-2">Dampak Sosial</h3>
-                <p class="text-sm text-(--text-muted)]">
-                    Mengembangkan usaha yang berdampak positif bagi masyarakat dan lingkungan.
-                </p>
-            </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>
@@ -271,7 +234,7 @@
             <h2 class="font-display text-sky-200 text-3xl lg:text-4xl font-bold mb-4">
                 Apa yang Anda <span class="text-gradient-accent">Dapatkan</span>
             </h2>
-            <p class="text-slate-300">
+            <p class="text-slate-800">
                 Bergabung dengan PMW membuka akses ke berbagai fasilitas dan dukungan pengembangan usaha.
             </p>
         </div>
@@ -393,17 +356,17 @@
 </section>
 
 <!-- CTA Section -->
-<section class="py-20 lg:py-24 cta-gradient cta-pattern relative overflow-hidden">
+<section id="section-tentang-cta" class="py-20 lg:py-24 cta-gradient cta-pattern relative overflow-hidden">
     <div class="absolute inset-0 opacity-20">
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white rounded-full blur-3xl"></div>
     </div>
     
     <div class="max-w-4xl mx-auto px-6 lg:px-8 text-center relative z-10">
         <h2 class="font-display text-3xl lg:text-4xl font-bold text-white mb-6">
-            Siap Bergabung dengan PMW?
+            <?= cms('tentang_cta_title', 'Siap Bergabung dengan PMW?') ?>
         </h2>
         <p class="text-lg text-black mb-8 max-w-2xl mx-auto">
-            Pelajari tahapan program selengkapnya dan persiapkan proposal terbaik Anda.
+            <?= cms('tentang_cta_description', 'Pelajari tahapan program selengkapnya dan persiapkan proposal terbaik Anda.') ?>
         </p>
         <div class="flex flex-wrap justify-center gap-4">
             <a href="<?= base_url('tahapan') ?>" class="btn-accent text-base px-8 py-4">

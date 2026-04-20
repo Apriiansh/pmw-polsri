@@ -187,6 +187,7 @@
                         'id'    => 'manajemen',
                         'children' => [
                             ['route' => 'admin/users/', 'label' => 'Manajemen User',   'match' => 'admin/users'],
+                            ['route' => 'admin/portal-announcements', 'label' => 'Manajemen Pengumuman', 'match' => 'admin/portal-announcements'],
                             ['route' => 'admin/cms',    'label' => 'Manajemen Konten', 'match' => 'admin/cms'],
                         ]
                     ];

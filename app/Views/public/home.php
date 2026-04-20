@@ -3,7 +3,7 @@
 <?= $this->section('content') ?>
 
 <!-- Hero Section -->
-<section class="relative overflow-hidden hero-gradient hero-pattern">
+<section id="section-hero" class="relative overflow-hidden hero-gradient hero-pattern">
     <div class="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-32">
         <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             
@@ -11,16 +11,16 @@
             <div class="animate-stagger">
                 <div class="badge badge-sky mb-4">
                     <i class="fas fa-rocket text-xs"></i>
-                    <span>Program Tahun 2026</span>
+                    <span><?= cms('home_hero_badge', 'Program Tahun 2026') ?></span>
                 </div>
                 
                 <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-(--text-heading) leading-tight mb-6">
-                    Program Mahasiswa <br>
-                    <span class="text-gradient">Wirausaha</span>
+                    <?= cms('home_hero_title_1', 'Program Mahasiswa') ?> <br>
+                    <span class="text-gradient"><?= cms('home_hero_title_2', 'Wirausaha') ?></span>
                 </h1>
                 
                 <p class="text-lg text-(--text-body) leading-relaxed mb-8 max-w-xl">
-                    Politeknik Negeri Sriwijaya memfasilitasi mahasiswa untuk mengembangkan ide bisnis menjadi usaha nyata melalui program pembinaan kewirausahaan.
+                    <?= cms('home_hero_description', 'Politeknik Negeri Sriwijaya memfasilitasi mahasiswa untuk mengembangkan ide bisnis menjadi usaha nyata melalui program pembinaan kewirausahaan.') ?>
                 </p>
                 
                 <div class="flex flex-wrap gap-4">
@@ -36,18 +36,19 @@
                 
                 <!-- Stats -->
                 <div class="flex flex-wrap gap-8 mt-12 pt-8 border-t border-sky-200/50">
+                    <?php 
+                    $stats = cms('home_hero_stats', [
+                        ['number' => '7+', 'label' => 'Tahun Berdiri'],
+                        ['number' => '100+', 'label' => 'Tim Terbina'],
+                        ['number' => '50+', 'label' => 'Usaha Aktif'],
+                    ]);
+                    foreach ($stats as $stat): 
+                    ?>
                     <div>
-                        <div class="stat-number">7+</div>
-                        <div class="stat-label">Tahun Berdiri</div>
+                        <div class="stat-number"><?= $stat['number'] ?></div>
+                        <div class="stat-label"><?= $stat['label'] ?></div>
                     </div>
-                    <div>
-                        <div class="stat-number">100+</div>
-                        <div class="stat-label">Tim Terbina</div>
-                    </div>
-                    <div>
-                        <div class="stat-number">50+</div>
-                        <div class="stat-label">Usaha Aktif</div>
-                    </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
             
@@ -55,7 +56,7 @@
             <div class="relative lg:pl-8 animate-stagger delay-200">
                 <div class="relative rounded-2xl overflow-hidden shadow-2xl shadow-sky-200/50">
                     <img 
-                        src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80" 
+                        src="<?= cms_img(cms('home_hero_image'), 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80') ?>" 
                         alt="Mahasiswa berkolaborasi" 
                         class="w-full h-auto object-cover aspect-4/3"
                     >
@@ -97,68 +98,42 @@
 </section>
 
 <!-- Features Section -->
-<section class="py-20 lg:py-32">
+<section id="section-features" class="py-20 lg:py-32">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
         
         <!-- Section Header -->
         <div class="text-center max-w-2xl mx-auto mb-16">
-            <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3">Mengapa PMW?</p>
-            <h2 class="font-display text-3xl lg:text-4xl font-bold text-(--text-heading)] mb-4">
-                Program Pembinaan <span class="text-gradient">Komprehensif</span>
+            <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3"><?= cms('home_features_badge', 'Mengapa PMW?') ?></p>
+            <h2 class="font-display text-3xl lg:text-4xl font-bold text-(--text-heading) mb-4">
+                <?= cms('home_features_title', 'Program Pembinaan Komprehensif') ?>
             </h2>
-            <p class="text-(--text-muted)]">
-                Program Mahasiswa Wirausaha dirancang untuk memberikan dukungan holistik dari ide hingga usaha yang berkelanjutan.
+            <p class="text-(--text-muted)">
+                <?= cms('home_features_description', 'Program Mahasiswa Wirausaha dirancang untuk memberikan dukungan holistik dari ide hingga usaha yang berkelanjutan.') ?>
             </p>
         </div>
         
         <!-- Features Grid -->
         <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            
-            <div class="feature-card animate-stagger">
-                <div class="feature-icon sky">
-                    <i class="fas fa-route"></i>
+            <?php 
+            $features = cms('home_features_list', []);
+            foreach ($features as $index => $feature): 
+            ?>
+            <div class="feature-card animate-stagger" style="animation-delay: <?= $index * 100 ?>ms">
+                <div class="feature-icon <?= $feature['color'] ?? 'sky' ?>">
+                    <i class="fas <?= $feature['icon'] ?? 'fa-rocket' ?>"></i>
                 </div>
-                <h3 class="font-display text-lg font-bold text-(--text-heading)] mb-2">Proses Jelas</h3>
-                <p class="text-sm text-(--text-muted)] leading-relaxed">
-                    Tahapan program yang terstruktur dari pendaftaran hingga awarding dengan milestone yang jelas.
+                <h3 class="font-display text-lg font-bold text-(--text-heading) mb-2"><?= $feature['title'] ?></h3>
+                <p class="text-sm text-(--text-muted) leading-relaxed">
+                    <?= $feature['desc'] ?>
                 </p>
             </div>
-            
-            <div class="feature-card animate-stagger delay-100">
-                <div class="feature-icon yellow">
-                    <i class="fas fa-users"></i>
-                </div>
-                <h3 class="font-display text-lg font-bold text-(--text-heading)] mb-2">Tim Pendamping</h3>
-                <p class="text-sm text-(--text-muted)] leading-relaxed">
-                    Didampingi oleh dosen dan mentor industri berpengalaman dalam setiap tahap pengembangan.
-                </p>
-            </div>
-            
-            <div class="feature-card animate-stagger delay-200">
-                <div class="feature-icon sky">
-                    <i class="fas fa-coins"></i>
-                </div>
-                <h3 class="font-display text-lg font-bold text-(--text-heading)] mb-2">Dana Ilham</h3>
-                <p class="text-sm text-(--text-muted)] leading-relaxed">
-                    Akses pendanaan tahap 1 dan tahap 2 untuk mengakselerasi pertumbuhan usaha Anda.
-                </p>
-            </div>
-            
-            <div class="feature-card animate-stagger delay-300">
-                <div class="feature-icon emerald">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <h3 class="font-display text-lg font-bold text-(--text-heading)] mb-2">Pengembangan Skill</h3>
-                <p class="text-sm text-(--text-muted)] leading-relaxed">
-                    Pelatihan kewirausahaan, manajemen bisnis, dan pengembangan produk berkualitas.
-                </p>
-            </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>
 
 <!-- Workflow Preview Section -->
-<section class="py-20 lg:py-32 bg-linear-to-b from-white to-sky-50/30">
+<section id="section-workflow" class="py-20 lg:py-32 bg-linear-to-b from-white to-sky-50/30">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
         
         <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -184,38 +159,29 @@
             
             <!-- Content -->
             <div class="order-1 lg:order-2">
-                <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3">Alur Program</p>
-                <h2 class="font-display text-3xl lg:text-4xl font-bold text-(--text-heading)] mb-6">
-                    11 Tahapan Menuju <span class="text-gradient">Wirausaha Mandiri</span>
+                <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3"><?= cms('home_workflow_badge', 'Alur Program') ?></p>
+                <h2 class="font-display text-3xl lg:text-4xl font-bold text-(--text-heading) mb-6">
+                    <?= cms('home_workflow_title', '11 Tahapan Menuju Wirausaha Mandiri') ?>
                 </h2>
                 
-                <p class="text-(--text-body)] leading-relaxed mb-8">
-                    Program ini dirancang dengan pendekatan berbasis proses yang sistematis. Setiap tahap memiliki kriteria evaluasi yang jelas dan dukungan yang sesuai.
+                <p class="text-(--text-body) leading-relaxed mb-8">
+                    <?= cms('home_workflow_description', 'Program ini dirancang dengan pendekatan berbasis proses yang sistematis. Setiap tahap memiliki kriteria evaluasi yang jelas dan dukungan yang sesuai.') ?>
                 </p>
                 
                 <!-- Timeline Preview -->
                 <div class="space-y-4 mb-8">
+                    <?php 
+                    $workflow = cms('home_workflow_list', []);
+                    foreach ($workflow as $item): 
+                    ?>
                     <div class="flex items-center gap-4 p-3 rounded-xl bg-white border border-sky-100 shadow-sm">
-                        <div class="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 font-bold text-sm">1</div>
+                        <div class="w-10 h-10 rounded-full bg-<?= $item['color'] ?? 'sky' ?>-100 flex items-center justify-center text-<?= $item['color'] ?? 'sky' ?>-600 font-bold text-sm"><?= $item['num'] ?></div>
                         <div>
-                            <p class="font-semibold text-slate-800">Pendaftaran & Proposal</p>
-                            <p class="text-xs text-slate-500">Submit ide bisnis Anda</p>
+                            <p class="font-semibold text-slate-800"><?= $item['title'] ?></p>
+                            <p class="text-xs text-slate-500"><?= $item['desc'] ?></p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-4 p-3 rounded-xl bg-white border border-sky-100 shadow-sm">
-                        <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 font-bold text-sm">2</div>
-                        <div>
-                            <p class="font-semibold text-slate-800">Seleksi & Pitching</p>
-                            <p class="text-xs text-slate-500">Presentasi di depan reviewer</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-4 p-3 rounded-xl bg-white border border-sky-100 shadow-sm">
-                        <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-sm">3</div>
-                        <div>
-                            <p class="font-semibold text-slate-800">Implementasi & Mentoring</p>
-                            <p class="text-xs text-slate-500">Bimbingan intensif 4 bulan</p>
-                        </div>
-                    </div>
+                    <?php endforeach; ?>
                 </div>
                 
                 <a href="<?= base_url('tahapan') ?>" class="btn-outline">
@@ -228,15 +194,15 @@
 </section>
 
 <!-- Gallery Preview Section -->
-<section class="py-20 lg:py-32">
+<section id="section-gallery" class="py-20 lg:py-32">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
         
         <!-- Section Header -->
         <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
             <div>
-                <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3">Dokumentasi</p>
-                <h2 class="font-display text-3xl lg:text-4xl font-bold text-(--text-heading)]">
-                    Galeri <span class="text-gradient">Kegiatan</span>
+                <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3"><?= cms('home_gallery_badge', 'Dokumentasi') ?></p>
+                <h2 class="font-display text-3xl lg:text-4xl font-bold text-(--text-heading)">
+                    <?= cms('home_gallery_title_1', 'Galeri') ?> <span class="text-gradient"><?= cms('home_gallery_title_2', 'Kegiatan') ?></span>
                 </h2>
             </div>
             <a href="<?= base_url('galeri') ?>" class="btn-ghost text-sm">
@@ -282,20 +248,60 @@
     </div>
 </section>
 
+<!-- Statistics -->
+<section id="section-stats" class="py-20 lg:py-24 bg-linear-to-br from-yellow-400 to-amber-500 p-8 rounded-2xl text-center">
+    <div class="absolute inset-0 opacity-30">
+        <div class="absolute top-0 right-0 w-96 h-96 bg-yellow-300 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-96 h-96 bg-amber-300 rounded-full blur-3xl"></div>
+    </div>
+    
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+            <?php 
+            $stats = cms('home_stats_list', [
+                ['icon' => 'fa-users', 'val' => '500+', 'label' => 'Peserta Terdaftar', 'color' => 'sky'],
+                ['icon' => 'fa-store', 'val' => '120+', 'label' => 'Usaha Aktif', 'color' => 'yellow'],
+                ['icon' => 'fa-chalkboard-teacher', 'val' => '50+', 'label' => 'Mentor Berpengalaman', 'color' => 'emerald'],
+                ['icon' => 'fa-hand-holding-dollar', 'val' => '2.5M', 'label' => 'Total Dana Terdistribusi', 'color' => 'amber'],
+            ]);
+            if (empty($stats)) {
+                $stats = [
+                    ['icon' => 'fa-users', 'val' => '500+', 'label' => 'Peserta Terdaftar', 'color' => 'sky'],
+                    ['icon' => 'fa-store', 'val' => '120+', 'label' => 'Usaha Aktif', 'color' => 'yellow'],
+                    ['icon' => 'fa-chalkboard-teacher', 'val' => '50+', 'label' => 'Mentor Berpengalaman', 'color' => 'emerald'],
+                    ['icon' => 'fa-hand-holding-dollar', 'val' => '2.5M', 'label' => 'Total Dana Terdistribusi', 'color' => 'amber'],
+                ];
+            }
+            foreach ($stats as $stat): 
+                $bgColor = "bg-{$stat['color']}-100";
+                $textColor = "text-{$stat['color']}-600";
+            ?>
+                <div class="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-yellow-100">
+                    <div class="w-12 h-12 rounded-xl <?= $bgColor ?> flex items-center justify-center mx-auto mb-3">
+                        <i class="fas <?= $stat['icon'] ?> <?= $textColor ?> text-xl"></i>
+                    </div>
+                    <div class="text-4xl lg:text-5xl font-display font-bold <?= $textColor ?> mb-2"><?= $stat['val'] ?></div>
+                    <div class="text-slate-600 font-medium"><?= $stat['label'] ?></div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+
 <!-- Announcements Section -->
-<section class="py-20 lg:py-32 bg-linear-to-b from-sky-50/30 to-white">
+<section id="section-announcements" class="py-20 lg:py-32 bg-linear-to-b from-sky-50/30 to-white">
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
         
         <div class="grid lg:grid-cols-3 gap-12">
             
             <!-- Section Header -->
             <div class="lg:col-span-1">
-                <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3">Informasi Terkini</p>
+                <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3"><?= cms('home_announcement_badge', 'Informasi Terkini') ?></p>
                 <h2 class="font-display text-3xl font-bold text-(--text-heading) mb-4">
-                    Pengumuman <span class="text-gradient">Terbaru</span>
+                    <?= cms('home_announcement_title_1', 'Pengumuman') ?> <span class="text-gradient"><?= cms('home_announcement_title_2', 'Terbaru') ?></span>
                 </h2>
                 <p class="text-(--text-muted) mb-6">
-                    Pantau terus informasi penting seputar Program Mahasiswa Wirausaha.
+                    <?= cms('home_announcement_description', 'Pantau terus informasi penting seputar Program Mahasiswa Wirausaha.') ?>
                 </p>
                 <a href="<?= base_url('pengumuman') ?>" class="btn-primary">
                     <span>Semua Pengumuman</span>
@@ -305,62 +311,48 @@
             
             <!-- Announcements List -->
             <div class="lg:col-span-2 space-y-4">
-                
-                <div class="announcement-card urgent">
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-rose-100 flex items-center justify-center shrink-0">
-                            <i class="fas fa-exclamation text-rose-500"></i>
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="badge bg-rose-100 text-rose-700">Penting</span>
-                                <span class="text-xs text-slate-400">14 April 2026</span>
-                            </div>
-                            <h3 class="font-semibold text-slate-800 mb-1">Pendaftaran PMW 2026 Dibuka</h3>
-                            <p class="text-sm text-slate-600">Pendaftaran Program Mahasiswa Wirausaha tahun 2026 resmi dibuka. Deadline pengumpulan proposal hingga 30 Mei 2026.</p>
-                        </div>
+                <?php if (empty($latestAnnouncements)): ?>
+                    <div class="bg-white rounded-2xl border border-slate-100 p-8 text-center">
+                        <p class="text-slate-500">Belum ada pengumuman terbaru.</p>
                     </div>
-                </div>
-                
-                <div class="announcement-card">
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-sky-100 flex items-center justify-center shrink-0">
-                            <i class="fas fa-info text-sky-500"></i>
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="badge badge-sky">Info</span>
-                                <span class="text-xs text-slate-400">10 April 2026</span>
+                <?php else: ?>
+                    <?php foreach ($latestAnnouncements as $ann): ?>
+                        <div class="announcement-card <?= $ann['type'] === 'urgent' ? 'urgent' : ($ann['type'] === 'success' ? 'success' : ($ann['type'] === 'warning' ? 'warning' : '')) ?>">
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-xl <?= 
+                                    $ann['type'] === 'urgent' ? 'bg-rose-100 text-rose-500' : (
+                                    $ann['type'] === 'success' ? 'bg-emerald-100 text-emerald-500' : (
+                                    $ann['type'] === 'warning' ? 'bg-amber-100 text-amber-500' : 'bg-sky-100 text-sky-500')) 
+                                ?> flex items-center justify-center shrink-0">
+                                    <i class="fas <?= 
+                                        $ann['type'] === 'urgent' ? 'fa-exclamation' : (
+                                        $ann['type'] === 'success' ? 'fa-trophy' : (
+                                        $ann['type'] === 'warning' ? 'fa-calendar' : 'fa-info')) 
+                                    ?>"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="badge <?= 
+                                            $ann['type'] === 'urgent' ? 'bg-rose-100 text-rose-700' : (
+                                            $ann['type'] === 'success' ? 'badge-emerald' : (
+                                            $ann['type'] === 'warning' ? 'badge-yellow' : 'badge-sky')) 
+                                        ?>"><?= $ann['category'] ?></span>
+                                        <span class="text-xs text-slate-400"><?= date('d F Y', strtotime($ann['date'])) ?></span>
+                                    </div>
+                                    <h3 class="font-semibold text-slate-800 mb-1"><?= $ann['title'] ?></h3>
+                                    <p class="text-sm text-slate-600 line-clamp-2"><?= strip_tags($ann['content']) ?></p>
+                                </div>
                             </div>
-                            <h3 class="font-semibold text-slate-800 mb-1">Workshop Penulisan Proposal Bisnis</h3>
-                            <p class="text-sm text-slate-600">Workshop gratis untuk mahasiswa yang ingin mempelajari cara menulis proposal bisnis yang efektif.</p>
                         </div>
-                    </div>
-                </div>
-                
-                <div class="announcement-card success">
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
-                            <i class="fas fa-trophy text-emerald-500"></i>
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="badge badge-emerald">Prestasi</span>
-                                <span class="text-xs text-slate-400">5 April 2026</span>
-                            </div>
-                            <h3 class="font-semibold text-slate-800 mb-1">Tim PMW Raih Juara di Kompetisi Startup Nasional</h3>
-                            <p class="text-sm text-slate-600">Selamat kepada tim EcoPrint yang meraih Juara 2 dalam Kompetisi Startup Lingkungan tingkat Nasional.</p>
-                        </div>
-                    </div>
-                </div>
-                
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
     </div>
 </section>
 
 <!-- CTA Section -->
-<section class="py-20 lg:py-24 cta-gradient cta-pattern relative overflow-hidden">
+<section id="section-cta" class="py-20 lg:py-24 cta-gradient cta-pattern relative overflow-hidden">
     <!-- Decorative elements -->
     <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
     <div class="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
@@ -368,15 +360,15 @@
     <div class="max-w-4xl mx-auto px-6 lg:px-8 text-center relative z-10">
         <div class="badge badge-yellow mb-6 mx-auto">
             <i class="fas fa-rocket text-xs"></i>
-            <span>Siap Memulai?</span>
+            <span><?= cms('home_cta_badge', 'Siap Memulai?') ?></span>
         </div>
         
         <h2 class="font-display text-3xl lg:text-5xl font-bold text-white mb-6">
-            Bersiaplah untuk PMW Berikutnya
+            <?= cms('home_cta_title', 'Bersiaplah untuk PMW Berikutnya') ?>
         </h2>
         
         <p class="text-lg text-black-100 mb-10 max-w-2xl mx-auto">
-            Pelajari tahapan program dan persiapkan diri Anda untuk pendaftaran periode berikutnya. Tim kami siap membimbing Anda.
+            <?= cms('home_cta_description', 'Pelajari tahapan program dan persiapkan diri Anda untuk pendaftaran periode berikutnya. Tim kami siap membimbing Anda.') ?>
         </p>
         
         <div class="flex flex-wrap justify-center gap-4">
