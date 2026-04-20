@@ -68,9 +68,6 @@ class PublicPages extends BaseController
         ]);
     }
 
-    /**
-     * Halaman Pengumuman
-     */
     public function pengumuman(): string
     {
         $announcementModel = new \App\Models\PortalAnnouncementModel();
@@ -90,6 +87,33 @@ class PublicPages extends BaseController
             'currentCategory'  => $category ?? 'Semua',
             'meta_description' => 'Dapatkan informasi terbaru, jadwal seleksi, dan pengumuman kelolosan dana Program Mahasiswa Wirausaha Polsri.',
             'meta_keywords'    => 'Pengumuman PMW Polsri, Hasil Seleksi PMW, Berita Wirausaha Kampus'
+        ]);
+    }
+
+    /**
+     * Halaman Detail Pengumuman
+     */
+    public function detail(string $slug): string
+    {
+        $announcementModel = new \App\Models\PortalAnnouncementModel();
+        $attachmentModel = new \App\Models\AnnouncementAttachmentModel();
+
+        $announcement = $announcementModel->where('slug', $slug)
+            ->where('is_published', 1)
+            ->first();
+
+        if (!$announcement) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        $attachments = $attachmentModel->where('announcement_id', $announcement['id'])->findAll();
+
+        return view('public/pengumuman_detail', [
+            'title'            => $announcement['title'],
+            'announcement'    => $announcement,
+            'attachments'     => $attachments,
+            'meta_description' => strip_tags(substr($announcement['content'], 0, 160)),
+            'meta_keywords'    => $announcement['category'] . ', PMW Polsri, Pengumuman'
         ]);
     }
 }

@@ -12,6 +12,9 @@
     "file": "app.js",
     "name": "app",
     "src": "app/Views/js/app.js",
-    "isEntry": true
+    "isEntry": true,
+    "css": [
+      "app.css"
+    ]
   }
 }

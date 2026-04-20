@@ -78,10 +78,16 @@
                                         <?= date('d F Y', strtotime($ann['date'])) ?>
                                     </span>
                                 </div>
-                                <h3 class="font-display text-2xl font-bold text-slate-800 mb-3 leading-tight"><?= $ann['title'] ?></h3>
-                                <div class="prose prose-slate prose-sm max-w-none text-slate-600 mb-4 leading-relaxed">
-                                    <?= $ann['content'] ?>
+                                <a href="<?= base_url('pengumuman/' . $ann['slug']) ?>" class="group/title">
+                                    <h3 class="font-display text-2xl font-bold text-slate-800 mb-3 leading-tight group-hover/title:text-sky-600 transition-colors"><?= $ann['title'] ?></h3>
+                                </a>
+                                <div class="text-sm text-slate-600 mb-4 leading-relaxed line-clamp-2">
+                                    <?= strip_tags($ann['content']) ?>
                                 </div>
+                                <a href="<?= base_url('pengumuman/' . $ann['slug']) ?>" class="inline-flex items-center gap-2 text-xs font-black text-sky-500 uppercase tracking-widest hover:text-sky-600 transition-colors">
+                                    Baca Selengkapnya
+                                    <i class="fas fa-arrow-right text-[10px]"></i>
+                                </a>
                             </div>
                         </div>
                     </div>

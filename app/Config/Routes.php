@@ -21,6 +21,7 @@ $routes->get('tentang', 'PublicPages::tentang');
 $routes->get('tahapan', 'PublicPages::tahapan');
 $routes->get('galeri', 'PublicPages::galeri');
 $routes->get('pengumuman', 'PublicPages::pengumuman');
+$routes->get('pengumuman/(:segment)', 'PublicPages::detail/$1');
 $routes->get('sitemap.xml', 'Sitemap::index');
 
 $routes->group('', ['filter' => 'session'], static function ($routes) {
@@ -64,6 +65,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
             $routes->get('edit/(:num)', 'Admin\\PortalAnnouncementController::edit/$1');
             $routes->post('update/(:num)', 'Admin\\PortalAnnouncementController::update/$1');
             $routes->get('delete/(:num)', 'Admin\\PortalAnnouncementController::delete/$1');
+            $routes->delete('deleteAttachment/(:num)', 'Admin\\PortalAnnouncementController::deleteAttachment/$1');
         });
 
         // PMW System - Master Jadwal

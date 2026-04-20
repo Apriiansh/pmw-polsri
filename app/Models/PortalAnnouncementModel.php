@@ -23,7 +23,7 @@ class PortalAnnouncementModel extends Model
     // Validation
     protected $validationRules      = [
         'title'    => 'required|min_length[5]|max_length[255]',
-        'slug'     => 'required|is_unique[portal_announcements.slug,id,{id}]',
+        'slug'     => 'required|is_unique[portal_announcements.slug]',
         'category' => 'required',
         'content'  => 'required',
     ];

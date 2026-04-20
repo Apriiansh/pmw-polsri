@@ -6,7 +6,7 @@
                 <h2 class="text-2xl font-black mb-2">Halaman Pengumuman</h2>
                 <p class="text-violet-100 text-xs font-medium max-w-md leading-relaxed opacity-90">Kustomisasi teks banner dan area langganan informasi terbaru.</p>
             </div>
-            <a href="<?= base_url('admin/portal_announcements') ?>" 
+            <a href="<?= base_url('admin/portal-announcements') ?>" 
                class="bg-white/20 hover:bg-white/30 backdrop-blur-md px-6 py-3 rounded-2xl text-xs font-black transition-all flex items-center gap-3 border border-white/10 group">
                 <i class="fas fa-bullhorn group-hover:rotate-12 transition-transform"></i>
                 KELOLA DATA PENGUMUMAN

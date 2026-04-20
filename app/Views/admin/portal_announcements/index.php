@@ -73,7 +73,16 @@
                             <?php endif; ?>
                         </div>
                         <h3 class="font-bold text-slate-800 text-lg group-hover:text-sky-600 transition-colors truncate"><?= $ann['title'] ?></h3>
-                        <p class="text-xs text-slate-500 line-clamp-1 mt-1"><?= strip_tags($ann['content']) ?></p>
+                        <p class="text-xs text-slate-500 line-clamp-1 mt-1">
+                            <?php 
+                                $content = trim($ann['content']);
+                                if (str_starts_with($content, '{') || str_starts_with($content, '[')) {
+                                    echo "Lihat detail pengumuman...";
+                                } else {
+                                    echo strip_tags($content);
+                                }
+                            ?>
+                        </p>
                     </div>
 
                     <!-- Actions -->

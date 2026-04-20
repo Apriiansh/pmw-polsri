@@ -186,9 +186,9 @@
                         'icon'  => 'fa-database',
                         'id'    => 'manajemen',
                         'children' => [
-                            ['route' => 'admin/users/', 'label' => 'Manajemen User',   'match' => 'admin/users'],
-                            ['route' => 'admin/portal-announcements', 'label' => 'Manajemen Pengumuman', 'match' => 'admin/portal-announcements'],
-                            ['route' => 'admin/cms',    'label' => 'Manajemen Konten', 'match' => 'admin/cms'],
+                            ['route' => 'admin/users/', 'label' => 'Users',   'match' => 'admin/users'],
+                            ['route' => 'admin/portal-announcements', 'label' => 'Pengumuman', 'match' => 'admin/portal-announcements'],
+                            ['route' => 'admin/cms',    'label' => 'Konten', 'match' => 'admin/cms'],
                         ]
                     ];
                 }

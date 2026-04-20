@@ -38,8 +38,15 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
+    <!-- Vite Assets (Alpine.js + Tailwind) -->
+    <?php if (ENVIRONMENT === 'development'): ?>
+        <script type="module" src="http://localhost:5173/@vite/client"></script>
+        <script type="module" src="http://localhost:5173/app/Views/js/app.js"></script>
+        <link rel="stylesheet" href="http://localhost:5173/app/Views/css/input.css">
+    <?php else: ?>
+        <script type="module" src="<?= base_url('build/app.js') ?>"></script>
+        <link rel="stylesheet" href="<?= base_url('build/style.css') ?>">
+    <?php endif; ?>
 
     <!-- Page-specific styles -->
     <?= $this->renderSection('styles') ?>
@@ -330,8 +337,7 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
         </template>
     </div>
 
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Alpine.js initialized via Vite -->
 
     <!-- Page-specific scripts -->
     <?= $this->renderSection('scripts') ?>
