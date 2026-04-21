@@ -15,8 +15,8 @@
             <p class="text-sky-500 font-bold text-sm uppercase tracking-[0.2em] mb-4">
                 <?= cms('tahapan_hero_badge', 'Alur Program') ?>
             </p>
-            <h1 class="font-display text-5xl lg:text-7xl font-bold text-(--text-heading) mb-8 leading-tight">
-                <?= cms('tahapan_hero_title_1', 'Tahapan') ?> <span class="text-gradient text-shimmer"><?= cms('tahapan_hero_title_2', 'Program PMW') ?></span>
+            <h1 class="font-display text-5xl lg:text-7xl font-bold text-(--text-heading) mb-8 leading-tight text-shimmer">
+                <?= cms_split('tahapan_hero_title', 2, 'Tahapan Program PMW', 'end') ?>
             </h1>
             <p class="text-xl text-(--text-body) leading-relaxed">
                 <?= cms('tahapan_hero_description', 'Program Mahasiswa Wirausaha terdiri dari beberapa tahapan strategis yang dirancang untuk membangun mentalitas bisnis yang tangguh.') ?>
@@ -113,7 +113,7 @@
                 <?= cms('tahapan_flow_badge', 'Alur Pendaftaran') ?>
             </p>
             <h2 class="font-display text-3xl lg:text-5xl font-bold text-(--text-heading) mb-6">
-                <?= cms('tahapan_flow_title_1', 'Bagaimana Cara') ?> <span class="text-gradient">Mendaftar</span>
+                <?= cms_split('tahapan_flow_title', 1, 'Bagaimana Cara Mendaftar') ?>
             </h2>
             <p class="text-(--text-muted)">
                 <?= cms('tahapan_flow_description', 'Ikuti langkah-langkah strategis berikut untuk menjadi bagian dari ekosistem wirausaha Polsri.') ?>

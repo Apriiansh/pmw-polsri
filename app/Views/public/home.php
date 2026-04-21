@@ -4,7 +4,7 @@
 
 <!-- Hero Section -->
 <section id="section-hero" class="relative overflow-hidden hero-gradient hero-pattern">
-    <div class="max-w-7xl mx-auto px-6 lg:px-8 pt-24 pb-20 lg:pt-28 relative z-10">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 pt-24 pb-20 md:pt-28 lg:pt-32 relative z-10">
         <!-- Floating Decorative Blobs -->
         <div class="absolute top-0 -left-20 w-72 h-72 bg-sky-400/20 rounded-full blur-3xl animate-float"></div>
         <div class="absolute bottom-0 -right-20 w-96 h-96 bg-indigo-400/10 rounded-full blur-3xl animate-float" style="animation-delay: -2s"></div>
@@ -19,8 +19,7 @@
                 </div>
                 
                 <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-(--text-heading) leading-tight mb-6 text-shimmer">
-                    <?= cms('home_hero_title_1', 'Program Mahasiswa') ?> <br>
-                    <span class="text-gradient"><?= cms('home_hero_title_2', 'Wirausaha') ?></span>
+                    <?= cms_split('home_hero_title', 1, 'Program Mahasiswa Wirausaha', 'start') ?>
                 </h1>
                 
                 <p class="text-lg text-(--text-body) leading-relaxed mb-8 max-w-xl">
@@ -108,7 +107,7 @@
         <!-- Section Header -->
         <div class="text-center max-w-2xl mx-auto mb-16 reveal-on-scroll">
             <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3"><?= cms('home_features_badge', 'Mengapa PMW?') ?></p>
-            <h2 class="font-display text-3xl lg:text-4xl font-bold text-(--text-heading) mb-4 text-shimmer">
+            <h2 class="font-display text-3xl lg:text-4xl font-bold text-(--text-heading) mb-4">
                 <?= cms('home_features_title', 'Program Pembinaan Komprehensif') ?>
             </h2>
             <p class="text-(--text-muted)">
@@ -220,7 +219,7 @@
             <div>
                 <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3"><?= cms('home_gallery_badge', 'Dokumentasi') ?></p>
                 <h2 class="font-display text-3xl lg:text-4xl font-bold text-(--text-heading)">
-                    <?= cms('home_gallery_title_1', 'Galeri') ?> <span class="text-gradient"><?= cms('home_gallery_title_2', 'Kegiatan') ?></span>
+                    <?= cms_split('home_gallery_title', 1, 'Galeri Kegiatan') ?>
                 </h2>
             </div>
             <a href="<?= base_url('galeri') ?>" class="btn-ghost text-sm">
@@ -312,7 +311,7 @@
             <div class="lg:col-span-1">
                 <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-3"><?= cms('home_announcement_badge', 'Informasi Terkini') ?></p>
                 <h2 class="font-display text-3xl font-bold text-(--text-heading) mb-4">
-                    <?= cms('home_announcement_title_1', 'Pengumuman') ?> <span class="text-gradient"><?= cms('home_announcement_title_2', 'Terbaru') ?></span>
+                    <?= cms_split('home_announcement_title', 1, 'Pengumuman Terbaru') ?>
                 </h2>
                 <p class="text-(--text-muted) mb-6">
                     <?= cms('home_announcement_description', 'Pantau terus informasi penting seputar Program Mahasiswa Wirausaha.') ?>
@@ -384,8 +383,8 @@
                 <span><?= cms('home_cta_badge', 'Siap Memulai?') ?></span>
             </div>
             
-            <h2 class="font-display text-4xl lg:text-6xl font-bold text-white mb-8 leading-tight reveal-on-scroll stagger-2">
-                <?= cms('home_cta_title', 'Bersiaplah untuk PMW Berikutnya') ?>
+            <h2 class="font-display text-4xl lg:text-6xl font-bold text-white mb-8 text-shadow-lg leading-tight text-shimmer reveal-on-scroll stagger-2">
+                <?= cms_split('home_cta_title', 3, 'Bersiaplah untuk PMW Berikutnya', 'start') ?>
             </h2>
             
             <p class="text-xl text-white/80 mb-12 max-w-2xl mx-auto reveal-on-scroll stagger-3">

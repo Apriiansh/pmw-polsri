@@ -13,8 +13,8 @@
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
         <div class="text-center max-w-3xl mx-auto reveal-blur">
             <p class="text-sky-500 font-bold text-sm uppercase tracking-[0.2em] mb-4"><?= cms('pengumuman_hero_badge', 'Pusat Informasi') ?></p>
-            <h1 class="font-display text-5xl lg:text-7xl font-bold text-(--text-heading) mb-8 leading-tight">
-                Pengumuman <span class="text-gradient text-shimmer">Terbaru</span>
+            <h1 class="font-display text-5xl lg:text-7xl font-bold text-(--text-heading) mb-8 leading-tight text-shimmer">
+                <?= cms_split('pengumuman_hero_title', 1, 'Pengumuman Terbaru') ?>
             </h1>
             <p class="text-xl text-(--text-body) leading-relaxed">
                 <?= cms('pengumuman_hero_description', 'Pantau terus informasi strategis, jadwal kegiatan, dan prestasi gemilang dari ekosistem wirausaha Polsri.') ?>

@@ -145,7 +145,7 @@
                 <table class="pmw-table">
                     <thead>
                         <tr>
-                            <th>ID / Tim</th>
+                            <th><?= (in_array($mainRole, ['dosen', 'mentor'])) ? 'Ketua & Tim' : 'ID / Tim' ?></th>
                             <th>Kategori</th>
                             <th>Progres</th>
                             <th>Status</th>
@@ -154,13 +154,7 @@
                     </thead>
                     <tbody>
                         <?php
-                        $proposals = $proposals ?? [
-                            ['id' => 'PMW-26-001', 'team' => 'TechNova Solutions',  'category' => 'Teknologi Digital',  'progress' => 100, 'status' => 'Disetujui', 'date' => '12 Apr 2026'],
-                            ['id' => 'PMW-26-002', 'team' => 'EcoBite Culinary',    'category' => 'Kuliner Kreatif',    'progress' => 45,  'status' => 'Review',    'date' => '10 Apr 2026'],
-                            ['id' => 'PMW-26-003', 'team' => 'AgroSmart Polsri',    'category' => 'Agrobisnis',         'progress' => 100, 'status' => 'Disetujui', 'date' => '08 Apr 2026'],
-                            ['id' => 'PMW-26-004', 'team' => 'KriyaLokal Art',      'category' => 'Industri Kreatif',   'progress' => 75,  'status' => 'Revisi',    'date' => '05 Apr 2026'],
-                            ['id' => 'PMW-26-005', 'team' => 'HealthPulse Team',    'category' => 'Kesehatan',          'progress' => 20,  'status' => 'Review',    'date' => '02 Apr 2026'],
-                        ];
+                        $proposals = $proposals ?? [];
 
                         foreach ($proposals as $row):
                             // Progress bar color
@@ -184,14 +178,23 @@
                             };
                         ?>
                         <tr class="group">
-                            <!-- ID & Team -->
+                            <!-- ID & Team / Leader & Team -->
                             <td>
-                                <div class="font-display font-bold text-(--text-heading) text-[13px] italic">
-                                    <?= esc($row['id']) ?>
-                                </div>
-                                <div class="text-xs text-(--text-muted) font-medium mt-0.5">
-                                    <?= esc($row['team']) ?> &middot; <?= esc($row['date']) ?>
-                                </div>
+                                <?php if (in_array($mainRole, ['dosen', 'mentor'])): ?>
+                                    <div class="font-display font-bold text-(--text-heading) text-[13px]">
+                                        <?= esc($row['leader'] ?? '-') ?>
+                                    </div>
+                                    <div class="text-[11px] text-sky-500 font-bold uppercase tracking-wider mt-0.5">
+                                        <?= esc($row['team']) ?>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="font-display font-bold text-(--text-heading) text-[13px] italic">
+                                        <?= esc($row['id']) ?>
+                                    </div>
+                                    <div class="text-xs text-(--text-muted) font-medium mt-0.5">
+                                        <?= esc($row['team']) ?> &middot; <?= esc($row['date']) ?>
+                                    </div>
+                                <?php endif; ?>
                             </td>
 
                             <!-- Category -->
@@ -262,38 +265,79 @@
                 </div>
             </div>
 
-            <!-- Activity Feed card -->
-            <div class="card-premium p-6 animate-stagger delay-600">
+            <!-- Notifications & Announcements Slider -->
+            <div class="card-premium p-6 animate-stagger delay-600 overflow-hidden" x-data="{ 
+                activeSlide: 0, 
+                slides: <?= count($updates) ?>,
+                next() { this.activeSlide = (this.activeSlide + 1) % this.slides },
+                prev() { this.activeSlide = (this.activeSlide - 1 + this.slides) % this.slides }
+            }">
                 <div class="flex items-center justify-between mb-5">
-                    <h3 class="font-display text-sm font-bold text-(--text-heading)]">Aktivitas Terbaru</h3>
-                    <span class="text-[10px] font-black text-sky-400 uppercase tracking-widest">Live</span>
+                    <h3 class="font-display text-sm font-bold text-(--text-heading)">Update Terbaru</h3>
+                    
+                    <!-- Slider Navigation -->
+                    <div class="flex items-center gap-1.5" x-show="slides > 1">
+                        <button @click="prev()" class="w-6 h-6 rounded-lg bg-white border border-sky-100 flex items-center justify-center text-slate-400 hover:text-sky-500 hover:border-sky-200 transition-all">
+                            <i class="fas fa-chevron-left text-[10px]"></i>
+                        </button>
+                        <button @click="next()" class="w-6 h-6 rounded-lg bg-white border border-sky-100 flex items-center justify-center text-slate-400 hover:text-sky-500 hover:border-sky-200 transition-all">
+                            <i class="fas fa-chevron-right text-[10px]"></i>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="space-y-4">
-                    <?php
-                    $activities = $activities ?? [
-                        ['icon' => 'fa-file-circle-check', 'color' => 'text-emerald-500 bg-emerald-50', 'text' => 'TechNova Solutions disetujui', 'time' => '2 menit lalu'],
-                        ['icon' => 'fa-comment-dots',       'color' => 'text-sky-500 bg-sky-50',         'text' => 'Komentar baru pada EcoBite', 'time' => '15 menit lalu'],
-                        ['icon' => 'fa-rotate',             'color' => 'text-yellow-500 bg-yellow-50',   'text' => 'KriyaLokal diminta revisi',  'time' => '1 jam lalu'],
-                        ['icon' => 'fa-user-plus',          'color' => 'text-violet-500 bg-violet-50',   'text' => 'Mentor baru ditambahkan',    'time' => '3 jam lalu'],
-                    ];
+                <!-- Slider Content -->
+                <div class="relative min-h-[140px]">
+                    <?php if (empty($updates)): ?>
+                        <div class="flex flex-col items-center justify-center py-8 text-center">
+                            <div class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mb-3">
+                                <i class="fas fa-bell-slash text-slate-300"></i>
+                            </div>
+                            <p class="text-xs font-medium text-slate-400">Belum ada update terbaru</p>
+                        </div>
+                    <?php else: ?>
+                        <div class="flex transition-transform duration-500 ease-out h-full" :style="`transform: translateX(-${activeSlide * 100}%)`" style="display: flex;">
+                            <?php foreach ($updates as $update): ?>
+                            <div class="w-full shrink-0 px-1">
+                                <div class="bg-slate-50/50 border border-white/50 rounded-2xl p-4 h-full flex flex-col justify-between group">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-9 h-9 rounded-xl <?= $update['color'] ?> flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                                            <i class="fas <?= $update['icon'] ?> text-xs"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <span class="text-[10px] font-black <?= str_contains($update['color'], 'violet') ? 'text-violet-500' : 'text-sky-500' ?> uppercase tracking-widest block mb-1">
+                                                <?= $update['type'] === 'announcement' ? 'Pengumuman' : 'Notifikasi' ?>
+                                            </span>
+                                            <h4 class="text-xs font-bold text-(--text-heading) leading-snug line-clamp-2">
+                                                <?= esc($update['title']) ?>
+                                            </h4>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-4 flex items-center justify-between pt-3 border-t border-white/60">
+                                        <span class="text-[10px] font-semibold text-slate-400">
+                                            <i class="far fa-clock mr-1"></i> <?= $update['time'] ?>
+                                        </span>
+                                        <a href="<?= base_url($update['url']) ?>" class="text-[10px] font-black text-sky-500 hover:text-sky-600 flex items-center gap-1 group/btn">
+                                            Buka <i class="fas fa-arrow-right text-[8px] transition-transform group-hover/btn:translate-x-0.5"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
 
-                    foreach ($activities as $act):
-                    ?>
-                    <div class="flex items-start gap-3 group">
-                        <div class="w-8 h-8 rounded-xl <?= $act['color'] ?> flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-110 transition-transform duration-300">
-                            <i class="fas <?= $act['icon'] ?> text-xs"></i>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-xs font-semibold text-(--text-body)] leading-snug">
-                                <?= esc($act['text']) ?>
-                            </p>
-                            <p class="text-[10px] text-(--text-muted)] mt-0.5 font-medium">
-                                <?= esc($act['time']) ?>
-                            </p>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
+                <!-- Slide Indicators -->
+                <div class="flex justify-center gap-1.5 mt-5" x-show="slides > 1">
+                    <template x-for="i in slides" :key="i">
+                        <button 
+                            @click="activeSlide = i-1"
+                            class="h-1 rounded-full transition-all duration-300"
+                            :class="activeSlide === i-1 ? 'w-4 bg-sky-500' : 'w-1.5 bg-slate-200'"
+                        ></button>
+                    </template>
                 </div>
             </div>
 

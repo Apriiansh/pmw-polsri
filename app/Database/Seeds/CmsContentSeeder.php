@@ -18,18 +18,11 @@ class CmsContentSeeder extends Seeder
                 'label'   => 'Hero Badge Text',
             ],
             [
-                'key'     => 'home_hero_title_1',
-                'content' => 'Program Mahasiswa',
+                'key'     => 'home_hero_title',
+                'content' => 'Program Mahasiswa Wirausaha',
                 'type'    => 'text',
                 'group'   => 'home_hero',
-                'label'   => 'Hero Title (Line 1)',
-            ],
-            [
-                'key'     => 'home_hero_title_2',
-                'content' => 'Wirausaha',
-                'type'    => 'text',
-                'group'   => 'home_hero',
-                'label'   => 'Hero Title (Line 2)',
+                'label'   => 'Hero Title',
             ],
             [
                 'key'     => 'home_hero_description',
@@ -162,18 +155,34 @@ class CmsContentSeeder extends Seeder
                 'label'   => 'Gallery Badge',
             ],
             [
-                'key'     => 'home_gallery_title_1',
-                'content' => 'Galeri',
+                'key'     => 'home_gallery_title',
+                'content' => 'Galeri Kegiatan',
                 'type'    => 'text',
                 'group'   => 'home_gallery',
-                'label'   => 'Gallery Title (Part 1)',
+                'label'   => 'Gallery Title',
+            ],
+
+            // --- ANNOUNCEMENT SECTION ---
+            [
+                'key'     => 'home_announcement_badge',
+                'content' => 'Informasi Terkini',
+                'type'    => 'text',
+                'group'   => 'home_announcement',
+                'label'   => 'Announcement Badge',
             ],
             [
-                'key'     => 'home_gallery_title_2',
-                'content' => 'Kegiatan',
+                'key'     => 'home_announcement_title',
+                'content' => 'Pengumuman Terbaru',
                 'type'    => 'text',
-                'group'   => 'home_gallery',
-                'label'   => 'Gallery Title (Part 2)',
+                'group'   => 'home_announcement',
+                'label'   => 'Announcement Title',
+            ],
+            [
+                'key'     => 'home_announcement_description',
+                'content' => 'Pantau terus informasi penting seputar Program Mahasiswa Wirausaha.',
+                'type'    => 'text',
+                'group'   => 'home_announcement',
+                'label'   => 'Announcement Description',
             ],
 
             // --- CTA SECTION ---
@@ -208,18 +217,11 @@ class CmsContentSeeder extends Seeder
                 'label'   => 'Hero Badge',
             ],
             [
-                'key'     => 'tahapan_hero_title_1',
-                'content' => 'Tahapan',
+                'key'     => 'tahapan_hero_title',
+                'content' => 'Tahapan Program PMW',
                 'type'    => 'text',
                 'group'   => 'tahapan_hero',
-                'label'   => 'Hero Title (Part 1)',
-            ],
-            [
-                'key'     => 'tahapan_hero_title_2',
-                'content' => 'Program PMW',
-                'type'    => 'text',
-                'group'   => 'tahapan_hero',
-                'label'   => 'Hero Title (Part 2)',
+                'label'   => 'Hero Title',
             ],
             [
                 'key'     => 'tahapan_hero_description',
@@ -238,18 +240,11 @@ class CmsContentSeeder extends Seeder
                 'label'   => 'Flow Badge',
             ],
             [
-                'key'     => 'tahapan_flow_title_1',
-                'content' => 'Bagaimana Cara',
+                'key'     => 'tahapan_flow_title',
+                'content' => 'Bagaimana Cara Mendaftar',
                 'type'    => 'text',
                 'group'   => 'tahapan_flow',
-                'label'   => 'Flow Title (Part 1)',
-            ],
-            [
-                'key'     => 'tahapan_flow_title_2',
-                'content' => 'Mendaftar',
-                'type'    => 'text',
-                'group'   => 'tahapan_flow',
-                'label'   => 'Flow Title (Part 2)',
+                'label'   => 'Flow Title',
             ],
             [
                 'key'     => 'tahapan_flow_description',
@@ -315,7 +310,7 @@ class CmsContentSeeder extends Seeder
             // --- TENTANG PAGE: VISION & MISSION ---
             [
                 'key'     => 'tentang_vision_title',
-                'content' => 'Mengembangkan Entrepreneur Muda',
+                'content' => 'Mencetak Wirausaha Muda',
                 'type'    => 'text',
                 'group'   => 'tentang_vision',
                 'label'   => 'Vision Title',
@@ -410,7 +405,7 @@ class CmsContentSeeder extends Seeder
             ],
             [
                 'key'     => 'pengumuman_hero_title',
-                'content' => 'Pengumuman <span class="text-gradient">Terbaru</span>',
+                'content' => 'Pengumuman Terbaru',
                 'type'    => 'text',
                 'group'   => 'pengumuman_hero',
                 'label'   => 'Hero Title',
@@ -432,5 +427,10 @@ class CmsContentSeeder extends Seeder
                 $this->db->table('cms_content')->insert($row);
             }
         }
+
+        // --- CLEANUP ORPHAN KEYS ---
+        $validKeys = array_column($data, 'key');
+        $this->db->table('cms_content')->whereNotIn('key', $validKeys)->delete();
     }
 }
+

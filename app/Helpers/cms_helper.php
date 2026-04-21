@@ -102,3 +102,43 @@ if (!function_exists('cms_img')) {
         return base_url('admin/cms/image/' . basename($path));
     }
 }
+
+if (!function_exists('cms_split')) {
+    /**
+     * Splits CMS content and wraps part of it with a span for styling
+     * 
+     * @param string $key The CMS key
+     * @param int $count Number of words to highlight
+     * @param string $position 'end' or 'start'
+     * @param string $class CSS class for the span
+     * @param string $default Default content
+     * @return string
+     */
+    function cms_split(string $key, int $count = 2, $default = '', string $position = 'end', string $class = 'text-gradient')
+    {
+        $text = cms($key, $default);
+        if (empty($text)) return '';
+        
+        // Handle explicit <br> if user still uses it, or newlines
+        $text = str_replace(["\r\n", "\r", "\n"], ' ', strip_tags($text));
+        $words = explode(' ', trim($text));
+        $words = array_values(array_filter($words, fn($w) => $w !== '')); 
+        $total = count($words);
+        
+        if ($total <= $count) {
+            return '<span class="' . $class . '">' . $text . '</span>';
+        }
+        
+        if ($position === 'end') {
+            $normal = array_slice($words, 0, $total - $count);
+            $highlight = array_slice($words, -$count);
+            
+            return implode(' ', $normal) . ' <span class="' . $class . '">' . implode(' ', $highlight) . '</span>';
+        } else {
+            $highlight = array_slice($words, 0, $count);
+            $normal = array_slice($words, $count);
+            
+            return '<span class="' . $class . '">' . implode(' ', $highlight) . '</span> ' . implode(' ', $normal);
+        }
+    }
+}

@@ -300,8 +300,9 @@ class PmwProposalModel extends Model
     {
         $db = \Config\Database::connect();
         $builder = $db->table($this->table . ' p');
-        $builder->select('p.*, pa.lecturer_id, pa.mentor_id');
+        $builder->select('p.*, pa.lecturer_id, pa.mentor_id, pm.nama as ketua_nama');
         $builder->join('pmw_proposal_assignments pa', 'pa.proposal_id = p.id');
+        $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
         $builder->where('pa.lecturer_id', $lecturerId);
         
         if ($status) {
@@ -318,8 +319,9 @@ class PmwProposalModel extends Model
     {
         $db = \Config\Database::connect();
         $builder = $db->table($this->table . ' p');
-        $builder->select('p.*, pa.lecturer_id, pa.mentor_id');
+        $builder->select('p.*, pa.lecturer_id, pa.mentor_id, pm.nama as ketua_nama');
         $builder->join('pmw_proposal_assignments pa', 'pa.proposal_id = p.id');
+        $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
         $builder->where('pa.mentor_id', $mentorId);
 
         if ($status) {

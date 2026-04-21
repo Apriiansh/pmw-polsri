@@ -12,17 +12,17 @@
     }
 }">
     <!-- Header Page -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
             <h1 class="text-2xl font-black text-slate-800 tracking-tight"><?= esc($header_title) ?></h1>
             <p class="text-slate-500 text-sm"><?= esc($header_subtitle) ?></p>
         </div>
         
-        <div class="flex items-center gap-3">
-            <form action="" method="get" class="flex items-center gap-3">
+        <div class="w-full lg:w-auto">
+            <form action="" method="get" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <!-- Period Filter -->
-                <div class="w-48">
-                    <select name="period" class="form-textarea py-2 font-semibold cursor-pointer">
+                <div class="w-full sm:w-48">
+                    <select name="period" class="form-select w-full h-10 py-0 px-3 rounded-xl border-sky-100 font-semibold text-sm cursor-pointer focus:ring-sky-500 focus:border-sky-500">
                         <option value="">Semua Periode</option>
                         <?php foreach ($periods as $p): ?>
                             <option value="<?= $p['id'] ?>" <?= $periodFilter == $p['id'] ? 'selected' : '' ?>>
@@ -33,15 +33,22 @@
                 </div>
 
                 <!-- Search Input -->
-                <div class="input-group w-64">
-                    <div class="input-icon">
-                        <i class="fas fa-search text-xs"></i>
+                <div class="relative w-full sm:w-64">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-slate-400 text-xs"></i>
                     </div>
-                    <input type="text" name="search" value="<?= esc($search) ?>" placeholder="Cari Tim/Ketua...">
+                    <input 
+                        type="text" 
+                        name="search" 
+                        value="<?= esc($search) ?>" 
+                        placeholder="Cari Tim/Ketua..."
+                        class="block w-full h-10 pl-10 pr-3 py-2 border border-sky-100 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all font-medium"
+                    >
                 </div>
 
-                <button type="submit" class="btn-primary btn-sm !h-10 !w-10 flex items-center justify-center">
-                    <i class="fas fa-filter"></i>
+                <button type="submit" class="btn-primary h-10 px-4 sm:px-0 sm:w-10 flex items-center justify-center rounded-xl shrink-0">
+                    <i class="fas fa-filter sm:text-sm"></i>
+                    <span class="sm:hidden ml-2 font-bold text-sm uppercase tracking-wider">Filter Data</span>
                 </button>
             </form>
         </div>

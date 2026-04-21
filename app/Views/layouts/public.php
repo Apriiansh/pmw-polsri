@@ -44,9 +44,9 @@
         <script type="module" src="http://localhost:5173/app/Views/js/app.js"></script>
         <link rel="stylesheet" href="http://localhost:5173/app/Views/css/input-v2.css">
     <?php else: ?>
-        <script type="module" src="<?= base_url('build/app.js') ?>"></script>
-        <link rel="stylesheet" href="<?= base_url('build/app.css') ?>">
-        <link rel="stylesheet" href="<?= base_url('build/style_v2.css') ?>">
+        <script type="module" src="<?= base_url('build/app.js?v=' . filemtime(FCPATH . 'build/app.js')) ?>"></script>
+        <link rel="stylesheet" href="<?= base_url('build/app.css?v=' . filemtime(FCPATH . 'build/app.css')) ?>">
+        <link rel="stylesheet" href="<?= base_url('build/style_v2.css?v=' . filemtime(FCPATH . 'build/style_v2.css')) ?>">
     <?php endif; ?>
 
     <!-- Global Premium Interaction Engine -->

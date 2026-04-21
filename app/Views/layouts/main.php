@@ -36,9 +36,9 @@
 -->
 
 <body
-    class="bg-(--surface-page) text-(--text-body)"
+    class="bg-(--surface-page) text-(--text-body) overflow-x-hidden"
     x-data="{
-        isSidebarOpen: localStorage.getItem('sidebarOpen') !== 'false',
+        isSidebarOpen: window.innerWidth >= 1024 ? (localStorage.getItem('sidebarOpen') !== 'false') : false,
         isMobileMenuOpen: false,
         openDropdown: null,
         toggleSidebar() {
@@ -46,6 +46,7 @@
             localStorage.setItem('sidebarOpen', this.isSidebarOpen);
         }
     }"
+    @resize.window="if (window.innerWidth < 1024) isSidebarOpen = false"
     x-init="
         // Auto-open active dropdowns on load
         $nextTick(() => {
@@ -63,7 +64,7 @@
          SIDEBAR
     ================================================================= -->
         <aside
-            class="bg-white border-r border-sky-100 flex flex-col relative z-30 shrink-0 transition-all duration-300 ease-smooth"
+            class="hidden lg:flex bg-white border-r border-sky-100 flex-col relative z-30 shrink-0 transition-all duration-300 ease-smooth"
             :class="isSidebarOpen ? 'w-72' : 'w-[72px]'">
 
             <!-- Logo Header -->
@@ -93,7 +94,7 @@
                 <!-- Floating Toggle Button (Desktop only) -->
                 <button
                     @click="toggleSidebar()"
-                    class="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 items-center justify-center rounded-full bg-white border border-sky-100 text-slate-400 hover:text-sky-500 shadow-md hover:shadow-lg transition-all duration-300 z-50 group/toggle"
+                    class="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 items-center justify-center rounded-full bg-white border border-sky-100 text-slate-400 hover:text-sky-500 shadow-md hover:shadow-lg transition-all duration-300 z-50 group/toggle"
                     :class="isSidebarOpen ? '' : 'rotate-180'"
                     title="Toggle Sidebar">
                     <i class="fas fa-chevron-left text-[10px] transition-transform group-hover/toggle:-translate-x-0.5"></i>
@@ -450,7 +451,7 @@
             x-show="isMobileMenuOpen"
             x-cloak
             @click="isMobileMenuOpen = false"
-            class="fixed inset-0 bg-black/40 backdrop-blur-sm z-20 md:hidden"
+            class="fixed inset-0 bg-black/40 backdrop-blur-sm z-20 lg:hidden"
             x-transition:enter="transition ease-out duration-200"
             x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100"
@@ -465,18 +466,18 @@
         <main class="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden bg-(--surface-page)">
 
             <!-- HEADER -->
-            <header class="glass-header px-6 md:px-8 flex items-center justify-between h-20 shrink-0 relative z-10">
+            <header class="glass-header px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20 shrink-0 relative z-10">
 
                 <!-- Left: Mobile menu + Brand/Page Title -->
                 <div class="flex items-center gap-4">
                     <!-- Mobile hamburger -->
                     <button
                         @click="isMobileMenuOpen = !isMobileMenuOpen"
-                        class="md:hidden w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:bg-sky-50 hover:text-sky-500 transition-colors shrink-0">
+                        class="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:bg-sky-50 hover:text-sky-500 transition-colors shrink-0">
                         <i class="fas fa-bars text-lg"></i>
                     </button>
 
-                    <div class="hidden md:flex items-center gap-3">
+                    <div class="hidden lg:flex items-center gap-3">
                         <span class="text-xs font-black text-slate-300 uppercase tracking-widest pointer-events-none"><?= esc($title ?? 'PMW') ?></span>
                     </div>
                 </div>
@@ -695,7 +696,7 @@
         x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="translate-x-0"
         x-transition:leave-end="-translate-x-full"
-        class="fixed inset-y-0 left-0 w-72 bg-white border-r border-sky-100 flex flex-col z-40 md:hidden">
+        class="fixed inset-y-0 left-0 w-72 bg-white border-r border-sky-100 flex flex-col z-40 lg:hidden">
         <!-- Mobile Sidebar Header -->
         <div class="h-16 flex items-center justify-between px-4 border-b border-sky-50 shrink-0">
             <div class="flex items-center gap-3">

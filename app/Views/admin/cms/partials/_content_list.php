@@ -29,9 +29,14 @@
             </div>
         </div>
 
-        <div class="space-y-10 relative z-10">
-            <?php foreach ($groupItems as $content): ?>
-                <div class="space-y-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10 relative z-10">
+            <?php foreach ($groupItems as $content): 
+                // Determine if this field should take full width
+                $isFullWidth = in_array($content['type'], ['image', 'json', 'rich_text']) || 
+                               str_contains(strtolower($content['label']), 'description') || 
+                               str_contains(strtolower($content['label']), 'title');
+            ?>
+                <div class="space-y-3 <?= $isFullWidth ? 'md:col-span-2' : '' ?>">
                     <div class="flex items-center justify-between">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
                             <span class="w-4 h-[1px] bg-slate-200 group-hover:bg-sky-200 transition-colors"></span>

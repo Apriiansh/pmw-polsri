@@ -72,8 +72,8 @@
             <p class="text-sky-500 font-bold text-sm uppercase tracking-[0.2em] mb-4">
                 <?= cms('galeri_hero_badge', 'Dokumentasi') ?>
             </p>
-            <h1 class="font-display text-5xl lg:text-7xl font-bold text-(--text-heading) mb-8 leading-tight">
-                Galeri <span class="text-gradient text-shimmer">Kegiatan</span>
+            <h1 class="font-display text-5xl lg:text-7xl font-bold text-(--text-heading) mb-8 leading-tight text-shimmer">
+                <?= cms_split('home_gallery_title', 1, 'Galeri Kegiatan') ?>
             </h1>
             <p class="text-xl text-(--text-body) leading-relaxed">
                 <?= cms('galeri_hero_description', 'Momen-momen inspiratif dari perjalanan wirausaha mahasiswa Polsri. Dari ide kreatif hingga realisasi bisnis yang nyata.') ?>

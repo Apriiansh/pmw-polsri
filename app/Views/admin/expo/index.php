@@ -21,19 +21,19 @@
 }">
 
     <!-- Page Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-stagger">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 animate-stagger">
         <div>
-            <h2 class="section-title text-xl sm:text-2xl">
+            <h2 class="section-title text-2xl sm:text-3xl">
                 Awarding & <span class="text-gradient">Expo PMW</span>
             </h2>
-            <p class="section-subtitle text-[10px] sm:text-[11px]">Tahap Akhir — Expo Kewirausahaan & Awarding PMW</p>
+            <p class="section-subtitle text-[10px] sm:text-[11px] uppercase font-black tracking-widest opacity-70">Tahap Akhir — Expo Kewirausahaan & Awarding PMW</p>
         </div>
-        <div class="flex items-center gap-2">
-            <a href="<?= base_url('admin/awards') ?>" class="btn-outline bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-500 hover:text-white transition-all shadow-sm">
-                <i class="fas fa-trophy mr-2"></i> Manajemen Pemenang
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <a href="<?= base_url('admin/awards') ?>" class="btn-outline bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-500 hover:text-white transition-all shadow-sm py-2.5 px-5">
+                <i class="fas fa-trophy mr-2 text-xs"></i> Manajemen Pemenang
             </a>
-            <button @click="showScheduleModal = true" class="btn-primary shadow-lg shadow-sky-500/20">
-                <i class="fas fa-calendar-days mr-2"></i> Pengaturan Expo
+            <button @click="showScheduleModal = true" class="btn-primary shadow-lg shadow-sky-500/20 py-2.5 px-5">
+                <i class="fas fa-calendar-days mr-2 text-xs"></i> Pengaturan Expo
             </button>
         </div>
     </div>
@@ -60,7 +60,7 @@
                         </span>
                     </div>
                 </div>
-                <div class="md:ml-auto flex flex-col items-end gap-2">
+                <div class="md:ml-auto flex flex-col items-start md:items-end gap-2">
                     <?php if ($schedule): ?>
                         <span class="pmw-status <?= $schedule->is_closed ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200' ?> text-[10px] px-3">
                             <i class="fas <?= $schedule->is_closed ? 'fa-lock' : 'fa-lock-open' ?> mr-1.5"></i>
@@ -133,13 +133,13 @@
 
     <!-- Submissions Table -->
     <div class="space-y-6 animate-stagger delay-200">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h3 class="font-display text-base font-black text-(--text-heading)">
                 Daftar <span class="text-sky-500">Dokumentasi Expo</span>
             </h3>
             <div class="flex items-center gap-3">
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Filter Status:</span>
-                <select class="text-[10px] font-bold border-none bg-slate-100 rounded-lg px-3 py-1.5 focus:ring-sky-500">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">Filter Status:</span>
+                <select class="w-full sm:w-auto text-[10px] font-bold border border-slate-200 bg-white rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all">
                     <option>Semua Tim</option>
                     <option>Sudah Submit</option>
                     <option>Belum Submit</option>
