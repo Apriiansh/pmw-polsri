@@ -84,7 +84,7 @@
 
 <?= $this->section('content') ?>
 <!-- Header Section -->
-<section class="relative overflow-hidden pt-32 pb-16 lg:pt-48 lg:pb-24">
+<section class="relative overflow-hidden px-6 lg:px-8 pt-24 pb-20 lg:pt-28 relative z-10">
     <!-- Premium Background Elements -->
     <div class="absolute inset-0 -z-10">
         <div class="absolute top-0 right-1/4 w-96 h-96 bg-sky-500/10 rounded-full blur-[120px] animate-float"></div>

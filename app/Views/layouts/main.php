@@ -21,6 +21,7 @@
         <link rel="stylesheet" href="http://localhost:5173/app/Views/css/input.css">
     <?php else: ?>
         <script type="module" src="<?= base_url('build/app.js') ?>"></script>
+        <link rel="stylesheet" href="<?= base_url('build/app.css') ?>">
         <link rel="stylesheet" href="<?= base_url('build/style.css') ?>">
     <?php endif; ?>
 

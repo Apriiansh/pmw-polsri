@@ -45,25 +45,45 @@
         <link rel="stylesheet" href="http://localhost:5173/app/Views/css/input-v2.css">
     <?php else: ?>
         <script type="module" src="<?= base_url('build/app.js') ?>"></script>
-        <link rel="stylesheet" href="<?= base_url('build/style.css') ?>">
+        <link rel="stylesheet" href="<?= base_url('build/app.css') ?>">
+        <link rel="stylesheet" href="<?= base_url('build/style_v2.css') ?>">
     <?php endif; ?>
 
     <!-- Global Premium Interaction Engine -->
     <script>
+        // Add js-ready class immediately to enable animations only when JS is active
+        document.documentElement.classList.add('js-ready');
+
         document.addEventListener('DOMContentLoaded', () => {
             // 1. Scroll Reveal Logic
-            const observerOptions = { threshold: 0.15 };
+            const observerOptions = { 
+                threshold: 0.05, // Lower threshold for better reliability
+                rootMargin: '0px 0px -50px 0px' // Trigger slightly before it enters the viewport
+            };
+
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.classList.add('active');
+                        // Once animated, we can stop observing
+                        observer.unobserve(entry.target);
                     }
                 });
             }, observerOptions);
             
-            document.querySelectorAll('.reveal-on-scroll, .reveal-left, .reveal-right, .reveal-zoom, .reveal-blur, .reveal-mask').forEach(el => observer.observe(el));
+            const revealElements = document.querySelectorAll('.reveal-on-scroll, .reveal-left, .reveal-right, .reveal-zoom, .reveal-blur, .reveal-mask');
+            revealElements.forEach(el => observer.observe(el));
 
-            // 2. Magnetic Mouse Effect (Optional for extra polish)
+            // Fallback: If after 3 seconds some elements are still not active, force them (safety first)
+            setTimeout(() => {
+                revealElements.forEach(el => {
+                    if (!el.classList.contains('active')) {
+                        el.classList.add('active');
+                    }
+                });
+            }, 3000);
+
+            // 2. Magnetic Mouse Effect
             document.querySelectorAll('.card-magnetic').forEach(card => {
                 card.addEventListener('mousemove', (e) => {
                     const rect = card.getBoundingClientRect();
@@ -81,6 +101,14 @@
             });
         });
     </script>
+
+<style>
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+            position: relative;
+        }
+    </style>
 
     <!-- Page-specific styles -->
     <?= $this->renderSection('styles') ?>

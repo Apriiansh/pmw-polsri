@@ -16,6 +16,8 @@ $routes->get('logout', 'AuthController::logout');
 $routes->post('logout', 'AuthController::logout');
 
 
+$routes->get('admin/cms/image/(:any)', 'AdminController::viewCmsImage/$1');
+
 // Public Pages
 $routes->get('tentang', 'PublicPages::tentang');
 $routes->get('tahapan', 'PublicPages::tahapan');
@@ -59,8 +61,9 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('cms', 'AdminController::cms');
         $routes->post('cms/save', 'AdminController::saveCms');
         $routes->post('cms/upload-image', 'AdminController::uploadCmsImage');
-        $routes->get('cms/image/(:any)', 'AdminController::viewCmsImage/$1');
+    });
 
+    $routes->group('admin', ['filter' => 'group:admin'], static function ($routes) {
         // Portal Announcements (News/Blog)
         $routes->group('portal-announcements', static function ($routes) {
             $routes->get('/', 'Admin\\PortalAnnouncementController::index');

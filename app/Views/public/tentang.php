@@ -4,7 +4,7 @@
 
 <!-- Hero Section -->
 <section id="section-tentang-hero" class="relative overflow-hidden hero-gradient hero-pattern">
-    <div class="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-32">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 pt-24 pb-20 lg:pt-28 relative z-10">
         <div class="text-center max-w-3xl mx-auto reveal-zoom">
             <p class="text-sky-500 font-semibold text-sm uppercase tracking-wider mb-4 stagger-1"><?= cms('tentang_hero_badge', 'Tentang Program') ?></p>
             <h1 class="font-display text-4xl sm:text-6xl font-bold text-(--text-heading) mb-6 stagger-2 text-shimmer">

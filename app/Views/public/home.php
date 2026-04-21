@@ -4,7 +4,7 @@
 
 <!-- Hero Section -->
 <section id="section-hero" class="relative overflow-hidden hero-gradient hero-pattern">
-    <div class="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-32 relative z-10">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 pt-24 pb-20 lg:pt-28 relative z-10">
         <!-- Floating Decorative Blobs -->
         <div class="absolute top-0 -left-20 w-72 h-72 bg-sky-400/20 rounded-full blur-3xl animate-float"></div>
         <div class="absolute bottom-0 -right-20 w-96 h-96 bg-indigo-400/10 rounded-full blur-3xl animate-float" style="animation-delay: -2s"></div>
@@ -12,7 +12,7 @@
         <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             
             <!-- Content -->
-            <div class="reveal-on-scroll stagger-1">
+            <div>
                 <div class="badge badge-sky mb-4">
                     <i class="fas fa-rocket text-xs"></i>
                     <span><?= cms('home_hero_badge', 'Program Tahun 2026') ?></span>
@@ -23,11 +23,11 @@
                     <span class="text-gradient"><?= cms('home_hero_title_2', 'Wirausaha') ?></span>
                 </h1>
                 
-                <p class="text-lg text-(--text-body) leading-relaxed mb-8 max-w-xl reveal-on-scroll stagger-2">
+                <p class="text-lg text-(--text-body) leading-relaxed mb-8 max-w-xl">
                     <?= cms('home_hero_description', 'Politeknik Negeri Sriwijaya memfasilitasi mahasiswa untuk mengembangkan ide bisnis menjadi usaha nyata melalui program pembinaan kewirausahaan.') ?>
                 </p>
                 
-                <div class="flex flex-wrap gap-4 reveal-on-scroll stagger-3">
+                <div class="flex flex-wrap gap-4">
                     <a href="<?= base_url('register') ?>" class="btn-accent text-base px-8 py-4">
                         <i class="fas fa-paper-plane mr-2"></i>
                         Daftar Sekarang
@@ -39,7 +39,7 @@
                 </div>
                 
                 <!-- Stats -->
-                <div class="flex flex-wrap gap-8 mt-12 pt-8 border-t border-sky-200/50 reveal-on-scroll stagger-4">
+                <div class="flex flex-wrap gap-8 mt-12 pt-8 border-t border-sky-200/50">
                     <?php 
                     $stats = cms('home_hero_stats', [
                         ['number' => '7+', 'label' => 'Tahun Berdiri'],
@@ -48,7 +48,7 @@
                     ]);
                     foreach ($stats as $idx => $stat): 
                     ?>
-                    <div class="reveal-zoom stagger-<?= $idx + 1 ?>">
+                    <div>
                         <div class="stat-number"><?= $stat['number'] ?></div>
                         <div class="stat-label"><?= $stat['label'] ?></div>
                     </div>
@@ -57,8 +57,8 @@
             </div>
             
             <!-- Hero Image -->
-            <div class="relative lg:pl-8 reveal-zoom">
-                <div class="relative rounded-2xl overflow-hidden shadow-2xl shadow-sky-200/50 card-magnetic reveal-mask">
+            <div class="relative lg:pl-8">
+                <div class="relative rounded-2xl overflow-hidden shadow-2xl shadow-sky-200/50 card-magnetic">
                     <img 
                         src="<?= cms_img(cms('home_hero_image'), 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80') ?>" 
                         alt="Mahasiswa berkolaborasi" 
@@ -67,8 +67,8 @@
                     <div class="absolute inset-0 bg-linear-to-tr from-sky-500/20 to-transparent rounded-2xl"></div>
                 </div>
                 
-                <!-- Floating Cards -->
-                <div class="absolute -bottom-6 -left-6 bg-white rounded-xl p-4 shadow-lg border border-sky-100 animate-stagger delay-300">
+                <!-- Floating Cards (Desktop only for cleaner mobile UI) -->
+                <div class="absolute -bottom-6 -left-6 bg-white rounded-xl p-4 shadow-lg border border-sky-100 animate-stagger delay-300 hidden sm:block">
                     <div class="flex items-center gap-3">
                         <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
                             <i class="fas fa-check-circle text-emerald-500 text-xl"></i>
@@ -80,7 +80,7 @@
                     </div>
                 </div>
                 
-                <div class="absolute -top-4 -right-4 bg-white rounded-xl p-3 shadow-lg border border-sky-100 animate-stagger delay-400">
+                <div class="absolute -top-4 -right-4 bg-white rounded-xl p-3 shadow-lg border border-sky-100 animate-stagger delay-400 hidden sm:block">
                     <div class="flex items-center gap-2">
                         <div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center">
                             <i class="fas fa-lightbulb text-yellow-500"></i>
@@ -230,8 +230,8 @@
         </div>
         
         <!-- Gallery Grid -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="gallery-item col-span-2 row-span-2 reveal-zoom">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="gallery-item sm:col-span-2 sm:row-span-2 reveal-zoom">
                 <img src="https://images.unsplash.com/photo-1531545514256-b1400bc00f31?w=800&q=80" alt="Mentoring session" class="reveal-mask">
                 <div class="gallery-overlay">
                     <p class="text-white font-semibold">Sesi Mentoring 2025</p>
@@ -267,41 +267,37 @@
 </section>
 
 <!-- Statistics -->
-<section id="section-stats" class="py-20 lg:py-24 bg-linear-to-br from-yellow-400 to-amber-500 p-6 lg:p-8 rounded-2xl text-center relative overflow-hidden">
-    <div class="absolute inset-0 opacity-20 lg:opacity-30">
-        <div class="absolute -top-12 -right-12 w-64 h-64 lg:w-96 lg:h-96 bg-yellow-300 rounded-full blur-3xl"></div>
-        <div class="absolute -bottom-12 -left-12 w-64 h-64 lg:w-96 lg:h-96 bg-amber-300 rounded-full blur-3xl"></div>
-    </div>
-    
-    <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-            <?php 
-            $stats = cms('home_stats_list', [
-                ['icon' => 'fa-users', 'val' => '500+', 'label' => 'Peserta Terdaftar', 'color' => 'sky'],
-                ['icon' => 'fa-store', 'val' => '120+', 'label' => 'Usaha Aktif', 'color' => 'yellow'],
-                ['icon' => 'fa-chalkboard-teacher', 'val' => '50+', 'label' => 'Mentor Berpengalaman', 'color' => 'emerald'],
-                ['icon' => 'fa-hand-holding-dollar', 'val' => '2.5M', 'label' => 'Total Dana Terdistribusi', 'color' => 'amber'],
-            ]);
-            if (empty($stats)) {
-                $stats = [
-                    ['icon' => 'fa-users', 'val' => '500+', 'label' => 'Peserta Terdaftar', 'color' => 'sky'],
-                    ['icon' => 'fa-store', 'val' => '120+', 'label' => 'Usaha Aktif', 'color' => 'yellow'],
-                    ['icon' => 'fa-chalkboard-teacher', 'val' => '50+', 'label' => 'Mentor Berpengalaman', 'color' => 'emerald'],
-                    ['icon' => 'fa-hand-holding-dollar', 'val' => '2.5M', 'label' => 'Total Dana Terdistribusi', 'color' => 'amber'],
-                ];
-            }
-            foreach ($stats as $idx => $stat): 
-                $bgColor = "bg-{$stat['color']}-100";
-                $textColor = "text-{$stat['color']}-600";
-            ?>
-                <div class="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-yellow-100 reveal-zoom card-magnetic stagger-<?= ($idx % 4) + 1 ?>">
-                    <div class="w-12 h-12 rounded-xl <?= $bgColor ?> flex items-center justify-center mx-auto mb-3">
-                        <i class="fas <?= $stat['icon'] ?> <?= $textColor ?> text-xl"></i>
-                    </div>
-                    <div class="text-4xl lg:text-5xl font-display font-bold <?= $textColor ?> mb-2"><?= $stat['val'] ?></div>
-                    <div class="text-slate-600 font-medium"><?= $stat['label'] ?></div>
+<section id="section-stats-container" class="py-12 lg:py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div id="section-stats" class="py-16 lg:py-24 bg-linear-to-br from-yellow-400 to-amber-500 p-6 lg:p-8 rounded-[2.5rem] text-center relative overflow-hidden shadow-2xl shadow-amber-200/50">
+            <div class="absolute inset-0 opacity-20 lg:opacity-30">
+                <div class="absolute -top-12 -right-12 w-64 h-64 lg:w-96 lg:h-96 bg-yellow-300 rounded-full blur-3xl"></div>
+                <div class="absolute -bottom-12 -left-12 w-64 h-64 lg:w-96 lg:h-96 bg-amber-300 rounded-full blur-3xl"></div>
+            </div>
+            
+            <div class="relative z-10">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 text-center">
+                    <?php 
+                    $stats = cms('home_stats_list', [
+                        ['icon' => 'fa-users', 'val' => '500+', 'label' => 'Peserta Terdaftar', 'color' => 'sky'],
+                        ['icon' => 'fa-store', 'val' => '120+', 'label' => 'Usaha Aktif', 'color' => 'yellow'],
+                        ['icon' => 'fa-chalkboard-teacher', 'val' => '50+', 'label' => 'Mentor Berpengalaman', 'color' => 'emerald'],
+                        ['icon' => 'fa-hand-holding-dollar', 'val' => '2.5M', 'label' => 'Total Dana Terdistribusi', 'color' => 'amber'],
+                    ]);
+                    foreach ($stats as $idx => $stat): 
+                        $bgColor = "bg-{$stat['color']}-100";
+                        $textColor = "text-{$stat['color']}-600";
+                    ?>
+                        <div class="bg-white/80 backdrop-blur-md rounded-3xl p-6 lg:p-8 shadow-sm border border-white/50 reveal-zoom card-magnetic stagger-<?= ($idx % 4) + 1 ?>">
+                            <div class="w-14 h-14 rounded-2xl <?= $bgColor ?> flex items-center justify-center mx-auto mb-4 shadow-inner">
+                                <i class="fas <?= $stat['icon'] ?> <?= $textColor ?> text-2xl"></i>
+                            </div>
+                            <div class="text-4xl lg:text-5xl font-display font-bold <?= $textColor ?> mb-2 tracking-tight"><?= $stat['val'] ?></div>
+                            <div class="text-slate-600 font-semibold text-sm lg:text-base"><?= $stat['label'] ?></div>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
-            <?php endforeach; ?>
+            </div>
         </div>
     </div>
 </section>

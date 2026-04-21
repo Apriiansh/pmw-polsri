@@ -9,14 +9,6 @@
         border-radius: 1.25rem;
         background: #f1f5f9;
         cursor: pointer;
-
-        /* Semua item (small) punya fixed height */
-        min-height: 200px;
-    }
-
-    /* Large item: 2x tingginya */
-    .gallery-item.is-large {
-        min-height: 412px; /* (200px * 2) + gap 12px */
     }
 
     .gallery-item img {
@@ -34,7 +26,7 @@
     .gallery-overlay {
         position: absolute;
         inset: 0;
-        background: linear-gradient(to top, rgba(15, 23, 42, 0.88) 0%, rgba(15, 23, 42, 0.3) 55%, transparent 100%);
+        background: linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.2) 60%, transparent 100%);
         display: flex;
         flex-direction: column;
         justify-content: flex-end;
@@ -55,10 +47,20 @@
     .gallery-item:hover .gallery-overlay .overlay-content {
         transform: translateY(0);
     }
+
+    @media (max-width: 640px) {
+        .gallery-overlay {
+            opacity: 1;
+            background: linear-gradient(to top, rgba(15, 23, 42, 0.7) 0%, transparent 50%);
+        }
+        .gallery-overlay .overlay-content {
+            transform: translateY(0);
+        }
+    }
 </style>
 
 <!-- Hero Section -->
-<section id="section-galeri-hero" class="relative overflow-hidden pt-32 pb-20 lg:pt-48 lg:pb-32">
+<section id="section-galeri-hero" class="relative overflow-hidden px-6 lg:px-8 pt-24 pb-20 lg:pt-28 relative z-10">
     <!-- Premium Background Elements -->
     <div class="absolute inset-0 -z-10">
         <div class="absolute top-0 right-1/4 w-96 h-96 bg-sky-500/10 rounded-full blur-[120px] animate-float"></div>
@@ -162,13 +164,13 @@ $items = array_map(function ($item) {
 
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
 
-        <!-- Grid with Dense Flow -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[220px] mb-16"
+        <!-- Grid with Dense Flow: Mobile First Approach -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 auto-rows-fr sm:auto-rows-[220px] mb-16"
              style="grid-auto-flow: dense;">
 
             <template x-for="(item, i) in layoutItems" :key="i">
                 <div class="gallery-item group relative overflow-hidden rounded-[2rem] bg-slate-100 cursor-pointer"
-                     :class="item.isLarge ? 'col-span-2 row-span-2 is-large' : ''"
+                     :class="item.isLarge ? 'sm:col-span-2 sm:row-span-2' : 'aspect-video sm:aspect-auto'"
                      x-show="true"
                      x-transition:enter="transition-liquid duration-700"
                      x-transition:enter-start="opacity-0 scale-90 translate-y-10"
@@ -179,14 +181,14 @@ $items = array_map(function ($item) {
                          loading="lazy"
                          class="w-full h-full object-cover transition-liquid group-hover:scale-110 group-hover:rotate-1">
 
-                    <div class="gallery-overlay absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-liquid flex flex-col justify-end p-6 lg:p-8">
+                    <div class="gallery-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition-liquid flex flex-col justify-end p-6 lg:p-8">
                         <div class="overlay-content translate-y-4 group-hover:translate-y-0 transition-liquid delay-75">
                             <span class="inline-block px-3 py-1 rounded-full bg-sky-500/20 border border-sky-400/30 backdrop-blur-md text-sky-300 text-[10px] font-bold uppercase tracking-wider mb-3" x-text="item.badge"></span>
                             <h3 class="!text-white font-display font-black leading-tight drop-shadow-md"
-                               :class="item.isLarge ? 'text-2xl mb-2' : 'text-sm'"
+                               :class="item.isLarge ? 'text-2xl mb-2' : 'text-sm sm:text-base'"
                                x-text="item.title"></h3>
                             <template x-if="item.desc && item.isLarge">
-                                <p class="text-slate-200 text-sm line-clamp-2 drop-shadow-sm" x-text="item.desc"></p>
+                                <p class="text-slate-200 text-sm line-clamp-2 drop-shadow-sm hidden sm:block" x-text="item.desc"></p>
                             </template>
                         </div>
                     </div>
