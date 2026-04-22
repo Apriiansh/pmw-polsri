@@ -14,6 +14,7 @@ $routes->get('login', 'AuthController::login', ['as' => 'login']);
 $routes->post('login', 'AuthController::attemptLogin');
 $routes->get('logout', 'AuthController::logout');
 $routes->post('logout', 'AuthController::logout');
+$routes->get('forgot', '\CodeIgniter\Shield\Controllers\MagicLinkController::loginView');
 
 
 $routes->get('admin/cms/image/(:any)', 'AdminController::viewCmsImage/$1');
