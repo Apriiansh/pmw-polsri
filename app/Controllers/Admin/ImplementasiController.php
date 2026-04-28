@@ -51,11 +51,11 @@ class ImplementasiController extends BaseController
         ]);
         $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
         $builder->join('pmw_periods per', 'per.id = p.period_id', 'left');
-        $builder->join('pmw_selection_wawancara sw', 'sw.proposal_id = p.id', 'left');
+        $builder->join('pmw_perjanjian pj', 'pj.proposal_id = p.id', 'left');
         $builder->join('pmw_selection_implementasi si', 'si.proposal_id = p.id', 'left');
 
         // Only show where student has actually submitted
-        $builder->where('sw.admin_status', 'approved');
+        $builder->where('pj.admin_status', 'approved');
         $builder->where('si.student_submitted_at IS NOT NULL', null, false);
 
         if ($statusFilter) {

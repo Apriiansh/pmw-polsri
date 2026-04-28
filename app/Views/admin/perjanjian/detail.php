@@ -63,9 +63,9 @@
                         <?= esc($proposal['period_name'] ?? '-') ?> - <?= esc($proposal['period_year'] ?? '') ?>
                     </p>
                 </div>
-                <span class="pmw-status <?= $statusColors[$proposal['wawancara_status']] ?? '' ?>">
+                <span class="pmw-status <?= $statusColors[$proposal['perjanjian_status']] ?? '' ?>">
                     <i class="fas fa-circle text-[8px]"></i>
-                    <?= $statusLabels[$proposal['wawancara_status']] ?? ucfirst($proposal['wawancara_status']) ?>
+                    <?= $statusLabels[$proposal['perjanjian_status']] ?? ucfirst($proposal['perjanjian_status']) ?>
                 </span>
             </div>
 
@@ -202,7 +202,7 @@
 
                                 <!-- Sah -->
                                 <label class="relative cursor-pointer block">
-                                    <input type="radio" name="status" value="approved" class="peer sr-only" <?= $proposal['wawancara_status'] === 'approved' ? 'checked' : '' ?> required>
+                                    <input type="radio" name="status" value="approved" class="peer sr-only" <?= $proposal['perjanjian_status'] === 'approved' ? 'checked' : '' ?> required>
                                     <div class="p-3.5 rounded-xl border-2 border-slate-100 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 transition-all hover:border-emerald-300 shadow-sm peer-checked:shadow-emerald-100">
                                         <div class="flex items-center gap-3">
                                             <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center peer-checked:bg-emerald-500 peer-checked:text-white transition-colors">
@@ -218,7 +218,7 @@
 
                                 <!-- Revisi -->
                                 <label class="relative cursor-pointer block">
-                                    <input type="radio" name="status" value="revision" class="peer sr-only" <?= $proposal['wawancara_status'] === 'revision' ? 'checked' : '' ?>>
+                                    <input type="radio" name="status" value="revision" class="peer sr-only" <?= $proposal['perjanjian_status'] === 'revision' ? 'checked' : '' ?>>
                                     <div class="p-3.5 rounded-xl border-2 border-slate-100 peer-checked:border-orange-500 peer-checked:bg-orange-50 transition-all hover:border-orange-300 shadow-sm peer-checked:shadow-orange-100">
                                         <div class="flex items-center gap-3">
                                             <div class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center peer-checked:bg-orange-500 peer-checked:text-white transition-colors">
@@ -234,7 +234,7 @@
 
                                 <!-- Tolak -->
                                 <label class="relative cursor-pointer block">
-                                    <input type="radio" name="status" value="rejected" class="peer sr-only" <?= $proposal['wawancara_status'] === 'rejected' ? 'checked' : '' ?>>
+                                    <input type="radio" name="status" value="rejected" class="peer sr-only" <?= $proposal['perjanjian_status'] === 'rejected' ? 'checked' : '' ?>>
                                     <div class="p-3.5 rounded-xl border-2 border-slate-100 peer-checked:border-rose-500 peer-checked:bg-rose-50 transition-all hover:border-rose-300 shadow-sm peer-checked:shadow-rose-100">
                                         <div class="flex items-center gap-3">
                                             <div class="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center peer-checked:bg-rose-500 peer-checked:text-white transition-colors">

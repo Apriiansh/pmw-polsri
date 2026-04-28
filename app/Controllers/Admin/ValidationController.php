@@ -22,19 +22,22 @@ class ValidationController extends BaseController
         $statusFilter = $this->request->getGet('status');
         $proposals = $proposalModel->getWithDetails($statusFilter);
         
-        // Stats
         $allProposals = $proposalModel->getWithDetails(null);
+
+        // Filter: hanya tampilkan proposal yang sudah lolos pitching (pitching_admin_status=approved)
+        $proposals = array_values(array_filter($proposals, fn($p) => ($p['pitching_admin_status'] ?? '') === 'approved'));
+        $allFiltered = array_values(array_filter($allProposals, fn($p) => ($p['pitching_admin_status'] ?? '') === 'approved'));
         $stats = [
-            'total'     => count(array_filter($allProposals, fn($p) => $p['status'] !== 'draft')),
-            'submitted' => count(array_filter($allProposals, fn($p) => $p['status'] === 'submitted')),
-            'revision'  => count(array_filter($allProposals, fn($p) => $p['status'] === 'revision')),
-            'approved'  => count(array_filter($allProposals, fn($p) => $p['status'] === 'approved')),
-            'rejected'  => count(array_filter($allProposals, fn($p) => $p['status'] === 'rejected')),
+            'total'     => count(array_filter($allFiltered, fn($p) => $p['status'] !== 'draft')),
+            'submitted' => count(array_filter($allFiltered, fn($p) => $p['status'] === 'submitted')),
+            'revision'  => count(array_filter($allFiltered, fn($p) => $p['status'] === 'revision')),
+            'approved'  => count(array_filter($allFiltered, fn($p) => $p['status'] === 'approved')),
+            'rejected'  => count(array_filter($allFiltered, fn($p) => $p['status'] === 'rejected')),
         ];
 
         return view('admin/administrasi/seleksi', [
-            'title'           => 'Seleksi Administrasi | PMW Polsri',
-            'header_title'    => 'Seleksi Administrasi',
+            'title'           => 'Business Plan & BMC | PMW Polsri',
+            'header_title'    => 'Business Plan & Business Model Canvas',
             'header_subtitle' => 'Tahap 2 - Validasi kelengkapan dokumen proposal',
             'proposals'       => $proposals,
             'stats'           => $stats,
@@ -77,10 +80,6 @@ class ValidationController extends BaseController
 
         $requiredDocs = [
             'proposal_utama' => 'Proposal Utama',
-            'biodata' => 'Biodata Tim',
-            'surat_pernyataan_ketua' => 'Surat Pernyataan Ketua',
-            'surat_kesediaan_dosen' => 'Surat Kesediaan Dosen',
-            'ktm' => 'Kartu Tanda Mahasiswa (KTM)',
         ];
 
         return view('admin/administrasi/seleksi_detail', [

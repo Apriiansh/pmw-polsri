@@ -9,7 +9,7 @@ use App\Models\PmwDocumentModel;
 use App\Models\MentorModel;
 use CodeIgniter\HTTP\ResponseInterface;
 
-class WawancaraController extends BaseController
+class PerjanjianController extends BaseController
 {
     protected $helpers = ['form', 'url', 'pmw'];
 
@@ -31,7 +31,7 @@ class WawancaraController extends BaseController
             'm.nama as mentor_nama',
             'per.name as period_name',
             'per.year as period_year',
-            'sw.admin_status as wawancara_status',
+            'sw.admin_status as perjanjian_status',
             '(SELECT id FROM pmw_documents WHERE proposal_id = p.id AND doc_key = "bukti_perjanjian" LIMIT 1) as bukti_perjanjian_id'
         ]);
         $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
@@ -40,10 +40,9 @@ class WawancaraController extends BaseController
         $builder->join('pmw_mentors m', 'm.id = pa.mentor_id', 'left');
         $builder->join('pmw_periods per', 'per.id = p.period_id', 'left');
         $builder->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left');
-        $builder->join('pmw_selection_wawancara sw', 'sw.proposal_id = p.id', 'left');
+        $builder->join('pmw_perjanjian pj', 'pj.proposal_id = p.id', 'left');
 
-        // Filter: Must be approved in Pitching Desk
-        $builder->where('sp.dosen_status', 'approved');
+        // Filter: Must be approved in Pitching Desk by Admin
         $builder->where('sp.admin_status', 'approved');
 
         if ($statusFilter) {
@@ -55,12 +54,11 @@ class WawancaraController extends BaseController
 
         // Stats
         $statsBuilder = $db->table('pmw_proposals p');
-        $statsBuilder->select('sw.admin_status as status, COUNT(*) as count');
+        $statsBuilder->select('pj.admin_status as status, COUNT(*) as count');
         $statsBuilder->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left');
-        $statsBuilder->join('pmw_selection_wawancara sw', 'sw.proposal_id = p.id', 'left');
-        $statsBuilder->where('sp.dosen_status', 'approved');
+        $statsBuilder->join('pmw_perjanjian pj', 'pj.proposal_id = p.id', 'left');
         $statsBuilder->where('sp.admin_status', 'approved');
-        $statsBuilder->groupBy('sw.admin_status');
+        $statsBuilder->groupBy('pj.admin_status');
         $rawStats = $statsBuilder->get()->getResultArray();
 
         $stats = [
@@ -91,8 +89,8 @@ class WawancaraController extends BaseController
     public function detail(int $id)
     {
         $proposalModel = new PmwProposalModel();
-        $memberModel = new \App\Models\Proposal\PmwProposalMemberModel();
-        $documentModel = new \App\Models\PmwDocumentModel();
+        $memberModel = new PmwProposalMemberModel();
+        $documentModel = new PmwDocumentModel();
 
         $proposal = $proposalModel->getProposalForValidation($id);
 
@@ -110,7 +108,7 @@ class WawancaraController extends BaseController
             }
         }
 
-        $mentorModel = new \App\Models\MentorModel();
+        $mentorModel = new MentorModel();
 
         return view('admin/perjanjian/detail', [
             'title'     => 'Detail Perjanjian Implementasi | PMW Polsri',
@@ -128,7 +126,7 @@ class WawancaraController extends BaseController
     {
         $proposalModel = new PmwProposalModel();
         $assignmentModel = new \App\Models\Proposal\PmwProposalAssignmentModel();
-        $selectionWawancaraModel = new \App\Models\Selection\PmwSelectionWawancaraModel();
+        $selectionWawancaraModel = new \App\Models\Selection\PmwSelectionPerjanjianModel();
         
         $proposal = $proposalModel->getProposalForValidation($id);
 
@@ -176,7 +174,7 @@ class WawancaraController extends BaseController
 
             // Send Notification
             $notifModel = new \App\Models\NotificationModel();
-            $notifModel->createWawancaraValidationNotification($id, (int)$proposal['leader_user_id'], $status, $catatan);
+            $notifModel->createPerjanjianValidationNotification($id, (int)$proposal['leader_user_id'], $status, $catatan);
 
             return redirect()->to('admin/perjanjian')->with('message', 'Validasi perjanjian berhasil disimpan');
         } catch (\Exception $e) {

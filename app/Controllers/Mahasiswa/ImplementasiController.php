@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\Proposal\PmwProposalModel;
 use App\Models\PmwScheduleModel;
 use App\Models\PmwPeriodModel;
+use App\Models\Implementation\PmwImplementationItemModel;
 use App\Models\Implementation\PmwImplementationItemPhotoModel;
 use App\Models\Implementation\PmwImplementationPaymentModel;
 use App\Models\Implementation\PmwImplementationKonsumsiModel;
@@ -29,7 +30,7 @@ class ImplementasiController extends BaseController
 
     protected $helpers = ['form', 'url', 'pmw'];
 
-    private const PHASE_NUMBER = 7;
+    private const PHASE_NUMBER = 6;
 
     protected $proposalModel;
     protected $scheduleModel;
@@ -78,7 +79,7 @@ class ImplementasiController extends BaseController
 
         // Security check: Must have passed Tahap 6 (wawancara approved)
         $selectionService = new PmwSelectionService();
-        if (!$proposal || !$selectionService->leaderPassedWawancara((int) $activePeriod['id'], (int) $user->id)) {
+        if (!$proposal || !$selectionService->leaderPassedPerjanjian((int) $activePeriod['id'], (int) $user->id)) {
             return redirect()->to('mahasiswa/pengumuman')->with('error', 'Anda harus lolos Tahap I terlebih dahulu.');
         }
 
@@ -204,7 +205,7 @@ class ImplementasiController extends BaseController
         $file       = $this->request->getFile('photo');
 
         // Security: Verify item belongs to this proposal
-        $itemModel = new \App\Models\Implementation\PmwImplementationItemModel();
+        $itemModel = new PmwImplementationItemModel();
         $item      = $itemModel->find($itemId);
         if (!$item || $item->proposal_id != $proposal['id']) {
             return $this->fail('Akses ke item ditolak.');
@@ -325,7 +326,7 @@ class ImplementasiController extends BaseController
         }
 
         // Verify item belongs to this proposal
-        $itemModel = new \App\Models\Implementation\PmwImplementationItemModel();
+        $itemModel = new PmwImplementationItemModel();
         $item      = $itemModel->find($itemId);
 
         if (!$item || $item->proposal_id != $proposal['id']) {
@@ -367,14 +368,14 @@ class ImplementasiController extends BaseController
         }
 
         // Verify photo belongs to an item of this proposal
-        $photoModel = new \App\Models\Implementation\PmwImplementationItemPhotoModel();
+        $photoModel = new PmwImplementationItemPhotoModel();
         $photo      = $photoModel->find($photoId);
 
         if (!$photo) {
             return $this->fail('Foto tidak ditemukan.');
         }
 
-        $itemModel = new \App\Models\Implementation\PmwImplementationItemModel();
+        $itemModel = new PmwImplementationItemModel();
         $item      = $itemModel->find($photo->item_id);
 
         if (!$item || !is_object($item) || $item->proposal_id != $proposal['id']) {
@@ -416,7 +417,7 @@ class ImplementasiController extends BaseController
         }
 
         // Verify payment belongs to this proposal
-        $paymentModel = new \App\Models\Implementation\PmwImplementationPaymentModel();
+        $paymentModel = new PmwImplementationPaymentModel();
         $payment      = $paymentModel->find($paymentId);
 
         if (!$payment || $payment->proposal_id != $proposal['id']) {
@@ -458,7 +459,7 @@ class ImplementasiController extends BaseController
         }
 
         // Verify konsumsi belongs to this proposal
-        $konsumsiModel = new \App\Models\Implementation\PmwImplementationKonsumsiModel();
+        $konsumsiModel = new PmwImplementationKonsumsiModel();
         $konsumsi      = $konsumsiModel->find($konsumsiId);
 
         if (!$konsumsi || $konsumsi->proposal_id != $proposal['id']) {
@@ -500,7 +501,7 @@ class ImplementasiController extends BaseController
         }
 
         // Verify item belongs to this proposal
-        $itemModel = new \App\Models\Implementation\PmwImplementationItemModel();
+        $itemModel = new PmwImplementationItemModel();
         $item      = $itemModel->find($itemId);
 
         if (!$item || $item->proposal_id != $proposal['id']) {
@@ -552,7 +553,7 @@ class ImplementasiController extends BaseController
         }
 
         // Verify payment belongs to this proposal
-        $paymentModel = new \App\Models\Implementation\PmwImplementationPaymentModel();
+        $paymentModel = new PmwImplementationPaymentModel();
         $payment      = $paymentModel->find($paymentId);
 
         if (!$payment || $payment->proposal_id != $proposal['id']) {
@@ -597,7 +598,7 @@ class ImplementasiController extends BaseController
         }
 
         // Verify konsumsi belongs to this proposal
-        $konsumsiModel = new \App\Models\Implementation\PmwImplementationKonsumsiModel();
+        $konsumsiModel = new PmwImplementationKonsumsiModel();
         $konsumsi      = $konsumsiModel->find($konsumsiId);
 
         if (!$konsumsi || $konsumsi->proposal_id != $proposal['id']) {
@@ -676,7 +677,7 @@ class ImplementasiController extends BaseController
         }
 
         // Verify photo belongs to an item of this proposal
-        $itemModel = new \App\Models\Implementation\PmwImplementationItemModel();
+        $itemModel = new PmwImplementationItemModel();
         
         /** @var PmwImplementationItem|null $item */
         $item      = $itemModel->find($photo->item_id);

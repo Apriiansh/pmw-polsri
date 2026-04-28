@@ -102,7 +102,7 @@ $canSubmit = !$isClosed && !$isDeadlinePassed;
                     </div>
                 <?php else: ?>
                     <?php foreach ($awards as $award): ?>
-                        <div class="flex items-center gap-3 p-2.5 rounded-xl bg-gradient-to-r from-amber-50/50 to-white border border-amber-100 shadow-sm">
+                        <div class="flex items-center gap-3 p-2.5 rounded-xl bg-linear-to-r from-amber-50/50 to-white border border-amber-100 shadow-sm">
                             <div class="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center text-[10px] font-black shrink-0 shadow-lg shadow-amber-500/20">
                                 <?= $award->rank ?>
                             </div>
@@ -193,7 +193,7 @@ $canSubmit = !$isClosed && !$isDeadlinePassed;
         <div class="card-premium p-16 flex flex-col items-center justify-center text-center animate-stagger delay-200 overflow-hidden relative group" @mousemove="handleMouseMove">
             <div class="absolute inset-0 bg-linear-to-br from-sky-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
             
-            <div class="w-20 h-20 rounded-[1.5rem] bg-slate-50 flex items-center justify-center mb-6 border-2 border-dashed border-slate-200 text-slate-300 group-hover:border-sky-300 group-hover:text-sky-400 group-hover:bg-sky-50 transition-all duration-500">
+            <div class="w-20 h-20 rounded-3xl bg-slate-50 flex items-center justify-center mb-6 border-2 border-dashed border-slate-200 text-slate-300 group-hover:border-sky-300 group-hover:text-sky-400 group-hover:bg-sky-50 transition-all duration-500">
                 <i class="fas fa-folder-open text-3xl group-hover:scale-110 transition-transform"></i>
             </div>
 
@@ -234,7 +234,7 @@ $canSubmit = !$isClosed && !$isDeadlinePassed;
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-[100]"
+             class="fixed inset-0 z-100"
              :class="{ 'hidden': !showSubmitModal }"
              aria-labelledby="submit-modal-title"
              role="dialog"
@@ -271,7 +271,7 @@ $canSubmit = !$isClosed && !$isDeadlinePassed;
                                 </label>
                         <div class="relative">
                             <textarea name="summary" rows="4" 
-                                class="w-full rounded-[1.5rem] border-slate-200 bg-slate-50/50 text-[13px] p-5 focus:ring-4 focus:ring-sky-500/5 focus:border-sky-500 transition-all leading-relaxed placeholder:text-slate-300" 
+                                class="w-full rounded-3xl border-slate-200 bg-slate-50/50 text-[13px] p-5 focus:ring-4 focus:ring-sky-500/5 focus:border-sky-500 transition-all leading-relaxed placeholder:text-slate-300" 
                                 placeholder="Ceritakan singkat bagaimana progres usaha Anda hingga saat ini, kendala yang dihadapi, dan hasil yang dicapai..." 
                                 required x-ref="summaryField"><?= esc($submission->summary ?? '') ?></textarea>
                             <div class="absolute bottom-4 right-5 flex items-center gap-2">
@@ -293,7 +293,7 @@ $canSubmit = !$isClosed && !$isDeadlinePassed;
 
                         <div class="space-y-4 max-h-[280px] overflow-y-auto custom-scrollbar pr-3 -mr-3">
                             <template x-for="(att, index) in attachments" :key="index">
-                                <div class="relative group p-5 rounded-[1.5rem] bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-sky-200 transition-all"
+                                <div class="relative group p-5 rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-sky-200 transition-all"
                                      x-transition:enter="transition ease-out duration-300"
                                      x-transition:enter-start="opacity-0 translate-y-4"
                                      x-transition:enter-end="opacity-100 translate-y-0">
@@ -365,7 +365,7 @@ $canSubmit = !$isClosed && !$isDeadlinePassed;
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-[120]"
+             class="fixed inset-0 z-120"
              :class="{ 'hidden': !showPreview }"
              aria-labelledby="preview-modal-title"
              role="dialog"

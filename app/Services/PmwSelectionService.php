@@ -24,15 +24,15 @@ class PmwSelectionService
     }
 
     /**
-     * Check if team leader passed Wawancara (Stage 2)
+     * Check if team leader passed Perjanjian (Stage 3)
      */
-    public function leaderPassedWawancara(int $periodId, int $leaderUserId): bool
+    public function leaderPassedPerjanjian(int $periodId, int $leaderUserId): bool
     {
         $db = Database::connect();
 
         $row = $db->table('pmw_proposals p')
-            ->select('sw.admin_status')
-            ->join('pmw_selection_wawancara sw', 'sw.proposal_id = p.id', 'inner')
+            ->select('pj.admin_status')
+            ->join('pmw_perjanjian pj', 'pj.proposal_id = p.id', 'inner')
             ->where('p.period_id', $periodId)
             ->where('p.leader_user_id', $leaderUserId)
             ->get()
@@ -50,22 +50,22 @@ class PmwSelectionService
             'p.id',
             'p.nama_usaha',
             'p.kategori_wirausaha',
-            'sw.admin_status as wawancara_status',
+            'sw.admin_status as perjanjian_status',
             'pm.nama as ketua_nama',
             'pm.nim as ketua_nim',
             'pm.jurusan as ketua_jurusan',
             'pm.prodi as ketua_prodi',
         ]);
         $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
-        $builder->join('pmw_selection_wawancara sw', 'sw.proposal_id = p.id', 'inner');
+        $builder->join('pmw_perjanjian pj', 'pj.proposal_id = p.id', 'inner');
         $builder->where('p.period_id', $periodId);
-        $builder->where('sw.admin_status', 'approved');
+        $builder->where('pj.admin_status', 'approved');
         $builder->orderBy('p.nama_usaha', 'ASC');
 
         return $builder->get()->getResultArray();
     }
 
-    public function updateWawancaraStatus(int $proposalId, string $status, bool $updateSubmittedAt = false): bool
+    public function updatePerjanjianStatus(int $proposalId, string $status, bool $updateSubmittedAt = false): bool
     {
         $db = Database::connect();
 
@@ -78,7 +78,7 @@ class PmwSelectionService
             $data['student_submitted_at'] = date('Y-m-d H:i:s');
         }
 
-        return $db->table('pmw_selection_wawancara')
+        return $db->table('pmw_perjanjian')
             ->where('proposal_id', $proposalId)
             ->update($data);
     }

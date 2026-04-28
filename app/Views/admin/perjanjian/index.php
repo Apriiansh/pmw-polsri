@@ -138,8 +138,8 @@
                             <?php endif; ?>
                         </td>
                         <td>
-                            <span class="pmw-status <?= $statusColors[$proposal['wawancara_status']] ?? 'bg-slate-50' ?>">
-                                <?= $statusLabels[$proposal['wawancara_status']] ?>
+                            <span class="pmw-status <?= $statusColors[$proposal['perjanjian_status']] ?? 'bg-slate-50' ?>">
+                                <?= $statusLabels[$proposal['perjanjian_status']] ?>
                             </span>
                         </td>
                         <td class="text-right whitespace-nowrap">

@@ -11,7 +11,7 @@ use App\Services\PmwTrainingReportService;
 
 class TrainingController extends BaseController
 {
-    private const PHASE_NUMBER = 6;
+    private const PHASE_NUMBER = 5;
 
     public function index()
     {
@@ -37,14 +37,14 @@ class TrainingController extends BaseController
             ]);
         }
 
-        // Get Phase 5 announcement for training info
-        $announcementPhase5 = $announcementService->getOrCreatePhaseAnnouncement((int) $activePeriod['id'], 5);
+        // Get Phase 4 announcement for training info
+        $announcementPhase5 = $announcementService->getOrCreatePhaseAnnouncement((int) $activePeriod['id'], 4);
 
         $phase = $phaseAccess->getPhaseForActivePeriod(self::PHASE_NUMBER);
         $isPhaseOpen = $phaseAccess->isPhaseOpen($phase);
 
         $user = auth()->user();
-        $isPassed = ($user) ? $selectionService->leaderPassedWawancara((int) $activePeriod['id'], (int) $user->id) : false;
+        $isPassed = ($user) ? $selectionService->leaderPassedPerjanjian((int) $activePeriod['id'], (int) $user->id) : false;
 
         $proposal = null;
         $trainingReport = null;
@@ -96,7 +96,7 @@ class TrainingController extends BaseController
             return redirect()->back()->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        $isPassed = $selectionService->leaderPassedWawancara((int) $activePeriod['id'], (int) $user->id);
+        $isPassed = $selectionService->leaderPassedPerjanjian((int) $activePeriod['id'], (int) $user->id);
         if (!$isPassed) {
             return redirect()->back()->with('error', 'Anda belum lolos seleksi tahap wawancara/pitching.');
         }
@@ -186,7 +186,7 @@ class TrainingController extends BaseController
             return redirect()->back()->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        $isPassed = $selectionService->leaderPassedWawancara((int) $activePeriod['id'], (int) $user->id);
+        $isPassed = $selectionService->leaderPassedPerjanjian((int) $activePeriod['id'], (int) $user->id);
         if (!$isPassed) {
             return redirect()->back()->with('error', 'Akses ditolak.');
         }

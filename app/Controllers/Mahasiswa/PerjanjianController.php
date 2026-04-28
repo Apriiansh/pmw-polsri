@@ -14,7 +14,7 @@ use CodeIgniter\HTTP\IncomingRequest;
 /**
  * @property IncomingRequest $request
  */
-class WawancaraController extends BaseController
+class PerjanjianController extends BaseController
 {
     use ResponseTrait;
 
@@ -42,7 +42,7 @@ class WawancaraController extends BaseController
         // Get active period
         $activePeriod = $this->periodModel->where('is_active', true)->first();
         if (!$activePeriod) {
-            return view('mahasiswa/wawancara', [
+            return view('mahasiswa/perjanjian', [
                 'title'        => 'Perjanjian Implementasi',
                 'proposal'     => null,
                 'activePeriod' => null,
@@ -70,9 +70,9 @@ class WawancaraController extends BaseController
             $reason = 'Anda harus menyelesaikan tahap Pitching Desk dan mendapatkan persetujuan Reviewer terlebih dahulu.';
         }
 
-        // Get phase status for "Wawancara Perjanjian" (Phase ID 4)
+        // Get phase status for "Wawancara Perjanjian" (Phase ID 3)
         $phase = $this->scheduleModel->where('period_id', $activePeriod['id'])
-            ->where('phase_number', 4) 
+            ->where('phase_number', 3)
             ->first();
 
         $isPhaseOpen = $this->isPhaseOpen($phase);
@@ -86,9 +86,9 @@ class WawancaraController extends BaseController
             }
         }
 
-        $isLocked = $proposal && ($proposal['wawancara_status'] ?? 'pending') === 'approved';
+        $isLocked = $proposal && ($proposal['perjanjian_status'] ?? 'pending') === 'approved';
 
-        return view('mahasiswa/wawancara', [
+        return view('mahasiswa/perjanjian', [
             'title'        => 'Perjanjian Implementasi',
             'proposal'     => $proposal,
             'activePeriod' => $activePeriod,
@@ -121,9 +121,9 @@ class WawancaraController extends BaseController
             return $this->fail('Proposal tidak ditemukan.');
         }
 
-        // Phase 4: Wawancara / Perjanjian Implementasi
+        // Phase 3: Wawancara / Perjanjian Implementasi
         $phase = $this->scheduleModel->where('period_id', $activePeriod['id'])
-            ->where('phase_number', 4)
+            ->where('phase_number', 3)
             ->first();
             
         if (!$this->isPhaseOpen($phase)) {
@@ -196,7 +196,7 @@ class WawancaraController extends BaseController
             }
 
             // Update wawancara selection status (and set submission timestamp)
-            $this->selectionService->updateWawancaraStatus($proposalId, 'pending', true);
+            $this->selectionService->updatePerjanjianStatus($proposalId, 'pending', true);
 
             return $this->respond([
                 'success'  => true,

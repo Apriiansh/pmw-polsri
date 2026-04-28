@@ -15,7 +15,7 @@ class AnnouncementController extends BaseController
 {
     use ResponseTrait;
 
-    private const PHASE_NUMBER = 5;
+    private const PHASE_NUMBER = 4;
 
     public function index()
     {

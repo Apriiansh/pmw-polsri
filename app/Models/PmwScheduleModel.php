@@ -75,18 +75,16 @@ class PmwScheduleModel extends Model
     public function createDefaultSchedules(int $periodId): void
     {
         $defaultPhases = [
-            1  => 'Pendaftaran & Submit Proposal',
-            2  => 'Seleksi Administrasi',
-            3  => 'Pitching Desk',
-            4  => 'Wawancara Perjanjian',
-            5  => 'Pengumuman Kelolosan Dana PMW Tahap I',
-            6  => 'Pembekalan',
-            7  => 'Implementasi, Bimbingan & Mentoring',
-            8  => 'Monev Tahap 1 (Bazaar)',
-            9  => 'Monev Tahap 2 (Site Visit)',
-            10 => 'Pengumuman Tahap II',
-            11 => 'Laporan Akhir & Penutupan',
-            12 => 'Awarding & Expo',
+            1  => 'Administrasi & Desk Evaluation',
+            2  => 'Business Plan & Business Model Canvas',
+            3  => 'Pengumuman Kelolosan Dana PMW Tahap I',
+            4  => 'Pembekalan',
+            5  => 'Implementasi, Bimbingan & Mentoring',
+            6  => 'Monev Tahap 1 (Bazaar)',
+            7  => 'Monev Tahap 2 (Site Visit)',
+            8  => 'Pengumuman Tahap II',
+            9  => 'Laporan Akhir & Penutupan',
+            10 => 'Awarding & Expo',
         ];
 
         foreach ($defaultPhases as $number => $name) {

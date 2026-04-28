@@ -39,7 +39,7 @@
     <!-- Announcements List -->
     <div class="grid grid-cols-1 gap-4">
         <?php if (empty($announcements)): ?>
-            <div class="bg-white rounded-[2rem] border border-slate-200 p-12 text-center">
+            <div class="bg-white rounded-4xl border border-slate-200 p-12 text-center">
                 <div class="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-4 text-slate-300">
                     <i class="fas fa-bullhorn text-3xl"></i>
                 </div>

@@ -50,7 +50,7 @@ use App\Models\Proposal\PmwProposalModel;
         <!-- Left: Status Info -->
         <div class="flex items-center gap-3 min-w-0">
             <?php
-            $wStatus = $proposal['wawancara_status'] ?? 'pending';
+            $wStatus = $proposal['perjanjian_status'] ?? 'pending';
             $wSubmittedAt = $proposal['wawancara_submitted_at'] ?? null;
             $statusMap = [
                 'pending'  => ['icon' => 'fa-hourglass-half', 'color' => 'amber',   'label' => 'Menunggu Verifikasi Admin'],

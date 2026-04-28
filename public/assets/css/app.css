@@ -634,6 +634,9 @@
   .-z-10 {
     z-index: calc(10 * -1);
   }
+  .z-0 {
+    z-index: 0;
+  }
   .z-10 {
     z-index: 10;
   }
@@ -1372,8 +1375,8 @@
   .min-w-\[250px\] {
     min-width: 250px;
   }
-  .min-w-\[280px\] {
-    min-width: 280px;
+  .min-w-\[260px\] {
+    min-width: 260px;
   }
   .min-w-\[300px\] {
     min-width: 300px;
@@ -2189,9 +2192,6 @@
   .border-transparent {
     border-color: transparent;
   }
-  .border-violet-50 {
-    border-color: var(--color-violet-50);
-  }
   .border-violet-100 {
     border-color: var(--color-violet-100);
   }
@@ -2770,12 +2770,6 @@
   }
   .bg-violet-50 {
     background-color: var(--color-violet-50);
-  }
-  .bg-violet-50\/30 {
-    background-color: color-mix(in srgb, oklch(96.9% 0.016 293.756) 30%, transparent);
-    @supports (color: color-mix(in lab, red, red)) {
-      background-color: color-mix(in oklab, var(--color-violet-50) 30%, transparent);
-    }
   }
   .bg-violet-50\/50 {
     background-color: color-mix(in srgb, oklch(96.9% 0.016 293.756) 50%, transparent);
@@ -3912,9 +3906,6 @@
   .text-indigo-900 {
     color: var(--color-indigo-900);
   }
-  .text-neutral-600 {
-    color: var(--color-neutral-600);
-  }
   .text-orange-400 {
     color: var(--color-orange-400);
   }
@@ -4770,6 +4761,9 @@
   .delay-400 {
     transition-delay: 400ms;
   }
+  .delay-450 {
+    transition-delay: 450ms;
+  }
   .delay-500 {
     transition-delay: 500ms;
   }
@@ -5050,13 +5044,6 @@
       }
     }
   }
-  .group-hover\:cursor-pointer {
-    &:is(:where(.group):hover *) {
-      @media (hover: hover) {
-        cursor: pointer;
-      }
-    }
-  }
   .group-hover\:border-amber-200 {
     &:is(:where(.group):hover *) {
       @media (hover: hover) {
@@ -5110,6 +5097,13 @@
     &:is(:where(.group):hover *) {
       @media (hover: hover) {
         border-color: var(--color-slate-200);
+      }
+    }
+  }
+  .group-hover\:border-violet-200 {
+    &:is(:where(.group):hover *) {
+      @media (hover: hover) {
+        border-color: var(--color-violet-200);
       }
     }
   }
@@ -5859,9 +5853,19 @@
       border-color: var(--color-rose-500);
     }
   }
+  .peer-checked\:border-sky-400 {
+    &:is(:where(.peer):checked ~ *) {
+      border-color: var(--color-sky-400);
+    }
+  }
   .peer-checked\:border-sky-500 {
     &:is(:where(.peer):checked ~ *) {
       border-color: var(--color-sky-500);
+    }
+  }
+  .peer-checked\:border-violet-400 {
+    &:is(:where(.peer):checked ~ *) {
+      border-color: var(--color-violet-400);
     }
   }
   .peer-checked\:bg-emerald-50 {
@@ -5915,9 +5919,19 @@
       background-color: var(--color-sky-50);
     }
   }
+  .peer-checked\:bg-sky-100 {
+    &:is(:where(.peer):checked ~ *) {
+      background-color: var(--color-sky-100);
+    }
+  }
   .peer-checked\:bg-sky-500 {
     &:is(:where(.peer):checked ~ *) {
       background-color: var(--color-sky-500);
+    }
+  }
+  .peer-checked\:bg-violet-50 {
+    &:is(:where(.peer):checked ~ *) {
+      background-color: var(--color-violet-50);
     }
   }
   .peer-checked\:text-emerald-500 {
@@ -6495,13 +6509,6 @@
     &:hover {
       @media (hover: hover) {
         border-color: var(--color-slate-300);
-      }
-    }
-  }
-  .hover\:border-violet-100 {
-    &:hover {
-      @media (hover: hover) {
-        border-color: var(--color-violet-100);
       }
     }
   }
@@ -7144,16 +7151,6 @@
       }
     }
   }
-  .hover\:shadow-emerald-200 {
-    &:hover {
-      @media (hover: hover) {
-        --tw-shadow-color: oklch(90.5% 0.093 164.15);
-        @supports (color: color-mix(in lab, red, red)) {
-          --tw-shadow-color: color-mix(in oklab, var(--color-emerald-200) var(--tw-shadow-alpha), transparent);
-        }
-      }
-    }
-  }
   .hover\:shadow-emerald-200\/50 {
     &:hover {
       @media (hover: hover) {
@@ -7396,11 +7393,6 @@
   .focus\:ring-sky-100 {
     &:focus {
       --tw-ring-color: var(--color-sky-100);
-    }
-  }
-  .focus\:ring-sky-400 {
-    &:focus {
-      --tw-ring-color: var(--color-sky-400);
     }
   }
   .focus\:ring-sky-500 {
@@ -7759,11 +7751,6 @@
   .sm\:justify-between {
     @media (width >= 40rem) {
       justify-content: space-between;
-    }
-  }
-  .sm\:gap-0 {
-    @media (width >= 40rem) {
-      gap: calc(var(--spacing) * 0);
     }
   }
   .sm\:gap-2 {

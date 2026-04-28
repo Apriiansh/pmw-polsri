@@ -52,8 +52,8 @@ class PitchingDeskController extends BaseController
         
         $proposal = $proposalModel->getProposalForValidation($id);
         
-        if (!$proposal || $proposal['pitching_dosen_status'] !== 'approved') {
-            return redirect()->to('admin/pitching-desk')->with('error', 'Proposal belum divalidasi dosen atau tidak ditemukan');
+        if (!$proposal) {
+            return redirect()->to('admin/pitching-desk')->with('error', 'Proposal tidak ditemukan');
         }
 
         $members = $memberModel->getByProposalId($id);
@@ -84,7 +84,7 @@ class PitchingDeskController extends BaseController
         
         $proposal = $proposalModel->getProposalForValidation($id);
         
-        if (!$proposal || $proposal['pitching_dosen_status'] !== 'approved') {
+        if (!$proposal) {
             return redirect()->to('admin/pitching-desk')->with('error', 'Akses ditolak');
         }
 

@@ -4,9 +4,9 @@ namespace App\Models\Selection;
 
 use CodeIgniter\Model;
 
-class PmwSelectionWawancaraModel extends Model
+class PmwSelectionPerjanjianModel extends Model
 {
-    protected $table            = 'pmw_selection_wawancara';
+    protected $table            = 'pmw_perjanjian';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'object';

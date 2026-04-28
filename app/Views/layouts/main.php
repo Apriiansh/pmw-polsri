@@ -129,23 +129,7 @@
                 $groups = $user ? $user->getGroups() : [];
                 $mainRole = $groups[0] ?? 'visitor';
 
-                // Default Phase
-                $phase = 'Pendaftaran';
-
-                // If Mahasiswa, try to get their team's phase
-                if ($mainRole === 'mahasiswa') {
-                    $team = $db->table('pmw_teams')
-                        ->select('phase')
-                        ->where('lead_id', $user->id)
-                        ->orWhere("id IN (SELECT team_id FROM pmw_team_members WHERE user_id = {$user->id})")
-                        ->get()
-                        ->getRow();
-                    if ($team) {
-                        $phase = $team->phase;
-                    }
-                }
-
-                // Define nav items based on role & phase
+                // Define nav items based on role
                 $navItems = [
                     ['route' => 'dashboard', 'icon' => 'fa-chart-line', 'label' => 'Dashboard', 'match' => 'dashboard'],
                 ];
@@ -159,8 +143,8 @@
                         'icon'  => 'fa-clipboard-check',
                         'id'    => 'seleksi',
                         'children' => [
-                            ['route' => 'admin/administrasi/seleksi', 'label' => 'Administrasi', 'match' => 'admin/administrasi/seleksi'],
-                            ['route' => 'admin/pitching-desk',        'label' => 'Pitching Desk', 'match' => 'admin/pitching-desk'],
+                            ['route' => 'admin/pitching-desk',        'label' => 'Administrasi & Desk Eval', 'match' => 'admin/pitching-desk'],
+                            ['route' => 'admin/administrasi/seleksi', 'label' => 'Proposal', 'match' => 'admin/administrasi/seleksi'],
                             ['route' => 'admin/perjanjian',           'label' => 'Perjanjian Kontrak', 'match' => 'admin/perjanjian'],
                             ['route' => 'admin/pengumuman',           'label' => 'Pengumuman Lolos', 'match' => 'admin/pengumuman'],
                             ['route' => 'admin/implementasi', 'label' => 'Implementasi List', 'match' => 'admin/implementasi'],
@@ -202,8 +186,8 @@
                         'label' => 'Proposal & Administrasi',
                         'icon' => 'fa-folder-tree',
                         'children' => [
-                            ['route' => 'mahasiswa/proposal', 'icon' => 'fa-file-invoice', 'label' => 'Proposal', 'match' => 'mahasiswa/proposal'],
-                            ['route' => 'mahasiswa/pitching-desk', 'icon' => 'fa-chalkboard', 'label' => 'Pitching Desk', 'match' => 'mahasiswa/pitching-desk'],
+                            ['route' => 'mahasiswa/pitching-desk', 'icon' => 'fa-file-shield', 'label' => 'Administrasi & Desk Evaluation', 'match' => 'mahasiswa/pitching-desk'],
+                            ['route' => 'mahasiswa/proposal', 'icon' => 'fa-file-invoice', 'label' => 'Business Plan & BMC', 'match' => 'mahasiswa/proposal'],
                             ['route' => 'mahasiswa/perjanjian', 'icon' => 'fa-file-signature', 'label' => 'Perjanjian', 'match' => 'mahasiswa/perjanjian'],
                         ]
                     ];
@@ -250,7 +234,7 @@
                         'label' => 'Validasi',
                         'icon' => 'fa-check-double',
                         'children' => [
-                            ['route' => 'dosen/pitching-desk', 'icon' => 'fa-chalkboard-user', 'label' => 'Pitching Desk', 'match' => 'dosen/pitching-desk'],
+                            ['route' => 'dosen/proposal-validation', 'icon' => 'fa-file-invoice', 'label' => 'Validasi Proposal', 'match' => 'dosen/proposal-validation'],
                             ['route' => 'dosen/implementasi', 'icon' => 'fa-list-check', 'label' => 'Implementasi List', 'match' => 'dosen/implementasi'],
                         ]
                     ];
@@ -385,9 +369,7 @@
 
                 <!-- Bottom Items -->
                 <?php
-                $bottomItems = [
-                    ['route' => 'bantuan', 'icon' => 'fa-circle-question', 'label' => 'Bantuan', 'match' => 'bantuan'],
-                ];
+                $bottomItems = [];
 
                 foreach ($bottomItems as $item):
                     $isActive = strpos($currentPath, trim($item['match'], '/')) !== false;

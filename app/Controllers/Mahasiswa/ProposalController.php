@@ -14,17 +14,15 @@ use App\Models\Proposal\PmwProposalAssignmentModel;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use App\Models\NotificationModel;
+use App\Models\Selection\PmwSelectionProposalModel;
 
 class ProposalController extends BaseController
 {
-    private const PHASE_NUMBER_PROPOSAL = 1;
+    private const PHASE_NUMBER_PROPOSAL = 2;
 
     private const REQUIRED_DOC_KEYS = [
         'proposal_utama',
-        'biodata',
-        'surat_pernyataan_ketua',
         'surat_kesediaan_dosen',
-        'ktm',
     ];
 
     public function index()
@@ -50,12 +48,24 @@ class ProposalController extends BaseController
             $proposal = $proposalModel->findByPeriodAndLeader((int) $activePeriod['id'], (int) $user->id);
         }
 
+        // Gate: hanya bisa akses jika pitching_admin_status = approved
+        if ($proposal && ($proposal['pitching_admin_status'] ?? '') !== 'approved') {
+            return redirect()->to('mahasiswa/pitching-desk')
+                ->with('info', 'Selesaikan Tahap 1 (Administrasi & Desk Evaluation) terlebih dahulu sebelum mengakses Business Plan.');
+        }
+
         // Jika sudah ada draft/proposal, langsung ke form edit
         if ($proposal) {
             return redirect()->to("mahasiswa/proposal/edit/{$proposal['id']}");
         }
 
-        return view('mahasiswa/proposal/index', [
+        // Jika belum ada proposal sama sekali dan pitching belum ada
+        if (!$proposal && $activePeriod && $user) {
+            return redirect()->to('mahasiswa/pitching-desk')
+                ->with('info', 'Selesaikan Tahap 1 (Administrasi & Desk Evaluation) terlebih dahulu.');
+        }
+
+        return view('mahasiswa/proposal', [
             'title'        => 'Proposal Kami',
             'activePeriod' => $activePeriod,
             'phase1'       => $phase1,
@@ -107,7 +117,7 @@ class ProposalController extends BaseController
         }
 
         $ctx = $this->buildFormContext(null);
-        return view('mahasiswa/proposal/form', $ctx);
+        return view('mahasiswa/proposal', $ctx);
     }
 
     public function edit(int $id)
@@ -115,15 +125,21 @@ class ProposalController extends BaseController
         $this->checkAndFlashNotifications();
 
         $proposalModel = new PmwProposalModel();
-        $proposal = $proposalModel->find($id);
+        $proposal = $proposalModel->getProposalForValidation($id);
         if (! $proposal) {
             return redirect()->to('mahasiswa/proposal')->with('error', 'Proposal tidak ditemukan');
         }
 
         $this->guardOwner((int) $proposal['leader_user_id']);
 
+        // Gate: pitching harus sudah admin approved
+        if (($proposal['pitching_admin_status'] ?? '') !== 'approved') {
+            return redirect()->to('mahasiswa/pitching-desk')
+                ->with('info', 'Selesaikan Tahap 1 (Administrasi & Desk Evaluation) terlebih dahulu.');
+        }
+
         $ctx = $this->buildFormContext($proposal);
-        return view('mahasiswa/proposal/form', $ctx);
+        return view('mahasiswa/proposal', $ctx);
     }
 
     public function save()
@@ -142,46 +158,16 @@ class ProposalController extends BaseController
         $isFinal = (string) $this->request->getPost('is_final_submit') === '1';
 
         $rules = [
-            'lecturer_id'        => $isFinal ? 'required|integer' : 'permit_empty|integer',
-            'kategori_usaha'     => $isFinal ? 'required|max_length[100]' : 'permit_empty|max_length[100]',
-            'nama_usaha'         => $isFinal ? 'required|max_length[255]' : 'permit_empty|max_length[255]',
-            'kategori_wirausaha' => $isFinal ? 'required|in_list[pemula,berkembang]' : 'permit_empty|in_list[pemula,berkembang]',
-            'total_rab'          => 'permit_empty|decimal',
+            'lecturer_id' => $isFinal ? 'required|integer' : 'permit_empty|integer',
+            'total_rab'   => 'permit_empty|decimal',
         ];
 
         if (! $this->validate($rules)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        $members = $this->request->getPost('members');
-        if (! is_array($members)) {
-            $members = [];
-        }
-
-        $anggota = array_values(array_filter($members, static fn($m) => is_array($m) && (($m['role'] ?? '') === 'anggota')));
-        
-        // Final submission requires exactly 3-4 members (total 4-5 people including leader)
-        if ($isFinal) {
-            if (count($anggota) < 3 || count($anggota) > 4) {
-                return redirect()->back()->withInput()->with('error', 'Jumlah anggota harus berjumlah 3 sampai 4 orang (Total 4-5 orang termasuk ketua) untuk pengiriman final.');
-            }
-        } else {
-            // Draft allows zero or more, but cap at 4 to prevent UI/UX breakage
-            if (count($anggota) > 4) {
-                return redirect()->back()->withInput()->with('error', 'Jumlah anggota maksimal adalah 4 orang (Total 5 orang termasuk ketua).');
-            }
-        }
-
         $proposalModel   = new PmwProposalModel();
-        $memberModel     = new PmwProposalMemberModel();
-        $profileModel    = new ProfileModel();
         $assignmentModel = new PmwProposalAssignmentModel();
-
-        // Validasi: ambil data ketua tim dari user yang sedang login
-        $profile = $profileModel->where('user_id', $user->id)->first();
-        if (! $profile) {
-            return redirect()->back()->withInput()->with('error', 'Profil mahasiswa tidak ditemukan. Lengkapi profil terlebih dahulu.');
-        }
 
         $db = \Config\Database::connect();
         $db->transBegin();
@@ -189,36 +175,23 @@ class ProposalController extends BaseController
         try {
             $existing = $proposalModel->findByPeriodAndLeader((int) $activePeriod['id'], (int) $user->id);
 
-            $proposalData = [
-                'period_id'      => (int) $activePeriod['id'],
-                'leader_user_id' => (int) $user->id,
-                'kategori_usaha' => (string) $this->request->getPost('kategori_usaha'),
-                'nama_usaha'     => (string) $this->request->getPost('nama_usaha'),
-                'kategori_wirausaha' => (string) $this->request->getPost('kategori_wirausaha'),
-                'detail_keterangan'  => (string) $this->request->getPost('detail_keterangan'),
-                'total_rab'      => $this->request->getPost('total_rab') ?: null,
-                'status'         => 'draft',
-            ];
-
-            if ($existing) {
-                $proposalId = (int) $existing['id'];
-                if (! $proposalModel->update($proposalId, $proposalData)) {
-                    throw new \RuntimeException('Gagal menyimpan proposal');
-                }
-                $memberModel->where('proposal_id', $proposalId)->delete();
-            } else {
-                $proposalId = (int) $proposalModel->insert($proposalData, true);
-                if (! $proposalId) {
-                    throw new \RuntimeException('Gagal membuat proposal');
-                }
-
-                // Initialize Selection Tables for new proposal
-                $db->table('pmw_selection_pitching')->insert(['proposal_id' => $proposalId]);
-                $db->table('pmw_selection_wawancara')->insert(['proposal_id' => $proposalId]);
-                $db->table('pmw_selection_implementasi')->insert(['proposal_id' => $proposalId]);
+            if (!$existing) {
+                throw new \RuntimeException('Selesaikan Tahap 1 (Administrasi & Desk Evaluation) terlebih dahulu.');
             }
 
-            // Sync Assignments (Lecturer & Mentor)
+            $proposalId = (int) $existing['id'];
+
+            // Hanya update field yang ada di Tahap 2 (RAB — identitas usaha sudah di Tahap 1)
+            $proposalData = [
+                'total_rab' => $this->request->getPost('total_rab') ?: null,
+                'status'    => 'draft',
+            ];
+
+            if (! $proposalModel->update($proposalId, $proposalData)) {
+                throw new \RuntimeException('Gagal menyimpan proposal');
+            }
+
+            // Sync Assignments (Lecturer)
             $lecturerId = $this->request->getPost('lecturer_id');
             if ($lecturerId) {
                 // Security check: Ensure lecturer is not already assigned to another team
@@ -241,33 +214,6 @@ class ProposalController extends BaseController
                 $assignmentModel->update($existingAssignment->id, $assignmentData);
             } else {
                 $assignmentModel->insert($assignmentData);
-            }
-
-            // Simpan data Ketua Tim ke pmw_proposal_members (ambil dari profile user login)
-            $memberModel->insert([
-                'proposal_id' => $proposalId,
-                'role'        => 'ketua',
-                'nama'        => $profile['nama'] ?? ($user->username ?? 'Ketua'),
-                'nim'         => $profile['nim'] ?? null,
-                'jurusan'     => $profile['jurusan'] ?? null,
-                'prodi'       => $profile['prodi'] ?? null,
-                'semester'    => $profile['semester'] ?? null,
-                'phone'       => $profile['phone'] ?? null,
-                'email'       => $user->getEmail(),
-            ]);
-
-            foreach ($anggota as $m) {
-                $memberModel->insert([
-                    'proposal_id' => $proposalId,
-                    'role'        => 'anggota',
-                    'nama'        => (string) ($m['nama'] ?? ''),
-                    'nim'         => (string) ($m['nim'] ?? ''),
-                    'jurusan'     => (string) ($m['jurusan'] ?? ''),
-                    'prodi'       => (string) ($m['prodi'] ?? ''),
-                    'semester'    => (int) ($m['semester'] ?? 0),
-                    'phone'       => (string) ($m['phone'] ?? ''),
-                    'email'       => (string) ($m['email'] ?? ''),
-                ]);
             }
 
             $db->transCommit();
@@ -518,6 +464,14 @@ class ProposalController extends BaseController
             'submitted_at' => date('Y-m-d H:i:s'),
         ]);
 
+        // Upsert pmw_selection_proposal record
+        $selectionModel = new PmwSelectionProposalModel();
+        $selectionModel->upsert((int) $proposal['id'], [
+            'student_submitted_at' => date('Y-m-d H:i:s'),
+            'dosen_status'         => 'pending',
+            'admin_status'         => 'pending',
+        ]);
+
         // Create notification for admins
         $notificationModel = new NotificationModel();
         $memberModel = new PmwProposalMemberModel();
@@ -598,6 +552,7 @@ class ProposalController extends BaseController
 
         $members = [];
         $docsByKey = [];
+        $proposalSelection = null;
 
         if ($proposal) {
             // Fetch Assignment info (Lecturer)
@@ -614,22 +569,26 @@ class ProposalController extends BaseController
                     $docsByKey[$d['doc_key']] = $d;
                 }
             }
+
+            $selectionModel = new PmwSelectionProposalModel();
+            $proposalSelection = $selectionModel->getByProposal((int) $proposal['id']);
         }
 
         $lecturers = $lecturerModel->getAllWithAssignmentStatus();
 
         return [
-            'title'        => 'Proposal Kami',
-            'activePeriod' => $activePeriod,
-            'phase1'       => $phase1,
-            'isPhaseOpen'  => $isPhaseOpen,
-            'proposal'     => $proposal,
-            'isEdit'       => $proposal !== null,
-            'profile'      => $profile,
-            'members'      => $members,
-            'docsByKey'    => $docsByKey,
-            'requiredDocKeys' => self::REQUIRED_DOC_KEYS,
-            'lecturers'    => $lecturers,
+            'title'             => 'Proposal Kami',
+            'activePeriod'      => $activePeriod,
+            'phase1'            => $phase1,
+            'isPhaseOpen'       => $isPhaseOpen,
+            'proposal'          => $proposal,
+            'proposalSelection' => $proposalSelection,
+            'isEdit'            => $proposal !== null,
+            'profile'           => $profile,
+            'members'           => $members,
+            'docsByKey'         => $docsByKey,
+            'requiredDocKeys'   => self::REQUIRED_DOC_KEYS,
+            'lecturers'         => $lecturers,
         ];
     }
 

@@ -174,16 +174,16 @@ class NotificationModel extends Model
     }
 
     /**
-     * Create notification for lecturer when student submits pitching materials
+     * Create notification for admin when student submits pitching materials
      */
-    public function createPitchingSubmissionNotification(int $lecturerUserId, int $proposalId, string $namaUsaha, string $ketuaNama): int
+    public function createPitchingSubmissionNotification(int $proposalId, string $namaUsaha, string $ketuaNama): int
     {
         return $this->insert([
-            'user_id'  => $lecturerUserId,
+            'user_id'  => null,
             'type'     => 'pitching_submitted',
-            'title'    => 'Bahan Pitching Terkirim',
-            'message'  => "Mahasiswa '{$ketuaNama}' telah mengirimkan bahan pitching untuk proposal '{$namaUsaha}'",
-            'link'     => 'dosen/pitching-desk',
+            'title'    => 'Berkas Pitching Desk Masuk',
+            'message'  => "Tim '{$ketuaNama}' telah mengirimkan berkas pitching desk untuk usaha '{$namaUsaha}'",
+            'link'     => 'admin/pitching-desk',
             'data_id'  => $proposalId,
             'is_read'  => false,
         ], true);
@@ -219,9 +219,9 @@ class NotificationModel extends Model
     }
 
     /**
-     * Create notification for Stage 4 (Wawancara/Perjanjian) Validation result
+     * Create notification for Stage 3 (Perjanjian Implementasi) Validation result
      */
-    public function createWawancaraValidationNotification(int $proposalId, int $leaderUserId, string $status, string $message = '')
+    public function createPerjanjianValidationNotification(int $proposalId, int $leaderUserId, string $status, string $message = '')
     {
         $statusLabel = [
             'approved' => 'LOLOS',
@@ -234,7 +234,7 @@ class NotificationModel extends Model
             'title'   => "Hasil Validasi Perjanjian: {$statusLabel}",
             'message' => $message ?: "Validasi berkas perjanjian implementasi Anda telah selesai dengan status {$statusLabel}.",
             'link'    => 'mahasiswa/perjanjian',
-            'type'    => 'wawancara_' . $status,
+            'type'    => 'perjanjian_' . $status,
             'data_id' => $proposalId,
             'is_read' => false,
         ], true);
