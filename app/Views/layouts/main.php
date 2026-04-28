@@ -187,7 +187,7 @@
                         'icon' => 'fa-folder-tree',
                         'children' => [
                             ['route' => 'mahasiswa/pitching-desk', 'icon' => 'fa-file-shield', 'label' => 'Administrasi & Desk Evaluation', 'match' => 'mahasiswa/pitching-desk'],
-                            ['route' => 'mahasiswa/proposal', 'icon' => 'fa-file-invoice', 'label' => 'Business Plan & BMC', 'match' => 'mahasiswa/proposal'],
+                            ['route' => 'mahasiswa/proposal', 'icon' => 'fa-file-invoice', 'label' => 'Proposal', 'match' => 'mahasiswa/proposal'],
                             ['route' => 'mahasiswa/perjanjian', 'icon' => 'fa-file-signature', 'label' => 'Perjanjian', 'match' => 'mahasiswa/perjanjian'],
                         ]
                     ];

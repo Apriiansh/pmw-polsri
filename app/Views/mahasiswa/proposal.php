@@ -10,14 +10,38 @@
         <!-- Page Heading -->
         <div class="flex items-center justify-between gap-4 flex-wrap">
             <div>
-                <h2 class="section-title"><?= $isEdit ? 'Edit' : 'Buat' ?> <span class="text-gradient">Proposal</span></h2>
-                <p class="section-subtitle">Lengkapi identitas tim, profil usaha, dan unggah dokumen</p>
+                <h2 class="section-title">Proposal <span class="text-gradient">(Bussiness Plan & Business Model Canvas)</span></h2>
+                <p class="section-subtitle">Pembuatan Proposal Bisnis dan Perjanjian Implementasi</p>
             </div>
             <a href="<?= base_url('mahasiswa/proposal') ?>" class="btn-outline inline-flex items-center gap-2">
                 <i class="fas fa-arrow-left"></i>
                 Kembali
             </a>
         </div>
+
+        <?php
+        $pitchingApproved = ($proposal['pitching_admin_status'] ?? '') === 'approved';
+        $isEligible = $proposal && $pitchingApproved;
+        ?>
+        <?php if (!$isEligible): ?>
+        <div class="card-premium p-12 text-center animate-stagger">
+            <div class="w-20 h-20 rounded-3xl bg-slate-50 flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-file-pen text-3xl text-slate-300"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800">Tahap Belum Tersedia</h3>
+            <p class="text-slate-500 max-w-md mx-auto mt-2">
+                Anda harus menyelesaikan <strong>Tahap 1 (Administrasi & Desk Evaluation)</strong> dan mendapatkan persetujuan Admin/UPAPKK terlebih dahulu.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4 mt-8">
+                <a href="<?= base_url('mahasiswa/pitching-desk') ?>" class="btn-primary">
+                    Ke Pitching Desk <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+                <a href="<?= base_url('dashboard') ?>" class="btn-outline">
+                    Kembali ke Dashboard
+                </a>
+            </div>
+        </div>
+        <?php else: ?>
 
         <!-- ─── STICKY ACTION BAR ────────────────────────────────────────── -->
         <div class="sticky top-4 z-40 bg-white/90 backdrop-blur-md shadow-lg border border-sky-100 rounded-2xl p-4 mb-6 flex items-center justify-between gap-4 flex-wrap animate-in fade-in slide-in-from-top-4 duration-500">
@@ -575,6 +599,8 @@
                 <?php endif; ?>
             </div>
         </form>
+    </div>
+        <?php endif; ?>
     </div>
 </div>
 

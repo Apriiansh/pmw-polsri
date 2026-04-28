@@ -15,7 +15,7 @@
             <h2 class="section-title text-xl sm:text-2xl">
                 Administrasi & <span class="text-gradient">Desk Evaluation</span>
             </h2>
-            <p class="section-subtitle text-[10px] sm:text-[11px]">Tahap 1 - Pengajuan awal dan kelengkapan administrasi</p>
+            <p class="section-subtitle text-[10px] sm:text-[11px]">Lengkapi Administrasi dan Tentang Usaha yg Diusulkan</p>
         </div>
     </div>
 
@@ -168,7 +168,7 @@
                 <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-teal-400/20 rounded-full blur-3xl"></div>
                 <div class="max-w-2xl relative z-10">
                     <h3 class="font-display text-2xl sm:text-3xl font-black mb-3 tracking-tight">Selamat <?= esc($proposal['ketua_nama'] ?? 'Tim Anda') ?>!</h3>
-                    <p class="text-sm sm:text-base text-white/90 font-medium leading-relaxed">
+                    <p class="text-sm sm:text-base text-slate-800/90 font-medium leading-relaxed">
                         Tim Anda lolos Tahap 1 (Administrasi & Desk Evaluation). Lanjutkan ke Tahap 2: <strong>Business Plan & Business Model Canvas</strong>.
                     </p>
                     <div class="mt-8 flex justify-center gap-4">

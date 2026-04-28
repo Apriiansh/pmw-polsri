@@ -32,7 +32,7 @@
             ['title' => 'Total Dikirim', 'value' => $stats['total'], 'icon' => 'fa-clipboard-check', 'bg' => 'bg-sky-50', 'icon_color' => 'text-sky-500'],
             ['title' => 'Sudah Kirim', 'value' => $stats['submitted'], 'icon' => 'fa-paper-plane', 'bg' => 'bg-emerald-50', 'icon_color' => 'text-emerald-500'],
             ['title' => 'Belum Kirim', 'value' => $stats['pending'], 'icon' => 'fa-clock', 'bg' => 'bg-yellow-50', 'icon_color' => 'text-yellow-500'],
-            ['title' => 'Final Lolos', 'value' => $stats['approved'], 'icon' => 'fa-circle-check', 'bg' => 'bg-violet-50', 'icon_color' => 'text-violet-500'],
+            ['title' => 'Lolos', 'value' => $stats['approved'], 'icon' => 'fa-circle-check', 'bg' => 'bg-violet-50', 'icon_color' => 'text-violet-500'],
         ];
         ?>
         <?php foreach ($statItems as $index => $stat): ?>
@@ -86,7 +86,6 @@
                     <tr>
                         <th>Tim / Usaha</th>
                         <th>Ketua</th>
-                        <th>Dosen Pembimbing</th>
                         <th class="text-center">Link Video</th>
                         <th class="text-center">PPT/PDF</th>
                         <th>Status Admin</th>
@@ -120,9 +119,6 @@
                             <div class="text-[13px] font-semibold text-slate-600"><?= esc($proposal['ketua_nama']) ?></div>
                             <div class="text-[11px] text-slate-400"><?= esc($proposal['ketua_nim']) ?></div>
                         </td>
-                        <td>
-                            <div class="text-[13px] font-semibold text-slate-600"><?= esc($proposal['dosen_nama']) ?></div>
-                        </td>
                         <td class="text-center">
                             <?php if ($proposal['video_url']): ?>
                                 <a href="<?= esc($proposal['video_url']) ?>" target="_blank" class="text-sky-500 hover:text-sky-600">
@@ -134,7 +130,7 @@
                         </td>
                         <td class="text-center">
                             <?php if ($proposal['pitching_ppt_id']): ?>
-                                <a href="<?= base_url('admin/seleksi-administrasi/doc/' . $proposal['pitching_ppt_id']) ?>" class="text-orange-500 hover:text-orange-600">
+                                <a href="<?= base_url('admin/pitching-desk/doc/' . $proposal['pitching_ppt_id']) ?>" class="text-orange-500 hover:text-orange-600">
                                     <i class="fas fa-file-powerpoint text-xl"></i>
                                 </a>
                             <?php else: ?>

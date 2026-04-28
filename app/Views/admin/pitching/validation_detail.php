@@ -19,7 +19,7 @@
             <h2 class="section-title text-xl sm:text-2xl">
                 Validasi Final <span class="text-gradient">Pitching Desk</span>
             </h2>
-            <p class="section-subtitle text-[10px] sm:text-[11px]">Validasi akhir oleh Admin setelah persetujuan Dosen Pendamping</p>
+            <p class="section-subtitle text-[10px] sm:text-[11px]"><?= esc($proposal['nama_usaha'] ?? 'Proposal #' . $proposal['id']) ?> &mdash; Validasi Administrasi & Desk Evaluation oleh Admin/UPAPKK</p>
         </div>
         <a href="<?= base_url('admin/pitching-desk') ?>" class="btn-ghost inline-flex items-center gap-2">
             <i class="fas fa-arrow-left"></i>
@@ -75,6 +75,12 @@
                 <i class="fas fa-circle text-[8px]"></i>
                 <?= $statusLabels[$currentStatus] ?? ucfirst($currentStatus) ?>
             </span>
+            <?php if (!empty($proposal['student_submitted_at'])): ?>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black bg-sky-500 text-white shadow-sm shadow-sky-100">
+                    <i class="fas fa-paper-plane"></i>
+                    TERKIRIM: <?= date('d/m/y H:i', strtotime($proposal['student_submitted_at'])) ?>
+                </span>
+            <?php endif; ?>
         </div>
 
         <div class="p-5 sm:p-7">
@@ -104,83 +110,11 @@
             </div>
         </div>
     </div>
- 
-    <!-- ================================================================
-         NEW: KELENGKAPAN PITCHING SUMMARY
-    ================================================================= -->
-    <div class="card-premium overflow-hidden animate-stagger delay-150" @mousemove="handleMouseMove">
-        <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-slate-50/50 flex items-center justify-between">
-            <h3 class="font-display text-base font-bold text-(--text-heading)">
-                <i class="fas fa-tasks text-emerald-500 mr-2"></i>
-                Kelengkapan Pitching
-            </h3>
-            <?php
-            $hasPpt = isset($docsByKey['pitching_ppt']);
-            $hasVideo = !empty($proposal['video_url']);
-            $isBerkembang = $proposal['kategori_wirausaha'] === 'berkembang';
-            $isComplete = $hasPpt && (!$isBerkembang || $hasVideo);
-            ?>
-            <div class="flex items-center gap-3">
-                <?php if (!empty($proposal['student_submitted_at'])): ?>
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black bg-sky-500 text-white shadow-sm shadow-sky-100">
-                        <i class="fas fa-paper-plane"></i>
-                        TERKIRIM: <?= date('d/m/y H:i', strtotime($proposal['student_submitted_at'])) ?>
-                    </span>
-                <?php endif; ?>
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black <?= $isComplete ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white' ?> shadow-sm">
-                    <i class="fas <?= $isComplete ? 'fa-check-double' : 'fa-exclamation-triangle' ?>"></i>
-                    <?= $isComplete ? 'LENGKAP' : 'BELUM LENGKAP' ?>
-                </span>
-            </div>
-        </div>
-        <div class="p-5 sm:p-7">
-            <div class="grid sm:grid-cols-2 lg:grid-cols-<?= $isBerkembang ? '3' : '2' ?> gap-4">
-                <!-- PPT Status -->
-                <div class="p-4 rounded-2xl border <?= $hasPpt ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100' ?> flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-xl <?= $hasPpt ? 'bg-emerald-500' : 'bg-rose-500' ?> text-white flex items-center justify-center shrink-0">
-                        <i class="fas fa-file-powerpoint text-lg"></i>
-                    </div>
-                    <div>
-                        <p class="text-[10px] font-black uppercase tracking-widest opacity-60 <?= $hasPpt ? 'text-emerald-800' : 'text-rose-800' ?>">PPT Presentasi</p>
-                        <p class="text-sm font-bold <?= $hasPpt ? 'text-emerald-900' : 'text-rose-900' ?>">
-                            <?= $hasPpt ? 'Sudah Diunggah' : 'Belum Ada' ?>
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Video Status (Optional/Conditional) -->
-                <?php if ($isBerkembang): ?>
-                <div class="p-4 rounded-2xl border <?= $hasVideo ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100' ?> flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-xl <?= $hasVideo ? 'bg-emerald-500' : 'bg-rose-500' ?> text-white flex items-center justify-center shrink-0">
-                        <i class="fas fa-video text-lg"></i>
-                    </div>
-                    <div>
-                        <p class="text-[10px] font-black uppercase tracking-widest opacity-60 <?= $hasVideo ? 'text-emerald-800' : 'text-rose-800' ?>">Link Video</p>
-                        <p class="text-sm font-bold <?= $hasVideo ? 'text-emerald-900' : 'text-rose-900' ?>">
-                            <?= $hasVideo ? 'Tersedia' : 'Belum Ada' ?>
-                        </p>
-                    </div>
-                </div>
-                <?php endif; ?>
-
-                <!-- Dosen Status -->
-                <div class="p-4 rounded-2xl border bg-emerald-50 border-emerald-100 flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
-                        <i class="fas fa-user-check text-lg"></i>
-                    </div>
-                    <div>
-                        <p class="text-[10px] font-black uppercase tracking-widest opacity-60 text-emerald-800">Validasi Dosen</p>
-                        <p class="text-sm font-bold text-emerald-900">SUDAH LOLOS</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- ================================================================
-         3. TEAM & DOSEN INFO
+         3. TEAM INFO
     ================================================================= -->
-    <div class="grid lg:grid-cols-2 gap-6 animate-stagger delay-200">
+    <div class="animate-stagger delay-200">
         <!-- Tim Proposal -->
         <div class="card-premium overflow-hidden" @mousemove="handleMouseMove">
             <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60">
@@ -212,47 +146,6 @@
                 <?php endforeach; ?>
             </div>
         </div>
-
-        <!-- Dosen Pendamping -->
-        <div class="card-premium overflow-hidden" @mousemove="handleMouseMove">
-            <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60">
-                <h3 class="font-display text-base font-bold text-(--text-heading)">
-                    <i class="fas fa-chalkboard-user text-violet-500 mr-2"></i>
-                    Dosen Pendamping
-                </h3>
-            </div>
-            <div class="p-5 sm:p-7">
-                <?php if (!empty($proposal['dosen_nama'])): ?>
-                <?php
-                $dosenData = [
-                    'nama' => $proposal['dosen_nama'],
-                    'nip' => $proposal['dosen_nip'] ?? null,
-                    'jurusan' => $proposal['dosen_jurusan'] ?? null,
-                    'prodi' => $proposal['dosen_prodi'] ?? null,
-                    'phone' => $proposal['dosen_phone'] ?? null,
-                ];
-                ?>
-                <div class="flex items-center gap-3 p-3 rounded-xl bg-violet-50 border border-violet-100 cursor-pointer hover:shadow-md transition-all"
-                     onclick='openBiodataModal("dosen", <?= json_encode($dosenData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'>
-                    <div class="w-10 h-10 rounded-lg bg-violet-500 flex items-center justify-center text-white font-display font-bold text-sm shrink-0">
-                        <?= strtoupper(substr($proposal['dosen_nama'], 0, 2)) ?>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="font-semibold text-(--text-heading) text-sm"><?= esc($proposal['dosen_nama']) ?></div>
-                        <div class="text-xs text-(--text-muted)">
-                            <?= esc($proposal['dosen_nip'] ?? '-') ?> · <?= esc($proposal['dosen_prodi'] ?? '-') ?>
-                        </div>
-                    </div>
-                    <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-                </div>
-                <?php else: ?>
-                <div class="text-center py-4 text-slate-400">
-                    <i class="fas fa-user-slash text-2xl mb-2"></i>
-                    <p class="text-sm">Belum ada dosen pendamping</p>
-                </div>
-                <?php endif; ?>
-            </div>
-        </div>
     </div>
 
     <!-- ================================================================
@@ -260,7 +153,7 @@
     ================================================================= -->
     <div class="grid lg:grid-cols-3 gap-6 animate-stagger delay-300">
         <!-- Video Player -->
-        <div class="lg:col-span-2 card-premium overflow-hidden" @mousemove="handleMouseMove">
+        <div class="lg:col-span-1 card-premium overflow-hidden" @mousemove="handleMouseMove">
             <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60">
                 <h3 class="font-display text-base font-bold text-(--text-heading)">
                     <i class="fas fa-play-circle text-sky-500 mr-2"></i>
@@ -272,7 +165,7 @@
                 $embedUrl = get_video_embed_url($proposal['video_url']);
                 if ($embedUrl): 
                 ?>
-                <div class="aspect-video w-full">
+                <div class="aspect-video lg:aspect-4/3 w-full">
                     <iframe src="<?= $embedUrl ?>" class="w-full h-full" allowfullscreen allow="autoplay"></iframe>
                 </div>
                 <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
@@ -297,101 +190,92 @@
             </div>
         </div>
 
-        <!-- PPT / PDF Card -->
-        <div class="card-premium overflow-hidden" @mousemove="handleMouseMove">
-            <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60 flex items-center justify-between">
-                <h3 class="font-display text-base font-bold text-(--text-heading)">
-                    <i class="fas fa-file-powerpoint text-orange-500 mr-2"></i>
-                    Bahan Presentasi
-                </h3>
-                <?php if (isset($docsByKey['pitching_ppt'])): ?>
-                <a href="<?= base_url('admin/pitching-desk/doc/' . $docsByKey['pitching_ppt']['id']) ?>" class="text-[10px] font-black text-orange-500 hover:text-orange-600 uppercase tracking-widest">
-                    <i class="fas fa-download mr-1"></i> Download
-                </a>
-                <?php endif; ?>
+        <!-- Dokumen Panel with Tab Switcher -->
+        <?php
+        $allDocs = [
+            'pitching_ppt'           => ['label' => 'Presentasi',    'icon' => 'fa-file-powerpoint', 'color' => 'orange'],
+            'biodata'                => ['label' => 'Biodata',       'icon' => 'fa-id-card',         'color' => 'teal'],
+            'ktm'                    => ['label' => 'KTM',           'icon' => 'fa-address-card',    'color' => 'sky'],
+            'surat_pernyataan_ketua' => ['label' => 'Surat Ketua',   'icon' => 'fa-file-signature',  'color' => 'violet'],
+            'surat_kesediaan_dosen'  => ['label' => 'Surat Dosen',   'icon' => 'fa-file-contract',   'color' => 'indigo'],
+        ];
+        $availableDocs = array_filter($allDocs, fn($k) => isset($docsByKey[$k]), ARRAY_FILTER_USE_KEY);
+        $firstDocKey = array_key_first($availableDocs);
+        ?>
+        <div class="lg:col-span-2 card-premium overflow-hidden" x-data="{ activeDoc: '<?= $firstDocKey ?? '' ?>' }" @mousemove="handleMouseMove">
+            <!-- Tab Header -->
+            <div class="px-4 py-3 border-b border-sky-50 bg-white/60">
+                <div class="flex items-center gap-1 flex-wrap">
+                    <?php foreach ($availableDocs as $key => $meta): ?>
+                    <button type="button"
+                        @click="activeDoc = '<?= $key ?>'"
+                        :class="activeDoc === '<?= $key ?>' ? 'bg-sky-500 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100'"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all">
+                        <i class="fas <?= $meta['icon'] ?> text-[9px]"></i>
+                        <?= $meta['label'] ?>
+                    </button>
+                    <?php endforeach; ?>
+                    <?php if (empty($availableDocs)): ?>
+                    <span class="text-xs text-slate-400 italic px-2">Belum ada dokumen</span>
+                    <?php endif; ?>
+                </div>
             </div>
-            <div class="p-0">
-                <?php if (isset($docsByKey['pitching_ppt'])): ?>
-                <?php 
-                    // Gunakan original_name karena file_path bisa saja memiliki ekstensi yang di-guess oleh server
-                    $fileExtension = strtolower(pathinfo($docsByKey['pitching_ppt']['original_name'], PATHINFO_EXTENSION));
-                    $isPdf = ($fileExtension === 'pdf');
-                ?>
-                <div class="aspect-3/4 sm:aspect-square w-full bg-slate-50 relative group flex items-center justify-center">
-                    <?php if ($isPdf): ?>
-                        <iframe src="<?= base_url('admin/pitching-desk/doc/' . $docsByKey['pitching_ppt']['id'] . '?inline=1') ?>" class="w-full h-full border-none" allow="autoplay"></iframe>
-                    <?php else: ?>
-                        <!-- Placeholder for non-PDF files (PPT/PPTX) to prevent automatic download -->
-                        <div class="text-center p-8">
-                            <div class="w-20 h-20 rounded-3xl bg-orange-100 text-orange-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-100/50">
-                                <i class="fas fa-file-powerpoint text-3xl"></i>
+
+            <!-- Doc Panels -->
+            <?php foreach ($availableDocs as $key => $meta): ?>
+            <?php
+                $doc = $docsByKey[$key];
+                $ext = strtolower(pathinfo($doc['original_name'], PATHINFO_EXTENSION));
+                $isPdf = ($ext === 'pdf');
+                $docUrl = base_url('admin/pitching-desk/doc/' . $doc['id']);
+            ?>
+            <div x-show="activeDoc === '<?= $key ?>'" x-cloak>
+                <div class="p-0">
+                    <div class="h-80 lg:h-[420px] w-full bg-slate-50 relative group flex items-center justify-center">
+                        <?php if ($isPdf): ?>
+                            <iframe src="<?= $docUrl ?>?inline=1" class="w-full h-full border-none"></iframe>
+                        <?php else: ?>
+                            <div class="text-center p-8">
+                                <div class="w-20 h-20 rounded-3xl bg-<?= $meta['color'] ?>-100 text-<?= $meta['color'] ?>-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                                    <i class="fas <?= $meta['icon'] ?> text-3xl"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-700 mb-1 text-sm"><?= esc($doc['original_name']) ?></h4>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4">File <?= strtoupper($ext) ?> · Preview tidak tersedia</p>
                             </div>
-                            <h4 class="font-display font-bold text-slate-700 mb-1"><?= esc($docsByKey['pitching_ppt']['original_name']) ?></h4>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4">File <?= strtoupper($fileExtension) ?> (Preview tidak tersedia)</p>
-                            <a href="<?= base_url('admin/pitching-desk/doc/' . $docsByKey['pitching_ppt']['id']) ?>" class="btn-primary btn-sm px-6">
-                                <i class="fas fa-download mr-2"></i> Download & Buka
-                            </a>
-                        </div>
-                    <?php endif; ?>
-
-                    <!-- Overlay for better UX -->
-                    <div class="absolute inset-x-0 bottom-0 p-4 bg-linear-to-t from-slate-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                        <p class="text-white text-[10px] font-bold"><?= esc($docsByKey['pitching_ppt']['original_name']) ?></p>
+                        <?php endif; ?>
                     </div>
                 </div>
-                <div class="p-3 bg-orange-50/50 border-t border-orange-100 flex items-center justify-between">
-                    <span class="text-[10px] text-orange-700 font-bold uppercase"><?= strtoupper($fileExtension) ?> File</span>
-                    <?php if ($isPdf): ?>
-                    <a href="<?= base_url('admin/pitching-desk/doc/' . $docsByKey['pitching_ppt']['id'] . '?inline=1') ?>" target="_blank" class="btn-ghost btn-xs text-orange-600">
-                        <i class="fas fa-expand-alt"></i>
-                    </a>
-                    <?php endif; ?>
-                </div>
-                <?php else: ?>
-                <div class="p-12 text-center bg-slate-50/50">
-                    <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4 text-slate-300">
-                        <i class="fas fa-file-circle-exclamation text-2xl"></i>
+                <div class="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <span class="text-[10px] text-slate-500 font-bold uppercase truncate"><?= esc($doc['original_name']) ?></span>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <?php if ($isPdf): ?>
+                        <a href="<?= $docUrl ?>?inline=1" target="_blank"
+                           class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-black bg-white border border-slate-200 text-slate-600 hover:text-sky-600 hover:border-sky-300 transition-all">
+                            <i class="fas fa-expand-alt"></i> Preview
+                        </a>
+                        <?php endif; ?>
+                        <a href="<?= $docUrl ?>"
+                           class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-black bg-sky-500 text-white hover:bg-sky-600 transition-all">
+                            <i class="fas fa-download"></i> Download
+                        </a>
                     </div>
-                    <p class="text-slate-400 italic text-sm">File belum diunggah</p>
                 </div>
-                <?php endif; ?>
             </div>
+            <?php endforeach; ?>
+
+            <?php if (empty($availableDocs)): ?>
+            <div class="p-12 text-center bg-slate-50/50">
+                <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4 text-slate-300">
+                    <i class="fas fa-file-circle-exclamation text-2xl"></i>
+                </div>
+                <p class="text-slate-400 italic text-sm">Belum ada dokumen diunggah</p>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 
     <!-- ================================================================
-         5. LECTURER FEEDBACK
-    ================================================================= -->
-    <div class="card-premium overflow-hidden animate-stagger delay-400 border-l-4 border-l-emerald-500 bg-emerald-50/30" @mousemove="handleMouseMove">
-        <div class="px-5 sm:px-7 py-4 border-b border-emerald-100 bg-white/60">
-            <h3 class="font-display text-base font-bold text-(--text-heading)">
-                <i class="fas fa-comments text-emerald-500 mr-2"></i>
-                Validasi Dosen Pendamping
-            </h3>
-        </div>
-        <div class="p-5 sm:p-7">
-            <div class="flex items-start gap-4">
-                <div class="w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-emerald-100">
-                    <i class="fas fa-user-check text-xl"></i>
-                </div>
-                <div class="flex-1">
-                    <div class="flex items-center justify-between mb-2">
-                        <div>
-                            <h4 class="font-bold text-slate-800"><?= esc($proposal['dosen_nama']) ?></h4>
-                            <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Dosen Pendamping</p>
-                        </div>
-                        <span class="px-3 py-1 rounded-full text-[10px] font-black bg-emerald-500 text-white shadow-sm">APPROVED</span>
-                    </div>
-                    <div class="p-4 rounded-xl bg-white text-slate-600 text-sm leading-relaxed border border-emerald-100 shadow-sm italic">
-                        "<?= esc($proposal['pitching_dosen_catatan'] ?: 'Dosen menyetujui konten pitching tanpa catatan khusus.') ?>"
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ================================================================
-         6. VALIDATION FORM
+         5. VALIDATION FORM
     ================================================================= -->
     <div class="card-premium overflow-hidden animate-stagger delay-500 border-l-4 border-l-sky-500" @mousemove="handleMouseMove">
         <div class="px-5 sm:px-7 py-4 sm:py-5 border-b border-sky-50 bg-white/60">

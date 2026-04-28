@@ -292,8 +292,7 @@ class PmwProposalModel extends Model
     }
 
     /**
-     * Get proposals for Admin (Phase 3 Validation)
-     * Only shows proposals already approved by their respective lecturers
+     * Get proposals for Admin Pitching Desk validation
      */
     public function getProposalsForAdminPitching(?string $statusFilter = null): array
     {
@@ -304,17 +303,13 @@ class PmwProposalModel extends Model
             'p.*',
             'pm.nama as ketua_nama',
             'pm.nim as ketua_nim',
-            'l.nama as dosen_nama',
             'per.name as period_name',
             'per.year as period_year',
-            'sp.dosen_status as pitching_dosen_status',
             'sp.admin_status as pitching_admin_status',
             'sp.student_submitted_at',
             '(SELECT id FROM pmw_documents WHERE proposal_id = p.id AND doc_key = "pitching_ppt" LIMIT 1) as pitching_ppt_id'
         ]);
         $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
-        $builder->join('pmw_proposal_assignments pa', 'pa.proposal_id = p.id', 'left');
-        $builder->join('pmw_lecturers l', 'l.id = pa.lecturer_id', 'left');
         $builder->join('pmw_periods per', 'per.id = p.period_id', 'left');
         $builder->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left');
         
