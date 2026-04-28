@@ -52,17 +52,6 @@
                         </div>
                     </div>
 
-                    <!-- Remember & Forgot -->
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" name="remember" class="w-4 h-4 rounded border-slate-300 text-sky-500 focus:ring-sky-400">
-                            <span class="text-sm text-slate-600">Ingat saya</span>
-                        </label>
-                        <a href="<?= base_url('forgot') ?>" class="text-sm text-sky-600 hover:text-sky-700 font-medium">
-                            Lupa password?
-                        </a>
-                    </div>
-
                     <!-- Submit -->
                     <button type="submit" class="btn-primary w-full py-3.5 sm:py-4 text-base sm:text-lg">
                         <i class="fas fa-sign-in-alt mr-2"></i>Masuk
