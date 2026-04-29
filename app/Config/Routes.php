@@ -119,6 +119,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->post('pengumuman/(:num)/delete-sk', 'Admin\\AnnouncementController::deleteSk/$1');
         $routes->get('pengumuman/(:num)/sk', 'Admin\\AnnouncementController::downloadSk/$1');
         $routes->get('pengumuman/rekening/(:num)/download', 'Admin\\AnnouncementController::downloadTeamBankBook/$1');
+        $routes->get('pengumuman/pembekalan/foto/(:num)', 'Admin\\AnnouncementController::downloadTrainingPhoto/$1');
 
         // Tahap 7 - Implementasi List Perjanjian (Admin Verification)
         $routes->get('implementasi', 'Admin\\ImplementasiController::index');

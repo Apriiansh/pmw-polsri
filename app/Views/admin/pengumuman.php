@@ -189,7 +189,7 @@
         <div class="card-premium overflow-hidden mt-8 animate-stagger delay-300" @mousemove="handleMouseMove">
             <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60 flex items-center justify-between">
                 <div>
-                    <h3 class="font-display text-base font-bold text-(--text-heading)">Data Rekening Tim yg Lolos Dana Tahap I</h3>
+                    <h3 class="font-display text-base font-bold text-(--text-heading)">Data Rekening dan Dokumentasi Pembekalan Tim yg Lolos Dana Tahap I</h3>
                     <p class="text-[11px] text-(--text-muted) font-semibold mt-0.5">Daftar tim beserta informasi pencairan dana PMW</p>
                 </div>
                 <div class="px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-bold border border-sky-100">
@@ -207,12 +207,14 @@
                                 <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider">Informasi Bank</th>
                                 <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider">Rekening</th>
                                 <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider text-center">Buku Rekening</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider text-center">Foto Pembekalan</th>
+                                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-wider">Ringkasan Pembekalan</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             <?php if (empty($passedTeams)): ?>
                                 <tr>
-                                    <td colspan="5" class="px-6 py-12 text-center">
+                                    <td colspan="7" class="px-6 py-12 text-center">
                                         <div class="flex flex-col items-center justify-center">
                                             <div class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-3">
                                                 <i class="fas fa-inbox text-2xl text-slate-300"></i>
@@ -225,6 +227,8 @@
                             <?php else: ?>
                                 <?php foreach ($passedTeams as $index => $team):
                                     $acc = $bankAccounts[$team['id']] ?? null;
+                                    $trainingPhotos = $team['training_photos'] ?? [];
+                                    $trainingSummary = $team['training_summary'] ?? null;
                                 ?>
                                     <tr class="group hover:bg-slate-50/50 transition-colors">
                                         <td class="px-6 py-4 text-sm font-semibold text-slate-500">
@@ -267,6 +271,31 @@
                                                 <div class="w-8 h-8 rounded-lg bg-slate-50 text-slate-300 flex items-center justify-center mx-auto" title="Belum diupload">
                                                     <i class="fas fa-minus"></i>
                                                 </div>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <?php if (!empty($trainingPhotos)): ?>
+                                                <div class="flex flex-wrap gap-1.5 justify-center">
+                                                    <?php foreach ($trainingPhotos as $photo): ?>
+                                                        <a href="<?= base_url('admin/pengumuman/pembekalan/foto/' . $photo->id) ?>"
+                                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-sky-50 text-sky-600 hover:bg-sky-500 hover:text-white transition-all"
+                                                            title="Download <?= esc($photo->original_name ?? 'foto') ?>">
+                                                            <i class="fas fa-image text-xs"></i>
+                                                        </a>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                                <p class="text-[10px] text-slate-400 mt-1"><?= count($trainingPhotos) ?> foto</p>
+                                            <?php else: ?>
+                                                <div class="w-8 h-8 rounded-lg bg-slate-50 text-slate-300 flex items-center justify-center mx-auto" title="Belum diupload">
+                                                    <i class="fas fa-minus"></i>
+                                                </div>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <?php if (!empty($trainingSummary)): ?>
+                                                <p class="text-xs text-slate-700 leading-relaxed line-clamp-3"><?= esc($trainingSummary) ?></p>
+                                            <?php else: ?>
+                                                <span class="text-xs text-slate-400 italic">Belum diisi</span>
                                             <?php endif; ?>
                                         </td>
                                     </tr>

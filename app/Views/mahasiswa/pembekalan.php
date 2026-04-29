@@ -9,7 +9,7 @@
             <h2 class="section-title text-xl sm:text-2xl">
                 Pembekalan <span class="text-gradient">PMW</span>
             </h2>
-            <p class="section-subtitle text-[10px] sm:text-[11px]">Tahap 6 - Input laporan dan foto kegiatan pembekalan</p>
+            <p class="section-subtitle text-[10px] sm:text-[11px]">Input laporan dan foto kegiatan pembekalan</p>
         </div>
     </div>
 

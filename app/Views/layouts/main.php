@@ -146,7 +146,7 @@
                             ['route' => 'admin/pitching-desk',        'label' => 'Administrasi & Desk Eval', 'match' => 'admin/pitching-desk'],
                             ['route' => 'admin/administrasi/seleksi', 'label' => 'Proposal', 'match' => 'admin/administrasi/seleksi'],
                             ['route' => 'admin/perjanjian',           'label' => 'Perjanjian Implementasi', 'match' => 'admin/perjanjian'],
-                            ['route' => 'admin/pengumuman',           'label' => 'Pengumuman Lolos', 'match' => 'admin/pengumuman'],
+                            ['route' => 'admin/pengumuman',           'label' => 'Lolos Tahap I dan Pembekalan', 'match' => 'admin/pengumuman'],
                             ['route' => 'admin/implementasi', 'label' => 'Implementasi List', 'match' => 'admin/implementasi'],
                         ]
                     ];

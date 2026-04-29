@@ -39,12 +39,22 @@ class AnnouncementController extends BaseController
             
             $selectionService = new \App\Services\PmwSelectionService();
             $bankAccountModel = new \App\Models\AnnouncementFunding\PmwBankAccountModel();
-            
+            $trainingReportModel = new \App\Models\AnnouncementFunding\PmwTrainingReportModel();
+            $trainingPhotoModel = new \App\Models\AnnouncementFunding\PmwTrainingPhotoModel();
+
             $passedTeams = $selectionService->getPassedStage1Teams((int) $activePeriod['id']);
             $dbBankAccs = $bankAccountModel->findByPeriod((int) $activePeriod['id']);
             foreach ($dbBankAccs as $ba) {
                 $bankAccounts[$ba->proposal_id] = $ba;
             }
+
+            foreach ($passedTeams as &$team) {
+                $report = $trainingReportModel->findByProposal((int) $team['id']);
+                $team['training_summary'] = $report ? $report->summary : null;
+                $team['training_photos'] = $report ? $trainingPhotoModel->findByReportId($report->id) : [];
+                $team['training_report_id'] = $report ? $report->id : null;
+            }
+            unset($team);
         }
 
         return view('admin/pengumuman', [
@@ -181,6 +191,24 @@ class AnnouncementController extends BaseController
 
         return $this->response->download($absPath, null)
             ->setFileName(basename($absPath));
+    }
+
+    public function downloadTrainingPhoto(int $photoId)
+    {
+        $photoModel = new \App\Models\AnnouncementFunding\PmwTrainingPhotoModel();
+        $photo = $photoModel->find($photoId);
+
+        if (!$photo || empty($photo->file_path)) {
+            return redirect()->back()->with('error', 'Foto tidak ditemukan.');
+        }
+
+        $absPath = WRITEPATH . $photo->file_path;
+        if (!is_file($absPath)) {
+            return redirect()->back()->with('error', 'File foto tidak ditemukan di server.');
+        }
+
+        return $this->response->download($absPath, null)
+            ->setFileName($photo->original_name ?? basename($absPath));
     }
 
 }
