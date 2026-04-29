@@ -9,7 +9,7 @@
             <h2 class="section-title text-xl sm:text-2xl">
                 Pengumuman Kelolosan Dana <span class="text-gradient">Tahap I</span>
             </h2>
-            <p class="section-subtitle text-[10px] sm:text-[11px]">Tahap 5 - Pengumuman lolos + info pembekalan (Tahap 6)</p>
+            <p class="section-subtitle text-[10px] sm:text-[11px]">Pengumuman lolos & info pembekalan</p>
         </div>
     </div>
 
@@ -20,12 +20,12 @@
                 <?= $activePeriod ? esc($activePeriod['name']) . ' ' . esc($activePeriod['year']) : '-' ?>
             </p>
             <div class="mt-4 pt-4 border-t border-slate-50">
-                <p class="text-[11px] font-bold text-slate-500 italic">Pengumuman Tahap 5</p>
+                <p class="text-[11px] font-bold text-slate-500 italic"><?= esc($activePeriod['year'] ?? '') ?></p>
             </div>
         </div>
 
         <div class="card-premium p-5 border-l-4 <?= $isPhaseOpen ? 'border-l-emerald-500' : 'border-l-rose-500' ?>" @mousemove="handleMouseMove">
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Jadwal Tahap 5</p>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Jadwal Pengumuman</p>
             <p class="text-sm font-bold text-slate-800 mt-1">
                 <?= $phase ? (formatIndonesianDate($phase['start_date']) . ' - ' . formatIndonesianDate($phase['end_date'])) : 'Belum dijadwalkan' ?>
             </p>
@@ -237,7 +237,7 @@
                                         <td class="px-6 py-4">
                                             <?php if ($acc && !empty($acc->bank_name)): ?>
                                                 <div class="font-bold text-sky-700 text-sm"><?= esc($acc->bank_name) ?></div>
-                                                <div class="text-xs text-slate-500 mt-0.5">Cabang: <?= esc($acc->branch_office) ?></div>
+                                                <div class="text-xs text-slate-500 mt-0.5"><?= esc($acc->branch_office) ?></div>
                                             <?php else: ?>
                                                 <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200">
                                                     Belum Diinput

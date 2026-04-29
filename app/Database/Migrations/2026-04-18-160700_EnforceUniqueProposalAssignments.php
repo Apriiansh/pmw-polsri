@@ -22,7 +22,6 @@ class EnforceUniqueProposalAssignments extends Migration
         // The most reliable way for an existing table in CI4 is raw SQL or drop/recreate keys.
         
         $this->db->query("ALTER TABLE pmw_proposal_assignments ADD UNIQUE INDEX unique_lecturer_assignment (lecturer_id)");
-        $this->db->query("ALTER TABLE pmw_proposal_assignments ADD UNIQUE INDEX unique_mentor_assignment (mentor_id)");
     }
 
     public function down()

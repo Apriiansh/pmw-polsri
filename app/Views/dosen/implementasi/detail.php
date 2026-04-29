@@ -163,7 +163,7 @@
                         </div>
                         <div class="flex-1 text-center sm:text-left min-w-0">
                             <p class="text-sm font-bold text-slate-800">Admin UPAPKK Polsri</p>
-                            <p class="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-wide">Validasi Final Tahap 4</p>
+                            <p class="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-wide">Validasi Final</p>
                         </div>
                         <?php if ($selection->admin_status === 'approved'): ?>
                             <div class="shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500 text-white shadow-lg shadow-emerald-100">

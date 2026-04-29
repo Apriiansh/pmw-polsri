@@ -33,7 +33,7 @@
 
     <?php if ($hasProposal): ?>
         <!-- ─── STICKY ACTION BAR ────────────────────────────────────────── -->
-        <div class="sticky top-4 z-40 bg-white/90 backdrop-blur-md shadow-lg border border-sky-100 rounded-2xl p-4 mb-6 animate-stagger delay-150 flex items-center justify-between gap-4 flex-wrap">
+        <div class="sticky top-4 z-20 bg-white/90 backdrop-blur-md shadow-lg border border-sky-100 rounded-2xl p-4 mb-6 animate-stagger delay-150 flex items-center justify-between gap-4 flex-wrap">
             <div class="flex items-center gap-3 min-w-0">
                 <?php if ($aStatus === 'approved'): ?>
                     <div class="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
@@ -181,7 +181,7 @@
                 </div>
             </div>
         </div>
-        <?php else: ?>
+        <?php endif; // endif approved ?>
 
         <!-- ================================================================
              3. VALIDATION PROGRESS TRACKER
@@ -724,7 +724,6 @@
             </div>
         </div>
 
-        <?php endif; // endif approved ?>
     <?php endif; // endif hasProposal ?>
 
 </div><!-- /page wrapper -->

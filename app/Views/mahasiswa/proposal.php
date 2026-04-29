@@ -13,10 +13,6 @@
                 <h2 class="section-title">Proposal <span class="text-gradient">(Bussiness Plan & Business Model Canvas)</span></h2>
                 <p class="section-subtitle">Pembuatan Proposal Bisnis dan Pemilihan Dosen Pendamping</p>
             </div>
-            <a href="<?= base_url('dashboard') ?>" class="btn-outline inline-flex items-center gap-2">
-                <i class="fas fa-arrow-left"></i>
-                Kembali
-            </a>
         </div>
 
         <?php
@@ -26,6 +22,9 @@
         $proposalSubmitted   = !empty($proposal['proposal_submitted_at']);
         // Tampil gate dosen jika sudah submit tapi dosen belum approve
         $waitingDosen = $proposalSubmitted && $proposalDosenStatus !== 'approved';
+        // isLocked: form read-only jika sudah submit, approved, rejected, atau menunggu dosen
+        $status = $proposal['status'] ?? 'new';
+        $isLocked = in_array($status, ['submitted', 'approved', 'rejected']) || $waitingDosen;
         ?>
         <?php if (!$isEligible): ?>
         <div class="card-premium p-12 text-center animate-stagger">
@@ -45,40 +44,13 @@
                 </a>
             </div>
         </div>
-        <?php elseif ($waitingDosen): ?>
-        <div class="card-premium p-12 text-center animate-stagger">
-            <div class="w-20 h-20 rounded-3xl <?= $proposalDosenStatus === 'revision' ? 'bg-orange-50' : 'bg-amber-50' ?> flex items-center justify-center mx-auto mb-6">
-                <i class="fas <?= $proposalDosenStatus === 'revision' ? 'fa-circle-exclamation text-orange-400' : 'fa-hourglass-half text-amber-400' ?> text-3xl"></i>
-            </div>
-            <?php if ($proposalDosenStatus === 'revision'): ?>
-            <h3 class="text-xl font-bold text-slate-800">Proposal Perlu Revisi</h3>
-            <p class="text-slate-500 max-w-md mx-auto mt-2">
-                Dosen Pendamping meminta revisi pada proposal Anda.
-                <?php if (!empty($proposal['proposal_dosen_catatan'])): ?>
-                <br><span class="font-semibold text-orange-600">Catatan: <?= esc($proposal['proposal_dosen_catatan']) ?></span>
-                <?php endif; ?>
-            </p>
-            <?php else: ?>
-            <h3 class="text-xl font-bold text-slate-800">Menunggu Persetujuan Dosen</h3>
-            <p class="text-slate-500 max-w-md mx-auto mt-2">
-                Proposal Anda sedang dalam review oleh <strong>Dosen Pendamping</strong>. Harap tunggu hingga disetujui sebelum dapat dilanjutkan ke validasi Admin.
-            </p>
-            <?php endif; ?>
-            <div class="flex flex-wrap justify-center gap-4 mt-8">
-                <a href="<?= base_url('dashboard') ?>" class="btn-outline">
-                    Kembali ke Dashboard
-                </a>
-            </div>
-        </div>
         <?php else: ?>
-
         <!-- ─── STICKY ACTION BAR ────────────────────────────────────────── -->
         <div class="sticky top-4 z-40 bg-white/90 backdrop-blur-md shadow-lg border border-sky-100 rounded-2xl p-4 mb-6 flex items-center justify-between gap-4 flex-wrap animate-in fade-in slide-in-from-top-4 duration-500">
             
             <!-- Left: Status Info -->
             <div class="flex items-center gap-3 min-w-0">
                 <?php
-                $status = $proposal['status'] ?? 'new';
                 $statusMap = [
                     'new'       => ['icon' => 'fa-file-circle-plus', 'color' => 'slate',   'label' => 'Baru (Draft)'],
                     'draft'     => ['icon' => 'fa-file-pen',          'color' => 'amber',   'label' => 'Draft Tersimpan'],
@@ -102,8 +74,6 @@
                     <?php endif; ?>
                 </div>
             </div>
-
-            <?php $isLocked = in_array($status, ['submitted', 'approved', 'rejected']); ?>
 
             <!-- Right: Action Buttons -->
             <div class="flex items-center gap-3 shrink-0">
@@ -554,7 +524,7 @@
                         </tbody>
                         <tfoot>
                             <tr class="bg-amber-50 border-t-2 border-amber-100">
-                                <td colspan="<?= $isLocked ? 4 : 5 ?>" class="px-4 py-3 text-xs font-black uppercase tracking-widest text-slate-500 text-right">
+                                <td colspan="5" class="px-4 py-3 text-xs font-black uppercase tracking-widest text-slate-500 text-right">
                                     Total RAB
                                 </td>
                                 <td class="px-4 py-3 text-right">
@@ -700,7 +670,7 @@
                                 <?php if ($isLocked && $proposal['status'] !== 'rejected'): ?>
                                     <div class="px-8 py-3.5 bg-emerald-50 border border-emerald-100 rounded-2xl text-emerald-600 font-bold text-sm flex items-center gap-2 shadow-sm">
                                         <i class="fas fa-check-circle"></i>
-                                        Finalisasi Selesai
+                                        Sudah dikirim
                                     </div>
                                 <?php elseif ($isPhaseOpen && $proposal['status'] !== 'rejected'): ?>
                                     <button type="button"

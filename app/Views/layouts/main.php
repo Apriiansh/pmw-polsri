@@ -145,7 +145,7 @@
                         'children' => [
                             ['route' => 'admin/pitching-desk',        'label' => 'Administrasi & Desk Eval', 'match' => 'admin/pitching-desk'],
                             ['route' => 'admin/administrasi/seleksi', 'label' => 'Proposal', 'match' => 'admin/administrasi/seleksi'],
-                            ['route' => 'admin/perjanjian',           'label' => 'Perjanjian Kontrak', 'match' => 'admin/perjanjian'],
+                            ['route' => 'admin/perjanjian',           'label' => 'Perjanjian Implementasi', 'match' => 'admin/perjanjian'],
                             ['route' => 'admin/pengumuman',           'label' => 'Pengumuman Lolos', 'match' => 'admin/pengumuman'],
                             ['route' => 'admin/implementasi', 'label' => 'Implementasi List', 'match' => 'admin/implementasi'],
                         ]
@@ -188,7 +188,7 @@
                         'children' => [
                             ['route' => 'mahasiswa/pitching-desk', 'icon' => 'fa-file-shield', 'label' => 'Administrasi & Desk Evaluation', 'match' => 'mahasiswa/pitching-desk'],
                             ['route' => 'mahasiswa/proposal', 'icon' => 'fa-file-invoice', 'label' => 'Proposal', 'match' => 'mahasiswa/proposal'],
-                            ['route' => 'mahasiswa/perjanjian', 'icon' => 'fa-file-signature', 'label' => 'Perjanjian', 'match' => 'mahasiswa/perjanjian'],
+                            ['route' => 'mahasiswa/perjanjian', 'icon' => 'fa-file-signature', 'label' => 'Implementasi Perjanjian', 'match' => 'mahasiswa/perjanjian'],
                         ]
                     ];
 

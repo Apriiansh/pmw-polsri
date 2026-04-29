@@ -5,6 +5,7 @@ namespace App\Controllers\Admin;
 use App\Controllers\BaseController;
 use App\Models\PmwDocumentModel;
 use App\Models\NotificationModel;
+use App\Models\Selection\PmwSelectionProposalModel;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class ValidationController extends BaseController
@@ -41,7 +42,7 @@ class ValidationController extends BaseController
             'rejected'  => count(array_filter($allFiltered, fn($p) => $p['status'] === 'rejected')),
         ];
 
-        return view('admin/administrasi/seleksi', [
+        return view('admin/proposal/seleksi', [
             'title'           => 'Business Plan & BMC | PMW Polsri',
             'header_title'    => 'Business Plan & Business Model Canvas',
             'header_subtitle' => 'Tahap 2 - Validasi kelengkapan dokumen proposal',
@@ -88,7 +89,7 @@ class ValidationController extends BaseController
             'proposal_utama' => 'Proposal Utama',
         ];
 
-        return view('admin/administrasi/seleksi_detail', [
+        return view('admin/proposal/seleksi_detail', [
             'title'           => 'Detail Proposal | PMW Polsri',
             'header_title'    => 'Detail Proposal',
             'header_subtitle' => 'Validasi kelengkapan dokumen',
@@ -133,6 +134,13 @@ class ValidationController extends BaseController
         }
 
         $proposalModel->update($id, $updateData);
+
+        // Sync admin_status ke pmw_selection_proposal
+        $selectionModel = new PmwSelectionProposalModel();
+        $selectionModel->upsert($id, [
+            'admin_status'  => $newStatus,
+            'admin_catatan' => $catatan ?: null,
+        ]);
 
         $db->transComplete();
 

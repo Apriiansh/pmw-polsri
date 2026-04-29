@@ -479,6 +479,22 @@ class ProposalController extends BaseController
             $proposal['nama_usaha'] ?? 'Tanpa Nama',
             $ketua['nama'] ?? 'Ketua Tim'
         );
+
+        // Kirim notifikasi ke dosen pendamping yang di-assign
+        $assignmentModel = new PmwProposalAssignmentModel();
+        $assignment = $assignmentModel->where('proposal_id', $id)->first();
+        if ($assignment && $assignment->lecturer_id) {
+            $lecturerModel = new \App\Models\LecturerModel();
+            $lecturer = $lecturerModel->find($assignment->lecturer_id);
+            if ($lecturer && !empty($lecturer['user_id'])) {
+                $notificationModel->createProposalDosenNotification(
+                    (int) $lecturer['user_id'],
+                    $id,
+                    $proposal['nama_usaha'] ?? 'Tanpa Nama',
+                    $ketua['nama'] ?? 'Ketua Tim'
+                );
+            }
+        }
     }
 
     public function downloadDoc(int $docId)

@@ -5,6 +5,7 @@ namespace App\Controllers\Mentor;
 use App\Controllers\BaseController;
 use App\Services\PmwMonitoringService;
 use App\Models\MentorModel;
+use App\Models\PmwDocumentModel;
 
 class MonitoringController extends BaseController
 {
@@ -66,5 +67,37 @@ class MonitoringController extends BaseController
         ]);
 
         return view('mentor/monitoring/detail', $data);
+    }
+
+    public function viewDoc(int $docId)
+    {
+        $documentModel = new PmwDocumentModel();
+        $doc = $documentModel->find($docId);
+
+        if (!$doc) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        $mentor = $this->mentorModel->getByUserId(user_id());
+        $summary = $this->monitoringService->getTeamSummary((int) $doc['proposal_id']);
+
+        if (!$summary || ($summary['assignment']['mentor_id'] ?? null) != ($mentor['id'] ?? null)) {
+            return redirect()->to('mentor/monitoring')->with('error', 'Akses ditolak');
+        }
+
+        $path = WRITEPATH . $doc['file_path'];
+        if (!file_exists($path)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('File tidak ditemukan');
+        }
+
+        if ($this->request->getGet('inline')) {
+            $file = new \CodeIgniter\Files\File($path);
+            return $this->response
+                ->setHeader('Content-Type', $file->getMimeType())
+                ->setHeader('Content-Disposition', 'inline; filename="' . $doc['original_name'] . '"')
+                ->setBody(file_get_contents($path));
+        }
+
+        return $this->response->download($path, null)->setFileName($doc['original_name']);
     }
 }

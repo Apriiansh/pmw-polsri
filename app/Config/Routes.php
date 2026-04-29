@@ -312,6 +312,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
     $routes->group('mentor', ['filter' => 'group:mentor'], static function ($routes) {
         $routes->get('monitoring', 'Mentor\MonitoringController::index');
         $routes->get('monitoring/detail/(:num)', 'Mentor\MonitoringController::detail/$1');
+        $routes->get('monitoring/doc/(:num)', 'Mentor\MonitoringController::viewDoc/$1');
 
         // Tahap 8 - Manajemen Jadwal Mentoring
         $routes->get('mentoring', 'Mentor\\GuidanceController::index');

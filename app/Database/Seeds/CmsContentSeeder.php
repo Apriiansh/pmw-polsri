@@ -90,7 +90,7 @@ class CmsContentSeeder extends Seeder
                     [
                         'icon'  => 'fa-coins',
                         'color' => 'sky',
-                        'title' => 'Dana Ilham',
+                        'title' => 'Pendanaan Implementasi',
                         'desc'  => 'Akses pendanaan tahap 1 dan tahap 2 untuk mengakselerasi pertumbuhan usaha Anda.'
                     ],
                     [

@@ -60,9 +60,12 @@ class MentorModel extends Model
      */
     public function getAllWithAssignmentStatus(): array
     {
-        return $this->select('pmw_mentors.*, pa.proposal_id as assigned_proposal_id')
-            ->join('pmw_proposal_assignments pa', 'pa.mentor_id = pmw_mentors.id', 'left')
-            ->orderBy('nama', 'ASC')
-            ->findAll();
+        $db = \Config\Database::connect();
+        return $db->table('pmw_mentors m')
+            ->select('m.*, COUNT(pa.id) as assigned_team_count, MAX(pa.proposal_id) as assigned_proposal_id')
+            ->join('pmw_proposal_assignments pa', 'pa.mentor_id = m.id', 'left')
+            ->groupBy('m.id')
+            ->orderBy('m.nama', 'ASC')
+            ->get()->getResultArray();
     }
 }

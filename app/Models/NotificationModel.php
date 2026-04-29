@@ -145,6 +145,22 @@ class NotificationModel extends Model
     }
 
     /**
+     * Create notification for assigned lecturer when student submits proposal
+     */
+    public function createProposalDosenNotification(int $dosenUserId, int $proposalId, string $namaUsaha, string $ketuaNama): int
+    {
+        return $this->insert([
+            'user_id'  => $dosenUserId,
+            'type'     => 'proposal_dosen_review',
+            'title'    => 'Proposal Perlu Divalidasi',
+            'message'  => "Tim '{$namaUsaha}' oleh {$ketuaNama} telah mengajukan proposal dan menunggu persetujuan Anda.",
+            'link'     => 'dosen/proposal',
+            'data_id'  => $proposalId,
+            'is_read'  => false,
+        ], true);
+    }
+
+    /**
      * Create validation result notification for student (Stage 3 - Pitching Desk)
      */
     public function createPitchingValidationNotification(int $userId, int $proposalId, string $namaUsaha, string $status, ?string $catatan = null): int

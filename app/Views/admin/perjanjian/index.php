@@ -17,7 +17,7 @@
             <h2 class="section-title text-xl sm:text-2xl">
                 Perjanjian <span class="text-gradient">Implementasi</span>
             </h2>
-            <p class="section-subtitle text-[10px] sm:text-[11px]">Tahap 4 - Validasi Berkas Perjanjian Mahasiswa</p>
+            <p class="section-subtitle text-[10px] sm:text-[11px]">Validasi Berkas Perjanjian Mahasiswa</p>
         </div>
     </div>
 
@@ -27,9 +27,9 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
         <?php
         $statItems = [
-            ['title' => 'Siap Kontrak', 'value' => $stats['total'], 'icon' => 'fa-file-signature', 'bg' => 'bg-sky-50', 'icon_color' => 'text-sky-500'],
+            ['title' => 'Total Perjanjian', 'value' => $stats['total'], 'icon' => 'fa-file-signature', 'bg' => 'bg-sky-50', 'icon_color' => 'text-sky-500'],
             ['title' => 'Menunggu Review', 'value' => $stats['pending'], 'icon' => 'fa-clock', 'bg' => 'bg-yellow-50', 'icon_color' => 'text-yellow-500'],
-            ['title' => 'Sudah Kontrak', 'value' => $stats['approved'], 'icon' => 'fa-check-double', 'bg' => 'bg-emerald-50', 'icon_color' => 'text-emerald-500'],
+            ['title' => 'Berkas Disetujui', 'value' => $stats['approved'], 'icon' => 'fa-check-double', 'bg' => 'bg-emerald-50', 'icon_color' => 'text-emerald-500'],
             ['title' => 'Revisi/Ditolak', 'value' => $stats['revision'] + $stats['rejected'], 'icon' => 'fa-circle-xmark', 'bg' => 'bg-rose-50', 'icon_color' => 'text-rose-500'],
         ];
         ?>
@@ -130,7 +130,7 @@
                         </td>
                         <td class="text-center">
                             <?php if ($proposal['bukti_perjanjian_id']): ?>
-                                <a href="<?= base_url('admin/seleksi-administrasi/doc/' . $proposal['bukti_perjanjian_id']) ?>" class="text-rose-500 hover:text-rose-600">
+                                <a href="<?= base_url('admin/perjanjian/doc/' . $proposal['bukti_perjanjian_id']) ?>" class="text-rose-500 hover:text-rose-600">
                                     <i class="fas fa-file-pdf text-xl"></i>
                                 </a>
                             <?php else: ?>

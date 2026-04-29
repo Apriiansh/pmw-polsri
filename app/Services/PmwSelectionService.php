@@ -50,7 +50,7 @@ class PmwSelectionService
             'p.id',
             'p.nama_usaha',
             'p.kategori_wirausaha',
-            'sw.admin_status as perjanjian_status',
+            'pj.admin_status as perjanjian_status',
             'pm.nama as ketua_nama',
             'pm.nim as ketua_nim',
             'pm.jurusan as ketua_jurusan',

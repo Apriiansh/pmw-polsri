@@ -31,7 +31,7 @@ class PerjanjianController extends BaseController
             'm.nama as mentor_nama',
             'per.name as period_name',
             'per.year as period_year',
-            'sw.admin_status as perjanjian_status',
+            'pj.admin_status as perjanjian_status',
             '(SELECT id FROM pmw_documents WHERE proposal_id = p.id AND doc_key = "bukti_perjanjian" LIMIT 1) as bukti_perjanjian_id'
         ]);
         $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
@@ -46,7 +46,7 @@ class PerjanjianController extends BaseController
         $builder->where('sp.admin_status', 'approved');
 
         if ($statusFilter) {
-            $builder->where('sw.admin_status', $statusFilter);
+            $builder->where('pj.admin_status', $statusFilter);
         }
 
         $builder->orderBy('p.updated_at', 'DESC');
@@ -155,15 +155,6 @@ class PerjanjianController extends BaseController
 
             // Update Mentor Assignment
             if ($mentorId) {
-                // Security check: Ensure mentor is not already assigned to another team
-                $isAlreadyAssigned = $assignmentModel->where('mentor_id', $mentorId)
-                    ->where('proposal_id !=', $id)
-                    ->first();
-                
-                if ($isAlreadyAssigned) {
-                    throw new \Exception('Mentor ini sudah ditugaskan ke tim lain.');
-                }
-
                 $assignmentModel->where('proposal_id', $id)->set([
                     'mentor_id' => $mentorId,
                     'updated_at' => date('Y-m-d H:i:s'),

@@ -153,7 +153,7 @@
     ================================================================= -->
     <div class="grid lg:grid-cols-3 gap-6 animate-stagger delay-300">
         <!-- Video Player -->
-        <div class="lg:col-span-1 card-premium overflow-hidden" @mousemove="handleMouseMove">
+        <div class="lg:col-span-2 card-premium overflow-hidden" @mousemove="handleMouseMove">
             <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60">
                 <h3 class="font-display text-base font-bold text-(--text-heading)">
                     <i class="fas fa-play-circle text-sky-500 mr-2"></i>
@@ -165,7 +165,7 @@
                 $embedUrl = get_video_embed_url($proposal['video_url']);
                 if ($embedUrl): 
                 ?>
-                <div class="aspect-video lg:aspect-4/3 w-full">
+                <div class="aspect-video w-full">
                     <iframe src="<?= $embedUrl ?>" class="w-full h-full" allowfullscreen allow="autoplay"></iframe>
                 </div>
                 <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
@@ -202,7 +202,7 @@
         $availableDocs = array_filter($allDocs, fn($k) => isset($docsByKey[$k]), ARRAY_FILTER_USE_KEY);
         $firstDocKey = array_key_first($availableDocs);
         ?>
-        <div class="lg:col-span-2 card-premium overflow-hidden" x-data="{ activeDoc: '<?= $firstDocKey ?? '' ?>' }" @mousemove="handleMouseMove">
+        <div class="lg:col-span-1 card-premium overflow-hidden" x-data="{ activeDoc: '<?= $firstDocKey ?? '' ?>' }" @mousemove="handleMouseMove">
             <!-- Tab Header -->
             <div class="px-4 py-3 border-b border-sky-50 bg-white/60">
                 <div class="flex items-center gap-1 flex-wrap">
@@ -231,7 +231,7 @@
             ?>
             <div x-show="activeDoc === '<?= $key ?>'" x-cloak>
                 <div class="p-0">
-                    <div class="h-80 lg:h-[420px] w-full bg-slate-50 relative group flex items-center justify-center">
+                    <div class="h-64 lg:h-[460px] w-full bg-slate-50 relative group flex items-center justify-center">
                         <?php if ($isPdf): ?>
                             <iframe src="<?= $docUrl ?>?inline=1" class="w-full h-full border-none"></iframe>
                         <?php else: ?>

@@ -120,7 +120,7 @@ class PmwMonitoringService
                 ->orderBy('pas.activity_date', 'DESC')
                 ->findAll(),
             'milestoneReports' => $this->reportModel->where('proposal_id', $proposalId)->findAll(),
-            'assignment' => $this->assignmentModel->where('proposal_id', $proposalId)->first()
+            'assignment' => (array) $this->assignmentModel->where('proposal_id', $proposalId)->first()
         ];
     }
 }

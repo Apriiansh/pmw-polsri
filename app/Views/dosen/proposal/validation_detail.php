@@ -8,7 +8,11 @@
         const rect = card.getBoundingClientRect();
         card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
         card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-    }
+    },
+    activeDoc: 'proposal',
+    selectedMember: null,
+    openMember(m) { this.selectedMember = m; },
+    closeMember() { this.selectedMember = null; }
 }">
 
     <!-- ================================================================
@@ -102,103 +106,190 @@
     </div>
 
     <!-- ================================================================
-         3. TEAM INFO
+         3+4. DOCUMENTS (tabbed) + TEAM INFO — 2 column layout
     ================================================================= -->
-    <div class="card-premium overflow-hidden animate-stagger delay-200" @mousemove="handleMouseMove">
-        <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60">
-            <h3 class="font-display text-base font-bold text-(--text-heading)">
-                <i class="fas fa-users text-teal-500 mr-2"></i>
-                Anggota Tim Mahasiswa
-            </h3>
-        </div>
-        <div class="p-5 sm:p-7 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <?php foreach ($members as $member): ?>
-            <div class="flex items-center gap-3 p-3 rounded-xl <?= $member['role'] === 'ketua' ? "bg-teal-50 border border-teal-100" : "bg-slate-50 border border-transparent" ?>">
-                <div class="w-10 h-10 rounded-lg <?= $member['role'] === 'ketua' ? "bg-teal-500 shadow-lg shadow-teal-100" : "bg-slate-300" ?> flex items-center justify-center text-white font-display font-bold text-sm shrink-0">
-                    <?= strtoupper(substr($member['nama'], 0, 2)) ?>
+    <div class="grid lg:grid-cols-3 gap-6 animate-stagger delay-200">
+
+        <!-- Kiri: Dokumen (col-span-2) -->
+        <div class="lg:col-span-2 card-premium overflow-hidden" @mousemove="handleMouseMove">
+            <!-- Tab Header -->
+            <div class="px-5 py-3 border-b border-sky-50 bg-white/60 flex items-center justify-between gap-3 flex-wrap">
+                <div class="flex gap-1 bg-slate-100 rounded-xl p-1">
+                    <button type="button" @click="activeDoc='proposal'"
+                        :class="activeDoc==='proposal' ? 'bg-white shadow text-sky-600 font-black' : 'text-slate-500 hover:text-slate-700'"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
+                        <i class="fas fa-file-alt text-[10px]"></i> Proposal
+                    </button>
+                    <button type="button" @click="activeDoc='surat'"
+                        :class="activeDoc==='surat' ? 'bg-white shadow text-violet-600 font-black' : 'text-slate-500 hover:text-slate-700'"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
+                        <i class="fas fa-user-shield text-[10px]"></i> Surat Kesediaan Dosen
+                    </button>
                 </div>
-                <div class="flex-1 min-w-0">
-                    <div class="font-semibold text-(--text-heading) text-sm truncate"><?= esc($member['nama']) ?></div>
-                    <div class="text-[10px] text-(--text-muted) truncate">
-                        <?= esc($member['nim'] ?? '-') ?> · <?= esc($member['role'] === 'ketua' ? 'Ketua' : 'Anggota') ?>
-                    </div>
-                    <?php if (!empty($member['prodi'])): ?>
-                    <div class="text-[9px] text-slate-400 truncate"><?= esc($member['prodi']) ?></div>
+                <div x-show="activeDoc==='proposal'">
+                    <?php if (isset($docsByKey['proposal_utama'])): ?>
+                    <a href="<?= base_url('dosen/proposal-validation/doc/' . $docsByKey['proposal_utama']['id']) ?>" class="text-[10px] font-black text-sky-500 hover:text-sky-600 uppercase tracking-widest">
+                        <i class="fas fa-download mr-1"></i> Download
+                    </a>
+                    <?php endif; ?>
+                </div>
+                <div x-show="activeDoc==='surat'">
+                    <?php if (isset($docsByKey['surat_kesediaan_dosen'])): ?>
+                    <a href="<?= base_url('dosen/proposal-validation/doc/' . $docsByKey['surat_kesediaan_dosen']['id']) ?>" class="text-[10px] font-black text-violet-500 hover:text-violet-600 uppercase tracking-widest">
+                        <i class="fas fa-download mr-1"></i> Download
+                    </a>
                     <?php endif; ?>
                 </div>
             </div>
-            <?php endforeach; ?>
+            <!-- Tab Content -->
+            <div class="p-4">
+                <div x-show="activeDoc==='proposal'" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+                    <?php if (isset($docsByKey['proposal_utama'])): ?>
+                        <div class="w-full bg-slate-50 rounded-xl overflow-hidden" style="height:65vh">
+                            <iframe src="<?= base_url('dosen/proposal-validation/doc/' . $docsByKey['proposal_utama']['id'] . '?inline=1') ?>" class="w-full h-full border-none"></iframe>
+                        </div>
+                        <div class="mt-2 flex items-center justify-between">
+                            <span class="text-[10px] text-slate-500 truncate"><?= esc($docsByKey['proposal_utama']['original_name']) ?></span>
+                            <a href="<?= base_url('dosen/proposal-validation/doc/' . $docsByKey['proposal_utama']['id'] . '?inline=1') ?>" target="_blank" class="btn-ghost btn-xs text-sky-600"><i class="fas fa-expand-alt"></i></a>
+                        </div>
+                    <?php else: ?>
+                        <div class="p-10 text-center bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-100">
+                            <i class="fas fa-file-circle-exclamation text-4xl mb-3 opacity-20"></i>
+                            <p class="text-sm italic text-slate-400">File belum diunggah</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <div x-show="activeDoc==='surat'" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+                    <?php if (isset($docsByKey['surat_kesediaan_dosen'])): ?>
+                        <div class="w-full bg-slate-50 rounded-xl overflow-hidden" style="height:65vh">
+                            <iframe src="<?= base_url('dosen/proposal-validation/doc/' . $docsByKey['surat_kesediaan_dosen']['id'] . '?inline=1') ?>" class="w-full h-full border-none"></iframe>
+                        </div>
+                        <div class="mt-2 flex items-center justify-between">
+                            <span class="text-[10px] text-slate-500 truncate"><?= esc($docsByKey['surat_kesediaan_dosen']['original_name']) ?></span>
+                            <a href="<?= base_url('dosen/proposal-validation/doc/' . $docsByKey['surat_kesediaan_dosen']['id'] . '?inline=1') ?>" target="_blank" class="btn-ghost btn-xs text-violet-600"><i class="fas fa-expand-alt"></i></a>
+                        </div>
+                    <?php else: ?>
+                        <div class="p-10 text-center bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-100">
+                            <i class="fas fa-file-circle-exclamation text-4xl mb-3 opacity-20"></i>
+                            <p class="text-sm italic text-slate-400">File belum diunggah</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kanan: Anggota Tim (col-span-1) -->
+        <div class="card-premium overflow-hidden" @mousemove="handleMouseMove">
+            <div class="px-4 py-3 border-b border-sky-50 bg-white/60">
+                <h3 class="font-display text-sm font-bold text-(--text-heading)">
+                    <i class="fas fa-users text-teal-500 mr-2"></i>
+                    Anggota Tim
+                </h3>
+            </div>
+            <div class="p-3 space-y-2">
+                <?php foreach ($members as $member): ?>
+                <?php
+                    $phone = $member['phone'] ?? null;
+                    $wa = preg_replace('/[^0-9]/', '', $phone ?? '');
+                    if (str_starts_with($wa, '0')) $wa = '62' . substr($wa, 1);
+                    $waLink = $wa ? 'https://wa.me/' . $wa : null;
+                    $memberJson = json_encode([
+                        'nama'     => $member['nama'],
+                        'nim'      => $member['nim'] ?? '-',
+                        'jurusan'  => $member['jurusan'] ?? null,
+                        'prodi'    => $member['prodi'] ?? '-',
+                        'semester' => $member['semester'] ?? null,
+                        'role'     => $member['role'] === 'ketua' ? 'Ketua' : 'Anggota',
+                        'no_hp'    => $phone,
+                        'wa'       => $waLink,
+                        'email'    => $member['email'] ?? null,
+                    ]);
+                ?>
+                <button type="button" @click="openMember(<?= htmlspecialchars($memberJson, ENT_QUOTES) ?>)"
+                    class="flex items-center gap-2.5 p-2.5 rounded-xl text-left w-full transition-all hover:shadow-sm <?= $member['role'] === 'ketua' ? 'bg-teal-50 border border-teal-100 hover:border-teal-300' : 'bg-slate-50 border border-slate-100 hover:border-slate-200' ?>">
+                    <div class="w-8 h-8 rounded-lg <?= $member['role'] === 'ketua' ? 'bg-teal-500' : 'bg-slate-300' ?> flex items-center justify-center text-white font-bold text-xs shrink-0">
+                        <?= strtoupper(substr($member['nama'], 0, 2)) ?>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-semibold text-(--text-heading) text-xs truncate"><?= esc($member['nama']) ?></div>
+                        <div class="text-[10px] text-(--text-muted) truncate"><?= esc($member['nim'] ?? '-') ?></div>
+                        <div class="text-[9px] <?= $member['role'] === 'ketua' ? 'text-teal-600 font-bold' : 'text-slate-400' ?>">
+                            <?= $member['role'] === 'ketua' ? 'Ketua' : 'Anggota' ?>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right text-[9px] text-slate-300 shrink-0"></i>
+                </button>
+                <?php endforeach; ?>
+            </div>
         </div>
     </div>
 
-    <!-- ================================================================
-         4. DOCUMENTS
-    ================================================================= -->
-    <div class="grid lg:grid-cols-2 gap-6 animate-stagger delay-300">
-        <!-- Proposal Utama -->
-        <div class="card-premium overflow-hidden" @mousemove="handleMouseMove">
-            <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60 flex items-center justify-between">
-                <h3 class="font-display text-base font-bold text-(--text-heading)">
-                    <i class="fas fa-file-alt text-sky-500 mr-2"></i>
-                    Business Plan & BMC
-                </h3>
-                <?php if (isset($docsByKey['proposal_utama'])): ?>
-                <a href="<?= base_url('dosen/proposal-validation/doc/' . $docsByKey['proposal_utama']['id']) ?>" class="text-[10px] font-black text-sky-500 hover:text-sky-600 uppercase tracking-widest">
-                    <i class="fas fa-download mr-1"></i> Download
+    <!-- Member Detail Modal -->
+    <div x-show="selectedMember" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" @click.self="closeMember()" style="display:none">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4" @click.stop>
+            <div class="flex items-center justify-between">
+                <h4 class="font-display font-bold text-slate-800">Detail Mahasiswa</h4>
+                <button @click="closeMember()" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            </div>
+            <template x-if="selectedMember">
+            <div class="space-y-3">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-xl bg-teal-500 flex items-center justify-center text-white font-display font-bold text-lg shrink-0"
+                        x-text="selectedMember.nama.substring(0,2).toUpperCase()"></div>
+                    <div>
+                        <p class="font-bold text-slate-800" x-text="selectedMember.nama"></p>
+                        <p class="text-xs text-slate-500" x-text="selectedMember.nim + ' · ' + selectedMember.role"></p>
+                    </div>
+                </div>
+                <div class="space-y-2 pt-2 border-t border-slate-50">
+                    <template x-if="selectedMember.jurusan">
+                    <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                        <div class="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-slate-400 shadow-sm shrink-0"><i class="fas fa-building text-xs"></i></div>
+                        <div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Jurusan</p><p class="text-sm font-semibold text-slate-700" x-text="selectedMember.jurusan"></p></div>
+                    </div>
+                    </template>
+                    <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                        <div class="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-slate-400 shadow-sm shrink-0"><i class="fas fa-graduation-cap text-xs"></i></div>
+                        <div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Prodi</p><p class="text-sm font-semibold text-slate-700" x-text="selectedMember.prodi"></p></div>
+                    </div>
+                    <template x-if="selectedMember.semester">
+                    <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                        <div class="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-slate-400 shadow-sm shrink-0"><i class="fas fa-calendar-alt text-xs"></i></div>
+                        <div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Semester</p><p class="text-sm font-semibold text-slate-700" x-text="selectedMember.semester"></p></div>
+                    </div>
+                    </template>
+                    <template x-if="selectedMember.no_hp">
+                    <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                        <div class="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-slate-400 shadow-sm shrink-0"><i class="fas fa-phone text-xs"></i></div>
+                        <div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">No. HP</p><p class="text-sm font-semibold text-slate-700" x-text="selectedMember.no_hp"></p></div>
+                    </div>
+                    </template>
+                    <template x-if="selectedMember.email">
+                    <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                        <div class="w-7 h-7 rounded-lg bg-sky-50 flex items-center justify-center text-sky-400 shadow-sm shrink-0"><i class="fas fa-envelope text-xs"></i></div>
+                        <div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Email</p><p class="text-sm font-semibold text-slate-700" x-text="selectedMember.email"></p></div>
+                    </div>
+                    </template>
+                </div>
+                <template x-if="selectedMember.wa">
+                <a :href="selectedMember.wa" target="_blank"
+                    class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm transition-colors">
+                    <i class="fab fa-whatsapp text-base"></i>
+                    Hubungi via WhatsApp
                 </a>
-                <?php endif; ?>
+                </template>
+                <template x-if="!selectedMember.wa">
+                <div class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-slate-100 text-slate-400 font-bold text-sm cursor-not-allowed">
+                    <i class="fas fa-phone-slash text-xs"></i>
+                    Nomor tidak tersedia
+                </div>
+                </template>
             </div>
-            <div class="p-5">
-                <?php if (isset($docsByKey['proposal_utama'])): ?>
-                    <div class="aspect-3/4 w-full bg-slate-50 rounded-xl overflow-hidden">
-                        <iframe src="<?= base_url('dosen/proposal-validation/doc/' . $docsByKey['proposal_utama']['id'] . '?inline=1') ?>" class="w-full h-full border-none"></iframe>
-                    </div>
-                    <div class="mt-2 flex items-center justify-between">
-                        <span class="text-[10px] text-slate-500 truncate"><?= esc($docsByKey['proposal_utama']['original_name']) ?></span>
-                        <a href="<?= base_url('dosen/proposal-validation/doc/' . $docsByKey['proposal_utama']['id'] . '?inline=1') ?>" target="_blank" class="btn-ghost btn-xs text-sky-600">
-                            <i class="fas fa-expand-alt"></i>
-                        </a>
-                    </div>
-                <?php else: ?>
-                    <div class="p-10 text-center bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-100">
-                        <i class="fas fa-file-circle-exclamation text-4xl mb-3 opacity-20"></i>
-                        <p class="text-sm italic text-slate-400">File belum diunggah</p>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
-
-        <!-- Surat Kesediaan Dosen -->
-        <div class="card-premium overflow-hidden" @mousemove="handleMouseMove">
-            <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60 flex items-center justify-between">
-                <h3 class="font-display text-base font-bold text-(--text-heading)">
-                    <i class="fas fa-user-shield text-violet-500 mr-2"></i>
-                    Surat Kesediaan Dosen
-                </h3>
-                <?php if (isset($docsByKey['surat_kesediaan_dosen'])): ?>
-                <a href="<?= base_url('dosen/proposal-validation/doc/' . $docsByKey['surat_kesediaan_dosen']['id']) ?>" class="text-[10px] font-black text-violet-500 hover:text-violet-600 uppercase tracking-widest">
-                    <i class="fas fa-download mr-1"></i> Download
-                </a>
-                <?php endif; ?>
-            </div>
-            <div class="p-5">
-                <?php if (isset($docsByKey['surat_kesediaan_dosen'])): ?>
-                    <div class="aspect-3/4 w-full bg-slate-50 rounded-xl overflow-hidden">
-                        <iframe src="<?= base_url('dosen/proposal-validation/doc/' . $docsByKey['surat_kesediaan_dosen']['id'] . '?inline=1') ?>" class="w-full h-full border-none"></iframe>
-                    </div>
-                    <div class="mt-2 flex items-center justify-between">
-                        <span class="text-[10px] text-slate-500 truncate"><?= esc($docsByKey['surat_kesediaan_dosen']['original_name']) ?></span>
-                        <a href="<?= base_url('dosen/proposal-validation/doc/' . $docsByKey['surat_kesediaan_dosen']['id'] . '?inline=1') ?>" target="_blank" class="btn-ghost btn-xs text-violet-600">
-                            <i class="fas fa-expand-alt"></i>
-                        </a>
-                    </div>
-                <?php else: ?>
-                    <div class="p-10 text-center bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-100">
-                        <i class="fas fa-file-circle-exclamation text-4xl mb-3 opacity-20"></i>
-                        <p class="text-sm italic text-slate-400">File belum diunggah</p>
-                    </div>
-                <?php endif; ?>
-            </div>
+            </template>
         </div>
     </div>
 

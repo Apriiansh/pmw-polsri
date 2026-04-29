@@ -435,10 +435,9 @@
                             if ($currUser?->inGroup('admin')) {
                                 $previewUrl = base_url("admin/administrasi/seleksi/doc/{$docId}?inline=1");
                             } elseif ($currUser?->inGroup('dosen')) {
-                                $previewUrl = base_url("dosen/pitching-desk/doc/{$docId}?inline=1");
+                                $previewUrl = base_url("dosen/proposal-validation/doc/{$docId}?inline=1");
                             } elseif ($currUser?->inGroup('mentor')) {
-                                // Mentor uses same controller as dosen for viewing docs
-                                $previewUrl = base_url("dosen/pitching-desk/doc/{$docId}?inline=1");
+                                $previewUrl = base_url("mentor/monitoring/doc/{$docId}?inline=1");
                             } elseif ($currUser?->inGroup('mahasiswa')) {
                                 $previewUrl = base_url("mahasiswa/proposal/doc/{$docId}?inline=1");
                             }
@@ -662,6 +661,7 @@
 ================================================================= -->
 <div x-data="{ showDocModal: false, docUrl: '', docTitle: '' }"
      x-show="showDocModal"
+     x-cloak
      @open-doc-modal.window="showDocModal = true; docUrl = $event.detail.url; docTitle = $event.detail.title"
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="opacity-0"
@@ -670,7 +670,6 @@
      x-transition:leave-start="opacity-100"
      x-transition:leave-end="opacity-0"
      class="fixed inset-0 z-[120]"
-     :class="{ 'hidden': !showDocModal }"
      aria-labelledby="doc-modal-title"
      role="dialog"
      aria-modal="true">
@@ -724,9 +723,6 @@
                         <a :href="docUrl.replace('?inline=1', '')" download class="btn-primary text-sm">
                             <i class="fas fa-download mr-2"></i>Download
                         </a>
-                        <button type="button" @click="showDocModal = false" class="btn-outline text-sm">
-                            <i class="fas fa-times mr-2"></i>Tutup
-                        </button>
                     </div>
                 </div>
             </div>

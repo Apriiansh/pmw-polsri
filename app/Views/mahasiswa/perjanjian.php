@@ -17,7 +17,7 @@ use App\Models\Proposal\PmwProposalModel;
             <h2 class="section-title text-xl sm:text-2xl">
                 Perjanjian <span class="text-gradient">Implementasi</span>
             </h2>
-            <p class="section-subtitle text-[10px] sm:text-[11px]">Tahap 4 - Penandatanganan berkas hasil perjanjian wirausaha</p>
+            <p class="section-subtitle text-[10px] sm:text-[11px]">Penandatanganan berkas hasil perjanjian wirausaha</p>
         </div>
         <div class="flex items-center gap-2">
              <a href="<?= base_url('mahasiswa/pitching-desk') ?>" class="btn-outline btn-sm">
@@ -45,28 +45,28 @@ use App\Models\Proposal\PmwProposalModel;
     <?php else: ?>
 
     <!-- ─── STICKY ACTION BAR ────────────────────────────────────────── -->
-    <div class="sticky top-4 z-40 bg-white/90 backdrop-blur-md shadow-lg border border-sky-100 rounded-2xl p-4 mb-6 animate-stagger delay-150 flex items-center justify-between gap-4 flex-wrap">
+    <div class="sticky top-4 z-20 bg-white/90 backdrop-blur-md shadow-lg border border-sky-100 rounded-2xl p-4 mb-6 animate-stagger delay-150 flex items-center justify-between gap-4 flex-wrap">
         
         <!-- Left: Status Info -->
         <div class="flex items-center gap-3 min-w-0">
             <?php
             $wStatus = $proposal['perjanjian_status'] ?? 'pending';
-            $wSubmittedAt = $proposal['wawancara_submitted_at'] ?? null;
+            $wSubmittedAt = $proposal['perjanjian_submitted_at'] ?? null;
+            $hasDoc = isset($docsByKey['bukti_perjanjian']);
             $statusMap = [
                 'pending'  => ['icon' => 'fa-hourglass-half', 'color' => 'amber',   'label' => 'Menunggu Verifikasi Admin'],
                 'approved' => ['icon' => 'fa-circle-check',    'color' => 'emerald', 'label' => 'Berkas Disetujui ✓'],
                 'revision' => ['icon' => 'fa-circle-exclamation', 'color' => 'orange', 'label' => 'Perlu Revisi Berkas'],
                 'rejected' => ['icon' => 'fa-circle-xmark',    'color' => 'rose',    'label' => 'Berkas Ditolak'],
             ];
-            // If status is pending but never submitted
-            if ($wStatus === 'pending' && empty($wSubmittedAt)) {
+            if ($wStatus === 'pending' && !$hasDoc && empty($wSubmittedAt)) {
                 $st = ['icon' => 'fa-file-pen', 'color' => 'sky', 'label' => 'Belum Diunggah'];
             } else {
                 $st = $statusMap[$wStatus] ?? $statusMap['pending'];
             }
             ?>
             <div class="w-9 h-9 rounded-xl bg-<?= $st['color'] ?>-100 flex items-center justify-center shrink-0">
-                <i class="fas <?= $st['icon'] ?> text-<?= $st['color'] ?>-500 text-base <?= ($st['color'] === 'amber' && !empty($wSubmittedAt)) ? 'animate-pulse-soft' : '' ?>"></i>
+                <i class="fas <?= $st['icon'] ?> text-<?= $st['color'] ?>-500 text-base"></i>
             </div>
             <div class="min-w-0">
                 <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status Perjanjian</p>
