@@ -234,37 +234,36 @@
         
         <!-- Gallery Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="gallery-item sm:col-span-2 sm:row-span-2 reveal-zoom">
-                <img src="https://images.unsplash.com/photo-1531545514256-b1400bc00f31?w=800&q=80" alt="Mentoring session" class="reveal-mask">
-                <div class="gallery-overlay">
-                    <p class="text-white font-semibold">Sesi Mentoring 2025</p>
-                    <p class="text-white/80 text-sm">Dosen dan mentor berbagi pengalaman</p>
+            <?php
+            $displayGalleries = [];
+            if (!empty($galleries)) {
+                // Take first 5 for the home preview
+                $displayGalleries = array_slice($galleries, 0, 5);
+            } else {
+                // Fallback static items
+                $displayGalleries = [
+                    ['image_url' => 'https://images.unsplash.com/photo-1531545514256-b1400bc00f31?w=800&q=80', 'title' => 'Sesi Mentoring 2025', 'description' => 'Dosen dan mentor berbagi pengalaman'],
+                    ['image_url' => 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=400&q=80', 'title' => 'Team Work', 'description' => ''],
+                    ['image_url' => 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400&q=80', 'title' => 'Pitching Day', 'description' => ''],
+                    ['image_url' => 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400&q=80', 'title' => 'Awarding', 'description' => ''],
+                    ['image_url' => 'https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=400&q=80', 'title' => 'Bazaar Monev', 'description' => ''],
+                ];
+            }
+
+            foreach ($displayGalleries as $idx => $item):
+                $imgUrl = (filter_var($item['image_url'], FILTER_VALIDATE_URL)) ? $item['image_url'] : base_url($item['image_url']);
+                $isLarge = ($idx === 0);
+            ?>
+                <div class="gallery-item <?= $isLarge ? 'sm:col-span-2 sm:row-span-2' : '' ?> reveal-<?= $isLarge ? 'zoom' : 'blur' ?> stagger-<?= $idx ?>">
+                    <img src="<?= $imgUrl ?>" alt="<?= esc($item['title']) ?>" class="<?= $isLarge ? 'reveal-mask' : '' ?>">
+                    <div class="gallery-overlay">
+                        <p class="text-white font-semibold <?= !$isLarge ? 'text-sm' : '' ?>"><?= esc($item['title']) ?></p>
+                        <?php if ($isLarge && !empty($item['description'])): ?>
+                            <p class="text-white/80 text-sm"><?= esc($item['description']) ?></p>
+                        <?php endif; ?>
+                    </div>
                 </div>
-            </div>
-            <div class="gallery-item reveal-blur stagger-1">
-                <img src="https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=400&q=80" alt="Team collaboration">
-                <div class="gallery-overlay">
-                    <p class="text-white font-semibold text-sm">Team Work</p>
-                </div>
-            </div>
-            <div class="gallery-item reveal-blur stagger-2">
-                <img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400&q=80" alt="Pitching event">
-                <div class="gallery-overlay">
-                    <p class="text-white font-semibold text-sm">Pitching Day</p>
-                </div>
-            </div>
-            <div class="gallery-item reveal-blur stagger-3">
-                <img src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400&q=80" alt="Award ceremony">
-                <div class="gallery-overlay">
-                    <p class="text-white font-semibold text-sm">Awarding</p>
-                </div>
-            </div>
-            <div class="gallery-item reveal-blur stagger-4">
-                <img src="https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=400&q=80" alt="Bazaar">
-                <div class="gallery-overlay">
-                    <p class="text-white font-semibold text-sm">Bazaar Monev</p>
-                </div>
-            </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>
