@@ -22,10 +22,11 @@
     <?php
     $hasProposal  = !empty($proposal);
     $isBerkembang = $hasProposal && ($proposal['kategori_wirausaha'] ?? '') === 'berkembang';
-    $pptDoc       = $docsByKey['pitching_ppt'] ?? null;
-    $biodataDoc   = $docsByKey['biodata'] ?? null;
-    $ktmDoc       = $docsByKey['ktm'] ?? null;
+    $pptDoc        = $docsByKey['pitching_ppt'] ?? null;
+    $biodataDoc    = $docsByKey['biodata'] ?? null;
+    $ktmDoc        = $docsByKey['ktm'] ?? null;
     $pernyataanDoc = $docsByKey['surat_pernyataan_ketua'] ?? null;
+    $cashflowDoc   = $docsByKey['cashflow'] ?? null;
     $aStatus      = $proposal['pitching_admin_status'] ?? 'pending';
     $isSubmitted  = !empty($proposal['student_submitted_at'] ?? null);
     $isLocked     = $hasProposal && (($isSubmitted && $aStatus !== 'revision') || $aStatus === 'approved');
@@ -254,7 +255,7 @@
                 <!-- Nama Usaha -->
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nama Usaha / Produk <span class="text-rose-500">*</span></label>
-                    <input type="text" x-model="namaUsaha" class="form-input w-full" placeholder="Masukkan nama usaha atau produk..."
+                    <input type="text" x-model="namaUsaha" class="input-field w-full" placeholder="Masukkan nama usaha atau produk..."
                         <?= $isLocked ? 'disabled' : '' ?>>
                 </div>
 
@@ -349,6 +350,54 @@
                     <textarea x-model="detailKeterangan" rows="4" class="form-textarea w-full" placeholder="Deskripsikan usaha Anda, produk/jasa, target pasar, dll..." <?= $isLocked ? 'disabled' : '' ?>></textarea>
                 </div>
 
+                <!-- Lama Usaha -->
+                <div x-data="{ touched: false }"
+                    x-init="
+                        $watch('kategoriWirausaha', v => {
+                            if (v === 'berkembang' && lamaUsahaTahun < 1) lamaUsahaTahun = 1;
+                            if (v === 'pemula') lamaUsahaTahun = 0;
+                        })
+                    ">
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                        Lama Usaha Berjalan
+                        <span class="text-[10px] font-normal text-slate-400 ml-1">
+                            <template x-if="kategoriWirausaha === 'berkembang'">
+                                <span><span class="text-rose-500">*</span> min. 1 tahun</span>
+                            </template>
+                            <template x-if="kategoriWirausaha !== 'berkembang'">
+                                <span>(opsional, dalam bulan)</span>
+                            </template>
+                        </span>
+                    </label>
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+                        <!-- Tahun: hanya tampil untuk berkembang -->
+                        <template x-if="kategoriWirausaha === 'berkembang'">
+                            <div class="flex items-center gap-2">
+                                <input type="number" x-model.number="lamaUsahaTahun" @change="touched = true"
+                                    min="1" max="50" placeholder="1"
+                                    class="input-field w-32" <?= $isLocked ? 'disabled' : '' ?>>
+                                <span class="text-sm font-semibold text-slate-500 whitespace-nowrap">Tahun</span>
+                            </div>
+                        </template>
+                        <!-- Bulan: selalu tampil -->
+                        <div class="flex items-center gap-2">
+                            <input type="number" x-model.number="lamaUsahaBulan" @change="touched = true"
+                                min="0" max="11" placeholder="0"
+                                class="input-field w-32" <?= $isLocked ? 'disabled' : '' ?>>
+                            <span class="text-sm font-semibold text-slate-500 whitespace-nowrap">Bulan</span>
+                        </div>
+                        <!-- Preview -->
+                        <span class="text-sm font-semibold text-sky-600 whitespace-nowrap"
+                            x-show="lamaUsahaTahun > 0 || lamaUsahaBulan > 0"
+                            x-text="'= ' + (lamaUsahaTahun > 0 ? lamaUsahaTahun + ' Tahun' : '') + (lamaUsahaTahun > 0 && lamaUsahaBulan > 0 ? ' ' : '') + (lamaUsahaBulan > 0 ? lamaUsahaBulan + ' Bulan' : '')">
+                        </span>
+                    </div>
+                    <p class="text-[10px] text-rose-500 font-bold mt-1.5"
+                        x-show="touched && kategoriWirausaha === 'berkembang' && lamaUsahaTahun < 1">
+                        <i class="fas fa-exclamation-circle mr-1"></i>Minimal 1 tahun untuk kategori Berkembang.
+                    </p>
+                </div>
+
                 <!-- Anggota Tim -->
                 <div>
                     <div class="flex items-center justify-between mb-3">
@@ -356,10 +405,10 @@
                             <i class="fas fa-users text-sky-500 mr-1"></i>
                             Anggota Tim
                             <template x-if="kategoriWirausaha === 'berkembang'">
-                                <span class="text-[10px] font-normal text-slate-400 ml-1">(Berkembang: wajib 3–4 anggota, total 4–5 orang)</span>
+                                <span class="text-[10px] font-normal text-slate-400 ml-1">(Berkembang: min 1 anggota, max 4)</span>
                             </template>
                             <template x-if="kategoriWirausaha !== 'berkembang'">
-                                <span class="text-[10px] font-normal text-slate-400 ml-1">(Pemula: opsional, bisa solo anjai)</span>
+                                <span class="text-[10px] font-normal text-slate-400 ml-1">(Pemula: bisa solo/individu, max 4 anggota)</span>
                             </template>
                         </label>
                         <?php if (!$isLocked): ?>
@@ -470,6 +519,11 @@
                             </p>
                         </template>
                     </div>
+                    <template x-if="members.length >= 1">
+                        <p class="text-[10px] text-sky-600 font-bold mt-2">
+                            <i class="fas fa-info-circle mr-1"></i>Tim ≥ 2 orang: setiap anggota harus berasal dari <strong>program studi yang berbeda</strong>.
+                        </p>
+                    </template>
                 </div>
 
             </div>
@@ -546,15 +600,18 @@
             <div class="p-5 sm:p-7 space-y-3">
                 <?php
                 $adminDocs = [
-                    'biodata'                => ['label' => 'Biodata Tim',           'icon' => 'fa-id-card',       'color' => 'sky',   'doc' => $biodataDoc],
-                    'ktm'                    => ['label' => 'KTM Gabungan',          'icon' => 'fa-address-card',  'color' => 'teal',  'doc' => $ktmDoc],
-                    'surat_pernyataan_ketua' => ['label' => 'Surat Pernyataan Ketua', 'icon' => 'fa-file-signature','color' => 'amber', 'doc' => $pernyataanDoc],
+                    'biodata'                => ['label' => 'Biodata Tim',                   'icon' => 'fa-id-card',       'color' => 'sky',    'doc' => $biodataDoc,    'berkembang_only' => false],
+                    'ktm'                    => ['label' => 'KTM Gabungan',                  'icon' => 'fa-address-card',  'color' => 'teal',   'doc' => $ktmDoc,        'berkembang_only' => false],
+                    'surat_pernyataan_ketua' => ['label' => 'Surat Pernyataan Ketua',        'icon' => 'fa-file-signature','color' => 'amber',  'doc' => $pernyataanDoc, 'berkembang_only' => false],
+                    'cashflow'               => ['label' => 'Cashflow / Bukti Transaksi',    'icon' => 'fa-chart-line',    'color' => 'violet', 'doc' => $cashflowDoc,   'berkembang_only' => true],
                 ];
                 foreach ($adminDocs as $key => $info):
                     $uploaded = !empty($info['doc']);
                     $c = $info['color'];
+                    $isBerkembangOnly = $info['berkembang_only'] ?? false;
                 ?>
-                <div class="p-4 rounded-xl border border-slate-100 bg-white flex items-center justify-between gap-4 flex-wrap">
+                <div class="p-4 rounded-xl border border-slate-100 bg-white flex items-center justify-between gap-4 flex-wrap"
+                    <?= $isBerkembangOnly ? 'x-show="kategoriWirausaha === \'berkembang\'"' : '' ?>>
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-lg bg-<?= $c ?>-50 flex items-center justify-center text-<?= $c ?>-500 shrink-0">
                             <i class="fas <?= $info['icon'] ?>"></i>
@@ -635,7 +692,7 @@
                             <div class="flex items-center gap-2">
                                 <div class="relative flex-1">
                                     <i class="fas fa-video absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                                    <input type="url" x-model="videoUrl" class="form-input pl-9 w-full text-sm"
+                                    <input type="url" x-model="videoUrl" class="input-field pl-9 w-full text-sm"
                                         placeholder="https://youtu.be/... atau https://drive.google.com/..."
                                         :disabled="<?= ($isPhaseOpen && !$isLocked) ? 'isSavingVideo' : 'true' ?>">
                                 </div>
@@ -682,6 +739,10 @@
                         </div>
                         <div class="flex items-center gap-1 text-[10px] font-bold" :class="docStatus['surat_pernyataan_ketua'] || <?= $pernyataanDoc ? 'true' : 'false' ?> ? 'text-emerald-600' : 'text-slate-400'">
                             <i class="fas" :class="docStatus['surat_pernyataan_ketua'] || <?= $pernyataanDoc ? 'true' : 'false' ?> ? 'fa-check-circle' : 'fa-circle'"></i> Pernyataan Ketua
+                        </div>
+                        <div class="flex items-center gap-1 text-[10px] font-bold" x-show="kategoriWirausaha === 'berkembang'"
+                            :class="(docStatus['cashflow'] && !docStatus['cashflow'].uploading) || <?= $cashflowDoc ? 'true' : 'false' ?> ? 'text-emerald-600' : 'text-rose-500'">
+                            <i class="fas" :class="(docStatus['cashflow'] && !docStatus['cashflow'].uploading) || <?= $cashflowDoc ? 'true' : 'false' ?> ? 'fa-check-circle' : 'fa-exclamation-circle'"></i> Cashflow (Wajib Berkembang)
                         </div>
                         <div class="flex items-center gap-1 text-[10px] font-bold" x-show="kategoriWirausaha === 'berkembang'" :class="videoUrl ? 'text-emerald-600' : 'text-rose-500'">
                             <i class="fas" :class="videoUrl ? 'fa-check-circle' : 'fa-exclamation-circle'"></i> Video (Wajib Berkembang)
@@ -738,6 +799,8 @@
             kategoriUsaha: <?= json_encode($proposal['kategori_usaha'] ?? '') ?>,
             kategoriWirausaha: <?= json_encode($proposal['kategori_wirausaha'] ?? '') ?>,
             detailKeterangan: <?= json_encode($proposal['detail_keterangan'] ?? '') ?>,
+            lamaUsahaTahun: <?= (int)($proposal['lama_usaha_tahun'] ?? 0) ?>,
+            lamaUsahaBulan: <?= (int)($proposal['lama_usaha_bulan'] ?? 0) ?>,
             videoUrl: <?= json_encode($proposal['video_url'] ?? '') ?>,
             pptStatus: '<?= $pptDoc ? 'uploaded' : 'missing' ?>',
             pptFilename: <?= json_encode($pptDoc['original_name'] ?? '') ?>,
@@ -760,11 +823,12 @@
                 const biodataReady = !!(this.docStatus['biodata'] && !this.docStatus['biodata'].uploading) || <?= $biodataDoc ? 'true' : 'false' ?>;
                 const ktmReady = !!(this.docStatus['ktm'] && !this.docStatus['ktm'].uploading) || <?= $ktmDoc ? 'true' : 'false' ?>;
                 const pernyataanReady = !!(this.docStatus['surat_pernyataan_ketua'] && !this.docStatus['surat_pernyataan_ketua'].uploading) || <?= $pernyataanDoc ? 'true' : 'false' ?>;
+                const cashflowReady = this.kategoriWirausaha !== 'berkembang' || !!(this.docStatus['cashflow'] && !this.docStatus['cashflow'].uploading) || <?= $cashflowDoc ? 'true' : 'false' ?>;
                 const videoReady = this.kategoriWirausaha !== 'berkembang' || !!this.videoUrl;
                 const membersReady = this.kategoriWirausaha === 'berkembang'
-                    ? (this.members.length >= 3 && this.members.length <= 4)
+                    ? (this.members.length >= 1 && this.members.length <= 4)
                     : (this.members.length <= 4);
-                return pptReady && biodataReady && ktmReady && pernyataanReady && videoReady && membersReady;
+                return pptReady && biodataReady && ktmReady && pernyataanReady && cashflowReady && videoReady && membersReady;
             },
 
             handleMouseMove(e) {
@@ -791,6 +855,8 @@
                 body.append('kategori_usaha', this.kategoriUsaha);
                 body.append('kategori_wirausaha', this.kategoriWirausaha);
                 body.append('detail_keterangan', this.detailKeterangan);
+                body.append('lama_usaha_tahun', this.lamaUsahaTahun || '');
+                body.append('lama_usaha_bulan', this.lamaUsahaBulan || '');
                 this.members.forEach((m, i) => {
                     Object.entries(m).forEach(([k, v]) => body.append(`members[${i}][${k}]`, v));
                     body.append(`members[${i}][role]`, 'anggota');

@@ -428,6 +428,16 @@
                         <div>
                             <h3 class="font-display text-lg font-bold text-slate-800">Rincian Rencana Anggaran Biaya (RAB)</h3>
                             <p class="text-xs text-slate-500">Tambahkan rincian setiap item biaya program. Total dihitung otomatis.</p>
+                            <?php if (!empty($proposal['kategori_wirausaha'])): ?>
+                            <p class="text-xs font-bold mt-1 <?= $proposal['kategori_wirausaha'] === 'berkembang' ? 'text-violet-600' : 'text-sky-600' ?>">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                <?php if ($proposal['kategori_wirausaha'] === 'berkembang'): ?>
+                                    Batas RAB Berkembang: <span class="font-black">Rp 5.000.000 – Rp 8.000.000</span>
+                                <?php else: ?>
+                                    Batas RAB Pemula: <span class="font-black">Rp 3.000.000 – Rp 5.000.000</span>
+                                <?php endif; ?>
+                            </p>
+                            <?php endif; ?>
                         </div>
                     </div>
                     <?php if (!$isLocked): ?>
@@ -749,12 +759,19 @@
             ];
         }
         ?>
+        const kategoriWirausaha = <?= json_encode($proposal['kategori_wirausaha'] ?? 'pemula') ?>;
+        const rabMin = kategoriWirausaha === 'berkembang' ? 5000000 : 3000000;
+        const rabMax = kategoriWirausaha === 'berkembang' ? 8000000 : 5000000;
+
         return {
             members: <?= json_encode($anggotaData) ?>,
             prodiList: <?= json_encode($prodiList) ?>,
             lecturers: <?= json_encode($lecturers) ?>,
             lecturerSearch: <?= json_encode($currentLecName) ?>,
             isOpen: false,
+            rabMin,
+            rabMax,
+            kategoriWirausaha,
 
             handleMouseMove(e) {
                 const card = e.currentTarget;
@@ -817,6 +834,16 @@
             },
 
             confirmSubmit() {
+                const totalRab = this.rabItems.reduce((s, i) => s + Number(i.qty) * Number(i.harga_satuan), 0);
+                if (totalRab < this.rabMin || totalRab > this.rabMax) {
+                    const fmt = v => 'Rp ' + v.toLocaleString('id-ID');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Total RAB Tidak Sesuai',
+                        html: `Total RAB Anda: <strong>${fmt(totalRab)}</strong><br>Batas yang diizinkan untuk kategori <strong>${this.kategoriWirausaha}</strong>: ${fmt(this.rabMin)} – ${fmt(this.rabMax)}`,
+                    });
+                    return;
+                }
                 Swal.fire({
                     title: 'Kirim Proposal Sekarang?',
                     text: "Proposal masih dapat Anda ubah kembali jika diperlukan selama jadwal pendaftaran belum berakhir. Setelah ini, proposal akan masuk ke tahap penilaian dan akan diinformasikan jika lolos administrasi",

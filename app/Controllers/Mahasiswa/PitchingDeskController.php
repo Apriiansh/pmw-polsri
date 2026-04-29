@@ -25,6 +25,13 @@ class PitchingDeskController extends BaseController
         'surat_pernyataan_ketua',
     ];
 
+    private const PITCHING_DOC_KEYS_BERKEMBANG = [
+        'biodata',
+        'ktm',
+        'surat_pernyataan_ketua',
+        'cashflow',
+    ];
+
     /**
      * Tahap 1 - Administrasi & Desk Evaluation
      */
@@ -140,16 +147,25 @@ class PitchingDeskController extends BaseController
         $kategoriWirausaha = trim((string) $this->request->getPost('kategori_wirausaha'));
         $isBerkembang = $kategoriWirausaha === 'berkembang';
 
+        if (count($anggota) > 4) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Jumlah anggota maksimal 4 orang (total 5 termasuk ketua)']);
+        }
+
         if ($isFinal) {
-            if ($isBerkembang && (count($anggota) < 3 || count($anggota) > 4)) {
-                return $this->response->setJSON(['success' => false, 'message' => 'Kategori Berkembang: jumlah anggota harus 3–4 orang (total 4–5 termasuk ketua)']);
+            if ($isBerkembang && count($anggota) < 1) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Kategori Berkembang: minimal 1 anggota (total minimal 2 orang)']);
             }
-            if (!$isBerkembang && count($anggota) > 4) {
-                return $this->response->setJSON(['success' => false, 'message' => 'Jumlah anggota maksimal 4 orang']);
-            }
-        } else {
-            if (count($anggota) > 4) {
-                return $this->response->setJSON(['success' => false, 'message' => 'Jumlah anggota maksimal 4 orang']);
+
+            // Validasi prodi berbeda jika tim >= 2 orang
+            $totalMembers = count($anggota) + 1; // +1 ketua
+            if ($totalMembers >= 2) {
+                $profile = $profileModel->where('user_id', $user->id)->first();
+                $prodiList = array_column($anggota, 'prodi');
+                $ketuaProdi = $profile['prodi'] ?? '';
+                $allProdi = array_filter(array_merge([$ketuaProdi], $prodiList));
+                if (count($allProdi) !== count(array_unique($allProdi))) {
+                    return $this->response->setJSON(['success' => false, 'message' => 'Jika tim terdiri dari 2 orang atau lebih, setiap anggota harus berasal dari program studi yang berbeda']);
+                }
             }
         }
 
@@ -159,14 +175,19 @@ class PitchingDeskController extends BaseController
         try {
             $existing = $proposalModel->findByPeriodAndLeader((int) $activePeriod['id'], (int) $user->id);
 
+            $lamaUsahaTahun = $this->request->getPost('lama_usaha_tahun');
+            $lamaUsahaBulan = $this->request->getPost('lama_usaha_bulan');
+
             $proposalData = [
-                'period_id'         => (int) $activePeriod['id'],
-                'leader_user_id'    => (int) $user->id,
-                'kategori_usaha'    => (string) $this->request->getPost('kategori_usaha'),
-                'nama_usaha'        => (string) $this->request->getPost('nama_usaha'),
-                'kategori_wirausaha'=> (string) $this->request->getPost('kategori_wirausaha'),
-                'detail_keterangan' => (string) $this->request->getPost('detail_keterangan'),
-                'status'            => $existing ? ($existing['status'] ?? 'draft') : 'draft',
+                'period_id'          => (int) $activePeriod['id'],
+                'leader_user_id'     => (int) $user->id,
+                'kategori_usaha'     => (string) $this->request->getPost('kategori_usaha'),
+                'nama_usaha'         => (string) $this->request->getPost('nama_usaha'),
+                'kategori_wirausaha' => (string) $this->request->getPost('kategori_wirausaha'),
+                'detail_keterangan'  => (string) $this->request->getPost('detail_keterangan'),
+                'lama_usaha_tahun'   => $lamaUsahaTahun !== null && $lamaUsahaTahun !== '' ? (int) $lamaUsahaTahun : null,
+                'lama_usaha_bulan'   => $lamaUsahaBulan !== null && $lamaUsahaBulan !== '' ? (int) $lamaUsahaBulan : null,
+                'status'             => $existing ? ($existing['status'] ?? 'draft') : 'draft',
             ];
 
             if ($existing) {
@@ -493,21 +514,25 @@ class PitchingDeskController extends BaseController
             return $this->response->setJSON(['success' => false, 'message' => 'Harap unggah file PPT terlebih dahulu']);
         }
 
-        // Validasi 4 dokumen PDF wajib
-        foreach (self::PITCHING_DOC_KEYS as $key) {
+        $isBerkembang = $proposal['kategori_wirausaha'] === 'berkembang';
+        $requiredDocKeys = $isBerkembang ? self::PITCHING_DOC_KEYS_BERKEMBANG : self::PITCHING_DOC_KEYS;
+
+        // Validasi dokumen PDF wajib
+        $docLabels = [
+            'biodata'                => 'Biodata Tim',
+            'ktm'                    => 'KTM Gabungan',
+            'surat_pernyataan_ketua' => 'Surat Pernyataan Ketua',
+            'cashflow'               => 'Cashflow / Bukti Transaksi (wajib untuk Berkembang)',
+        ];
+        foreach ($requiredDocKeys as $key) {
             $doc = $documentModel->where('proposal_id', $proposal['id'])->where('doc_key', $key)->first();
             if (!$doc) {
-                $labels = [
-                    'biodata'                => 'Biodata Tim',
-                    'ktm'                    => 'KTM Gabungan',
-                    'surat_pernyataan_ketua' => 'Surat Pernyataan Ketua',
-                ];
-                return $this->response->setJSON(['success' => false, 'message' => 'Harap unggah ' . ($labels[$key] ?? $key)]);
+                return $this->response->setJSON(['success' => false, 'message' => 'Harap unggah ' . ($docLabels[$key] ?? $key)]);
             }
         }
 
         // Validasi video: wajib untuk Berkembang, opsional untuk Pemula
-        if ($proposal['kategori_wirausaha'] === 'berkembang' && empty($proposal['video_url'])) {
+        if ($isBerkembang && empty($proposal['video_url'])) {
             return $this->response->setJSON(['success' => false, 'message' => 'Harap isi link video perkenalan usaha (wajib untuk kategori Berkembang)']);
         }
 
