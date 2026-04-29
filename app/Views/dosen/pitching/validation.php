@@ -19,7 +19,7 @@
             <h2 class="section-title text-xl sm:text-2xl">
                 Validasi <span class="text-gradient">Pitching Desk</span>
             </h2>
-            <p class="section-subtitle text-[10px] sm:text-[11px]">Tahap 3 - Validasi PPT dan Link Video Tim Bimbingan Anda</p>
+            <p class="section-subtitle text-[10px] sm:text-[11px]">Validasi PPT dan Link Video Tim Bimbingan Anda</p>
         </div>
     </div>
 

@@ -24,7 +24,7 @@
             <h2 class="section-title text-xl sm:text-2xl">
                 Manajemen <span class="text-[--primary]">Mentoring</span>
             </h2>
-            <p class="section-subtitle text-[10px] sm:text-[11px]">Tahap 7 - Penjadwalan, Monitoring, dan Verifikasi Logbook oleh Mentor Praktisi</p>
+            <p class="section-subtitle text-[10px] sm:text-[11px]">Penjadwalan, Monitoring, dan Verifikasi Logbook oleh Mentor Praktisi</p>
         </div>
         <button @click="showScheduleModal = true" class="btn-primary" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
             <i class="fas fa-calendar-plus mr-2"></i> Buat Jadwal Mentoring
@@ -212,38 +212,60 @@
                 </button>
             </div>
             
-            <form action="<?= base_url('mentor/mentoring/schedule') ?>" method="POST" class="p-6 space-y-4">
+            <form action="<?= base_url('mentor/mentoring/schedule') ?>" method="POST" class="p-6 space-y-6">
                 <?= csrf_field() ?>
                 
-                <div class="space-y-1.5">
-                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-1">Pilih Tim</label>
-                    <select name="proposal_id" class="input-modern w-full" required>
-                        <option value="">-- Pilih Tim Mahasiswa --</option>
-                        <?php foreach($teams as $team): ?>
-                            <option value="<?= $team['id'] ?>"><?= esc($team['nama_usaha']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1.5">
-                        <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-1">Tanggal</label>
-                        <input type="date" name="schedule_date" class="input-modern w-full" required>
-                    </div>
-                    <div class="space-y-1.5">
-                        <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-1">Waktu</label>
-                        <input type="time" name="schedule_time" class="input-modern w-full" required>
+                <div class="form-field">
+                    <label class="form-label">Pilih Tim Mahasiswa <span class="required">*</span></label>
+                    <div class="input-group bg-white!">
+                        <div class="input-icon"><i class="fas fa-users text-amber-500"></i></div>
+                        <select name="proposal_id" required>
+                            <option value="">-- Pilih Tim --</option>
+                            <?php foreach($teams as $team): ?>
+                                <option value="<?= $team['id'] ?>"><?= esc($team['nama_usaha']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                 </div>
 
-                <div class="space-y-1.5">
-                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-1">Topik Mentoring</label>
-                    <textarea name="topic" rows="3" class="input-modern w-full" placeholder="Contoh: Strategi Penetrasi Pasar & Branding Identity" required></textarea>
+                <div class="grid grid-cols-2 gap-5">
+                    <div class="form-field">
+                        <label class="form-label">Tanggal Sesi <span class="required">*</span></label>
+                        <div class="input-group bg-white!">
+                            <div class="input-icon"><i class="fas fa-calendar-day text-amber-500"></i></div>
+                            <input type="date" name="schedule_date" required>
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">Waktu Mulai <span class="required">*</span></label>
+                        <div class="input-group bg-white!">
+                            <div class="input-icon"><i class="fas fa-clock text-amber-500"></i></div>
+                            <input type="time" name="schedule_time" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label">Topik Utama Mentoring <span class="required">*</span></label>
+                    <div class="input-group bg-white!">
+                        <div class="input-icon"><i class="fas fa-comment-dots text-amber-500"></i></div>
+                        <input type="text" name="topic" placeholder="Contoh: Strategi Penetrasi Pasar & Branding Identity" required>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label">Deadline Pengisian Logbook <span class="required">*</span></label>
+                    <div class="input-group bg-white!">
+                        <div class="input-icon"><i class="fas fa-hourglass-half text-amber-500"></i></div>
+                        <input type="number" name="deadline_days" value="5" min="1" max="30" required>
+                        <span class="text-[10px] font-black text-slate-400 uppercase pr-3">Hari</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-2 ml-1 italic">Mahasiswa memiliki waktu <span class="font-bold text-amber-600">X hari</span> setelah jadwal selesai untuk mengisi logbook.</p>
                 </div>
 
                 <div class="pt-4 flex gap-3">
-                    <button type="button" @click="showScheduleModal = false" class="btn-outline flex-1">Batal</button>
-                    <button type="submit" class="btn-primary flex-1" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">Simpan Jadwal</button>
+                    <button type="button" @click="showScheduleModal = false" class="btn-outline flex-1 py-3 border-amber-200 text-amber-600 hover:bg-amber-50">Batal</button>
+                    <button type="submit" class="btn-primary flex-1 py-3 shadow-lg shadow-amber-500/20" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none;">Buat Jadwal Sesi</button>
                 </div>
             </form>
         </div>

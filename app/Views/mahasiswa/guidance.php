@@ -188,10 +188,23 @@ $fileRoute = $c['route_file'];
 
                             <!-- Status badge + action button -->
                             <div class="shrink-0 flex items-center gap-3">
-                                <?php if (!$logbook): ?>
-                                    <span class="inline-flex items-center gap-1.5 text-[10px] font-black px-3 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-200 uppercase tracking-wider">
-                                        <i class="fas fa-circle-exclamation text-[9px]"></i>Belum Diisi
-                                    </span>
+                                <?php if (!$logbook): 
+                                    $deadlineDays = $s->deadline_days ?? 5;
+                                    $deadlineDate = (new \DateTime($s->schedule_date))->modify("+$deadlineDays days");
+                                    $now = new \DateTime();
+                                    $isOverdue = $now > $deadlineDate;
+                                    $daysRemaining = $now->diff($deadlineDate)->days;
+                                ?>
+                                    <div class="flex flex-col items-end">
+                                        <span class="inline-flex items-center gap-1.5 text-[10px] font-black px-3 py-1 rounded-full <?= $isOverdue ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-slate-100 text-slate-500 border-slate-200' ?> uppercase tracking-wider border">
+                                            <i class="fas <?= $isOverdue ? 'fa-circle-exclamation' : 'fa-clock' ?> text-[9px]"></i>
+                                            <?= $isOverdue ? 'Terlambat' : 'Belum Diisi' ?>
+                                        </span>
+                                        <p class="text-[9px] font-bold <?= $isOverdue ? 'text-rose-400' : 'text-slate-400' ?> mt-1 uppercase tracking-tighter">
+                                            Deadline: <?= $deadlineDate->format('d M Y') ?> 
+                                            (<?= $isOverdue ? 'Lewat' : $daysRemaining . ' hari lagi' ?>)
+                                        </p>
+                                    </div>
                                 <?php elseif ($isApproved): ?>
                                     <span class="inline-flex items-center gap-1.5 text-[10px] font-black px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase tracking-wider">
                                         <i class="fas fa-circle-check text-[9px]"></i>Verified

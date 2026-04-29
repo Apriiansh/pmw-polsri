@@ -360,7 +360,7 @@
                                         <i class="fas fa-circle-xmark"></i>
                                     </div>
                                     <div>
-                                        <p class="font-bold text-(--text-heading) text-sm leading-tight">Tolak</p>
+                                        <p class="font-bold text-(--text-heading) text-sm leading-tight">Belum Lolos</p>
                                         <p class="text-[10px] text-slate-400 font-medium">Tidak Lolos Tahap 3</p>
                                     </div>
                                 </div>

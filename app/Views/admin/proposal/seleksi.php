@@ -19,7 +19,7 @@
             <h2 class="section-title text-xl sm:text-2xl">
                 Seleksi <span class="text-gradient">Proposal</span>
             </h2>
-            <p class="section-subtitle text-[10px] sm:text-[11px]">Tahap 2 - Validasi Business Plan & kelengkapan dokumen proposal mahasiswa</p>
+            <p class="section-subtitle text-[10px] sm:text-[11px]">Validasi Business Plan & kelengkapan dokumen proposal mahasiswa</p>
         </div>
     </div>
 

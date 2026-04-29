@@ -141,6 +141,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->post('kegiatan/quick-update-status', 'Admin\\ActivityController::quickUpdateStatus');
         $routes->get('kegiatan/file/(:segment)/(:num)', 'Admin\\ActivityController::viewFile/$1/$2');
         $routes->get('kegiatan/gallery/(:num)', 'Admin\\ActivityController::viewGalleryFile/$1');
+        $routes->get('guidance/file/(:segment)/(:num)', 'AdminController::viewGuidanceFile/$1/$2');
 
         // Milestone Reports
         $routes->get('milestone', 'Admin\\MilestoneReportController::index');

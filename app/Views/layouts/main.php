@@ -157,7 +157,7 @@
                         'icon'  => 'fa-chart-line',
                         'id'    => 'monitoring',
                         'children' => [
-                            ['route' => 'admin/teams', 'label' => 'Peserta PMW', 'match' => 'admin/teams'],
+                            ['route' => 'admin/teams', 'label' => 'Pelaksanaan PMW', 'match' => 'admin/teams'],
                             ['route' => 'admin/kegiatan',     'label' => 'Kegiatan Wirausaha',   'match' => 'admin/kegiatan'],
                             ['route' => 'admin/milestone', 'label' => 'Laporan Milestone', 'match' => 'admin/milestone'],
                         ]
@@ -199,7 +199,7 @@
                         'children' => [
                             ['route' => 'mahasiswa/pengumuman', 'icon' => 'fa-bullhorn', 'label' => 'Pengumuman Lolos Dana I', 'match' => 'mahasiswa/pengumuman'],
                             ['route' => 'mahasiswa/pembekalan', 'icon' => 'fa-chalkboard-user', 'label' => 'Pembekalan', 'match' => 'mahasiswa/pembekalan'],
-                            ['route' => 'mahasiswa/implementasi', 'icon' => 'fa-list-check', 'label' => 'Implementasi', 'match' => 'mahasiswa/implementasi'],
+                            ['route' => 'mahasiswa/implementasi', 'icon' => 'fa-list-check', 'label' => 'Implementasi List Perjanjian', 'match' => 'mahasiswa/implementasi'],
                         ]
                     ];
 

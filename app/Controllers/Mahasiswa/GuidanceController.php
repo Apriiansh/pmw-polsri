@@ -74,7 +74,7 @@ class GuidanceController extends BaseController
         $context = $type === 'bimbingan'
             ? [
                 'title'          => 'Logbook Bimbingan PMW',
-                'subtitle'       => 'Tahap 8 — Pantau jadwal dan isi logbook sesi bimbingan Dosen Pendamping',
+                'subtitle'       => 'Pelaksanaan — Pantau jadwal dan isi logbook sesi bimbingan Dosen Pendamping',
                 'heading_accent' => 'Bimbingan',
                 'icon'           => 'fa-chalkboard-user',
                 'color'          => 'sky',
@@ -87,7 +87,7 @@ class GuidanceController extends BaseController
             ]
             : [
                 'title'          => 'Logbook Mentoring PMW',
-                'subtitle'       => 'Tahap 8 — Pantau jadwal dan isi logbook sesi mentoring Mentor Praktisi',
+                'subtitle'       => 'Pelaksanaan — Pantau jadwal dan isi logbook sesi mentoring Mentor Praktisi',
                 'heading_accent' => 'Mentoring',
                 'icon'           => 'fa-handshake-angle',
                 'color'          => 'amber',

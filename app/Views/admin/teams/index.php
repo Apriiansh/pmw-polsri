@@ -106,9 +106,7 @@
                         <th class="px-4 py-3 text-left text-[11px] font-bold text-slate-500 uppercase">Anggota</th>
                         <th class="px-4 py-3 text-left text-[11px] font-bold text-slate-500 uppercase">Dosen Pendamping dan Mentor</th>
                         <th class="px-4 py-3 text-left text-[11px] font-bold text-slate-500 uppercase">Periode</th>
-                        <th class="px-4 py-3 text-left text-[11px] font-bold text-slate-500 uppercase">Total Bimbingan</th>
-                        <th class="px-4 py-3 text-left text-[11px] font-bold text-slate-500 uppercase">Total Mentoring</th>
-                        <th class="px-4 py-3 text-left text-[11px] font-bold text-slate-500 uppercase">Total Kegiatan</th>
+                        <th class="px-4 py-3 text-center text-[11px] font-bold text-slate-500 uppercase">Log Progres</th>
                         <th class="px-4 py-3 text-center text-[11px] font-bold text-slate-500 uppercase">Laporan Milestone</th>
                         <th class="px-4 py-3 text-center text-[11px] font-bold text-slate-500 uppercase">Aksi</th>
                     </tr>
@@ -215,28 +213,31 @@
                                     </span>
                                 </td>
 
-                                <!-- Total Bimbingan -->
-                                <td class="px-4 py-4 text-center">
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full <?= $team['total_bimbingan'] > 0 ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-slate-50 text-slate-400 border border-slate-100' ?> text-[11px] font-bold transition-all">
-                                        <i class="fas fa-chalkboard-teacher"></i>
-                                        <?= number_format($team['total_bimbingan']) ?>x
-                                    </span>
-                                </td>
-
-                                <!-- Total Mentoring -->
-                                <td class="px-4 py-4 text-center">
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full <?= $team['total_mentoring'] > 0 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-50 text-slate-400 border border-slate-100' ?> text-[11px] font-bold transition-all">
-                                        <i class="fas fa-user-tie"></i>
-                                        <?= number_format($team['total_mentoring']) ?>x
-                                    </span>
-                                </td>
-
-                                <!-- Total Kegiatan -->
-                                 <td class="px-4 py-4 text-center">
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full <?= $team['total_kegiatan'] > 0 ? 'bg-violet-50 text-violet-600 border border-violet-100' : 'bg-slate-50 text-slate-400 border border-slate-100' ?> text-[11px] font-bold transition-all">
-                                        <i class="fas fa-store"></i>
-                                        <?= number_format($team['total_kegiatan']) ?>x
-                                    </span>
+                                <!-- Log Progres -->
+                                <td class="px-4 py-4">
+                                    <div class="flex flex-col gap-1.5 min-w-[100px]">
+                                        <div class="flex items-center justify-between px-2 py-1 rounded-lg bg-amber-50 border border-amber-100/50">
+                                            <div class="flex items-center gap-1.5 text-[10px] font-bold text-amber-600">
+                                                <i class="fas fa-chalkboard-teacher text-[9px]"></i>
+                                                <span>Bimbingan</span>
+                                            </div>
+                                            <span class="text-xs font-black text-amber-700"><?= number_format($team['total_bimbingan']) ?></span>
+                                        </div>
+                                        <div class="flex items-center justify-between px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-100/50">
+                                            <div class="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600">
+                                                <i class="fas fa-user-tie text-[9px]"></i>
+                                                <span>Mentoring</span>
+                                            </div>
+                                            <span class="text-xs font-black text-emerald-700"><?= number_format($team['total_mentoring']) ?></span>
+                                        </div>
+                                        <div class="flex items-center justify-between px-2 py-1 rounded-lg bg-violet-50 border border-violet-100/50">
+                                            <div class="flex items-center gap-1.5 text-[10px] font-bold text-violet-600">
+                                                <i class="fas fa-store text-[9px]"></i>
+                                                <span>Kegiatan Diikuti</span>
+                                            </div>
+                                            <span class="text-xs font-black text-violet-700"><?= number_format($team['total_kegiatan']) ?></span>
+                                        </div>
+                                    </div>
                                 </td>
 
                                 <!-- Milestone Reports -->
@@ -244,7 +245,7 @@
                                     <div class="flex flex-col gap-1.5 items-center">
                                         <!-- Kemajuan -->
                                         <div class="flex items-center justify-between w-full max-w-[120px] px-2 py-1 rounded bg-slate-50 border border-slate-100">
-                                            <span class="text-[9px] font-bold text-slate-400 uppercase">KMJ</span>
+                                            <span class="text-[9px] font-bold text-slate-400 uppercase">Laporan Kemajuan</span>
                                             <?php if ($team['kemajuan_status'] === 'approved'): ?>
                                                 <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" title="Laporan Kemajuan: Approved"></span>
                                             <?php elseif ($team['kemajuan_status'] === 'pending'): ?>
@@ -257,7 +258,7 @@
                                         </div>
                                         <!-- Akhir -->
                                         <div class="flex items-center justify-between w-full max-w-[120px] px-2 py-1 rounded bg-slate-50 border border-slate-100">
-                                            <span class="text-[9px] font-bold text-slate-400 uppercase">AKH</span>
+                                            <span class="text-[9px] font-bold text-slate-400 uppercase">Laporan Akhir</span>
                                             <?php if ($team['akhir_status'] === 'approved'): ?>
                                                 <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" title="Laporan Akhir: Approved"></span>
                                             <?php elseif ($team['akhir_status'] === 'pending'): ?>

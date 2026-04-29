@@ -45,6 +45,7 @@ class PmwGuidanceService
             'schedule_date' => $data['schedule_date'],
             'schedule_time' => $data['schedule_time'],
             'topic'         => $data['topic'],
+            'deadline_days' => $data['deadline_days'] ?? 5,
             'status'        => 'planned',
         ]);
     }
@@ -56,6 +57,20 @@ class PmwGuidanceService
     {
         $schedule = $this->scheduleModel->find($scheduleId);
         if (!$schedule) throw new Exception("Jadwal tidak ditemukan.");
+
+        // Check deadline (only if not saving as draft)
+        $isDraft = ($data['status'] ?? 'pending') === 'draft';
+        if (!$isDraft) {
+            $deadlineDays = $schedule->deadline_days ?? 5;
+            $scheduleDate = new \DateTime($schedule->schedule_date);
+            $deadlineDate = (clone $scheduleDate)->modify("+$deadlineDays days");
+            $now = new \DateTime();
+
+            if ($now > $deadlineDate) {
+                $formattedDeadline = $deadlineDate->format('d M Y');
+                throw new Exception("Batas waktu pengisian logbook telah berakhir pada $formattedDeadline ($deadlineDays hari setelah jadwal).");
+            }
+        }
 
         // Check if logbook already exists
         $existing = $this->logbookModel->getBySchedule($scheduleId);

@@ -26,14 +26,18 @@
                     <?= cms('home_hero_description', 'Politeknik Negeri Sriwijaya memfasilitasi mahasiswa untuk mengembangkan ide bisnis menjadi usaha nyata melalui program pembinaan kewirausahaan.') ?>
                 </p>
                 
-                <div class="flex flex-wrap gap-4">
-                    <a href="<?= base_url('register') ?>" class="btn-accent text-base px-8 py-4">
+                <div class="flex flex-col md:flex-row md:grid md:grid-cols-2 gap-4">
+                    <a href="<?= base_url('register') ?>" class="btn-accent text-base">
                         <i class="fas fa-paper-plane mr-2"></i>
                         Daftar Sekarang
                     </a>
-                    <a href="<?= base_url('tentang') ?>" class="btn-outline text-base px-8 py-4">
+                    <a href="<?= base_url('tentang') ?>" class="btn-outline text-base">
                         <i class="fas fa-play-circle mr-2"></i>
                         Pelajari Program
+                    </a>
+                    <a href="https://www.instagram.com/entrepreneurpolsri/" target="_blank" rel="noopener noreferrer" class="btn-primary text-base">
+                        <i class="fab fa-instagram text-2xl"></i>
+                        <span class="font-medium">@entrepreneurpolsri</span>
                     </a>
                 </div>
                 

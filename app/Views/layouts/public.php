@@ -289,9 +289,9 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
                     <div>
                         <h4 class="text-slate-800 font-semibold mb-4">Dokumen & Bantuan</h4>
                         <ul class="space-y-3">
-                            <li><a href="#" class="footer-link"><i class="fas fa-file-pdf mr-2 text-sky-500"></i>Panduan PMW</a></li>
-                            <li><a href="#" class="footer-link"><i class="fas fa-file-pdf mr-2 text-sky-500"></i>Template Proposal</a></li>
-                            <li><a href="#" class="footer-link"><i class="fas fa-file-pdf mr-2 text-sky-500"></i>Peraturan PMW</a></li>
+                            <li><a href="<?= base_url('buku_panduan_pmw.pdf') ?>" class="footer-link" download><i class="fas fa-file-pdf mr-2 text-sky-500"></i>Panduan PMW</a></li>
+                            <!-- <li><a href="#" class="footer-link"><i class="fas fa-file-pdf mr-2 text-sky-500"></i>Template Proposal</a></li>
+                            <li><a href="#" class="footer-link"><i class="fas fa-file-pdf mr-2 text-sky-500"></i>Peraturan PMW</a></li> -->
                             <li><a href="#" class="footer-link"><i class="fas fa-question-circle mr-2 text-sky-500"></i>FAQ</a></li>
                         </ul>
                     </div>

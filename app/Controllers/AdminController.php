@@ -1207,17 +1207,19 @@ class AdminController extends BaseController
         $documents = $documentModel->getProposalDocs($id);
 
         // Get Guidance Logs (Bimbingan & Mentoring)
-        $guidanceLogs = $guidanceLogbookModel->select('pmw_guidance_logbooks.*, gs.type, gs.schedule_date, gs.topic')
-            ->join('pmw_guidance_schedules gs', 'gs.id = pmw_guidance_logbooks.schedule_id')
-            ->where('gs.proposal_id', $id)
-            ->orderBy('gs.schedule_date', 'DESC')
+        $scheduleModel = new \App\Models\Guidance\PmwGuidanceScheduleModel();
+        $guidanceLogs = $scheduleModel->select('pmw_guidance_schedules.*, gl.id as logbook_id, gl.material_explanation, gl.video_url, gl.photo_activity, gl.assignment_file, gl.nota_file, gl.nota_files, gl.nota_items, gl.nominal_konsumsi, gl.status as log_status, gl.submitted_at, gl.verification_note, gl.verified_at')
+            ->join('pmw_guidance_logbooks gl', 'gl.schedule_id = pmw_guidance_schedules.id', 'left')
+            ->where('pmw_guidance_schedules.proposal_id', $id)
+            ->orderBy('pmw_guidance_schedules.schedule_date', 'DESC')
             ->findAll();
 
         // Get Activity Logs (Kegiatan Wirausaha)
-        $activityLogs = $activityLogbookModel->select('pmw_activity_logbooks.*, pas.activity_category, pas.activity_date')
-            ->join('pmw_activity_schedules pas', 'pas.id = pmw_activity_logbooks.schedule_id')
-            ->where('pas.proposal_id', $id)
-            ->orderBy('pas.activity_date', 'DESC')
+        $activityScheduleModel = new \App\Models\Activity\PmwActivityScheduleModel();
+        $activityLogs = $activityScheduleModel->select('pmw_activity_schedules.*, pal.id as logbook_id, pal.activity_description, pal.photo_activity, pal.video_url, pal.status as log_status, pal.created_at as submitted_at, pal.dosen_status, pal.dosen_note, pal.mentor_status, pal.mentor_note, pal.admin_note')
+            ->join('pmw_activity_logbooks pal', 'pal.schedule_id = pmw_activity_schedules.id', 'left')
+            ->where('pmw_activity_schedules.proposal_id', $id)
+            ->orderBy('pmw_activity_schedules.activity_date', 'DESC')
             ->findAll();
 
         // Get Milestone Reports
@@ -1236,5 +1238,50 @@ class AdminController extends BaseController
             'activityLogs' => $activityLogs,
             'milestoneReports' => $milestoneReports,
         ]);
+    }
+
+    /**
+     * Securely serve guidance logbook files for admin
+     */
+    public function viewGuidanceFile(string $type, int $logbookId)
+    {
+        $logbookModel = new \App\Models\Guidance\PmwGuidanceLogbookModel();
+        $logbook = $logbookModel->find($logbookId);
+
+        if (!$logbook) {
+            return $this->response->setStatusCode(404)->setBody('Berkas tidak ditemukan.');
+        }
+
+        $filePath = match ($type) {
+            'photo'      => $logbook->photo_activity,
+            'assignment' => $logbook->assignment_file,
+            'nota'       => (function() use ($logbook) {
+                $specificPath = $this->request->getGet('path');
+                if ($specificPath) {
+                    $notaFiles = json_decode($logbook->nota_files ?? '[]', true) ?? [];
+                    if (in_array($specificPath, $notaFiles)) {
+                        return $specificPath;
+                    }
+                }
+                return $logbook->nota_file;
+            })(),
+            default      => ''
+        };
+
+        if (empty($filePath)) {
+            return $this->response->setStatusCode(404)->setBody('Berkas tidak ditemukan.');
+        }
+
+        $absPath = WRITEPATH . 'uploads/' . $filePath;
+
+        if (!is_file($absPath)) {
+            return $this->response->setStatusCode(404)->setBody('File fisik tidak ditemukan.');
+        }
+
+        $mimeType = mime_content_type($absPath);
+        return $this->response
+            ->setHeader('Content-Type', $mimeType)
+            ->setHeader('Content-Disposition', 'inline; filename="' . basename($absPath) . '"')
+            ->setBody(file_get_contents($absPath));
     }
 }

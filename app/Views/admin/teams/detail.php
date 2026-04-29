@@ -2,6 +2,8 @@
 
 <?= $this->section('content') ?>
 <div class="space-y-6" x-data="{
+    showLogModal: false,
+    selectedLog: {},
     handleMouseMove(e) {
         const card = e.currentTarget;
         const rect = card.getBoundingClientRect();
@@ -18,11 +20,6 @@
             </a>
             <span class="text-slate-300">/</span>
             <span class="text-slate-700 font-semibold">Detail</span>
-        </div>
-        <div class="flex gap-2">
-            <a href="<?= base_url('admin/administrasi/seleksi/' . $proposal['id']) ?>" class="btn-primary text-sm">
-                <i class="fas fa-file-alt mr-2"></i>Lihat Proposal
-            </a>
         </div>
     </div>
 

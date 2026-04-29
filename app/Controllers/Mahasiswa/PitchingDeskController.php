@@ -88,7 +88,7 @@ class PitchingDeskController extends BaseController
         return view('mahasiswa/pitching_desk', [
             'title'           => 'Administrasi & Desk Evaluation | PMW Polsri',
             'header_title'    => 'Administrasi & Desk Evaluation',
-            'header_subtitle' => 'Tahap 1 - Pengajuan awal dan kelengkapan administrasi',
+            'header_subtitle' => 'Pengajuan awal dan kelengkapan administrasi',
             'proposal'        => $proposal,
             'isSubmitted'     => !empty($proposal['student_submitted_at']),
             'activePeriod'    => $activePeriod,

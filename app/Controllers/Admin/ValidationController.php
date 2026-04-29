@@ -45,7 +45,7 @@ class ValidationController extends BaseController
         return view('admin/proposal/seleksi', [
             'title'           => 'Business Plan & BMC | PMW Polsri',
             'header_title'    => 'Business Plan & Business Model Canvas',
-            'header_subtitle' => 'Tahap 2 - Validasi kelengkapan dokumen proposal',
+            'header_subtitle' => 'Validasi kelengkapan dokumen proposal',
             'proposals'       => $proposals,
             'stats'           => $stats,
             'statusFilter'    => $statusFilter,

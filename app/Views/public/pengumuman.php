@@ -291,12 +291,12 @@
             </div>
             
             <div class="reveal-on-scroll stagger-2">
-                <a href="tel:0711353414" class="group flex flex-col items-center p-10 rounded-[2.5rem] bg-white shadow-sm border border-slate-100 hover:border-sky-300 hover:shadow-2xl transition-liquid">
-                    <div class="w-20 h-20 rounded-3xl bg-emerald-50 flex items-center justify-center mb-6 group-hover:bg-emerald-500 transition-liquid shadow-inner">
-                        <i class="fas fa-phone-alt text-3xl text-emerald-600 group-hover:text-white transition-liquid"></i>
+                <a href="https://www.instagram.com/entrepreneurpolsri/" target="_blank" rel="noopener noreferrer" class="group flex flex-col items-center p-10 rounded-[2.5rem] bg-white shadow-sm border border-slate-100 hover:border-sky-300 hover:shadow-2xl transition-liquid">
+                    <div class="w-20 h-20 rounded-3xl bg-pink-50 flex items-center justify-center mb-6 group-hover:bg-pink-500 transition-liquid shadow-inner">
+                        <i class="fab fa-instagram text-3xl text-pink-600 group-hover:text-white transition-liquid"></i>
                     </div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">Layanan Telepon</p>
-                    <p class="text-xl font-bold text-slate-900">(0711) 353414</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">Ikuti Instagram</p>
+                    <p class="text-xl font-bold text-slate-900">@entrepreneurpolsri</p>
                 </a>
             </div>
             
