@@ -65,9 +65,9 @@ class PerjanjianController extends BaseController
         if (!$proposal) {
             $isEligible = false;
             $reason = 'Anda belum memiliki proposal yang disetujui untuk periode ini.';
-        } elseif (($proposal['pitching_dosen_status'] ?? '') !== 'approved' || ($proposal['pitching_admin_status'] ?? '') !== 'approved') {
+        } elseif (($proposal['pitching_admin_status'] ?? '') !== 'approved') {
             $isEligible = false;
-            $reason = 'Anda harus menyelesaikan tahap Pitching Desk dan mendapatkan persetujuan Reviewer terlebih dahulu.';
+            $reason = 'Anda harus menyelesaikan tahap Pitching Desk dan mendapatkan persetujuan Admin/UPAPKK terlebih dahulu.';
         }
 
         // Get phase status for "Wawancara Perjanjian" (Phase ID 3)

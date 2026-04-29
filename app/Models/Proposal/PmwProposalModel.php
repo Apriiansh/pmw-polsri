@@ -101,6 +101,8 @@ class PmwProposalModel extends Model
             'per.name as period_name',
             'per.year as period_year',
             'sp.admin_status as pitching_admin_status',
+            'spr.dosen_status as proposal_dosen_status',
+            'spr.admin_status as proposal_admin_status',
             '(SELECT COUNT(*) FROM pmw_proposal_members pm2 WHERE pm2.proposal_id = p.id) as member_count',
             '(SELECT COUNT(*) FROM pmw_documents d WHERE d.proposal_id = p.id AND d.type = "proposal") as doc_count',
         ]);
@@ -109,6 +111,7 @@ class PmwProposalModel extends Model
         $builder->join('pmw_lecturers l', 'l.id = pa.lecturer_id', 'left');
         $builder->join('pmw_periods per', 'per.id = p.period_id', 'left');
         $builder->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left');
+        $builder->join('pmw_selection_proposal spr', 'spr.proposal_id = p.id', 'left');
         
         if ($statusFilter && in_array($statusFilter, ['submitted', 'revision', 'approved', 'rejected'])) {
             $builder->where('p.status', $statusFilter);
@@ -149,6 +152,11 @@ class PmwProposalModel extends Model
             'sp.admin_status as pitching_admin_status',
             'sp.admin_catatan as pitching_admin_catatan',
             'sp.student_submitted_at',
+            'spr.dosen_status as proposal_dosen_status',
+            'spr.dosen_catatan as proposal_dosen_catatan',
+            'spr.admin_status as proposal_admin_status',
+            'spr.admin_catatan as proposal_admin_catatan',
+            'spr.student_submitted_at as proposal_submitted_at',
             'pj.admin_status as perjanjian_status',
             'pj.student_submitted_at as perjanjian_submitted_at',
             'pa.lecturer_id',
@@ -165,6 +173,7 @@ class PmwProposalModel extends Model
         
         // Joined selection tables
         $builder->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left');
+        $builder->join('pmw_selection_proposal spr', 'spr.proposal_id = p.id', 'left');
         $builder->join('pmw_perjanjian pj', 'pj.proposal_id = p.id', 'left');
         $builder->join('pmw_selection_implementasi si', 'si.proposal_id = p.id', 'left');
 

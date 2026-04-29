@@ -60,9 +60,6 @@ class LecturerModel extends Model
      */
     public function getAllWithAssignmentStatus(): array
     {
-        return $this->select('pmw_lecturers.*, pa.proposal_id as assigned_proposal_id')
-            ->join('pmw_proposal_assignments pa', 'pa.lecturer_id = pmw_lecturers.id', 'left')
-            ->orderBy('nama', 'ASC')
-            ->findAll();
+        return $this->orderBy('nama', 'ASC')->findAll();
     }
 }

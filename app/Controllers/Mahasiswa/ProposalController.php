@@ -15,6 +15,7 @@ use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use App\Models\NotificationModel;
 use App\Models\Selection\PmwSelectionProposalModel;
+use App\Models\Proposal\PmwRabItemModel;
 
 class ProposalController extends BaseController
 {
@@ -159,7 +160,6 @@ class ProposalController extends BaseController
 
         $rules = [
             'lecturer_id' => $isFinal ? 'required|integer' : 'permit_empty|integer',
-            'total_rab'   => 'permit_empty|decimal',
         ];
 
         if (! $this->validate($rules)) {
@@ -181,9 +181,15 @@ class ProposalController extends BaseController
 
             $proposalId = (int) $existing['id'];
 
-            // Hanya update field yang ada di Tahap 2 (RAB — identitas usaha sudah di Tahap 1)
+            // Sync RAB items
+            $rabModel = new PmwRabItemModel();
+            $rabItems = $this->request->getPost('rab_items') ?? [];
+            $rabModel->syncItems($proposalId, is_array($rabItems) ? $rabItems : []);
+            $totalRab = $rabModel->getTotalByProposal($proposalId);
+
+            // Update proposal (RAB total dihitung otomatis dari rincian)
             $proposalData = [
-                'total_rab' => $this->request->getPost('total_rab') ?: null,
+                'total_rab' => $totalRab ?: null,
                 'status'    => 'draft',
             ];
 
@@ -193,17 +199,6 @@ class ProposalController extends BaseController
 
             // Sync Assignments (Lecturer)
             $lecturerId = $this->request->getPost('lecturer_id');
-            if ($lecturerId) {
-                // Security check: Ensure lecturer is not already assigned to another team
-                $isAlreadyAssigned = $assignmentModel->where('lecturer_id', $lecturerId)
-                    ->where('proposal_id !=', $proposalId)
-                    ->first();
-                
-                if ($isAlreadyAssigned) {
-                    throw new \Exception('Dosen pendamping ini sudah membimbing tim lain.');
-                }
-            }
-
             $existingAssignment = $assignmentModel->where('proposal_id', $proposalId)->first();
             $assignmentData = [
                 'proposal_id' => $proposalId,
@@ -553,6 +548,7 @@ class ProposalController extends BaseController
         $members = [];
         $docsByKey = [];
         $proposalSelection = null;
+        $rabItems = [];
 
         if ($proposal) {
             // Fetch Assignment info (Lecturer)
@@ -572,6 +568,9 @@ class ProposalController extends BaseController
 
             $selectionModel = new PmwSelectionProposalModel();
             $proposalSelection = $selectionModel->getByProposal((int) $proposal['id']);
+
+            $rabModel = new PmwRabItemModel();
+            $rabItems = $rabModel->getByProposal((int) $proposal['id']);
         }
 
         $lecturers = $lecturerModel->getAllWithAssignmentStatus();
@@ -589,6 +588,7 @@ class ProposalController extends BaseController
             'docsByKey'         => $docsByKey,
             'requiredDocKeys'   => self::REQUIRED_DOC_KEYS,
             'lecturers'         => $lecturers,
+            'rabItems'          => $rabItems,
         ];
     }
 

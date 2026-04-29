@@ -11,17 +11,21 @@
         <div class="flex items-center justify-between gap-4 flex-wrap">
             <div>
                 <h2 class="section-title">Proposal <span class="text-gradient">(Bussiness Plan & Business Model Canvas)</span></h2>
-                <p class="section-subtitle">Pembuatan Proposal Bisnis dan Perjanjian Implementasi</p>
+                <p class="section-subtitle">Pembuatan Proposal Bisnis dan Pemilihan Dosen Pendamping</p>
             </div>
-            <a href="<?= base_url('mahasiswa/proposal') ?>" class="btn-outline inline-flex items-center gap-2">
+            <a href="<?= base_url('dashboard') ?>" class="btn-outline inline-flex items-center gap-2">
                 <i class="fas fa-arrow-left"></i>
                 Kembali
             </a>
         </div>
 
         <?php
-        $pitchingApproved = ($proposal['pitching_admin_status'] ?? '') === 'approved';
-        $isEligible = $proposal && $pitchingApproved;
+        $pitchingApproved    = ($proposal['pitching_admin_status'] ?? '') === 'approved';
+        $isEligible          = $proposal && $pitchingApproved;
+        $proposalDosenStatus = $proposal['proposal_dosen_status'] ?? null;
+        $proposalSubmitted   = !empty($proposal['proposal_submitted_at']);
+        // Tampil gate dosen jika sudah submit tapi dosen belum approve
+        $waitingDosen = $proposalSubmitted && $proposalDosenStatus !== 'approved';
         ?>
         <?php if (!$isEligible): ?>
         <div class="card-premium p-12 text-center animate-stagger">
@@ -36,6 +40,31 @@
                 <a href="<?= base_url('mahasiswa/pitching-desk') ?>" class="btn-primary">
                     Ke Pitching Desk <i class="fas fa-arrow-right ml-2"></i>
                 </a>
+                <a href="<?= base_url('dashboard') ?>" class="btn-outline">
+                    Kembali ke Dashboard
+                </a>
+            </div>
+        </div>
+        <?php elseif ($waitingDosen): ?>
+        <div class="card-premium p-12 text-center animate-stagger">
+            <div class="w-20 h-20 rounded-3xl <?= $proposalDosenStatus === 'revision' ? 'bg-orange-50' : 'bg-amber-50' ?> flex items-center justify-center mx-auto mb-6">
+                <i class="fas <?= $proposalDosenStatus === 'revision' ? 'fa-circle-exclamation text-orange-400' : 'fa-hourglass-half text-amber-400' ?> text-3xl"></i>
+            </div>
+            <?php if ($proposalDosenStatus === 'revision'): ?>
+            <h3 class="text-xl font-bold text-slate-800">Proposal Perlu Revisi</h3>
+            <p class="text-slate-500 max-w-md mx-auto mt-2">
+                Dosen Pendamping meminta revisi pada proposal Anda.
+                <?php if (!empty($proposal['proposal_dosen_catatan'])): ?>
+                <br><span class="font-semibold text-orange-600">Catatan: <?= esc($proposal['proposal_dosen_catatan']) ?></span>
+                <?php endif; ?>
+            </p>
+            <?php else: ?>
+            <h3 class="text-xl font-bold text-slate-800">Menunggu Persetujuan Dosen</h3>
+            <p class="text-slate-500 max-w-md mx-auto mt-2">
+                Proposal Anda sedang dalam review oleh <strong>Dosen Pendamping</strong>. Harap tunggu hingga disetujui sebelum dapat dilanjutkan ke validasi Admin.
+            </p>
+            <?php endif; ?>
+            <div class="flex flex-wrap justify-center gap-4 mt-8">
                 <a href="<?= base_url('dashboard') ?>" class="btn-outline">
                     Kembali ke Dashboard
                 </a>
@@ -205,22 +234,70 @@
 
                         $steps = [];
 
+                        $proposalDosenSt  = $proposal['proposal_dosen_status'] ?? null;
+                        $proposalAdminSt  = $proposal['proposal_admin_status'] ?? null;
+                        $isProposalSub    = !empty($proposal['proposal_submitted_at']);
+
                         // Step 1: Pengajuan
                         $steps[] = [
                             'label'         => 'Pengajuan',
-                            'display_label' => ($currentStatus === 'draft') ? 'Sedang Disusun' : 'Proposal Terkirim',
-                            'status'        => ($currentStatus === 'draft') ? 'pending' : 'approved',
+                            'display_label' => (!$isProposalSub) ? 'Sedang Disusun' : 'Proposal Terkirim',
+                            'status'        => (!$isProposalSub) ? 'pending' : 'approved',
                             'icon'          => 'fa-file-signature',
-                            'note'          => null
+                            'note'          => null,
+                            'note_label'    => null,
                         ];
 
-                        // Step 2: Validasi (Always show, reflects current progress)
+                        // Step 2: Validasi Dosen
+                        $dosenStepStatus = 'pending';
+                        $dosenStepLabel  = 'Menunggu Review';
+                        if ($proposalDosenSt === 'approved') {
+                            $dosenStepStatus = 'approved';
+                            $dosenStepLabel  = 'Disetujui Dosen';
+                        } elseif ($proposalDosenSt === 'revision') {
+                            $dosenStepStatus = 'revision';
+                            $dosenStepLabel  = 'Perlu Revisi';
+                        } elseif ($proposalDosenSt === 'rejected') {
+                            $dosenStepStatus = 'rejected';
+                            $dosenStepLabel  = 'Ditolak Dosen';
+                        } elseif (!$isProposalSub) {
+                            $dosenStepStatus = 'pending';
+                            $dosenStepLabel  = 'Belum Dikirim';
+                        }
+
+                        $steps[] = [
+                            'label'         => 'Validasi Dosen',
+                            'display_label' => $dosenStepLabel,
+                            'status'        => $dosenStepStatus,
+                            'icon'          => 'fa-chalkboard-user',
+                            'note'          => ($proposalDosenSt === 'revision') ? ($proposal['proposal_dosen_catatan'] ?? null) : null,
+                            'note_label'    => 'Catatan Dosen:',
+                        ];
+
+                        // Step 3: Validasi UPAPKK
+                        $adminStepStatus = 'pending';
+                        $adminStepLabel  = 'Menunggu Validasi';
+                        if ($proposalAdminSt === 'approved' || $currentStatus === 'approved') {
+                            $adminStepStatus = 'approved';
+                            $adminStepLabel  = 'Disetujui';
+                        } elseif ($currentStatus === 'revision') {
+                            $adminStepStatus = 'revision';
+                            $adminStepLabel  = 'Perlu Revisi';
+                        } elseif ($currentStatus === 'rejected') {
+                            $adminStepStatus = 'rejected';
+                            $adminStepLabel  = 'Ditolak';
+                        } elseif ($proposalDosenSt !== 'approved') {
+                            $adminStepStatus = 'pending';
+                            $adminStepLabel  = 'Menunggu Dosen';
+                        }
+
                         $steps[] = [
                             'label'         => 'Validasi UPAPKK',
-                            'display_label' => $meta['label'],
-                            'status'        => $meta['status'],
+                            'display_label' => $adminStepLabel,
+                            'status'        => $adminStepStatus,
                             'icon'          => 'fa-award',
-                            'note'          => ($currentStatus === 'revision') ? $proposal['catatan'] : null
+                            'note'          => ($currentStatus === 'revision') ? ($proposal['catatan'] ?? null) : null,
+                            'note_label'    => 'Catatan Admin:',
                         ];
 
                         $stepColors = [
@@ -249,7 +326,7 @@
 
                                 <?php if ($step['note']): ?>
                                     <div class="md:absolute md:top-24 md:left-1/2 md:-translate-x-1/2 w-full md:w-64 p-3 rounded-xl <?= $color['light'] ?> border border-<?= explode('-', $color['text'])[1] ?>-100 text-[10px] text-slate-600 italic shadow-sm">
-                                        <p class="font-bold not-italic mb-1 text-slate-500 uppercase tracking-widest">Catatan Admin:</p>
+                                        <p class="font-bold not-italic mb-1 text-slate-500 uppercase tracking-widest"><?= $step['note_label'] ?? 'Catatan:' ?></p>
                                         "<?= esc($step['note']) ?>"
                                     </div>
                                 <?php endif; ?>
@@ -289,7 +366,7 @@
                     </div>
                     <div>
                         <h3 class="font-display text-base font-bold text-slate-800">Info dari Tahap 1 (Administrasi & Desk Eval)</h3>
-                        <p class="text-xs text-slate-500">Data identitas usaha & tim sudah diisi di tahap sebelumnya. <a href="<?= base_url('mahasiswa/pitching-desk') ?>" class="text-sky-600 font-bold hover:underline">Edit di sini</a>.</p>
+                        <p class="text-xs text-slate-500">Data identitas usaha & tim sudah diisi di tahap sebelumnya.</p>
                     </div>
                 </div>
                 <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -328,11 +405,15 @@
                             </div>
                         <?php endif; ?>
                     </div>
+                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 sm:col-span-2 md:col-span-3">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Deskripsi Singkat Usaha / Ide Bisnis</p>
+                        <p class="text-sm text-slate-700 leading-relaxed"><?= esc($proposal['detail_keterangan'] ?? '-') ?></p>
+                    </div>
                 </div>
             </div>
 
             <!-- Section 1: Dosen Pendamping -->
-            <div class="card-premium p-5 sm:p-7 space-y-6" :class="isOpen ? 'z-lift' : ''" @mousemove="handleMouseMove">
+            <div class="card-premium p-5 sm:p-7 space-y-6" @mousemove="handleMouseMove">
                 <div class="flex items-center justify-between gap-4 flex-wrap">
                     <div>
                         <h3 class="font-display text-base font-bold text-slate-800">1) Dosen Pendamping</h3>
@@ -340,108 +421,152 @@
                     </div>
                 </div>
 
-                <div class="grid md:grid-cols-2 gap-6" :class="isOpen ? 'z-lift' : ''">
+                <div class="grid md:grid-cols-2 gap-6">
                     <!-- Dosen Pendamping -->
                     <div class="form-field">
                         <label class="form-label">
                             Dosen Pendamping <span class="required">*</span>
                         </label>
-                        <div class="search-select-container" :class="isOpen ? 'is-open' : ''" @click.away="isOpen = false">
-                            <div class="input-group" @click="isOpen = !isOpen">
-                                <span class="input-icon">
-                                    <i class="fas fa-chalkboard-user"></i>
-                                </span>
-                                <input type="text"
-                                    x-model="lecturerSearch"
-                                    placeholder="Pilih atau cari dosen..."
-                                    @input="isOpen = true"
-                                    @focus="isOpen = true"
-                                    class="cursor-pointer"
-                                    <?= $isLocked ? 'disabled' : '' ?>
-                                    required>
-                                <span class="input-icon">
-                                    <i class="fas" :class="isOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                                </span>
-                            </div>
-
-                            <!-- Dropdown Panel -->
-                            <div x-show="isOpen"
-                                x-transition
-                                x-cloak
-                                class="search-select-dropdown">
-                                <template x-for="lec in filteredLecturers" :key="lec.id">
-                                    <div class="search-select-item"
-                                        :class="{
-                                            'selected': formData.lecturer_id == lec.id,
-                                            'opacity-50 cursor-not-allowed': lec.assigned_proposal_id && lec.assigned_proposal_id != '<?= $proposal['id'] ?? 0 ?>'
-                                        }"
-                                        @click="
-                                            if (lec.assigned_proposal_id && lec.assigned_proposal_id != '<?= $proposal['id'] ?? 0 ?>') {
-                                                Swal.fire({
-                                                    icon: 'warning',
-                                                    title: 'Dosen Tidak Tersedia',
-                                                    text: 'Dosen ini sudah membimbing tim lain.',
-                                                    confirmButtonColor: '#0ea5e9'
-                                                });
-                                                return;
-                                            }
-                                            formData.lecturer_id = lec.id;
-                                            lecturerSearch = lec.nama + (lec.nip ? ' — ' + lec.nip : '');
-                                            isOpen = false;
-                                         ">
-                                        <div class="flex items-center justify-between gap-2">
-                                            <div>
-                                                <div class="font-semibold" x-text="lec.nama"></div>
-                                                <div class="text-xs opacity-80" x-text="lec.nip ? 'NIP: ' + lec.nip : 'NIP: -'"></div>
-                                            </div>
-                                            <template x-if="lec.assigned_proposal_id && lec.assigned_proposal_id != '<?= $proposal['id'] ?? 0 ?>'">
-                                                <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-600 font-bold uppercase tracking-wider">Sudah di Tim Lain</span>
-                                            </template>
-                                        </div>
-                                    </div>
-                                </template>
-                                <div x-show="filteredLecturers.length === 0" class="search-select-empty">
-                                    <i class="fas fa-search mb-2 block text-xl opacity-20"></i>
-                                    Dosen tidak ditemukan
-                                </div>
-                            </div>
-
-                            <input type="hidden" name="lecturer_id" :value="formData.lecturer_id">
+                        <div class="input-group">
+                            <span class="input-icon">
+                                <i class="fas fa-chalkboard-user"></i>
+                            </span>
+                            <select name="lecturer_id"
+                                class="w-full py-2.5 pr-4 outline-none bg-transparent text-sm text-slate-700"
+                                <?= $isLocked ? 'disabled' : '' ?>
+                                required>
+                                <option value="">-- Pilih Dosen Pendamping --</option>
+                                <?php foreach ($lecturers as $lec): ?>
+                                <option value="<?= esc($lec['id']) ?>"
+                                    <?= (string)($proposal['lecturer_id'] ?? '') === (string)$lec['id'] ? 'selected' : '' ?>>
+                                    <?= esc($lec['nama']) ?><?= !empty($lec['nip']) ? ' — ' . esc($lec['nip']) : '' ?><?= !empty($lec['jurusan']) ? ' (' . esc($lec['jurusan']) . ')' : '' ?>
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Section 2: Detail Proposal -->
+            <!-- Section 2: Rincian Rencana Anggaran Biaya (RAB) -->
             <div class="card-premium p-6 sm:p-8 space-y-6" @mousemove="handleMouseMove">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl shadow-sm">
-                        <i class="fas fa-briefcase"></i>
+                <div class="flex items-center justify-between gap-4 flex-wrap">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl shadow-sm">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-display text-lg font-bold text-slate-800">Rincian Rencana Anggaran Biaya (RAB)</h3>
+                            <p class="text-xs text-slate-500">Tambahkan rincian setiap item biaya program. Total dihitung otomatis.</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="font-display text-lg font-bold text-slate-800">2) Detail Proposal</h3>
-                        <p class="text-xs text-slate-500">Rencana anggaran biaya untuk pelaksanaan program.</p>
-                    </div>
+                    <?php if (!$isLocked): ?>
+                    <button type="button" @click="addRabItem()"
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl text-xs font-bold hover:bg-amber-100 transition-all shrink-0">
+                        <i class="fas fa-plus"></i> Tambah Item
+                    </button>
+                    <?php endif; ?>
                 </div>
 
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="form-field">
-                        <label class="form-label text-[10px] uppercase tracking-wider">Total RAB (Rp)</label>
-                        <div class="input-group">
-                            <span class="input-icon"><i class="fas fa-money-bill-wave text-xs"></i></span>
-                            <input type="number" name="total_rab" x-model="formData.total_rab" placeholder="0" min="0" step="1" <?= $isLocked ? 'disabled' : '' ?>>
-                        </div>
-                    </div>
-
-                    <div class="form-field md:col-span-2">
-                        <label class="form-label text-[10px] uppercase tracking-wider">Deskripsi Singkat Usaha / Ide Bisnis</label>
-                        <div class="input-group">
-                            <span class="input-icon self-start mt-3"><i class="fas fa-align-left text-xs"></i></span>
-                            <textarea name="detail_keterangan" x-model="formData.detail_keterangan" rows="4"
-                                class="w-full py-2.5 outline-none resize-none bg-transparent text-sm" <?= $isLocked ? 'disabled' : '' ?>
-                                placeholder="Jelaskan secara singkat mengenai rencana bisnis, target pasar, dan keunggulan usaha Anda..."></textarea>
-                        </div>
-                    </div>
+                <!-- Tabel RAB -->
+                <div class="overflow-x-auto rounded-xl border border-slate-100">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-100">
+                                <th class="text-left text-[10px] font-black uppercase tracking-widest text-slate-400 px-4 py-3 w-6">#</th>
+                                <th class="text-left text-[10px] font-black uppercase tracking-widest text-slate-400 px-4 py-3">Nama Item</th>
+                                <th class="text-left text-[10px] font-black uppercase tracking-widest text-slate-400 px-4 py-3 w-24">Qty</th>
+                                <th class="text-left text-[10px] font-black uppercase tracking-widest text-slate-400 px-4 py-3 w-28">Satuan</th>
+                                <th class="text-left text-[10px] font-black uppercase tracking-widest text-slate-400 px-4 py-3 w-40">Harga Satuan (Rp)</th>
+                                <th class="text-right text-[10px] font-black uppercase tracking-widest text-slate-400 px-4 py-3 w-40">Subtotal (Rp)</th>
+                                <?php if (!$isLocked): ?>
+                                <th class="px-4 py-3 w-12"></th>
+                                <?php endif; ?>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="(item, idx) in rabItems" :key="idx">
+                                <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                                    <td class="px-4 py-2 text-xs text-slate-400 font-mono" x-text="idx + 1"></td>
+                                    <td class="px-4 py-2">
+                                        <?php if (!$isLocked): ?>
+                                        <input type="text" :name="`rab_items[${idx}][nama_item]`"
+                                            x-model="item.nama_item"
+                                            placeholder="Nama item..."
+                                            class="w-full bg-transparent outline-none text-sm text-slate-700 placeholder-slate-300 border-b border-transparent focus:border-amber-300 transition-colors py-0.5">
+                                        <?php else: ?>
+                                        <span class="text-sm text-slate-700" x-text="item.nama_item"></span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        <?php if (!$isLocked): ?>
+                                        <input type="number" :name="`rab_items[${idx}][qty]`"
+                                            x-model="item.qty"
+                                            @input="item.qty = parseFloat(item.qty) || 0"
+                                            min="0" step="0.01"
+                                            class="w-full bg-transparent outline-none text-sm text-slate-700 border-b border-transparent focus:border-amber-300 transition-colors py-0.5 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                                        <?php else: ?>
+                                        <span class="text-sm text-slate-700 block text-right" x-text="item.qty"></span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        <?php if (!$isLocked): ?>
+                                        <input type="text" :name="`rab_items[${idx}][satuan]`"
+                                            x-model="item.satuan"
+                                            placeholder="unit"
+                                            class="w-full bg-transparent outline-none text-sm text-slate-700 placeholder-slate-300 border-b border-transparent focus:border-amber-300 transition-colors py-0.5">
+                                        <?php else: ?>
+                                        <span class="text-sm text-slate-700" x-text="item.satuan"></span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        <?php if (!$isLocked): ?>
+                                        <input type="number" :name="`rab_items[${idx}][harga_satuan]`"
+                                            x-model="item.harga_satuan"
+                                            @input="item.harga_satuan = parseFloat(item.harga_satuan) || 0"
+                                            min="0" step="1"
+                                            class="w-full bg-transparent outline-none text-sm text-slate-700 border-b border-transparent focus:border-amber-300 transition-colors py-0.5 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                                        <?php else: ?>
+                                        <span class="text-sm text-slate-700 block text-right" x-text="Number(item.harga_satuan).toLocaleString('id-ID')"></span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="px-4 py-2 text-right">
+                                        <span class="text-sm font-bold text-amber-600"
+                                            x-text="'Rp ' + (Number(item.qty) * Number(item.harga_satuan)).toLocaleString('id-ID')"></span>
+                                    </td>
+                                    <?php if (!$isLocked): ?>
+                                    <td class="px-4 py-2 text-center">
+                                        <button type="button" @click="removeRabItem(idx)"
+                                            class="w-7 h-7 rounded-lg bg-rose-50 text-rose-400 hover:bg-rose-100 hover:text-rose-600 transition-colors flex items-center justify-center">
+                                            <i class="fas fa-trash text-[10px]"></i>
+                                        </button>
+                                    </td>
+                                    <?php endif; ?>
+                                </tr>
+                            </template>
+                            <!-- Empty state -->
+                            <tr x-show="rabItems.length === 0">
+                                <td colspan="<?= $isLocked ? 6 : 7 ?>" class="px-4 py-8 text-center text-slate-400 text-xs italic">
+                                    <i class="fas fa-inbox text-2xl block mb-2 opacity-30"></i>
+                                    Belum ada item RAB<?= !$isLocked ? ' — klik "Tambah Item" untuk memulai' : '' ?>.
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="bg-amber-50 border-t-2 border-amber-100">
+                                <td colspan="<?= $isLocked ? 4 : 5 ?>" class="px-4 py-3 text-xs font-black uppercase tracking-widest text-slate-500 text-right">
+                                    Total RAB
+                                </td>
+                                <td class="px-4 py-3 text-right">
+                                    <span class="text-base font-black text-amber-700"
+                                        x-text="'Rp ' + rabItems.reduce((s,i) => s + Number(i.qty) * Number(i.harga_satuan), 0).toLocaleString('id-ID')"></span>
+                                </td>
+                                <?php if (!$isLocked): ?>
+                                <td></td>
+                                <?php endif; ?>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>
 
@@ -642,6 +767,17 @@
                 }
             }
         }
+
+        // Prepare RAB items for Alpine
+        $jsRabItems = [];
+        foreach ($rabItems ?? [] as $r) {
+            $jsRabItems[] = [
+                'nama_item'    => $r['nama_item'],
+                'qty'          => (float) $r['qty'],
+                'satuan'       => $r['satuan'],
+                'harga_satuan' => (float) $r['harga_satuan'],
+            ];
+        }
         ?>
         return {
             members: <?= json_encode($anggotaData) ?>,
@@ -672,11 +808,21 @@
                 );
             },
 
+            // RAB items
+            rabItems: <?= json_encode($jsRabItems) ?>,
+
+            addRabItem() {
+                this.rabItems.push({ nama_item: '', qty: 1, satuan: 'unit', harga_satuan: 0 });
+            },
+
+            removeRabItem(idx) {
+                this.rabItems.splice(idx, 1);
+            },
+
             // Form Data for validation
             formData: {
                 lecturer_id: '<?= old('lecturer_id', $proposal['lecturer_id'] ?? '') ?>',
                 detail_keterangan: <?= json_encode(old('detail_keterangan', $proposal['detail_keterangan'] ?? '')) ?>,
-                total_rab: '<?= old('total_rab', $proposal['total_rab'] ?? '') ?>',
             },
 
             get isFormComplete() {
