@@ -146,7 +146,7 @@ class PmwImplementasiService
     /**
      * Upload payment proof
      */
-    public function uploadPaymentProof(int $proposalId, int $periodId, $file, string $paymentTitle): array
+    public function uploadPaymentProof(int $proposalId, int $periodId, $file, string $paymentTitle, ?string $linkPembelian = null): array
     {
         if (!$file || !$file->isValid()) {
             return ['success' => false, 'message' => 'File tidak valid'];
@@ -181,11 +181,12 @@ class PmwImplementasiService
             $path = $targetDir . '/' . $newName;
 
             $paymentId = $this->paymentModel->insert([
-                'proposal_id'   => $proposalId,
-                'period_id'     => $periodId,
-                'payment_title' => $paymentTitle,
-                'file_path'     => $path,
-                'original_name' => $file->getClientName(),
+                'proposal_id'    => $proposalId,
+                'period_id'      => $periodId,
+                'payment_title'  => $paymentTitle,
+                'link_pembelian' => $linkPembelian,
+                'file_path'      => $path,
+                'original_name'  => $file->getClientName(),
             ]);
 
             return [
@@ -204,7 +205,8 @@ class PmwImplementasiService
     public function updatePayment(int $paymentId, array $data): bool
     {
         $updateData = [
-            'payment_title' => $data['payment_title'] ?? null,
+            'payment_title'  => $data['payment_title'] ?? null,
+            'link_pembelian' => $data['link_pembelian'] ?? null,
         ];
 
         // Remove null values

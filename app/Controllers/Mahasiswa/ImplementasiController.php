@@ -247,10 +247,11 @@ class ImplementasiController extends BaseController
             return $this->fail('Sesi pengisian laporan ditutup atau laporan sudah diverifikasi.');
         }
 
-        $paymentTitle = $this->request->getPost('payment_title') ?: 'Bukti Pembayaran';
-        $file         = $this->request->getFile('payment_file');
+        $paymentTitle  = $this->request->getPost('payment_title') ?: 'Bukti Pembayaran';
+        $linkPembelian = $this->request->getPost('link_pembelian');
+        $file          = $this->request->getFile('payment_file');
 
-        $result = $this->implementasiService->uploadPaymentProof($proposal['id'], $activePeriod['id'], $file, $paymentTitle);
+        $result = $this->implementasiService->uploadPaymentProof($proposal['id'], $activePeriod['id'], $file, $paymentTitle, $linkPembelian);
 
         if ($result['success']) {
             return $this->respond($result);
@@ -561,9 +562,12 @@ class ImplementasiController extends BaseController
         }
 
         $data = $this->request->getJSON(true);
-        $paymentTitle = $data['payment_title'] ?? $payment->payment_title;
+        $updateData = [
+            'payment_title'  => $data['payment_title'] ?? $payment->payment_title,
+            'link_pembelian' => $data['link_pembelian'] ?? $payment->link_pembelian,
+        ];
 
-        if ($this->implementasiService->updatePayment($paymentId, ['payment_title' => $paymentTitle])) {
+        if ($this->implementasiService->updatePayment($paymentId, $updateData)) {
             return $this->respond(['success' => true, 'message' => 'Bukti pembayaran berhasil diperbarui']);
         }
 

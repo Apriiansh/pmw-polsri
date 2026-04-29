@@ -87,7 +87,7 @@
                                     <div class="mt-3 w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-50">
                                         <div class="h-full bg-linear-to-r from-emerald-500 to-sky-500 rounded-full transition-all duration-1000" style="width: <?= $percent ?>%"></div>
                                     </div>
-                                    <p class="mt-1.5 text-[10px] font-bold text-slate-400"><?= number_format($percent, 1) ?>% Dana Terserap</p>
+                                    <p class="mt-1.5 text-[10px] font-bold text-slate-400"><?= number_format($percent, 1) ?>% Dana Terserap, dari RAB</p>
                                 </div>
                             </div>
                         </div>
@@ -287,12 +287,21 @@
                             <div class="py-10 text-center text-slate-300 text-[10px] font-bold uppercase tracking-widest">Kosong</div>
                         <?php else: ?>
                             <?php foreach ($payments as $p): ?>
-                                <a href="<?= base_url('dosen/implementasi/payment/' . $p->id) ?>" target="_blank"
-                                    class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-violet-50 hover:text-violet-600 transition-all group">
-                                    <i class="fas fa-file-invoice-dollar text-violet-400 group-hover:scale-110 transition-transform text-sm"></i>
-                                    <span class="text-[11px] font-bold truncate flex-1 leading-tight"><?= esc($p->payment_title) ?></span>
-                                    <i class="fas fa-external-link-alt text-[9px] opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                </a>
+                                <div class="flex flex-col gap-1">
+                                    <a href="<?= base_url('dosen/implementasi/payment/' . $p->id) ?>" target="_blank"
+                                        class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-violet-50 hover:text-violet-600 transition-all group">
+                                        <i class="fas fa-file-invoice-dollar text-violet-400 group-hover:scale-110 transition-transform text-sm"></i>
+                                        <span class="text-[11px] font-bold truncate flex-1 leading-tight"><?= esc($p->payment_title) ?></span>
+                                        <i class="fas fa-external-link-alt text-[9px] opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                    </a>
+                                    <?php if (!empty($p->link_pembelian)): ?>
+                                        <a href="<?= esc($p->link_pembelian) ?>" target="_blank"
+                                            class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors">
+                                            <i class="fas fa-cart-shopping text-[9px]"></i>
+                                            <span class="text-[10px] font-black uppercase tracking-widest">Link Pembelian</span>
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </div>

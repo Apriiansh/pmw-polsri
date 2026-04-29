@@ -12,19 +12,20 @@ use CodeIgniter\Entity\Entity;
  * @property int    $period_id
  * @property string $payment_title
  * @property string $file_path
- * @property string $original_name
- * @property string $created_at
+ * @property string|null $link_pembelian
+ * @property string      $created_at
  */
 class PmwImplementationPayment extends Entity
 {
     protected $datamap = [];
     protected $dates   = ['created_at'];
     protected $casts   = [
-        'id'            => 'integer',
-        'proposal_id'   => 'integer',
-        'period_id'     => 'integer',
-        'payment_title' => 'string',
-        'file_path'     => 'string',
-        'original_name' => 'string',
+        'id'             => 'integer',
+        'proposal_id'    => 'integer',
+        'period_id'      => 'integer',
+        'payment_title'  => 'string',
+        'link_pembelian' => 'string',
+        'file_path'      => 'string',
+        'original_name'  => 'string',
     ];
 }

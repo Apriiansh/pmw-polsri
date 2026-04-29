@@ -17,6 +17,7 @@ class PmwImplementationPaymentModel extends Model
         'proposal_id',
         'period_id',
         'payment_title',
+        'link_pembelian',
         'file_path',
         'original_name',
     ];

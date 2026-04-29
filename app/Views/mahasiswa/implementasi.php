@@ -20,7 +20,7 @@
             <h2 class="section-title text-xl sm:text-2xl">
                 Implementasi <span class="text-gradient">Perjanjian</span>
             </h2>
-            <p class="section-subtitle text-[10px] sm:text-[11px]">Tahap 7 — Dokumentasi Komponen & Bukti Pembayaran</p>
+            <p class="section-subtitle text-[10px] sm:text-[11px]">Dokumentasi Komponen & Bukti Pembayaran</p>
         </div>
         <?php if ($selection && $selection->admin_status === 'revision' && $canEdit): ?>
             <button @click="resetAll()" class="btn-outline btn-sm bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-500 hover:text-white group">
@@ -133,7 +133,7 @@
 
     <!-- ─── STICKY ACTION BAR ────────────────────────────────────────── -->
     <?php if ($isPhaseOpen): ?>
-    <div class="sticky top-4 z-[45] bg-white/80 backdrop-blur-xl shadow-2xl shadow-sky-500/10 border border-white/40 rounded-3xl p-4 animate-stagger delay-150 flex items-center justify-between gap-4 flex-wrap ring-1 ring-slate-900/5">
+    <div class="sticky top-4 z-20 bg-white/80 backdrop-blur-xl shadow-2xl shadow-sky-500/10 border border-white/40 rounded-3xl p-4 animate-stagger delay-150 flex items-center justify-between gap-4 flex-wrap ring-1 ring-slate-900/5">
 
         <!-- Left: Status info -->
         <div class="flex items-center gap-4 min-w-0">
@@ -477,7 +477,7 @@
                                     <i class="fas fa-eye text-xs"></i>
                                 </button>
                                 <?php if ($canEdit): ?>
-                                    <button @click="openEditPayment(<?= $payment->id ?>, '<?= esc($payment->payment_title) ?>')"
+                                    <button @click="openEditPayment(<?= $payment->id ?>, '<?= esc($payment->payment_title) ?>', '<?= esc($payment->link_pembelian ?? '') ?>')"
                                         class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/40 transition-colors">
                                         <i class="fas fa-pen-to-square text-xs"></i>
                                     </button>
@@ -490,6 +490,12 @@
                             <p class="text-[10px] font-bold text-white text-center line-clamp-2 uppercase leading-tight tracking-tighter">
                                 <?= esc($payment->payment_title) ?>
                             </p>
+                            <?php if (!empty($payment->link_pembelian)): ?>
+                                <a href="<?= esc($payment->link_pembelian) ?>" target="_blank" @click.stop
+                                    class="mt-2 w-full py-1.5 rounded-lg bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 hover:bg-emerald-400 transition-colors">
+                                    <i class="fas fa-cart-shopping text-[8px]"></i> Link Toko
+                                </a>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -499,15 +505,22 @@
                 <!-- ─── MODERN PAYMENT UPLOAD FORM ───────────────────────────── -->
                 <div class="p-6 rounded-3xl bg-slate-50/50 border-2 border-dashed border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/10 transition-all">
                     <form @submit.prevent="uploadPayment()" class="space-y-6">
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <div class="form-field">
+                        <div class="grid md:grid-cols-12 gap-6">
+                            <div class="md:col-span-4 form-field">
                                 <label class="form-label">Nama/Keterangan Nota <span class="required">*</span></label>
                                 <div class="input-group bg-white!">
                                     <div class="input-icon"><i class="fas fa-file-invoice text-emerald-400"></i></div>
                                     <input type="text" x-model="newPayment.payment_title" placeholder="Contoh: Nota Toko ATK Sejahtera" required>
                                 </div>
                             </div>
-                            <div class="form-field">
+                            <div class="md:col-span-4 form-field">
+                                <label class="form-label">Link Pembelian <span class="text-[9px] text-slate-400 ml-1">(Opsional)</span></label>
+                                <div class="input-group bg-white!">
+                                    <div class="input-icon"><i class="fas fa-link text-emerald-400"></i></div>
+                                    <input type="url" x-model="newPayment.link_pembelian" placeholder="https://shopee.co.id/product/...">
+                                </div>
+                            </div>
+                            <div class="md:col-span-4 form-field">
                                 <label class="form-label">File Dokumentasi Nota <span class="required">*</span></label>
                                 <div class="relative group/file">
                                     <input type="file" x-ref="paymentInput" class="absolute inset-0 opacity-0 cursor-pointer z-10"
@@ -861,6 +874,13 @@
                                         <input type="text" x-model="editPayment.payment_title" placeholder="Contoh: Nota Pembelian Alat..." required>
                                     </div>
                                 </div>
+                                <div class="form-field mt-4">
+                                    <label class="form-label text-[10px] font-black uppercase text-slate-400 tracking-widest">Link Pembelian <span class="text-slate-300 ml-1">(Opsional)</span></label>
+                                    <div class="input-group group-focus-within:border-emerald-500 transition-colors">
+                                        <div class="input-icon"><i class="fas fa-link text-emerald-400"></i></div>
+                                        <input type="url" x-model="editPayment.link_pembelian" placeholder="https://...">
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Modal Footer -->
@@ -978,6 +998,7 @@
             },
             newPayment: {
                 payment_title: '',
+                link_pembelian: '',
                 file: null
             },
             newKonsumsi: {
@@ -999,7 +1020,8 @@
             },
             editPayment: {
                 id: null,
-                payment_title: ''
+                payment_title: '',
+                link_pembelian: ''
             },
             editKonsumsi: {
                 id: null,
@@ -1158,10 +1180,11 @@
                 this.showEditItemModal = true;
             },
 
-            openEditPayment(id, title) {
+            openEditPayment(id, title, link) {
                 this.editPayment = {
                     id: id,
-                    payment_title: title
+                    payment_title: title,
+                    link_pembelian: link || ''
                 };
                 this.showEditPaymentModal = true;
             },
@@ -1180,6 +1203,7 @@
                 try {
                     const formData = new FormData();
                     formData.append('payment_title', this.newPayment.payment_title);
+                    formData.append('link_pembelian', this.newPayment.link_pembelian);
                     formData.append('payment_file', this.newPayment.file);
                     formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
 
@@ -1305,10 +1329,11 @@
                 }
             },
 
-            openEditPayment(id, title) {
+            openEditPayment(id, title, link) {
                 this.editPayment = {
                     id,
-                    payment_title: title
+                    payment_title: title,
+                    link_pembelian: link || ''
                 };
                 this.showEditPaymentModal = true;
             },
@@ -1324,7 +1349,8 @@
                             'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
                         },
                         body: JSON.stringify({
-                            payment_title: this.editPayment.payment_title
+                            payment_title: this.editPayment.payment_title,
+                            link_pembelian: this.editPayment.link_pembelian
                         })
                     });
                     const res = await r.json();
