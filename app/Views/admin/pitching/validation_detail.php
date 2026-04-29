@@ -83,8 +83,8 @@
             <?php endif; ?>
         </div>
 
-        <div class="p-5 sm:p-7">
-            <div class="grid md:grid-cols-3 gap-6">
+        <div class="p-2 md:p-4">
+            <div class="grid md:grid-cols-4 gap-6">
                 <!-- Kategori -->
                 <div>
                     <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Kategori Wirausaha</p>
@@ -99,6 +99,31 @@
                     <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Kategori Usaha</p>
                     <p class="font-semibold text-(--text-heading)"><?= esc($proposal['kategori_usaha'] ?: '-') ?></p>
                 </div>
+
+                <!-- Lama Usaha -->
+                <div>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Lama Usaha Berjalan</p>
+                    <?php
+                    $tahun = (int)($proposal['lama_usaha_tahun'] ?? 0);
+                    $bulan = (int)($proposal['lama_usaha_bulan'] ?? 0);
+                    $lamaStr = '';
+                    if ($tahun > 0) $lamaStr .= $tahun . ' tahun ';
+                    if ($bulan > 0) $lamaStr .= $bulan . ' bulan';
+                    $lamaStr = trim($lamaStr) ?: '-';
+                    ?>
+                    <p class="font-semibold text-(--text-heading)"><?= esc($lamaStr) ?></p>
+                </div>
+
+                <!-- Instagram -->
+                <?php if (!empty($proposal['instagram_url'])): ?>
+                <div>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Medsos Usaha</p>
+                    <a href="https://instagram.com/<?= esc($proposal['instagram_url']) ?>" target="_blank"
+                        class="inline-flex items-center gap-1.5 text-sm font-semibold text-rose-500 hover:underline">
+                        <i class="fab fa-instagram"></i>@<?= esc($proposal['instagram_url']) ?>
+                    </a>
+                </div>
+                <?php endif; ?>
 
                 <!-- Timeline -->
                 <div>
@@ -197,6 +222,7 @@
             'biodata'                => ['label' => 'Biodata',       'icon' => 'fa-id-card',         'color' => 'teal'],
             'ktm'                    => ['label' => 'KTM',           'icon' => 'fa-address-card',    'color' => 'sky'],
             'surat_pernyataan_ketua' => ['label' => 'Surat Ketua',   'icon' => 'fa-file-signature',  'color' => 'violet'],
+            'cashflow'               => ['label' => 'Cashflow',      'icon' => 'fa-chart-line',      'color' => 'emerald'],
             'surat_kesediaan_dosen'  => ['label' => 'Surat Dosen',   'icon' => 'fa-file-contract',   'color' => 'indigo'],
         ];
         $availableDocs = array_filter($allDocs, fn($k) => isset($docsByKey[$k]), ARRAY_FILTER_USE_KEY);

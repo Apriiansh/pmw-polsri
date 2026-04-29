@@ -187,6 +187,7 @@ class PitchingDeskController extends BaseController
                 'detail_keterangan'  => (string) $this->request->getPost('detail_keterangan'),
                 'lama_usaha_tahun'   => $lamaUsahaTahun !== null && $lamaUsahaTahun !== '' ? (int) $lamaUsahaTahun : null,
                 'lama_usaha_bulan'   => $lamaUsahaBulan !== null && $lamaUsahaBulan !== '' ? (int) $lamaUsahaBulan : null,
+                'instagram_url'      => (string) $this->request->getPost('instagram_url') ?: null,
                 'status'             => $existing ? ($existing['status'] ?? 'draft') : 'draft',
             ];
 
@@ -347,7 +348,8 @@ class PitchingDeskController extends BaseController
         }
 
         $docKey = (string) $this->request->getPost('doc_key');
-        if (!in_array($docKey, self::PITCHING_DOC_KEYS, true)) {
+        $allAllowedKeys = array_unique(array_merge(self::PITCHING_DOC_KEYS, self::PITCHING_DOC_KEYS_BERKEMBANG));
+        if (!in_array($docKey, $allAllowedKeys, true)) {
             return $this->response->setJSON(['success' => false, 'message' => 'Tipe dokumen tidak valid']);
         }
 

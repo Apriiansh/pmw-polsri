@@ -211,12 +211,7 @@ class AuthController extends BaseController
             auth()->login($savedUser);
             // return redirect()->to('/dashboard')->with('message', 'Registrasi berhasil! Selamat datang di PMW Polsri.');          
             
-            // Redirect ke form edit proposal jika berhasil buat draft
-            $redirectAfter = $proposalId 
-                ? "mahasiswa/proposal/edit/$proposalId" 
-                : 'mahasiswa/proposal';
-
-            return redirect()->to($redirectAfter)->with('message', 'Registrasi berhasil! Lengkapi proposal kamu.');
+            return redirect()->to('mahasiswa/pitching-desk')->with('message', 'Registrasi berhasil! Mulai dengan melengkapi Pitching Desk.');
         } catch (ValidationException $e) {
             $db->transRollback();
             // Delete uploaded foto if error

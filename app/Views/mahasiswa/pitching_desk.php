@@ -350,6 +350,21 @@
                     <textarea x-model="detailKeterangan" rows="4" class="form-textarea w-full" placeholder="Deskripsikan usaha Anda, produk/jasa, target pasar, dll..." <?= $isLocked ? 'disabled' : '' ?>></textarea>
                 </div>
 
+                <!-- Instagram -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                        <i class="fab fa-instagram text-rose-400 mr-1"></i>Instagram Usaha
+                        <span class="text-[10px] font-normal text-slate-400 ml-1">(opsional)</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-rose-400 pointer-events-none text-sm">@</span>
+                        <input type="text" x-model="instagramUrl" class="input-field w-full" style="padding-left: 1.75rem"
+                            placeholder="nama_akun_usaha"
+                            <?= $isLocked ? 'disabled' : '' ?>>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-1">Isi username saja, tanpa https://instagram.com/</p>
+                </div>
+
                 <!-- Lama Usaha -->
                 <div x-data="{ touched: false }"
                     x-init="
@@ -519,11 +534,26 @@
                             </p>
                         </template>
                     </div>
-                    <template x-if="members.length >= 1">
-                        <p class="text-[10px] text-sky-600 font-bold mt-2">
-                            <i class="fas fa-info-circle mr-1"></i>Tim ≥ 2 orang: setiap anggota harus berasal dari <strong>program studi yang berbeda</strong>.
+                    <?php $ketuaProdi = esc($members[0]['prodi'] ?? ($profile['prodi'] ?? '')); ?>
+                    <div class="mt-2" x-show="members.length >= 1">
+                        <p class="text-[10px] font-bold"
+                            :class="(() => {
+                                const total = members.length + 1;
+                                const minBeda = 2;
+                                const allProdi = ['<?= $ketuaProdi ?>', ...members.filter(m => m.prodi).map(m => m.prodi)];
+                                const unique = new Set(allProdi.filter(p => p)).size;
+                                return unique >= minBeda ? 'text-emerald-600' : 'text-amber-600';
+                            })()">
+                            <span x-text="(() => {
+                                const total = members.length + 1;
+                                const minBeda = 2;
+                                const allProdi = ['<?= $ketuaProdi ?>', ...members.filter(m => m.prodi).map(m => m.prodi)];
+                                const unique = new Set(allProdi.filter(p => p)).size;
+                                const ok = unique >= minBeda;
+                                return (ok ? '✓ ' : '⚠ ') + `Tim ${total} orang: minimal ${minBeda} prodi berbeda diperlukan (saat ini ${unique} prodi unik)` + (ok ? ' — OKE!' : '');
+                            })()"></span>
                         </p>
-                    </template>
+                    </div>
                 </div>
 
             </div>
@@ -691,8 +721,8 @@
                             <p class="text-xs text-slate-500 mt-0.5 mb-3">Pastikan akses publik / anyone with link</p>
                             <div class="flex items-center gap-2">
                                 <div class="relative flex-1">
-                                    <i class="fas fa-video absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                                    <input type="url" x-model="videoUrl" class="input-field pl-9 w-full text-sm"
+                                    <i class="fas fa-video absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                                    <input type="url" x-model="videoUrl" class="input-field w-full text-sm" style="padding-left: 2.25rem"
                                         placeholder="https://youtu.be/... atau https://drive.google.com/..."
                                         :disabled="<?= ($isPhaseOpen && !$isLocked) ? 'isSavingVideo' : 'true' ?>">
                                 </div>
@@ -801,6 +831,7 @@
             detailKeterangan: <?= json_encode($proposal['detail_keterangan'] ?? '') ?>,
             lamaUsahaTahun: <?= (int)($proposal['lama_usaha_tahun'] ?? 0) ?>,
             lamaUsahaBulan: <?= (int)($proposal['lama_usaha_bulan'] ?? 0) ?>,
+            instagramUrl: <?= json_encode($proposal['instagram_url'] ?? '') ?>,
             videoUrl: <?= json_encode($proposal['video_url'] ?? '') ?>,
             pptStatus: '<?= $pptDoc ? 'uploaded' : 'missing' ?>',
             pptFilename: <?= json_encode($pptDoc['original_name'] ?? '') ?>,
@@ -857,6 +888,7 @@
                 body.append('detail_keterangan', this.detailKeterangan);
                 body.append('lama_usaha_tahun', this.lamaUsahaTahun || '');
                 body.append('lama_usaha_bulan', this.lamaUsahaBulan || '');
+                body.append('instagram_url', this.instagramUrl || '');
                 this.members.forEach((m, i) => {
                     Object.entries(m).forEach(([k, v]) => body.append(`members[${i}][${k}]`, v));
                     body.append(`members[${i}][role]`, 'anggota');

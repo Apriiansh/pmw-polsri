@@ -208,17 +208,7 @@
                         $proposalAdminSt  = $proposal['proposal_admin_status'] ?? null;
                         $isProposalSub    = !empty($proposal['proposal_submitted_at']);
 
-                        // Step 1: Pengajuan
-                        $steps[] = [
-                            'label'         => 'Pengajuan',
-                            'display_label' => (!$isProposalSub) ? 'Sedang Disusun' : 'Proposal Terkirim',
-                            'status'        => (!$isProposalSub) ? 'pending' : 'approved',
-                            'icon'          => 'fa-file-signature',
-                            'note'          => null,
-                            'note_label'    => null,
-                        ];
-
-                        // Step 2: Validasi Dosen
+                        // Step 1: Validasi Dosen
                         $dosenStepStatus = 'pending';
                         $dosenStepLabel  = 'Menunggu Review';
                         if ($proposalDosenSt === 'approved') {
@@ -361,9 +351,13 @@
                     $anggotaOnly = array_values(array_filter($members ?? [], fn($m) => ($m['role'] ?? '') === 'anggota'));
                     ?>
                     <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 sm:col-span-1 md:col-span-2">
-                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Anggota Tim (<?= count($anggotaOnly) ?> orang)</p>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
+                            <?= empty($anggotaOnly) ? 'Komposisi Tim' : 'Anggota Tim (' . count($anggotaOnly) . ' orang)' ?>
+                        </p>
                         <?php if (empty($anggotaOnly)): ?>
-                            <p class="text-xs text-rose-500 font-bold italic"><i class="fas fa-exclamation-triangle mr-1"></i>Belum ada anggota — isi di Tahap 1</p>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sky-50 border border-sky-200 text-sky-700 text-[10px] font-bold">
+                                <i class="fas fa-user text-[9px]"></i>Individu (Solo)
+                            </span>
                         <?php else: ?>
                             <div class="flex flex-wrap gap-1.5 mt-1">
                                 <?php foreach ($anggotaOnly as $m): ?>

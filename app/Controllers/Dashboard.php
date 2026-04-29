@@ -47,14 +47,16 @@ class Dashboard extends BaseController
             ->find();
 
         $updates = [];
-        
+        $updatesRaw = [];
+
         // Map Announcements
         foreach ($recentAnnouncements as $ann) {
-            $updates[] = [
+            $updatesRaw[] = [
                 'type' => 'announcement',
                 'title' => $ann['title'],
                 'desc' => strip_tags(mb_strimwidth($ann['content'], 0, 80, "...")),
                 'time' => date('d M Y', strtotime($ann['created_at'])),
+                '_ts'  => strtotime($ann['created_at']),
                 'icon' => 'fa-bullhorn',
                 'color' => 'text-violet-500 bg-violet-50',
                 'url' => 'pengumuman/' . $ann['slug']
@@ -63,16 +65,21 @@ class Dashboard extends BaseController
 
         // Map Notifications
         foreach ($unreadNotifications as $notif) {
-            $updates[] = [
+            $updatesRaw[] = [
                 'type' => 'notification',
                 'title' => $notif['title'],
                 'desc' => $notif['message'],
                 'time' => $this->timeAgo($notif['created_at']),
+                '_ts'  => strtotime($notif['created_at']),
                 'icon' => 'fa-bell',
                 'color' => 'text-sky-500 bg-sky-50',
                 'url' => $notif['link'] ?: 'notifications'
             ];
         }
+
+        // Sort by newest first, take top 5
+        usort($updatesRaw, fn($a, $b) => $b['_ts'] - $a['_ts']);
+        $updates = array_slice($updatesRaw, 0, 5);
 
         $data = $this->getRoleData($mainRole, $userId);
         $data['title'] = 'Dashboard | PMW Polsri';
@@ -117,25 +124,37 @@ class Dashboard extends BaseController
         
         $successRate = $totalProposals > 0 ? round(($approvedProposals / $totalProposals) * 100, 1) : 0;
 
-        // Map proposals for view
-        $rawProposals = $this->proposalModel->getWithDetails('submitted');
-        $mappedProposals = array_map(function($p) {
-            $statusLabel = match($p['status']) {
-                'approved' => 'Disetujui',
-                'submitted', 'draft' => 'Review',
-                'revision' => 'Revisi',
-                default => 'Ditolak'
-            };
+        // Map pitching desk antrean for view
+        $db = \Config\Database::connect();
+        $rawPitching = $db->table('pmw_proposals p')
+            ->select([
+                'p.id', 'p.nama_usaha', 'p.kategori_wirausaha', 'p.created_at',
+                'pm.nama as ketua_nama',
+                'sp.admin_status as pitching_admin_status',
+                'sp.student_submitted_at',
+            ])
+            ->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id')
+            ->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left')
+            ->where('sp.student_submitted_at IS NOT NULL')
+            ->whereIn('sp.admin_status', ['pending', 'revision'])
+            ->orderBy('sp.student_submitted_at', 'ASC')
+            ->limit(5)
+            ->get()->getResultArray();
 
+        $mappedProposals = array_map(function($p) {
+            $statusLabel = match($p['pitching_admin_status']) {
+                'revision' => 'Revisi',
+                default    => 'Review',
+            };
             return [
-                'id'       => 'PMW-' . date('y', strtotime($p['created_at'] ?? 'now')) . '-' . str_pad($p['id'], 3, '0', STR_PAD_LEFT),
-                'team'     => $p['nama_usaha'],
-                'category' => $p['kategori_usaha'] ?? 'Umum',
-                'progress' => $p['status'] === 'approved' ? 100 : ($p['status'] === 'submitted' ? 40 : 10),
+                'id'       => 'PTK-' . str_pad($p['id'], 3, '0', STR_PAD_LEFT),
+                'team'     => $p['nama_usaha'] ?: ($p['ketua_nama'] ?? '-'),
+                'category' => ucfirst($p['kategori_wirausaha'] ?? '-'),
+                'progress' => 40,
                 'status'   => $statusLabel,
-                'date'     => date('d M Y', strtotime($p['submitted_at'] ?? $p['created_at']))
+                'date'     => date('d M Y', strtotime($p['student_submitted_at'])),
             ];
-        }, array_slice($rawProposals, 0, 5));
+        }, $rawPitching);
 
         return [
             'header_title'    => 'Overview Analytics',
@@ -163,9 +182,9 @@ class Dashboard extends BaseController
                 ],
                 [
                     'title' => 'Butuh Review', 
-                    'value' => $this->proposalModel->where('period_id', $periodId)->where('status', 'submitted')->countAllResults(), 
+                    'value' => $db->table('pmw_selection_pitching')->where('student_submitted_at IS NOT NULL')->where('admin_status', 'pending')->countAllResults(), 
                     'icon' => 'fa-clock-rotate-left', 
-                    'trend' => 'Antrean', 
+                    'trend' => 'Antrean Pitching', 
                     'trend_up' => false, 
                     'bg' => 'bg-emerald-50', 
                     'icon_color' => 'text-emerald-500', 
@@ -174,12 +193,12 @@ class Dashboard extends BaseController
             ],
             'proposals' => $mappedProposals,
             'quickActions' => [
-                ['url' => 'admin/pmw-system', 'icon' => 'fa-calendar-days', 'label' => 'Atur Jadwal PMW', 'style' => 'btn-outline'],
+                ['url' => 'admin/pitching-desk', 'icon' => 'fa-file-shield', 'label' => 'Antrean Pitching', 'style' => 'btn-outline'],
                 ['url' => 'admin/users', 'icon' => 'fa-users-gear', 'label' => 'Manajemen User', 'style' => 'btn-accent'],
                 ['url' => 'admin/cms', 'icon' => 'fa-newspaper', 'label' => 'Kelola Konten (CMS)', 'style' => 'btn-primary'],
             ],
-            'tableTitle'    => 'Antrean Proposal Terbaru',
-            'tableSubtitle' => 'Proposal yang perlu divalidasi administrasi',
+            'tableTitle'    => 'Antrean Pitching Desk',
+            'tableSubtitle' => 'Tim yang sudah kirim berkas administrasi & desk evaluation',
         ];
     }
 
@@ -289,9 +308,9 @@ class Dashboard extends BaseController
         $mappedProposals = [];
         if ($proposal) {
             $mappedProposals[] = [
-                'id'       => 'PRP-' . str_pad($proposal['id'], 3, '0', STR_PAD_LEFT),
-                'team'     => $proposal['nama_usaha'],
-                'category' => $proposal['kategori_usaha'] ?? 'Umum',
+                'id'       => 'PMW-' . str_pad($proposal['id'], 3, '0', STR_PAD_LEFT),
+                'team'     => $proposal['nama_usaha'] ?: '(Belum diisi)',
+                'category' => ucfirst($proposal['kategori_wirausaha'] ?? '-'),
                 'progress' => $teamProgress['progress'],
                 'status'   => $statusLabel,
                 'date'     => date('d M Y', strtotime($proposal['created_at']))
@@ -308,12 +327,12 @@ class Dashboard extends BaseController
             ],
             'proposals' => $mappedProposals,
             'quickActions' => [
-                ['url' => 'mahasiswa/proposal/edit', 'icon' => 'fa-edit', 'label' => 'Edit Proposal', 'style' => 'btn-outline'],
+                ['url' => 'mahasiswa/pitching-desk', 'icon' => 'fa-file-shield', 'label' => 'Pitching Desk', 'style' => 'btn-outline'],
                 ['url' => 'mahasiswa/bimbingan', 'icon' => 'fa-chalkboard-user', 'label' => 'Catat Bimbingan', 'style' => 'btn-primary'],
                 ['url' => 'mahasiswa/mentoring', 'icon' => 'fa-user-tie', 'label' => 'Catat Mentoring', 'style' => 'btn-accent'],
             ],
-            'tableTitle'    => 'Status Proposal',
-            'tableSubtitle' => 'Detail perkembangan usulan tim',
+            'tableTitle'    => 'Status PMW',
+            'tableSubtitle' => 'Ringkasan progres keseluruhan program wirausaha',
         ];
     }
 

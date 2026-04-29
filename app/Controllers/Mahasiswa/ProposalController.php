@@ -50,29 +50,29 @@ class ProposalController extends BaseController
         }
 
         // Gate: hanya bisa akses jika pitching_admin_status = approved
-        if ($proposal && ($proposal['pitching_admin_status'] ?? '') !== 'approved') {
-            return redirect()->to('mahasiswa/pitching-desk')
-                ->with('info', 'Selesaikan Tahap 1 (Administrasi & Desk Evaluation) terlebih dahulu sebelum mengakses Business Plan.');
+        $isEligible = $proposal && ($proposal['pitching_admin_status'] ?? '') === 'approved';
+
+        if (!$isEligible) {
+            return view('mahasiswa/proposal', [
+                'title'        => 'Proposal Kami',
+                'activePeriod' => $activePeriod,
+                'phase1'       => $phase1,
+                'isPhaseOpen'  => $isPhaseOpen,
+                'proposal'     => $proposal,
+                'isEligible'   => false,
+                'proposalSelection' => null,
+                'isEdit'       => false,
+                'profile'      => null,
+                'members'      => [],
+                'docsByKey'    => [],
+                'requiredDocKeys' => self::REQUIRED_DOC_KEYS,
+                'lecturers'    => [],
+                'rabItems'     => [],
+            ]);
         }
 
-        // Jika sudah ada draft/proposal, langsung ke form edit
-        if ($proposal) {
-            return redirect()->to("mahasiswa/proposal/edit/{$proposal['id']}");
-        }
-
-        // Jika belum ada proposal sama sekali dan pitching belum ada
-        if (!$proposal && $activePeriod && $user) {
-            return redirect()->to('mahasiswa/pitching-desk')
-                ->with('info', 'Selesaikan Tahap 1 (Administrasi & Desk Evaluation) terlebih dahulu.');
-        }
-
-        return view('mahasiswa/proposal', [
-            'title'        => 'Proposal Kami',
-            'activePeriod' => $activePeriod,
-            'phase1'       => $phase1,
-            'isPhaseOpen'  => $isPhaseOpen,
-            'proposal'     => $proposal,
-        ]);
+        // Jika sudah ada draft/proposal dan eligible, langsung ke form edit
+        return redirect()->to("mahasiswa/proposal/edit/{$proposal['id']}");
     }
 
     /**
@@ -135,8 +135,22 @@ class ProposalController extends BaseController
 
         // Gate: pitching harus sudah admin approved
         if (($proposal['pitching_admin_status'] ?? '') !== 'approved') {
-            return redirect()->to('mahasiswa/pitching-desk')
-                ->with('info', 'Selesaikan Tahap 1 (Administrasi & Desk Evaluation) terlebih dahulu.');
+            return view('mahasiswa/proposal', [
+                'title'        => 'Proposal Kami',
+                'activePeriod' => (new \App\Models\PmwPeriodModel())->getActive(),
+                'phase1'       => null,
+                'isPhaseOpen'  => false,
+                'proposal'     => $proposal,
+                'isEligible'   => false,
+                'proposalSelection' => null,
+                'isEdit'       => false,
+                'profile'      => null,
+                'members'      => [],
+                'docsByKey'    => [],
+                'requiredDocKeys' => self::REQUIRED_DOC_KEYS,
+                'lecturers'    => [],
+                'rabItems'     => [],
+            ]);
         }
 
         $ctx = $this->buildFormContext($proposal);
