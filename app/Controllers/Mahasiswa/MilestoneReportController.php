@@ -58,6 +58,12 @@ class MilestoneReportController extends BaseController
 
         $reports = $this->reportService->getProposalReports($proposal['id']);
 
+        // Filter 'magang' for Pemula only
+        if ($proposal['kategori_wirausaha'] !== 'pemula') {
+            unset($formattedSchedules['magang']);
+            unset($reports['magang']);
+        }
+
         return view('mahasiswa/laporan_pmw', [
             'title' => 'Laporan Milestone',
             'proposal' => $proposal,
@@ -74,7 +80,23 @@ class MilestoneReportController extends BaseController
         $file = $this->request->getFile('file_report');
 
         if (!$file || !$file->isValid()) {
-            return redirect()->back()->with('error', 'Berkas laporan wajib diunggah (Format PDF).');
+            return redirect()->back()->with('error', 'Berkas laporan wajib diunggah.');
+        }
+
+        // Validate file size (5MB) and type (PDF)
+        $validationRules = [
+            'file_report' => [
+                'rules' => 'uploaded[file_report]|max_size[file_report,5120]|mime_in[file_report,application/pdf]',
+                'errors' => [
+                    'max_size' => 'Ukuran berkas terlalu besar. Maksimal adalah 5MB.',
+                    'mime_in'  => 'Format berkas harus PDF.',
+                    'uploaded' => 'Berkas laporan wajib diunggah.'
+                ]
+            ]
+        ];
+
+        if (!$this->validate($validationRules)) {
+            return redirect()->back()->with('error', $this->validator->getError('file_report'));
         }
 
         try {

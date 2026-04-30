@@ -26,7 +26,7 @@
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
             <h2 class="text-2xl font-display font-bold text-(--text-heading)">Verifikasi Laporan Milestone</h2>
-            <p class="text-sm text-(--text-muted) mt-1">Lakukan peninjauan dan verifikasi terhadap laporan kemajuan & akhir mahasiswa bimbingan Anda.</p>
+            <p class="text-sm text-(--text-muted) mt-1">Lakukan peninjauan dan verifikasi terhadap laporan kemajuan, magang, & akhir mahasiswa bimbingan Anda.</p>
         </div>
     </div>
 
@@ -96,13 +96,30 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <?php foreach (['kemajuan', 'akhir'] as $type): ?>
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        <?php 
+                        $types = ['kemajuan'];
+                        if (($p['kategori_wirausaha'] ?? 'pemula') === 'pemula') $types[] = 'magang';
+                        $types[] = 'akhir';
+                        ?>
+                        <?php foreach ($types as $type): ?>
                             <?php 
                             $rep = $reports[$p['id']][$type] ?? null;
                             $sched = $schedules[$type] ?? null;
-                            $icon = $type === 'kemajuan' ? 'fa-chart-line' : 'fa-flag-checkered';
-                            $color = $type === 'kemajuan' ? 'sky' : 'indigo';
+                            
+                            $icons = [
+                                'kemajuan' => 'fa-chart-line',
+                                'magang'   => 'fa-user-graduate',
+                                'akhir'    => 'fa-flag-checkered'
+                            ];
+                            $colors = [
+                                'kemajuan' => 'sky',
+                                'magang'   => 'emerald',
+                                'akhir'    => 'indigo'
+                            ];
+                            
+                            $icon = $icons[$type] ?? 'fa-file';
+                            $color = $colors[$type] ?? 'slate';
                             ?>
                             <div class="group relative p-5 rounded-2xl transition-all duration-300 <?= $rep ? 'bg-white border border-slate-100 shadow-sm hover:shadow-md' : 'bg-slate-50/50 border border-dashed border-slate-200 opacity-80' ?>">
                                 <div class="flex items-center justify-between gap-4 mb-4">
@@ -129,7 +146,7 @@
                                     
                                     <?php if ($rep): ?>
                                         <div class="flex items-center gap-2">
-                                            <button @click="openPreview('<?= base_url('dosen/milestone/view/'.$rep['id']) ?>')" class="w-9 h-9 rounded-xl bg-slate-100 text-slate-500 hover:bg-sky-50 hover:text-sky-600 transition-colors flex items-center justify-center" title="Pratinjau PDF">
+                                            <button @click="openPreview('<?= base_url('dosen/milestone/view/'.$rep['id']) ?>')" class="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors flex items-center justify-center" title="Pratinjau PDF">
                                                 <i class="fas fa-file-pdf"></i>
                                             </button>
                                             <button @click="openVerify(<?= htmlspecialchars(json_encode(array_merge($rep, ['nama_usaha' => $p['nama_usaha']])), ENT_QUOTES, 'UTF-8') ?>)" 

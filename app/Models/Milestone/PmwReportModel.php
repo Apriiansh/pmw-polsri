@@ -24,6 +24,16 @@ class PmwReportModel extends Model
         'submitted_at'
     ];
 
+    protected $validationRules = [
+        'proposal_id' => 'required|integer',
+        'schedule_id' => 'required|integer',
+        'type'        => 'required|in_list[kemajuan,akhir,magang]',
+        'file_path'   => 'required|string',
+        'notes'       => 'permit_empty|string',
+        'status'      => 'required|in_list[submitted,approved,rejected,revision]',
+        'dosen_note'  => 'permit_empty|string',
+    ];
+
     protected $useTimestamps = true;
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';

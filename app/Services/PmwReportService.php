@@ -28,16 +28,29 @@ class PmwReportService
      */
     public function saveSchedule(array $data)
     {
+        // Default is_active to 1 if not set
+        if (!isset($data['is_active'])) {
+            $data['is_active'] = 1;
+        }
+
         // Check if schedule for this type and period already exists
         $existing = $this->scheduleModel->where('type', $data['type'])
                                         ->where('period_id', $data['period_id'])
                                         ->first();
 
         if ($existing) {
-            return $this->scheduleModel->update($existing['id'], $data);
+            if (!$this->scheduleModel->update($existing['id'], $data)) {
+                $errors = $this->scheduleModel->errors();
+                throw new Exception(implode(', ', $errors));
+            }
+            return true;
         }
 
-        return $this->scheduleModel->insert($data);
+        if (!$this->scheduleModel->insert($data)) {
+            $errors = $this->scheduleModel->errors();
+            throw new Exception(implode(', ', $errors));
+        }
+        return true;
     }
 
     /**

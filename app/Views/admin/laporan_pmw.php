@@ -46,39 +46,42 @@
         
         <!-- Tab 1: Scheduling -->
         <template x-if="activeTab === 'jadwal'">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
                 
                 <!-- Laporan Kemajuan Schedule -->
-                <div @mousemove="handleMouseMove" class="card-premium">
+                <div @mousemove="handleMouseMove" class="card-premium h-fit">
                     <div class="flex items-center gap-4 mb-6">
-                        <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-xl">
+                        <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-xl shadow-sm">
                             <i class="fas fa-chart-line"></i>
                         </div>
                         <div>
-                            <h3 class="font-bold text-slate-800">Jadwal Laporan Kemajuan</h3>
-                            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-black">Tahap Implementasi Tengah</p>
+                            <h3 class="font-bold text-slate-800">Laporan Kemajuan</h3>
+                            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-black">Implementasi Tengah</p>
                         </div>
                     </div>
 
-                    <form action="<?= base_url('admin/milestone/schedule') ?>" method="post" class="space-y-5">
+                    <form action="<?= base_url('admin/milestone/schedule') ?>" method="post" class="space-y-6">
                         <?= csrf_field() ?>
                         <input type="hidden" name="type" value="kemajuan">
                         <input type="hidden" name="period_id" value="<?= $activePeriod['id'] ?>">
+                        <input type="hidden" name="is_active" value="1">
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="input-group">
-                                <label class="input-label text-[10px]">Tanggal Mulai</label>
-                                <input type="date" name="start_date" value="<?= isset($schedules['kemajuan']) ? $schedules['kemajuan']['start_date'] : '' ?>" class="input-field py-2.5 text-sm" required>
+                        <div class="space-y-4">
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-600 ml-1">Tanggal Mulai</label>
+                                <input type="date" name="start_date" value="<?= isset($schedules['kemajuan']) ? $schedules['kemajuan']['start_date'] : '' ?>" 
+                                       class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-sky-500 focus:ring-4 focus:ring-sky-50 outline-none transition-all text-sm font-medium" required>
                             </div>
-                            <div class="input-group">
-                                <label class="input-label text-[10px]">Deadline</label>
-                                <input type="date" name="end_date" value="<?= isset($schedules['kemajuan']) ? $schedules['kemajuan']['end_date'] : '' ?>" class="input-field py-2.5 text-sm" required>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-600 ml-1">Deadline Pengumpulan</label>
+                                <input type="date" name="end_date" value="<?= isset($schedules['kemajuan']) ? $schedules['kemajuan']['end_date'] : '' ?>" 
+                                       class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-sky-500 focus:ring-4 focus:ring-sky-50 outline-none transition-all text-sm font-medium" required>
                             </div>
                         </div>
 
-                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
                             <div class="flex items-center justify-between mb-2">
-                                <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status Saat Ini</span>
+                                <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status</span>
                                 <?php 
                                 $isKemajuanActive = false;
                                 if (isset($schedules['kemajuan'])) {
@@ -86,50 +89,105 @@
                                     $isKemajuanActive = ($now >= $schedules['kemajuan']['start_date'] && $now <= $schedules['kemajuan']['end_date']);
                                 }
                                 ?>
-                                <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase <?= $isKemajuanActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600' ?>">
+                                <span class="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider <?= $isKemajuanActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600' ?>">
                                     <?= $isKemajuanActive ? 'Berjalan' : 'Tidak Aktif' ?>
                                 </span>
                             </div>
-                            <p class="text-[11px] text-slate-500 italic">Mahasiswa hanya dapat mengunggah laporan dalam rentang waktu yang ditentukan.</p>
                         </div>
 
-                        <button type="submit" class="w-full py-3 bg-linear-to-r from-sky-600 to-sky-500 text-white rounded-xl font-bold shadow-lg shadow-sky-100 hover:shadow-sky-200 hover:-translate-y-0.5 transition-all">
-                            Simpan Jadwal Kemajuan
+                        <button type="submit" class="w-full py-3.5 bg-linear-to-r from-sky-600 to-sky-500 text-white rounded-2xl font-bold shadow-lg shadow-sky-100 hover:shadow-sky-200 hover:-translate-y-0.5 transition-all">
+                            Simpan Jadwal
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Laporan Magang Schedule (Pemula Only) -->
+                <div @mousemove="handleMouseMove" class="card-premium h-fit">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shadow-sm">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-800">Laporan Magang</h3>
+                            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-black">Khusus Tim Pemula</p>
+                        </div>
+                    </div>
+
+                    <form action="<?= base_url('admin/milestone/schedule') ?>" method="post" class="space-y-6">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="type" value="magang">
+                        <input type="hidden" name="period_id" value="<?= $activePeriod['id'] ?>">
+                        <input type="hidden" name="is_active" value="1">
+
+                        <div class="space-y-4">
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-600 ml-1">Tanggal Mulai</label>
+                                <input type="date" name="start_date" value="<?= isset($schedules['magang']) ? $schedules['magang']['start_date'] : '' ?>" 
+                                       class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 outline-none transition-all text-sm font-medium" required>
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-600 ml-1">Deadline Pengumpulan</label>
+                                <input type="date" name="end_date" value="<?= isset($schedules['magang']) ? $schedules['magang']['end_date'] : '' ?>" 
+                                       class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 outline-none transition-all text-sm font-medium" required>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status</span>
+                                <?php 
+                                $isMagangActive = false;
+                                if (isset($schedules['magang'])) {
+                                    $now = date('Y-m-d');
+                                    $isMagangActive = ($now >= $schedules['magang']['start_date'] && $now <= $schedules['magang']['end_date']);
+                                }
+                                ?>
+                                <span class="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider <?= $isMagangActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600' ?>">
+                                    <?= $isMagangActive ? 'Berjalan' : 'Tidak Aktif' ?>
+                                </span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full py-3.5 bg-linear-to-r from-emerald-600 to-emerald-500 text-white rounded-2xl font-bold shadow-lg shadow-emerald-100 hover:shadow-emerald-200 hover:-translate-y-0.5 transition-all">
+                            Simpan Jadwal
                         </button>
                     </form>
                 </div>
 
                 <!-- Laporan Akhir Schedule -->
-                <div @mousemove="handleMouseMove" class="card-premium">
+                <div @mousemove="handleMouseMove" class="card-premium h-fit">
                     <div class="flex items-center gap-4 mb-6">
-                        <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shadow-sm">
                             <i class="fas fa-flag-checkered"></i>
                         </div>
                         <div>
-                            <h3 class="font-bold text-slate-800">Jadwal Laporan Akhir</h3>
+                            <h3 class="font-bold text-slate-800">Laporan Akhir</h3>
                             <p class="text-[10px] text-slate-400 uppercase tracking-widest font-black">Tahap Akhir Program</p>
                         </div>
                     </div>
 
-                    <form action="<?= base_url('admin/milestone/schedule') ?>" method="post" class="space-y-5">
+                    <form action="<?= base_url('admin/milestone/schedule') ?>" method="post" class="space-y-6">
                         <?= csrf_field() ?>
                         <input type="hidden" name="type" value="akhir">
                         <input type="hidden" name="period_id" value="<?= $activePeriod['id'] ?>">
+                        <input type="hidden" name="is_active" value="1">
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="input-group">
-                                <label class="input-label text-[10px]">Tanggal Mulai</label>
-                                <input type="date" name="start_date" value="<?= isset($schedules['akhir']) ? $schedules['akhir']['start_date'] : '' ?>" class="input-field py-2.5 text-sm" required>
+                        <div class="space-y-4">
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-600 ml-1">Tanggal Mulai</label>
+                                <input type="date" name="start_date" value="<?= isset($schedules['akhir']) ? $schedules['akhir']['start_date'] : '' ?>" 
+                                       class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 outline-none transition-all text-sm font-medium" required>
                             </div>
-                            <div class="input-group">
-                                <label class="input-label text-[10px]">Deadline</label>
-                                <input type="date" name="end_date" value="<?= isset($schedules['akhir']) ? $schedules['akhir']['end_date'] : '' ?>" class="input-field py-2.5 text-sm" required>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-xs font-bold text-slate-600 ml-1">Deadline Pengumpulan</label>
+                                <input type="date" name="end_date" value="<?= isset($schedules['akhir']) ? $schedules['akhir']['end_date'] : '' ?>" 
+                                       class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 outline-none transition-all text-sm font-medium" required>
                             </div>
                         </div>
 
-                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
                             <div class="flex items-center justify-between mb-2">
-                                <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status Saat Ini</span>
+                                <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status</span>
                                 <?php 
                                 $isAkhirActive = false;
                                 if (isset($schedules['akhir'])) {
@@ -137,15 +195,14 @@
                                     $isAkhirActive = ($now >= $schedules['akhir']['start_date'] && $now <= $schedules['akhir']['end_date']);
                                 }
                                 ?>
-                                <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase <?= $isAkhirActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600' ?>">
+                                <span class="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider <?= $isAkhirActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600' ?>">
                                     <?= $isAkhirActive ? 'Berjalan' : 'Tidak Aktif' ?>
                                 </span>
                             </div>
-                            <p class="text-[11px] text-slate-500 italic">Penutupan otomatis akan dilakukan setelah melewati batas deadline.</p>
                         </div>
 
-                        <button type="submit" class="w-full py-3 bg-linear-to-r from-indigo-600 to-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-100 hover:shadow-indigo-200 hover:-translate-y-0.5 transition-all">
-                            Simpan Jadwal Akhir
+                        <button type="submit" class="w-full py-3.5 bg-linear-to-r from-indigo-600 to-indigo-500 text-white rounded-2xl font-bold shadow-lg shadow-indigo-100 hover:shadow-indigo-200 hover:-translate-y-0.5 transition-all">
+                            Simpan Jadwal
                         </button>
                     </form>
                 </div>
@@ -175,6 +232,7 @@
                                 <th class="w-12">No</th>
                                 <th>Informasi Usaha</th>
                                 <th class="text-center">Lap. Kemajuan</th>
+                                <th class="text-center">Lap. Magang</th>
                                 <th class="text-center">Lap. Akhir</th>
                             </tr>
                         </thead>
@@ -201,6 +259,24 @@
                                             </div>
                                         <?php else: ?>
                                             <span class="text-[10px] font-bold text-slate-300 italic">— Belum —</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="text-center">
+                                        <?php if ($p['category'] === 'pemula'): ?>
+                                            <?php if (isset($submissions[$p['id']]['magang'])): $sub = $submissions[$p['id']]['magang']; ?>
+                                                <div class="flex flex-col items-center gap-1">
+                                                    <button @click="openPreview('<?= base_url('admin/milestone/view/'.$sub['id']) ?>')" class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-bold hover:bg-emerald-100 transition-colors">
+                                                        <i class="fas fa-file-pdf mr-1"></i> LIHAT
+                                                    </button>
+                                                    <span class="text-[9px] font-black uppercase <?= $sub['status'] === 'approved' ? 'text-emerald-500' : 'text-sky-500' ?>">
+                                                        <?= $sub['status'] ?>
+                                                    </span>
+                                                </div>
+                                            <?php else: ?>
+                                                <span class="text-[10px] font-bold text-slate-300 italic">— Belum —</span>
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <span class="text-[10px] font-bold text-slate-200 uppercase tracking-widest">— N/A —</span>
                                         <?php endif; ?>
                                     </td>
                                     <td class="text-center">

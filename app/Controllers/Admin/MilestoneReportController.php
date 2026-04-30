@@ -63,7 +63,7 @@ class MilestoneReportController extends BaseController
     public function saveSchedule()
     {
         $rules = [
-            'type' => 'required|in_list[kemajuan,akhir]',
+            'type' => 'required|in_list[kemajuan,magang,akhir]',
             'start_date' => 'required|valid_date',
             'end_date' => 'required|valid_date',
             'period_id' => 'required|numeric'

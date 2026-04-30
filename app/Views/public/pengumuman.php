@@ -305,7 +305,7 @@
                     <div class="w-20 h-20 rounded-3xl bg-amber-50 flex items-center justify-center mb-6 group-hover:bg-amber-500 transition-liquid shadow-inner">
                         <i class="fas fa-map-marker-alt text-3xl text-amber-600 group-hover:text-white transition-liquid"></i>
                     </div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">UPTKK POLSRI</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">UPAPKK POLSRI</p>
                     <p class="text-xl font-bold text-slate-900">Gedung KPA Lt. 1</p>
                 </div>
             </div>

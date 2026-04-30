@@ -21,6 +21,15 @@ class PmwReportScheduleModel extends Model
         'notes'
     ];
 
+    protected $validationRules = [
+        'period_id'  => 'required|integer',
+        'type'       => 'required|in_list[kemajuan,akhir,magang]',
+        'start_date' => 'required|valid_date',
+        'end_date'   => 'required|valid_date',
+        'is_active'  => 'required|in_list[0,1]',
+        'notes'      => 'permit_empty|string',
+    ];
+
     protected $useTimestamps = true;
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
