@@ -161,7 +161,7 @@
             <div class="relative order-2 lg:order-1 reveal-left">
                 <div class="relative rounded-2xl overflow-hidden shadow-xl reveal-mask">
                     <img 
-                        src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80" 
+                        src="<?= cms_img(cms('home_workflow_image'), 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80') ?>" 
                         alt="Workshop PMW" 
                         class="w-full h-auto object-cover aspect-4/3"
                     >
@@ -171,7 +171,7 @@
                 <div class="absolute top-6 right-6 bg-white/90 backdrop-blur-sm rounded-xl px-4 py-3 shadow-lg">
                     <div class="flex items-center gap-2">
                         <i class="fas fa-calendar-alt text-sky-500"></i>
-                        <span class="text-sm font-medium text-slate-700">Program 2026</span>
+                        <span class="text-sm font-medium text-slate-700"><?= cms('home_hero_badge', 'Program 2026') ?></span>
                     </div>
                 </div>
             </div>

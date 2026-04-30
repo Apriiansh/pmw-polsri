@@ -124,3 +124,9 @@ _modules/*
 
 /results/
 /phpunit*.xml
+
+# Custom PMW Rules
+*.zip
+node_modules/
+dist/
+.DS_Store

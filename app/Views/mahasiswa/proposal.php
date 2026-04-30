@@ -22,9 +22,12 @@
         $proposalSubmitted   = !empty($proposal['proposal_submitted_at']);
         // Tampil gate dosen jika sudah submit tapi dosen belum approve
         $waitingDosen = $proposalSubmitted && $proposalDosenStatus !== 'approved';
-        // isLocked: form read-only jika sudah submit, approved, rejected, atau menunggu dosen
+        
         $status = $proposal['status'] ?? 'new';
-        $isLocked = in_array($status, ['submitted', 'approved', 'rejected']) || $waitingDosen;
+        $isRevision = ($status === 'revision' || $proposalDosenStatus === 'revision');
+
+        // isLocked: form read-only jika sudah submit, approved, rejected, atau menunggu dosen
+        $isLocked = (in_array($status, ['submitted', 'approved', 'rejected']) || $waitingDosen) && !$isRevision;
         ?>
         <?php if (!$isEligible): ?>
         <div class="card-premium p-12 text-center animate-stagger">
