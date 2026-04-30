@@ -314,90 +314,92 @@ $fileRoute = $c['route_file'];
                                                 </div>
                                             </div>
 
-                                            <div class="rounded-2xl bg-white border border-slate-200/60 shadow-sm overflow-hidden">
-                                                <div class="px-5 pt-5 pb-3 flex items-center justify-between bg-slate-50/30 border-b border-slate-50">
-                                                    <div class="flex items-center gap-3">
-                                                        <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center border border-slate-200/50">
-                                                            <i class="fas fa-wallet text-slate-500 text-sm"></i>
+                                            <?php if (!$isBmb): ?>
+                                                <div class="rounded-2xl bg-white border border-slate-200/60 shadow-sm overflow-hidden">
+                                                    <div class="px-5 pt-5 pb-3 flex items-center justify-between bg-slate-50/30 border-b border-slate-50">
+                                                        <div class="flex items-center gap-3">
+                                                            <div class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center border border-slate-200/50">
+                                                                <i class="fas fa-wallet text-slate-500 text-sm"></i>
+                                                            </div>
+                                                            <h5 class="text-xs font-black uppercase tracking-widest text-slate-800">Administrasi Konsumsi</h5>
                                                         </div>
-                                                        <h5 class="text-xs font-black uppercase tracking-widest text-slate-800">Administrasi Konsumsi</h5>
+                                                        <?php if ($canFill): ?>
+                                                            <button type="button" @click="addNotaItem()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-[10px] font-black uppercase tracking-widest transition-all shadow-sm">
+                                                                <i class="fas fa-plus text-[9px] text-emerald-500"></i> Tambah Item
+                                                            </button>
+                                                        <?php endif; ?>
                                                     </div>
-                                                    <?php if ($canFill): ?>
-                                                        <button type="button" @click="addNotaItem()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-[10px] font-black uppercase tracking-widest transition-all shadow-sm">
-                                                            <i class="fas fa-plus text-[9px] text-emerald-500"></i> Tambah Item
-                                                        </button>
-                                                    <?php endif; ?>
-                                                </div>
 
-                                                <div class="px-5 space-y-2 py-4">
-                                                    <template x-for="(item, i) in notaItems" :key="i">
-                                                        <div class="grid grid-cols-12 gap-2 items-center bg-slate-50/50 rounded-xl p-2 border border-slate-100">
-                                                            <div class="col-span-5">
-                                                                <input type="text" :name="'nota_title[]'" x-model="item.title" <?= !$canFill ? 'disabled' : '' ?> class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-xs font-semibold outline-none">
+                                                    <div class="px-5 space-y-2 py-4">
+                                                        <template x-for="(item, i) in notaItems" :key="i">
+                                                            <div class="grid grid-cols-12 gap-2 items-center bg-slate-50/50 rounded-xl p-2 border border-slate-100">
+                                                                <div class="col-span-5">
+                                                                    <input type="text" :name="'nota_title[]'" x-model="item.title" <?= !$canFill ? 'disabled' : '' ?> class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-xs font-semibold outline-none">
+                                                                </div>
+                                                                <div class="col-span-2">
+                                                                    <input type="number" :name="'nota_qty[]'" x-model.number="item.qty" @input="recalcTotal()" min="1" <?= !$canFill ? 'disabled' : '' ?> class="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-black text-center outline-none">
+                                                                </div>
+                                                                <div class="col-span-3">
+                                                                    <input type="number" :name="'nota_price[]'" x-model.number="item.price" @input="recalcTotal()" min="0" <?= !$canFill ? 'disabled' : '' ?> class="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-black text-right outline-none">
+                                                                </div>
+                                                                <div class="col-span-2 flex items-center justify-end">
+                                                                    <?php if ($canFill): ?>
+                                                                        <button type="button" @click="removeNotaItem(i)" class="w-6 h-6 rounded-lg bg-rose-50 text-rose-400 hover:bg-rose-500 hover:text-white transition-all"><i class="fas fa-trash-can text-[9px]"></i></button>
+                                                                    <?php endif; ?>
+                                                                </div>
                                                             </div>
-                                                            <div class="col-span-2">
-                                                                <input type="number" :name="'nota_qty[]'" x-model.number="item.qty" @input="recalcTotal()" min="1" <?= !$canFill ? 'disabled' : '' ?> class="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-black text-center outline-none">
-                                                            </div>
-                                                            <div class="col-span-3">
-                                                                <input type="number" :name="'nota_price[]'" x-model.number="item.price" @input="recalcTotal()" min="0" <?= !$canFill ? 'disabled' : '' ?> class="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-black text-right outline-none">
-                                                            </div>
-                                                            <div class="col-span-2 flex items-center justify-end">
-                                                                <?php if ($canFill): ?>
-                                                                    <button type="button" @click="removeNotaItem(i)" class="w-6 h-6 rounded-lg bg-rose-50 text-rose-400 hover:bg-rose-500 hover:text-white transition-all"><i class="fas fa-trash-can text-[9px]"></i></button>
-                                                                <?php endif; ?>
-                                                            </div>
+                                                        </template>
+                                                    </div>
+
+                                                    <div class="mx-5 mb-5 p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                                                        <span class="text-[11px] font-black uppercase tracking-widest text-slate-300">Total Keseluruhan</span>
+                                                        <div class="flex items-center gap-1.5 text-white">
+                                                            <span class="text-[10px] font-black opacity-60">Rp</span>
+                                                            <span class="text-xl font-black" x-text="new Intl.NumberFormat('id-ID').format(notaTotal)"></span>
                                                         </div>
-                                                    </template>
-                                                </div>
+                                                    </div>
 
-                                                <div class="mx-5 mb-5 p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-                                                    <span class="text-[11px] font-black uppercase tracking-widest text-slate-300">Total Keseluruhan</span>
-                                                    <div class="flex items-center gap-1.5 text-white">
-                                                        <span class="text-[10px] font-black opacity-60">Rp</span>
-                                                        <span class="text-xl font-black" x-text="new Intl.NumberFormat('id-ID').format(notaTotal)"></span>
+                                                    <div class="px-5 pb-5 pt-2 space-y-4">
+                                                        <template x-if="existingNotaFiles.length > 0">
+                                                            <div class="space-y-2">
+                                                                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">File Tersimpan:</p>
+                                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                                    <template x-for="(file, idx) in existingNotaFiles" :key="idx">
+                                                                        <div class="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-200 shadow-sm">
+                                                                            <span class="text-[10px] text-slate-600 font-bold truncate pl-2" x-text="'Nota #' + (idx + 1)"></span>
+                                                                            <a :href="'<?= base_url($fileRoute . '/nota/') ?>' + (lbPayload?.id || 0) + '?path=' + file" target="_blank" class="text-[8px] font-black text-sky-600 bg-sky-50 px-2 py-1 rounded-lg">View</a>
+                                                                        </div>
+                                                                    </template>
+                                                                </div>
+                                                            </div>
+                                                        </template>
+
+                                                        <template x-if="notaFiles.length > 0">
+                                                            <div class="space-y-2">
+                                                                <p class="text-[9px] font-black uppercase tracking-widest text-sky-500 ml-1">Baru Dipilih:</p>
+                                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                                    <template x-for="(f, idx) in notaFiles" :key="idx">
+                                                                        <div class="flex items-center justify-between p-2 rounded-xl bg-sky-50/50 border border-sky-100 border-dashed">
+                                                                            <span class="text-[10px] text-slate-600 truncate font-semibold pl-2" x-text="f.name"></span>
+                                                                            <button type="button" @click="removeSelectedNota(idx)" class="text-rose-400 p-1"><i class="fas fa-times"></i></button>
+                                                                        </div>
+                                                                    </template>
+                                                                </div>
+                                                            </div>
+                                                        </template>
+
+                                                        <?php if ($canFill): ?>
+                                                            <label class="block cursor-pointer">
+                                                                <input type="file" name="nota_files[]" accept=".jpg,.jpeg,.png,.pdf" class="hidden sr-only" multiple @change="handleNotaChange($event)">
+                                                                <div class="flex items-center justify-center gap-3 py-4 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-white hover:border-sky-300 transition-all">
+                                                                    <i class="fas fa-cloud-arrow-up text-slate-400"></i>
+                                                                    <span class="text-[11px] font-black uppercase text-slate-700">Unggah Nota (Multiple)</span>
+                                                                </div>
+                                                            </label>
+                                                        <?php endif; ?>
                                                     </div>
                                                 </div>
-
-                                                <div class="px-5 pb-5 pt-2 space-y-4">
-                                                    <template x-if="existingNotaFiles.length > 0">
-                                                        <div class="space-y-2">
-                                                            <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">File Tersimpan:</p>
-                                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                                <template x-for="(file, idx) in existingNotaFiles" :key="idx">
-                                                                    <div class="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-200 shadow-sm">
-                                                                        <span class="text-[10px] text-slate-600 font-bold truncate pl-2" x-text="'Nota #' + (idx + 1)"></span>
-                                                                        <a :href="'<?= base_url($fileRoute . '/nota/') ?>' + (lbPayload?.id || 0) + '?path=' + file" target="_blank" class="text-[8px] font-black text-sky-600 bg-sky-50 px-2 py-1 rounded-lg">View</a>
-                                                                    </div>
-                                                                </template>
-                                                            </div>
-                                                        </div>
-                                                    </template>
-
-                                                    <template x-if="notaFiles.length > 0">
-                                                        <div class="space-y-2">
-                                                            <p class="text-[9px] font-black uppercase tracking-widest text-sky-500 ml-1">Baru Dipilih:</p>
-                                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                                <template x-for="(f, idx) in notaFiles" :key="idx">
-                                                                    <div class="flex items-center justify-between p-2 rounded-xl bg-sky-50/50 border border-sky-100 border-dashed">
-                                                                        <span class="text-[10px] text-slate-600 truncate font-semibold pl-2" x-text="f.name"></span>
-                                                                        <button type="button" @click="removeSelectedNota(idx)" class="text-rose-400 p-1"><i class="fas fa-times"></i></button>
-                                                                    </div>
-                                                                </template>
-                                                            </div>
-                                                        </div>
-                                                    </template>
-
-                                                    <?php if ($canFill): ?>
-                                                        <label class="block cursor-pointer">
-                                                            <input type="file" name="nota_files[]" accept=".jpg,.jpeg,.png,.pdf" class="hidden sr-only" multiple @change="handleNotaChange($event)">
-                                                            <div class="flex items-center justify-center gap-3 py-4 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-white hover:border-sky-300 transition-all">
-                                                                <i class="fas fa-cloud-arrow-up text-slate-400"></i>
-                                                                <span class="text-[11px] font-black uppercase text-slate-700">Unggah Nota (Multiple)</span>
-                                                            </div>
-                                                        </label>
-                                                    <?php endif; ?>
-                                                </div>
-                                            </div>
+                                            <?php endif; ?>
                                         </div>
 
                                         <div class="lg:col-span-5 space-y-5">

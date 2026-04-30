@@ -197,24 +197,11 @@
         <?php endif; ?>
 
         <!-- Footer Actions -->
-        <div class="mt-24 pt-12 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-8 reveal-on-scroll">
+        <div class="mt-24 pt-12 border-t border-slate-100 flex items-center justify-center reveal-on-scroll">
             <a href="<?= base_url('pengumuman') ?>" class="btn-ghost btn-magnetic group px-10 py-4 font-bold text-slate-600 border-slate-200">
                 <i class="fas fa-arrow-left mr-3 group-hover:-translate-x-1 transition-transform"></i>
                 Kembali ke Pengumuman
             </a>
-            
-            <div class="flex items-center gap-4">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Bagikan:</span>
-                <button class="w-12 h-12 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-sky-500 hover:text-white hover:border-sky-500 transition-liquid">
-                    <i class="fab fa-facebook-f"></i>
-                </button>
-                <button class="w-12 h-12 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-sky-400 hover:text-white hover:border-sky-400 transition-liquid">
-                    <i class="fab fa-twitter"></i>
-                </button>
-                <button class="w-12 h-12 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-liquid">
-                    <i class="fab fa-whatsapp"></i>
-                </button>
-            </div>
         </div>
     </div>
 </section>
