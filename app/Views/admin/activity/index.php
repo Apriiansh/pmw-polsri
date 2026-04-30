@@ -46,7 +46,7 @@
             <h2 class="section-title text-xl sm:text-2xl">
                 Manajemen <span class="text-gradient">Kegiatan Wirausaha</span>
             </h2>
-            <p class="section-subtitle text-[10px] sm:text-[11px]">Tahap 9 — Penjadwalan dan Verifikasi Logbook Kegiatan</p>
+            <p class="section-subtitle text-[10px] sm:text-[11px]">Penjadwalan dan Verifikasi Logbook Kegiatan</p>
         </div>
         <button @click="showScheduleModal = true" class="btn-primary shadow-lg shadow-sky-500/20">
             <i class="fas fa-calendar-plus mr-2"></i> Buat Jadwal Kegiatan

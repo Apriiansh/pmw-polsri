@@ -212,91 +212,87 @@
 
         <!-- Tab 2: Monitoring -->
         <template x-if="activeTab === 'monitoring'">
-            <div @mousemove="handleMouseMove" class="card-premium p-0 animate-fade-in">
-                <div class="p-6 border-b border-slate-50 flex items-center justify-between">
+            <div class="space-y-6 animate-fade-in">
+                <!-- Monitoring Header -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
                     <div>
-                        <h3 class="font-bold text-slate-800">Daftar Pengumpulan Tim</h3>
-                        <p class="text-xs text-slate-500">Memantau status laporan dari <?= count($proposals) ?> tim implementasi.</p>
+                        <h3 class="text-xl font-display font-bold text-slate-800">Monitoring Pengumpulan</h3>
+                        <p class="text-xs text-slate-500 mt-1">Status laporan dari <?= count($proposals) ?> tim yang diverifikasi oleh dosen pendamping.</p>
                     </div>
-                    <div class="flex gap-2">
-                        <button class="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-400 transition-colors">
-                            <i class="fas fa-filter"></i>
-                        </button>
+                    <div class="flex items-center gap-2">
+                        <div class="relative group">
+                            <input type="text" placeholder="Cari tim..." class="pl-10 pr-4 py-2.5 rounded-2xl bg-white border border-slate-100 text-xs focus:ring-2 focus:ring-sky-100 focus:border-sky-400 outline-hidden transition-all w-full md:w-64 shadow-sm">
+                            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-xs"></i>
+                        </div>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="pmw-table w-full">
-                        <thead>
-                            <tr>
-                                <th class="w-12">No</th>
-                                <th>Informasi Usaha</th>
-                                <th class="text-center">Lap. Kemajuan</th>
-                                <th class="text-center">Lap. Magang</th>
-                                <th class="text-center">Lap. Akhir</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($proposals as $idx => $p): ?>
-                                <tr class="hover:bg-sky-50/30 transition-colors">
-                                    <td class="text-center text-xs font-bold text-slate-400"><?= $idx + 1 ?></td>
-                                    <td>
-                                        <p class="font-bold text-slate-800 text-sm mb-0.5"><?= esc($p['nama_usaha']) ?></p>
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded"><?= esc($p['ketua_nama']) ?></span>
-                                            <span class="text-[10px] font-bold text-sky-600"><?= esc($p['category']) ?></span>
+                <!-- Cards List -->
+                <div class="grid grid-cols-1 gap-4">
+                    <?php if (empty($proposals)): ?>
+                        <div class="card-premium p-12 text-center">
+                            <i class="fas fa-users-slash text-4xl text-slate-200 mb-4 block"></i>
+                            <p class="text-slate-500 italic">Belum ada tim yang terdaftar.</p>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($proposals as $idx => $p): ?>
+                            <div @mousemove="handleMouseMove" class="card-premium p-5 hover:shadow-xl hover:border-sky-100 transition-all group">
+                                <div class="flex flex-col lg:flex-row gap-6">
+                                    <!-- Team Info Section -->
+                                    <div class="lg:w-1/3 flex items-start gap-4">
+                                        <div class="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center font-bold text-sm group-hover:bg-sky-50 group-hover:text-sky-600 transition-colors shrink-0">
+                                            <?= str_pad($idx + 1, 2, '0', STR_PAD_LEFT) ?>
                                         </div>
-                                    </td>
-                                    <td class="text-center">
-                                        <?php if (isset($submissions[$p['id']]['kemajuan'])): $sub = $submissions[$p['id']]['kemajuan']; ?>
-                                            <div class="flex flex-col items-center gap-1">
-                                                <button @click="openPreview('<?= base_url('admin/milestone/view/'.$sub['id']) ?>')" class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-bold hover:bg-emerald-100 transition-colors">
-                                                    <i class="fas fa-file-pdf mr-1"></i> LIHAT
-                                                </button>
-                                                <span class="text-[9px] font-black uppercase <?= $sub['status'] === 'approved' ? 'text-emerald-500' : 'text-sky-500' ?>">
-                                                    <?= $sub['status'] ?>
+                                        <div class="min-w-0">
+                                            <h4 class="font-bold text-slate-800 text-base truncate mb-1"><?= esc($p['nama_usaha']) ?></h4>
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <span class="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                                    <i class="fas fa-crown text-[8px]"></i> <?= esc($p['ketua_nama']) ?>
+                                                </span>
+                                                <span class="text-[10px] font-black text-sky-600 uppercase tracking-widest bg-sky-50 px-2 py-0.5 rounded-full">
+                                                    <?= esc($p['category']) ?>
                                                 </span>
                                             </div>
-                                        <?php else: ?>
-                                            <span class="text-[10px] font-bold text-slate-300 italic">— Belum —</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="text-center">
-                                        <?php if ($p['category'] === 'pemula'): ?>
-                                            <?php if (isset($submissions[$p['id']]['magang'])): $sub = $submissions[$p['id']]['magang']; ?>
-                                                <div class="flex flex-col items-center gap-1">
-                                                    <button @click="openPreview('<?= base_url('admin/milestone/view/'.$sub['id']) ?>')" class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[10px] font-bold hover:bg-emerald-100 transition-colors">
-                                                        <i class="fas fa-file-pdf mr-1"></i> LIHAT
-                                                    </button>
-                                                    <span class="text-[9px] font-black uppercase <?= $sub['status'] === 'approved' ? 'text-emerald-500' : 'text-sky-500' ?>">
-                                                        <?= $sub['status'] ?>
-                                                    </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Reports Status Section -->
+                                    <div class="lg:w-2/3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        <?php 
+                                        $reportTypes = [
+                                            'kemajuan' => ['label' => 'Kemajuan', 'icon' => 'fa-chart-line'],
+                                            'magang'   => ['label' => 'Magang', 'icon' => 'fa-user-graduate'],
+                                            'akhir'    => ['label' => 'Akhir', 'icon' => 'fa-flag-checkered']
+                                        ];
+                                        ?>
+                                        <?php foreach ($reportTypes as $type => $info): ?>
+                                            <div class="p-3 rounded-2xl bg-slate-50/50 border border-slate-100 flex flex-col justify-between gap-3 relative overflow-hidden group/status">
+                                                <div class="flex items-center justify-between">
+                                                    <p class="text-[9px] font-black uppercase tracking-widest text-slate-400"><?= $info['label'] ?></p>
+                                                    <i class="fas <?= $info['icon'] ?> text-[10px] text-slate-200 group-hover/status:text-sky-200 transition-colors"></i>
                                                 </div>
-                                            <?php else: ?>
-                                                <span class="text-[10px] font-bold text-slate-300 italic">— Belum —</span>
-                                            <?php endif; ?>
-                                        <?php else: ?>
-                                            <span class="text-[10px] font-bold text-slate-200 uppercase tracking-widest">— N/A —</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="text-center">
-                                        <?php if (isset($submissions[$p['id']]['akhir'])): $sub = $submissions[$p['id']]['akhir']; ?>
-                                            <div class="flex flex-col items-center gap-1">
-                                                <button @click="openPreview('<?= base_url('admin/milestone/view/'.$sub['id']) ?>')" class="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-bold hover:bg-indigo-100 transition-colors">
-                                                    <i class="fas fa-file-pdf mr-1"></i> LIHAT
-                                                </button>
-                                                <span class="text-[9px] font-black uppercase <?= $sub['status'] === 'approved' ? 'text-emerald-500' : 'text-sky-500' ?>">
-                                                    <?= $sub['status'] ?>
-                                                </span>
+
+                                                <?php if ($type === 'magang' && ($p['category'] ?? '') !== 'pemula'): ?>
+                                                    <span class="text-[10px] font-bold text-slate-200 uppercase tracking-widest italic">N/A</span>
+                                                <?php elseif (isset($submissions[$p['id']][$type])): $sub = $submissions[$p['id']][$type]; ?>
+                                                    <div class="flex items-center justify-between gap-2">
+                                                        <span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest <?= $sub['status'] === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-700' ?>">
+                                                            <?= $sub['status'] ?>
+                                                        </span>
+                                                        <button @click="openPreview('<?= base_url('admin/milestone/view/'.$sub['id']) ?>')" class="w-8 h-8 rounded-lg bg-white text-rose-500 shadow-sm border border-slate-100 flex items-center justify-center hover:bg-rose-50 transition-colors" title="Lihat Laporan">
+                                                            <i class="fas fa-file-pdf text-sm"></i>
+                                                        </button>
+                                                    </div>
+                                                <?php else: ?>
+                                                    <span class="text-[10px] font-bold text-slate-300 italic">Belum Ada</span>
+                                                <?php endif; ?>
                                             </div>
-                                        <?php else: ?>
-                                            <span class="text-[10px] font-bold text-slate-300 italic">— Belum —</span>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </template>

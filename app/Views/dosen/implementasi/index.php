@@ -17,7 +17,7 @@
             <h2 class="section-title text-xl sm:text-2xl">
                 Validasi <span class="text-gradient">Implementasi</span>
             </h2>
-            <p class="section-subtitle text-[10px] sm:text-[11px]">Tahap 7 — Review Laporan Progress Tim Bimbingan Anda</p>
+            <p class="section-subtitle text-[10px] sm:text-[11px]">Review Laporan Progress Tim Bimbingan Anda</p>
         </div>
     </div>
 

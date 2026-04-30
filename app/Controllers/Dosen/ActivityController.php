@@ -60,7 +60,15 @@ class ActivityController extends BaseController
         // Attach members to each proposal
         $memberModel = new \App\Models\Proposal\PmwProposalMemberModel();
         foreach ($proposals as &$proposal) {
-            $proposal['members'] = $memberModel->getByProposalId((int) $proposal['id']);
+            $members = $memberModel->getByProposalId((int) $proposal['id']);
+            $proposal['members'] = $members;
+
+            // Find ketua for display convenience
+            $ketua = array_filter($members, fn($m) => $m['role'] === 'ketua');
+            $ketua = reset($ketua) ?: ($members[0] ?? null);
+
+            $proposal['ketua_nama'] = $ketua['nama'] ?? '-';
+            $proposal['ketua_nim']  = $ketua['nim'] ?? '-';
         }
 
         return view('dosen/activity', [

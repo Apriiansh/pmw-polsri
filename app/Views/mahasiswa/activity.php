@@ -23,7 +23,7 @@
             <h2 class="section-title text-xl sm:text-2xl">
                 Logbook <span class="text-gradient">Kegiatan Wirausaha</span>
             </h2>
-            <p class="section-subtitle text-[10px] sm:text-[11px]">Tahap 9 — Dokumentasi dan Laporan Kegiatan Praktis</p>
+            <p class="section-subtitle text-[10px] sm:text-[11px]">Dokumentasi dan Laporan Kegiatan Praktis</p>
         </div>
     </div>
 
@@ -239,10 +239,10 @@
                                         <template x-if="supervisorPreview">
                                             <img :src="supervisorPreview" class="w-full h-full object-cover">
                                         </template>
-                                        <template x-if="!supervisorPreview && <?= ($logbook && $logbook->id && $logbook->photo_supervisor_visit) ? 'true' : 'false' ?>">
-                                            <img src="<?= base_url('mahasiswa/kegiatan/file/supervisor/' . ($logbook ? $logbook->id : 0)) ?>" class="w-full h-full object-cover">
+                                        <template x-if="!supervisorPreview && <?= ($logbook && $logbook->id && !empty($logbook->photo_supervisor_visit)) ? 'true' : 'false' ?>">
+                                            <img src="<?= $logbook ? base_url('mahasiswa/kegiatan/file/supervisor/' . $logbook->id) : '#' ?>" class="w-full h-full object-cover">
                                         </template>
-                                        <template x-if="!supervisorPreview && !<?= ($logbook && $logbook->id && $logbook->photo_supervisor_visit) ? 'true' : 'false' ?>">
+                                        <template x-if="!supervisorPreview && !<?= ($logbook && $logbook->id && !empty($logbook->photo_supervisor_visit)) ? 'true' : 'false' ?>">
                                             <div class="w-full h-full flex items-center justify-center text-slate-200"><i class="fas fa-user-tie"></i></div>
                                         </template>
                                     </div>

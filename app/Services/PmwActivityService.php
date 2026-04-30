@@ -120,8 +120,14 @@ class PmwActivityService
                     unlink($oldPath);
                 }
             }
+            
+            $uploadDir = WRITEPATH . 'uploads/activity/supervisor';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
             $newName = $files['photo_supervisor_visit']->getRandomName();
-            $files['photo_supervisor_visit']->move(WRITEPATH . 'uploads/activity/supervisor', $newName);
+            $files['photo_supervisor_visit']->move($uploadDir, $newName);
             $logbookData['photo_supervisor_visit'] = 'activity/supervisor/' . $newName;
         }
 
@@ -147,16 +153,23 @@ class PmwActivityService
             if (isset($files['photo_activity'])) {
                 $activityPhotos = is_array($files['photo_activity']) ? $files['photo_activity'] : [$files['photo_activity']];
                 
+                // Ensure directory exists
+                $uploadDir = WRITEPATH . 'uploads/activity/photos';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
+
                 $isFirst = true;
                 foreach ($activityPhotos as $photo) {
                     if ($photo->isValid() && !$photo->hasMoved()) {
                         $newName = $photo->getRandomName();
-                        $photo->move(WRITEPATH . 'uploads/activity/photos', $newName);
+                        $photo->move($uploadDir, $newName);
                         $savedPath = 'activity/photos/' . $newName;
 
-                        // Save to photos table
+                        // Save to photos table with uploader_role
                         $this->photoModel->insert([
                             'logbook_id'    => $logbookId,
+                            'uploader_role' => 'student',
                             'file_path'     => $savedPath,
                             'original_name' => $photo->getClientName(),
                         ]);

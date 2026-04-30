@@ -217,9 +217,9 @@
                     <i class="fas fa-paper-plane mr-3 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
                     Daftar Sekarang
                 </a>
-                <a href="<?= base_url('pedoman') ?>" class="btn-ghost btn-magnetic border-white/40 text-white hover:bg-white/10 px-10 py-5 text-lg">
+                <a href="<?= base_url('buku_panduan_pmw.pdf') ?>" class="btn-ghost btn-magnetic border-white/40 text-white hover:bg-white/10 px-10 py-5 text-lg" download>
                     <i class="fas fa-book mr-3"></i>
-                    Unduh Pedoman
+                    Unduh Panduan
                 </a>
             </div>
         </div>
