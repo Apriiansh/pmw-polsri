@@ -105,54 +105,41 @@
              4. SCHEDULES & LOGBOOKS (RIGHT)
         ================================================================= -->
         <div class="lg:col-span-2 space-y-6 animate-stagger delay-700">
-            <div class="card-premium overflow-hidden" @mousemove="handleMouseMove">
-                <div class="px-6 py-4 border-b border-amber-50 flex items-center justify-between bg-white/60">
-                    <h3 class="font-display text-base font-bold text-(--text-heading)">Riwayat Mentoring</h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="pmw-table">
-                        <thead>
-                            <tr>
-                                <th>Tanggal & Tim</th>
-                                <th>Topik</th>
-                                <th>Logbook</th>
-                                <th>Status</th>
-                                <th class="text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (empty($schedules)): ?>
-                                <tr>
-                                    <td colspan="5" class="text-center py-12">
-                                        <div class="text-slate-400">
-                                            <i class="fas fa-calendar-xmark text-4xl mb-3 opacity-20"></i>
-                                            <p class="text-sm">Belum ada jadwal mentoring yang dibuat.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php else: ?>
-                                <?php foreach ($schedules as $schedule): ?>
-                                <tr class="group">
-                                    <td class="whitespace-nowrap">
-                                        <div class="text-[12px] font-bold text-(--text-heading)"><?= date('d M Y', strtotime($schedule->schedule_date)) ?></div>
-                                        <div class="text-[11px] text-slate-400"><?= $schedule->schedule_time ?> • <?= esc($schedule->nama_usaha) ?></div>
-                                    </td>
-                                    <td>
-                                        <div class="text-[12px] text-slate-600 line-clamp-1 max-w-[150px]" title="<?= esc($schedule->topic) ?>"><?= esc($schedule->topic) ?></div>
-                                    </td>
-                                    <td>
-                                        <?php if ($schedule->logbook): ?>
-                                            <div class="flex items-center gap-1.5">
-                                                <span class="pmw-status bg-orange-50 text-orange-600 border-orange-200 text-[10px]">Submitted</span>
-                                                <?php if($schedule->logbook->status === 'pending'): ?>
-                                                    <span class="animate-pulse flex h-2 w-2 rounded-full bg-orange-500"></span>
-                                                <?php endif; ?>
-                                            </div>
-                                        <?php else: ?>
-                                            <span class="text-[11px] text-slate-300 italic">No report yet</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
+            <div class="flex items-center justify-between mb-4 px-2">
+                <h3 class="font-display text-lg font-bold text-(--text-heading) flex items-center gap-2">
+                    <span class="w-2 h-6 bg-amber-500 rounded-full"></span>
+                    Riwayat Mentoring
+                </h3>
+                <span class="text-xs font-medium text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-100">
+                    Total: <?= count($schedules) ?> Sesi
+                </span>
+            </div>
+
+            <div class="grid gap-4">
+                <?php if (empty($schedules)): ?>
+                    <div class="card-premium py-12 text-center bg-white/50">
+                        <div class="text-slate-400">
+                            <i class="fas fa-calendar-xmark text-5xl mb-4 opacity-20 block"></i>
+                            <p class="text-sm font-medium">Belum ada jadwal mentoring yang dibuat.</p>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($schedules as $schedule): ?>
+                    <div class="group relative bg-white border border-slate-100 rounded-2xl p-5 hover:border-amber-200 hover:shadow-xl hover:shadow-amber-500/5 transition-all duration-300">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <!-- Left: Date & Team -->
+                            <div class="flex items-center gap-4">
+                                <div class="flex-shrink-0 w-14 h-14 bg-amber-50 rounded-2xl flex flex-col items-center justify-center border border-amber-100 group-hover:bg-amber-500 group-hover:border-amber-500 transition-all duration-500 shadow-sm">
+                                    <span class="text-[10px] font-bold text-amber-600 group-hover:text-amber-100 uppercase leading-none"><?= date('M', strtotime($schedule->schedule_date)) ?></span>
+                                    <span class="text-xl font-display font-bold text-amber-700 group-hover:text-white leading-none mt-1"><?= date('d', strtotime($schedule->schedule_date)) ?></span>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <span class="text-[11px] font-bold text-slate-400"><?= $schedule->schedule_time ?></span>
+                                        <span class="text-slate-300">•</span>
+                                        <span class="text-[11px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md"><?= esc($schedule->nama_usaha) ?></span>
+                                        
+                                        <!-- Status Badge Integrated -->
                                         <?php
                                         $statusColors = [
                                             'planned'   => 'bg-yellow-50 text-yellow-600 border-yellow-200',
@@ -161,30 +148,62 @@
                                             'cancelled' => 'bg-rose-50 text-rose-600 border-rose-200',
                                         ];
                                         ?>
-                                        <span class="pmw-status <?= $statusColors[$schedule->status] ?>"><?= ucfirst($schedule->status) ?></span>
-                                    </td>
-                                    <td class="text-right whitespace-nowrap">
-                                        <?php if ($schedule->logbook && $schedule->logbook->status !== 'draft'): 
-                                            $lb = $schedule->logbook;
-                                            $lb->parsed_items = json_decode($lb->nota_items ?? '[]', true) ?? [];
-                                            $lb->parsed_files = json_decode($lb->nota_files ?? '[]', true) ?? [];
-                                        ?>
-                                            <button @click="selectedLogbook = <?= htmlspecialchars(json_encode($lb)) ?>; selectedLogbook.schedule = <?= htmlspecialchars(json_encode(['date' => $schedule->schedule_date, 'team' => $schedule->nama_usaha, 'topic' => $schedule->topic])) ?>; showVerifyModal = true" 
-                                                    class="btn-outline btn-xs bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-500 hover:text-white transition-all">
-                                                <i class="fas fa-magnifying-glass mr-1"></i> Preview
-                                            </button>
-                                        <?php elseif ($schedule->logbook && $schedule->logbook->status === 'draft'): ?>
-                                            <span class="text-[10px] font-bold text-slate-400 italic">
-                                                <i class="fas fa-edit mr-1"></i> Drafting...
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider border <?= $statusColors[$schedule->status] ?>">
+                                            <span class="w-1 h-1 rounded-full bg-current animate-pulse"></span>
+                                            <?= $schedule->status ?>
+                                        </span>
+                                    </div>
+                                    <h4 class="text-sm font-bold text-(--text-heading) line-clamp-1 group-hover:text-amber-600 transition-colors" title="<?= esc($schedule->topic) ?>">
+                                        <?= esc($schedule->topic) ?>
+                                    </h4>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <?php if ($schedule->logbook): ?>
+                                            <span class="flex items-center gap-1 text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                                                <i class="fas fa-check-double text-[9px]"></i> Laporan Masuk
                                             </span>
+                                        <?php else: ?>
+                                            <span class="text-[10px] text-slate-400 font-medium italic">Belum ada laporan logbook</span>
                                         <?php endif; ?>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Action Area -->
+                            <div class="flex items-center md:pt-0 border-t md:border-t-0 border-slate-50 mt-2 md:mt-0 pt-3">
+                                <?php if ($schedule->logbook): 
+                                    $lb = $schedule->logbook;
+                                    $lb->parsed_items = json_decode($lb->nota_items ?? '[]', true) ?? [];
+                                    $lb->parsed_files = json_decode($lb->nota_files ?? '[]', true) ?? [];
+                                ?>
+                                    <?php if ($lb->status === 'draft'): ?>
+                                        <div class="flex items-center gap-2 text-amber-500 bg-amber-50/50 px-3 py-1.5 rounded-xl border border-amber-100/50">
+                                            <div class="flex gap-0.5">
+                                                <span class="w-1 h-1 bg-current rounded-full animate-bounce"></span>
+                                                <span class="w-1 h-1 bg-current rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                                                <span class="w-1 h-1 bg-current rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                                            </div>
+                                            <span class="text-[11px] font-bold italic">Drafting...</span>
+                                        </div>
+                                    <?php else: ?>
+                                        <button @click="selectedLogbook = <?= htmlspecialchars(json_encode($lb)) ?>; selectedLogbook.schedule = <?= htmlspecialchars(json_encode(['date' => $schedule->schedule_date, 'team' => $schedule->nama_usaha, 'topic' => $schedule->topic])) ?>; showVerifyModal = true" 
+                                                class="w-full md:w-auto btn-xs py-2 px-4 shadow-lg group/btn flex items-center gap-2 rounded-xl transition-all
+                                                       <?= $lb->status === 'approved' ? 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 shadow-none' : 'btn-primary shadow-amber-200 text-white border-none' ?>"
+                                                <?= $lb->status !== 'approved' ? 'style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);"' : '' ?>>
+                                            <span><?= $lb->status === 'approved' ? 'View Details' : ($lb->status === 'rejected' ? 'Review Again' : 'Review Logbook') ?></span>
+                                            <i class="fas <?= $lb->status === 'approved' ? 'fa-eye' : 'fa-arrow-right' ?> text-[10px] group-hover/btn:translate-x-0.5 transition-transform"></i>
+                                        </button>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <div class="flex items-center gap-2 text-slate-400 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
+                                        <i class="fas fa-clock text-[10px]"></i>
+                                        <span class="text-[11px] font-bold uppercase tracking-tight">No Report</span>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -413,36 +432,56 @@
                 </div>
 
                 <!-- Form Section -->
-                <form :action="`<?= base_url('mentor/mentoring/verify') ?>/${selectedLogbook.id}`" method="POST" class="pt-6 border-t border-slate-100">
-                    <?= csrf_field() ?>
-                    <div class="space-y-6">
-                        <div class="grid grid-cols-2 gap-3">
-                            <label class="relative cursor-pointer">
-                                <input type="radio" name="status" value="approved" class="peer sr-only" required>
-                                <div class="p-3 rounded-xl border-2 border-slate-100 bg-slate-50 text-slate-400 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-600 transition-all flex items-center justify-center gap-2">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span class="text-sm font-bold uppercase tracking-wide">Terima</span>
-                                </div>
-                            </label>
-                            <label class="relative cursor-pointer">
-                                <input type="radio" name="status" value="rejected" class="peer sr-only">
-                                <div class="p-3 rounded-xl border-2 border-slate-100 bg-slate-50 text-slate-400 peer-checked:border-rose-500 peer-checked:bg-rose-50 peer-checked:text-rose-600 transition-all flex items-center justify-center gap-2">
-                                    <i class="fas fa-times-circle"></i>
-                                    <span class="text-sm font-bold uppercase tracking-wide">Tolak / Revisi</span>
-                                </div>
-                            </label>
+                <div class="pt-6 border-t border-slate-100">
+                    <template x-if="selectedLogbook && selectedLogbook.status === 'approved'">
+                        <div class="p-6 rounded-2xl bg-emerald-50 border border-emerald-100 flex flex-col items-center text-center space-y-3">
+                            <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-inner">
+                                <i class="fas fa-check-double text-3xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-black text-emerald-900 uppercase tracking-wider">Logbook Telah Disetujui</h4>
+                                <p class="text-[11px] text-emerald-600 font-medium mt-1">Laporan ini sudah diverifikasi dan tidak dapat diubah lagi.</p>
+                            </div>
+                            <div class="w-full mt-4 p-4 rounded-xl bg-white/50 border border-emerald-100 text-left" x-show="selectedLogbook.verification_note">
+                                <p class="text-[9px] font-black text-emerald-700 uppercase tracking-widest mb-1">Catatan Verifikasi:</p>
+                                <p class="text-xs text-slate-600 italic" x-text="selectedLogbook.verification_note"></p>
+                            </div>
                         </div>
+                    </template>
 
-                        <div class="space-y-1.5">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Catatan Mentor (Wajib jika ditolak)</label>
-                            <textarea name="verification_note" rows="3" class="input-modern w-full" placeholder="Masukkan saran perbaikan untuk tim mahasiswa..."></textarea>
-                        </div>
+                    <template x-if="selectedLogbook && selectedLogbook.status !== 'approved'">
+                        <form :action="`<?= base_url('mentor/mentoring/verify') ?>/${selectedLogbook.id}`" method="POST">
+                            <?= csrf_field() ?>
+                            <div class="space-y-6">
+                                <div class="grid grid-cols-2 gap-3">
+                                    <label class="relative cursor-pointer">
+                                        <input type="radio" name="status" value="approved" class="peer sr-only" required :checked="selectedLogbook.status === 'approved'">
+                                        <div class="p-3 rounded-xl border-2 border-slate-100 bg-slate-50 text-slate-400 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-600 transition-all flex items-center justify-center gap-2">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span class="text-sm font-bold uppercase tracking-wide">Terima</span>
+                                        </div>
+                                    </label>
+                                    <label class="relative cursor-pointer">
+                                        <input type="radio" name="status" value="rejected" class="peer sr-only" :checked="selectedLogbook.status === 'rejected'">
+                                        <div class="p-3 rounded-xl border-2 border-slate-100 bg-slate-50 text-slate-400 peer-checked:border-rose-500 peer-checked:bg-rose-50 peer-checked:text-rose-600 transition-all flex items-center justify-center gap-2">
+                                            <i class="fas fa-times-circle"></i>
+                                            <span class="text-sm font-bold uppercase tracking-wide">Tolak / Revisi</span>
+                                        </div>
+                                    </label>
+                                </div>
 
-                        <button type="submit" class="btn-primary w-full py-3 shadow-lg shadow-amber-500/20" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none;">
-                            Simpan Verifikasi Logbook
-                        </button>
-                    </div>
-                </form>
+                                <div class="space-y-1.5">
+                                    <label class="form-label text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Catatan Mentor (Wajib jika ditolak)</label>
+                                    <textarea name="verification_note" rows="3" class="form-textarea w-full" placeholder="Masukkan saran perbaikan untuk tim mahasiswa..." x-text="selectedLogbook.verification_note"></textarea>
+                                </div>
+
+                                <button type="submit" class="btn-primary w-full py-3 shadow-lg shadow-amber-500/20" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none;">
+                                    Simpan Verifikasi Logbook
+                                </button>
+                            </div>
+                        </form>
+                    </template>
+                </div>
             </div>
         </div>
     </div>
