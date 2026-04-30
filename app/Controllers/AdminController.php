@@ -1245,7 +1245,7 @@ class AdminController extends BaseController
      */
     public function viewGuidanceFile(string $type, int $logbookId)
     {
-        $logbookModel = new \App\Models\Guidance\PmwGuidanceLogbookModel();
+        $logbookModel = new PmwGuidanceLogbookModel();
         $logbook = $logbookModel->find($logbookId);
 
         if (!$logbook) {

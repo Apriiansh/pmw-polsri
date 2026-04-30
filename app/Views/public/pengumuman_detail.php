@@ -11,6 +11,9 @@
     #announcement-content {
         text-align: justify;
         text-justify: inter-word;
+        word-wrap: break-word;
+        word-break: break-word;
+        overflow-wrap: break-word;
     }
     
     #announcement-content img {
@@ -84,7 +87,7 @@
 
 <?= $this->section('content') ?>
 <!-- Header Section -->
-<section class="relative overflow-hidden px-6 lg:px-8 pt-24 pb-20 lg:pt-28 relative z-10">
+<section class="relative overflow-hidden px-6 lg:px-8 pt-24 pb-20 lg:pt-28 mt-20 relative z-10">
     <!-- Premium Background Elements -->
     <div class="absolute inset-0 -z-10">
         <div class="absolute top-0 right-1/4 w-96 h-96 bg-sky-500/10 rounded-full blur-[120px] animate-float"></div>
@@ -111,7 +114,7 @@
                     <?= date('d F Y', strtotime($announcement['date'])) ?>
                 </span>
             </div>
-            <h1 class="font-display text-4xl lg:text-6xl font-bold text-(--text-heading) leading-[1.1] tracking-tight mb-8">
+            <h1 class="font-display text-2xl md:text-4xl lg:text-6xl font-bold text-(--text-heading) leading-[1.2] lg:leading-[1.1] tracking-tight mb-8">
                 <?= esc($announcement['title']) ?>
             </h1>
             
@@ -121,10 +124,10 @@
 </section>
 
 <!-- Main Content Area -->
-<section class="pb-20 lg:pb-32 px-6">
+<section class="pb-32 lg:pb-48 px-6">
     <div class="max-w-4xl mx-auto">
         <!-- Main Article Body -->
-        <article class="reveal-zoom bg-white rounded-[3rem] border border-slate-100 p-10 lg:p-20 shadow-2xl shadow-slate-200/40 mb-12">
+        <article class="reveal-zoom bg-white rounded-[2rem] lg:rounded-[3rem] border border-slate-100 p-6 md:p-10 lg:p-20 shadow-2xl shadow-slate-200/40 mb-12">
             <div id="announcement-content" class="prose prose-slate lg:prose-lg max-w-none text-justify
                         prose-headings:font-display prose-headings:font-bold prose-headings:text-slate-800
                         prose-p:text-slate-600 prose-p:leading-relaxed

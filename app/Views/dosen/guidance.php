@@ -185,7 +185,7 @@
                                         </div>
                                     <?php else: ?>
                                         <button @click="selectedLogbook = <?= htmlspecialchars(json_encode($lb)) ?>; selectedLogbook.schedule = <?= htmlspecialchars(json_encode(['date' => $schedule->schedule_date, 'team' => $schedule->nama_usaha, 'topic' => $schedule->topic])); ?>; showVerifyModal = true" 
-                                                class="w-full md:w-auto btn-xs py-2 px-4 shadow-lg group/btn flex items-center gap-2 rounded-xl transition-all
+                                                class="w-full md:w-auto btn-accent py-2 px-4 shadow-lg group/btn flex items-center gap-2 rounded-xl transition-all
                                                        <?= $lb->status === 'approved' ? 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 shadow-none' : 'btn-primary shadow-sky-200 text-white border-none' ?>">
                                             <span><?= $lb->status === 'approved' ? 'View Details' : ($lb->status === 'rejected' ? 'Review Again' : 'Review Bimbingan') ?></span>
                                             <i class="fas <?= $lb->status === 'approved' ? 'fa-eye' : 'fa-arrow-right' ?> text-[10px] group-hover/btn:translate-x-0.5 transition-transform"></i>
@@ -316,18 +316,18 @@
                 </button>
             </div>
             
-            <div class="overflow-y-auto p-6 space-y-8 flex-1 custom-scrollbar" x-if="selectedLogbook">
+            <div class="overflow-y-auto p-6 space-y-8 flex-1 custom-scrollbar" x-show="selectedLogbook">
                 <!-- Content Section -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="space-y-6">
                         <div class="space-y-1.5">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Penjelasan Materi</label>
-                            <div class="p-4 rounded-xl bg-slate-50 text-[13px] text-slate-700 leading-relaxed italic border-l-4 border-sky-400" x-text="selectedLogbook.material_explanation"></div>
+                            <div class="p-4 rounded-xl bg-slate-50 text-[13px] text-slate-700 leading-relaxed italic border-l-4 border-sky-400" x-text="selectedLogbook?.material_explanation"></div>
                         </div>
                         
-                        <div class="space-y-1.5" x-show="selectedLogbook.video_url">
+                        <div class="space-y-1.5" x-show="selectedLogbook?.video_url">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Video Rekaman (Jika ada)</label>
-                            <a :href="selectedLogbook.video_url" target="_blank" class="flex items-center gap-3 p-3 rounded-xl border border-rose-100 bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all group w-full">
+                            <a :href="selectedLogbook?.video_url" target="_blank" class="flex items-center gap-3 p-3 rounded-xl border border-rose-100 bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all group w-full">
                                 <i class="fab fa-youtube text-xl"></i>
                                 <span class="text-xs font-bold uppercase tracking-wider">Tonton Video Bimbingan</span>
                                 <i class="fas fa-external-link-alt ml-auto opacity-0 group-hover:opacity-100 transition-all"></i>
@@ -410,17 +410,17 @@
                         <div class="space-y-1.5">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Foto Dokumentasi</label>
                             <div class="aspect-video rounded-2xl overflow-hidden border-2 border-slate-100 bg-slate-50 group relative">
-                                <img :src="`<?= base_url('dosen/bimbingan/file/photo') ?>/${selectedLogbook.id}`" class="w-full h-full object-cover">
-                                <a :href="`<?= base_url('dosen/bimbingan/file/photo') ?>/${selectedLogbook.id}`" target="_blank" 
+                                <img :src="selectedLogbook?.id ? `<?= base_url('dosen/bimbingan/file/photo') ?>/${selectedLogbook.id}` : ''" class="w-full h-full object-cover">
+                                <a :href="selectedLogbook?.id ? `<?= base_url('dosen/bimbingan/file/photo') ?>/${selectedLogbook.id}` : '#'" target="_blank" 
                                    class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center text-white">
                                     <i class="fas fa-expand text-2xl"></i>
                                 </a>
                             </div>
                         </div>
 
-                        <div class="space-y-1.5" x-show="selectedLogbook.assignment_file">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tugas / Output</label>
-                            <a :href="`<?= base_url('dosen/bimbingan/file/assignment') ?>/${selectedLogbook.id}`" target="_blank" class="flex items-center gap-3 p-3 rounded-xl border border-sky-100 bg-sky-50 text-sky-600 hover:bg-sky-100 transition-all group w-full">
+                        <div class="space-y-1.5" x-show="selectedLogbook?.assignment_file">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Berkas Laporan / Output</label>
+                            <a :href="selectedLogbook?.id ? `<?= base_url('dosen/bimbingan/file/assignment') ?>/${selectedLogbook.id}` : '#'" target="_blank" class="flex items-center gap-3 p-3 rounded-xl border border-sky-100 bg-sky-50 text-sky-600 hover:bg-sky-100 transition-all group w-full">
                                 <i class="fas fa-file-lines text-xl"></i>
                                 <span class="text-xs font-bold uppercase tracking-wider">Download Berkas Tugas</span>
                                 <i class="fas fa-download ml-auto opacity-0 group-hover:opacity-100 transition-all"></i>
@@ -440,27 +440,27 @@
                                 <h4 class="text-sm font-black text-emerald-900 uppercase tracking-wider">Logbook Telah Disetujui</h4>
                                 <p class="text-[11px] text-emerald-600 font-medium mt-1">Laporan ini sudah diverifikasi dan tidak dapat diubah lagi.</p>
                             </div>
-                            <div class="w-full mt-4 p-4 rounded-xl bg-white/50 border border-emerald-100 text-left" x-show="selectedLogbook.verification_note">
+                            <div class="w-full mt-4 p-4 rounded-xl bg-white/50 border border-emerald-100 text-left" x-show="selectedLogbook?.verification_note">
                                 <p class="text-[9px] font-black text-emerald-700 uppercase tracking-widest mb-1">Catatan Verifikasi:</p>
-                                <p class="text-xs text-slate-600 italic" x-text="selectedLogbook.verification_note"></p>
+                                <p class="text-xs text-slate-600 italic" x-text="selectedLogbook?.verification_note"></p>
                             </div>
                         </div>
                     </template>
 
                     <template x-if="selectedLogbook && selectedLogbook.status !== 'approved'">
-                        <form :action="`<?= base_url('dosen/bimbingan/verify') ?>/${selectedLogbook.id}`" method="POST">
+                        <form :action="selectedLogbook ? `<?= base_url('dosen/bimbingan/verify') ?>/${selectedLogbook.id}` : '#'" method="POST">
                             <?= csrf_field() ?>
                             <div class="space-y-6">
                                 <div class="grid grid-cols-2 gap-3">
                                     <label class="relative cursor-pointer">
-                                        <input type="radio" name="status" value="approved" class="peer sr-only" required :checked="selectedLogbook.status === 'approved'">
+                                        <input type="radio" name="status" value="approved" class="peer sr-only" required :checked="selectedLogbook?.status === 'approved'">
                                         <div class="p-3 rounded-xl border-2 border-slate-100 bg-slate-50 text-slate-400 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-600 transition-all flex items-center justify-center gap-2">
                                             <i class="fas fa-check-circle"></i>
                                             <span class="text-sm font-bold uppercase tracking-wide">Terima</span>
                                         </div>
                                     </label>
                                     <label class="relative cursor-pointer">
-                                        <input type="radio" name="status" value="rejected" class="peer sr-only" :checked="selectedLogbook.status === 'rejected'">
+                                        <input type="radio" name="status" value="rejected" class="peer sr-only" :checked="selectedLogbook?.status === 'rejected'">
                                         <div class="p-3 rounded-xl border-2 border-slate-100 bg-slate-50 text-slate-400 peer-checked:border-rose-500 peer-checked:bg-rose-50 peer-checked:text-rose-600 transition-all flex items-center justify-center gap-2">
                                             <i class="fas fa-times-circle"></i>
                                             <span class="text-sm font-bold uppercase tracking-wide">Tolak / Revisi</span>
@@ -470,7 +470,7 @@
 
                                 <div class="space-y-1.5">
                                     <label class="form-label text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Catatan Bimbingan (Wajib jika ditolak)</label>
-                                    <textarea name="verification_note" rows="3" class="form-textarea w-full" placeholder="Masukkan saran atau alasan penolakan..." x-text="selectedLogbook.verification_note"></textarea>
+                                    <textarea name="verification_note" rows="3" class="form-textarea w-full" placeholder="Masukkan saran atau alasan penolakan..." x-text="selectedLogbook?.verification_note"></textarea>
                                 </div>
 
                                 <button type="submit" class="btn-primary w-full py-3 shadow-lg shadow-sky-500/20">
