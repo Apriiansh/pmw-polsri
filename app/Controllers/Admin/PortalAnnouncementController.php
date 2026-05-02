@@ -144,7 +144,7 @@ class PortalAnnouncementController extends BaseController
 
         $auth = [
             'VAPID' => [
-                'subject'    => 'mailto:pmw@polsri.ac.id',
+                'subject'    => 'mailto:uptpkk_kewirausahaan@polsri.ac.id',
                 'publicKey'  => env('webpush.publicKey'),
                 'privateKey' => env('webpush.privateKey'),
             ],

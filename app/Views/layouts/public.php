@@ -5,10 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= esc($title ?? 'PMW Polsri') ?> — Program Mahasiswa Wirausaha Politeknik Negeri Sriwijaya</title>
-    
+
     <!-- SEO Meta Tags -->
-    <meta name="description" content="<?= esc($meta_description ?? 'Program Mahasiswa Wirausaha Politeknik Negeri Sriwijaya - Mengembangkan jiwa kewirausahaan mahasiswa melalui pendanaan, mentoring, dan pelatihan.') ?>">
-    <meta name="keywords" content="<?= esc($meta_keywords ?? 'PMW Polsri, Wirausaha Mahasiswa, Polsri, Kewirausahaan, Palembang') ?>">
+    <meta name="description"
+        content="<?= esc($meta_description ?? 'Program Mahasiswa Wirausaha Politeknik Negeri Sriwijaya - Mengembangkan jiwa kewirausahaan mahasiswa melalui pendanaan, mentoring, dan pelatihan.') ?>">
+    <meta name="keywords"
+        content="<?= esc($meta_keywords ?? 'PMW Polsri, Wirausaha Mahasiswa, Polsri, Kewirausahaan, Palembang') ?>">
     <meta name="author" content="PMW Politeknik Negeri Sriwijaya">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="<?= current_url() ?>">
@@ -17,14 +19,16 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?= current_url() ?>">
     <meta property="og:title" content="<?= esc($title ?? 'PMW Polsri') ?> — Program Mahasiswa Wirausaha">
-    <meta property="og:description" content="<?= esc($meta_description ?? 'Program Mahasiswa Wirausaha Politeknik Negeri Sriwijaya - Mengembangkan jiwa kewirausahaan mahasiswa.') ?>">
+    <meta property="og:description"
+        content="<?= esc($meta_description ?? 'Program Mahasiswa Wirausaha Politeknik Negeri Sriwijaya - Mengembangkan jiwa kewirausahaan mahasiswa.') ?>">
     <meta property="og:image" content="<?= base_url('assets/img/og-image.jpg') ?>">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="<?= current_url() ?>">
     <meta property="twitter:title" content="<?= esc($title ?? 'PMW Polsri') ?> — Program Mahasiswa Wirausaha">
-    <meta property="twitter:description" content="<?= esc($meta_description ?? 'Program Mahasiswa Wirausaha Politeknik Negeri Sriwijaya - Mengembangkan jiwa kewirausahaan mahasiswa.') ?>">
+    <meta property="twitter:description"
+        content="<?= esc($meta_description ?? 'Program Mahasiswa Wirausaha Politeknik Negeri Sriwijaya - Mengembangkan jiwa kewirausahaan mahasiswa.') ?>">
     <meta property="twitter:image" content="<?= base_url('assets/img/og-image.jpg') ?>">
 
     <!-- Favicon -->
@@ -33,7 +37,9 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -56,7 +62,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             // 1. Scroll Reveal Logic
-            const observerOptions = { 
+            const observerOptions = {
                 threshold: 0.05, // Lower threshold for better reliability
                 rootMargin: '0px 0px -50px 0px' // Trigger slightly before it enters the viewport
             };
@@ -70,7 +76,7 @@
                     }
                 });
             }, observerOptions);
-            
+
             const revealElements = document.querySelectorAll('.reveal-on-scroll, .reveal-left, .reveal-right, .reveal-zoom, .reveal-blur, .reveal-mask');
             revealElements.forEach(el => observer.observe(el));
 
@@ -102,8 +108,9 @@
         });
     </script>
 
-<style>
-        html, body {
+    <style>
+        html,
+        body {
             max-width: 100%;
             overflow-x: hidden;
             position: relative;
@@ -123,13 +130,15 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
 
     <?php if (!$isAuthPage): ?>
         <!-- Navigation -->
-        <nav class="fixed top-0 left-0 right-0 z-50 glass-premium transition-all duration-300" x-data="{ mobileOpen: false, scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 20)">
+        <nav class="fixed top-0 left-0 right-0 z-50 glass-premium transition-all duration-300"
+            x-data="{ mobileOpen: false, scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 20)">
             <div class="max-w-7xl mx-auto px-6 lg:px-8">
                 <div class="flex items-center justify-between h-20">
 
                     <!-- Logo -->
                     <a href="<?= base_url() ?>" class="flex items-center gap-3 group">
-                        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md shadow-sky-200 group-hover:shadow-lg group-hover:shadow-sky-300 transition-all">
+                        <div
+                            class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md shadow-sky-200 group-hover:shadow-lg group-hover:shadow-sky-300 transition-all">
                             <img src="<?= base_url('favicon.png') ?>" alt="PMW Polsri" class="w-9 h-9 object-contain">
                         </div>
                         <div class="hidden sm:block">
@@ -150,16 +159,20 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
                             <i class="fas fa-home text-sm"></i>
                             <span>Beranda</span>
                         </a>
-                        <a href="<?= base_url('tentang') ?>" class="nav-link <?= $currentUri === 'tentang' ? 'active' : '' ?>">
+                        <a href="<?= base_url('tentang') ?>"
+                            class="nav-link <?= $currentUri === 'tentang' ? 'active' : '' ?>">
                             <span>Tentang PMW</span>
                         </a>
-                        <a href="<?= base_url('tahapan') ?>" class="nav-link <?= $currentUri === 'tahapan' ? 'active' : '' ?>">
+                        <a href="<?= base_url('tahapan') ?>"
+                            class="nav-link <?= $currentUri === 'tahapan' ? 'active' : '' ?>">
                             <span>Tahapan</span>
                         </a>
-                        <a href="<?= base_url('galeri') ?>" class="nav-link <?= $currentUri === 'galeri' ? 'active' : '' ?>">
+                        <a href="<?= base_url('galeri') ?>"
+                            class="nav-link <?= $currentUri === 'galeri' ? 'active' : '' ?>">
                             <span>Galeri</span>
                         </a>
-                        <a href="<?= base_url('pengumuman') ?>" class="nav-link <?= $currentUri === 'pengumuman' ? 'active' : '' ?>">
+                        <a href="<?= base_url('pengumuman') ?>"
+                            class="nav-link <?= $currentUri === 'pengumuman' ? 'active' : '' ?>">
                             <span>Pengumuman</span>
                         </a>
                     </div>
@@ -176,8 +189,7 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
                     </div>
 
                     <!-- Mobile Menu Button -->
-                    <button
-                        @click="mobileOpen = !mobileOpen"
+                    <button @click="mobileOpen = !mobileOpen"
                         class="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl text-slate-500 hover:bg-sky-50 hover:text-sky-500 transition-colors">
                         <i class="fas fa-bars text-lg" x-show="!mobileOpen"></i>
                         <i class="fas fa-times text-lg" x-show="mobileOpen"></i>
@@ -186,16 +198,10 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
             </div>
 
             <!-- Mobile Menu -->
-            <div
-                x-show="mobileOpen"
-                x-cloak
-                @click.away="mobileOpen = false"
-                x-transition:enter="transition ease-out duration-200"
-                x-transition:enter-start="opacity-0 -translate-y-4"
-                x-transition:enter-end="opacity-100 translate-y-0"
-                x-transition:leave="transition ease-in duration-150"
-                x-transition:leave-start="opacity-100 translate-y-0"
-                x-transition:leave-end="opacity-0 -translate-y-4"
+            <div x-show="mobileOpen" x-cloak @click.away="mobileOpen = false"
+                x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-4"
+                x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-4"
                 class="lg:hidden border-t border-sky-100 bg-white/95 backdrop-blur-xl max-h-[calc(100vh-5rem)] overflow-y-auto">
                 <div class="px-6 py-4 space-y-2">
                     <a href="<?= base_url() ?>" class="mobile-nav-link">
@@ -249,7 +255,8 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
                     <!-- Brand -->
                     <div class="lg:col-span-1">
                         <div class="flex items-center gap-3 mb-6">
-                            <div class="w-12 h-12 rounded-xl bg-linear-to-br from-sky-500 to-sky-400 flex items-center justify-center">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-linear-to-br from-sky-500 to-sky-400 flex items-center justify-center">
                                 <i class="fas fa-graduation-cap text-white text-xl"></i>
                             </div>
                             <div>
@@ -258,10 +265,12 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
                             </div>
                         </div>
                         <p class="text-sm text-slate-500 leading-relaxed mb-6">
-                            Program pembinaan kewirausahaan bagi mahasiswa untuk mengembangkan usaha berbasis inovasi dan kreativitas.
+                            Program pembinaan kewirausahaan bagi mahasiswa untuk mengembangkan usaha berbasis inovasi dan
+                            kreativitas.
                         </p>
                         <div class="flex items-center gap-3">
-                            <a href="https://www.instagram.com/entrepreneurpolsri/" class="social-link" aria-label="Instagram">
+                            <a href="https://www.instagram.com/entrepreneurpolsri/" class="social-link"
+                                aria-label="Instagram">
                                 <i class="fab fa-instagram"></i>
                             </a>
                             <a href="#" class="social-link" aria-label="YouTube">
@@ -289,10 +298,12 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
                     <div>
                         <h4 class="text-slate-800 font-semibold mb-4">Dokumen & Bantuan</h4>
                         <ul class="space-y-3">
-                            <li><a href="<?= base_url('buku_panduan_pmw.pdf') ?>" class="footer-link" download><i class="fas fa-file-pdf mr-2 text-sky-500"></i>Panduan PMW</a></li>
+                            <li><a href="<?= base_url('buku_panduan_pmw.pdf') ?>" class="footer-link" download><i
+                                        class="fas fa-file-pdf mr-2 text-sky-500"></i>Panduan PMW</a></li>
                             <!-- <li><a href="#" class="footer-link"><i class="fas fa-file-pdf mr-2 text-sky-500"></i>Template Proposal</a></li>
                             <li><a href="#" class="footer-link"><i class="fas fa-file-pdf mr-2 text-sky-500"></i>Peraturan PMW</a></li> -->
-                            <li><a href="#" class="footer-link"><i class="fas fa-question-circle mr-2 text-sky-500"></i>FAQ</a></li>
+                            <li><a href="#" class="footer-link"><i
+                                        class="fas fa-question-circle mr-2 text-sky-500"></i>FAQ</a></li>
                         </ul>
                     </div>
 
@@ -302,7 +313,8 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
                         <ul class="space-y-4">
                             <li class="flex items-start gap-3">
                                 <i class="fas fa-map-marker-alt text-sky-500 mt-1"></i>
-                                <span class="text-sm text-slate-600">Jl. Srijaya Negara, Bukit Besar, Palembang, Sumatera Selatan</span>
+                                <span class="text-sm text-slate-600">Jl. Srijaya Negara, Bukit Besar, Palembang, Sumatera
+                                    Selatan</span>
                             </li>
                             <li class="flex items-center gap-3">
                                 <i class="fas fa-phone text-sky-500"></i>
@@ -310,19 +322,20 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
                             </li>
                             <li class="flex items-center gap-3">
                                 <i class="fas fa-envelope text-sky-500"></i>
-                                <span class="text-sm text-slate-600">pmw@polsri.ac.id</span>
+                                <span class="text-sm text-slate-600">uptpkk_kewirausahaan@polsri.ac.id</span>
                             </li>
                         </ul>
                     </div>
                 </div>
 
                 <!-- Bottom -->
-                <div class="border-t border-sky-100 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div
+                    class="border-t border-sky-100 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
                     <p class="text-sm text-slate-500">
                         <?= date('Y') ?> Politeknik Negeri Sriwijaya. Hak Cipta Dilindungi.
                     </p>
                     <p class="text-sm text-slate-500">
-                        Dikembangkan dengan <i class="fas fa-heart-broken text-rose-500 mx-1"></i> oleh Tim PMW Polsri
+                        Dikembangkan dengan <i class="fas fa-heart text-rose-500 mx-1"></i> oleh Tim PMW Polsri
                     </p>
                 </div>
             </div>
@@ -330,8 +343,7 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
     <?php endif; ?>
 
     <!-- Toast Notifications -->
-    <div
-        x-data="{ 
+    <div x-data="{ 
             notifications: [],
             add(msg, type = 'info') {
                 const id = Date.now();
@@ -340,8 +352,7 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
                     this.notifications = this.notifications.filter(n => n.id !== id);
                 }, 5000);
             }
-        }"
-        x-init="
+        }" x-init="
             <?php if (session('message')): ?>
                 add('<?= addslashes(session('message')) ?>', 'success');
             <?php endif; ?>
@@ -356,28 +367,23 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
         "
         class="fixed top-24 z-9999 flex flex-col gap-3 w-full max-w-sm pointer-events-none <?= $isAuthPage ? 'left-1/2 -translate-x-1/2 px-4' : 'right-6' ?>">
         <template x-for="n in notifications" :key="n.id">
-            <div
-                x-show="true"
-                x-transition:enter="transition ease-out duration-300"
+            <div x-show="true" x-transition:enter="transition ease-out duration-300"
                 x-transition:enter-start="opacity-0 translate-x-12 scale-95"
                 x-transition:enter-end="opacity-100 translate-x-0 scale-100"
                 x-transition:leave="transition ease-in duration-200"
                 x-transition:leave-start="opacity-100 translate-x-0 scale-100"
-                x-transition:leave-end="opacity-0 translate-x-12 scale-95"
-                :class="{
+                x-transition:leave-end="opacity-0 translate-x-12 scale-95" :class="{
                     'bg-white border-emerald-100 text-emerald-800 shadow-emerald-100/50': n.type === 'success',
                     'bg-white border-rose-100 text-rose-800 shadow-rose-100/50': n.type === 'error',
                     'bg-white border-sky-100 text-sky-800 shadow-sky-100/50': n.type === 'info'
                 }"
                 class="pointer-events-auto flex items-start gap-3 p-4 rounded-2xl border shadow-xl backdrop-blur-xl bg-white/90">
                 <!-- Icon -->
-                <div
-                    :class="{
+                <div :class="{
                         'bg-emerald-500 text-white': n.type === 'success',
                         'bg-rose-500 text-white': n.type === 'error',
                         'bg-sky-500 text-white': n.type === 'info'
-                    }"
-                    class="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center">
+                    }" class="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center">
                     <i class="fas" :class="{
                         'fa-check text-sm': n.type === 'success',
                         'fa-exclamation text-sm': n.type === 'error',
@@ -387,12 +393,15 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
 
                 <!-- Content -->
                 <div class="flex-1 pt-0.5">
-                    <p class="text-sm font-semibold leading-tight mb-0.5" x-text="n.type === 'success' ? 'Berhasil' : (n.type === 'error' ? 'Terjadi Kesalahan' : 'Informasi')"></p>
+                    <p class="text-sm font-semibold leading-tight mb-0.5"
+                        x-text="n.type === 'success' ? 'Berhasil' : (n.type === 'error' ? 'Terjadi Kesalahan' : 'Informasi')">
+                    </p>
                     <p class="text-xs text-slate-500 font-medium leading-relaxed" x-text="n.msg"></p>
                 </div>
 
                 <!-- Close -->
-                <button @click="notifications = notifications.filter(notif => notif.id !== n.id)" class="text-slate-400 hover:text-slate-600 transition-colors">
+                <button @click="notifications = notifications.filter(notif => notif.id !== n.id)"
+                    class="text-slate-400 hover:text-slate-600 transition-colors">
                     <i class="fas fa-times text-xs"></i>
                 </button>
             </div>
