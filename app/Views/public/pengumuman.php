@@ -279,7 +279,7 @@
             </p>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div class="reveal-on-scroll stagger-1">
                 <a href="mailto:uptpkk_kewirausahaan@polsri.ac.id" class="group flex flex-col items-center p-10 rounded-[2.5rem] bg-white shadow-sm border border-slate-100 hover:border-sky-300 hover:shadow-2xl transition-liquid">
                     <div class="w-20 h-20 rounded-3xl bg-sky-50 flex items-center justify-center mb-6 group-hover:bg-sky-500 transition-liquid shadow-inner">
@@ -299,8 +299,26 @@
                     <p class="text-xl font-bold text-slate-900">@entrepreneurpolsri</p>
                 </a>
             </div>
-            
+
             <div class="reveal-on-scroll stagger-3">
+                <a href="https://wa.me/62895634548603" target="_blank" rel="noopener noreferrer"
+                class="group flex flex-col items-center p-10 rounded-[2.5rem] bg-white shadow-sm border border-slate-100 hover:border-sky-300 hover:shadow-2xl transition-liquid">
+                    
+                    <div class="w-20 h-20 rounded-3xl bg-emerald-50 flex items-center justify-center mb-6 group-hover:bg-emerald-500 transition-liquid shadow-inner">
+                        <i class="fab fa-whatsapp text-3xl text-emerald-600 group-hover:text-white transition-liquid"></i>
+                    </div>
+
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">
+                        Whatsapp / Telephone
+                    </p>
+
+                    <p class="text-xl font-bold text-slate-900">
+                        0895-6345-48603
+                    </p>
+                </a>
+            </div>
+            
+            <div class="reveal-on-scroll stagger-4">
                 <div class="group flex flex-col items-center p-10 rounded-[2.5rem] bg-white shadow-sm border border-slate-100 hover:border-sky-300 hover:shadow-2xl transition-liquid">
                     <div class="w-20 h-20 rounded-3xl bg-amber-50 flex items-center justify-center mb-6 group-hover:bg-amber-500 transition-liquid shadow-inner">
                         <i class="fas fa-map-marker-alt text-3xl text-amber-600 group-hover:text-white transition-liquid"></i>

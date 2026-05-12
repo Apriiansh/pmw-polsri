@@ -206,7 +206,7 @@ class ProfileController extends BaseController
         }
 
         $validationRules = [
-            'foto' => 'uploaded[foto]|is_image[foto]|max_size[foto,2048]|ext_in[foto,jpg,jpeg,png]',
+            'foto' => 'uploaded[foto]|is_image[foto]|max_size[foto,10240]|ext_in[foto,jpg,jpeg,png,webp]',
         ];
 
         if (! $this->validate($validationRules)) {
@@ -218,7 +218,7 @@ class ProfileController extends BaseController
         if ($foto && $foto->isValid() && ! $foto->hasMoved()) {
             // Verify mime type (security check)
             $mimeType = $foto->getMimeType();
-            $allowedMimes = ['image/jpeg', 'image/png', 'image/jpg'];
+            $allowedMimes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
             if (! in_array($mimeType, $allowedMimes)) {
                 return redirect()->back()->with('error', 'Format file foto tidak valid.');
             }
@@ -230,9 +230,17 @@ class ProfileController extends BaseController
                 file_put_contents($uploadDir . '/.htaccess', "deny from all\n");
             }
 
-            // Generate secure filename
-            $newName = $foto->getRandomName();
-            $foto->move($uploadDir, $newName);
+            // Generate secure filename with .jpg extension (for compressed output)
+            $newName = uniqid('profile_', true) . '.jpg';
+            $tempPath = $foto->getTempName();
+            
+            // Compress and resize image
+            $compressedPath = $this->compressImage($tempPath, $uploadDir . '/' . $newName, 1200, 85);
+            
+            if (! $compressedPath) {
+                return redirect()->back()->with('error', 'Gagal memproses gambar.');
+            }
+            
             $fotoPath = 'uploads/profiles/' . $newName;
 
             // Get current profile to delete old foto
@@ -474,5 +482,81 @@ class ProfileController extends BaseController
         return $this->response
             ->setContentType($mimeType)
             ->setBody(file_get_contents($filePath));
+    }
+
+    /**
+     * Compress and resize image using GD
+     * 
+     * @param string $sourcePath Path to source image
+     * @param string $destPath Path to destination image
+     * @param int $maxSize Maximum width/height dimension
+     * @param int $quality JPEG quality (0-100)
+     * @return string|null Returns destination path on success, null on failure
+     */
+    private function compressImage(string $sourcePath, string $destPath, int $maxSize = 1200, int $quality = 85): ?string
+    {
+        // Get image info
+        $imageInfo = getimagesize($sourcePath);
+        if ($imageInfo === false) {
+            return null;
+        }
+
+        [$width, $height, $type] = $imageInfo;
+
+        // Create image from source based on type
+        switch ($type) {
+            case IMAGETYPE_JPEG:
+                $sourceImage = imagecreatefromjpeg($sourcePath);
+                break;
+            case IMAGETYPE_PNG:
+                $sourceImage = imagecreatefrompng($sourcePath);
+                break;
+            case IMAGETYPE_WEBP:
+                $sourceImage = imagecreatefromwebp($sourcePath);
+                break;
+            default:
+                return null;
+        }
+
+        if (! $sourceImage) {
+            return null;
+        }
+
+        // Calculate new dimensions while maintaining aspect ratio
+        if ($width > $maxSize || $height > $maxSize) {
+            if ($width > $height) {
+                $newWidth = $maxSize;
+                $newHeight = (int)($height * ($maxSize / $width));
+            } else {
+                $newHeight = $maxSize;
+                $newWidth = (int)($width * ($maxSize / $height));
+            }
+        } else {
+            $newWidth = $width;
+            $newHeight = $height;
+        }
+
+        // Create resized image
+        $resizedImage = imagecreatetruecolor($newWidth, $newHeight);
+
+        // Handle transparency for PNG/WebP
+        if ($type === IMAGETYPE_PNG) {
+            imagealphablending($resizedImage, false);
+            imagesavealpha($resizedImage, true);
+            $transparent = imagecolorallocatealpha($resizedImage, 255, 255, 255, 127);
+            imagefilledrectangle($resizedImage, 0, 0, $newWidth, $newHeight, $transparent);
+        }
+
+        // Resize
+        imagecopyresampled($resizedImage, $sourceImage, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+        // Save as JPEG with compression
+        $result = imagejpeg($resizedImage, $destPath, $quality);
+
+        // Clean up
+        imagedestroy($sourceImage);
+        imagedestroy($resizedImage);
+
+        return $result ? $destPath : null;
     }
 }

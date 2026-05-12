@@ -318,7 +318,7 @@ $isAuthPage = in_array($currentUri, ['login', 'register']);
                             </li>
                             <li class="flex items-center gap-3">
                                 <i class="fas fa-phone text-sky-500"></i>
-                                <span class="text-sm text-slate-600">(0711) 353414</span>
+                                <span class="text-sm text-slate-600">0895-6345-48603</span>
                             </li>
                             <li class="flex items-center gap-3">
                                 <i class="fas fa-envelope text-sky-500"></i>

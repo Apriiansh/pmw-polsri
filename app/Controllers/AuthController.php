@@ -47,7 +47,6 @@ class AuthController extends BaseController
             'jurusan' => 'required',
             'prodi' => 'required|max_length[100]',
             'phone' => 'required|regex_match[/^[0-9\s\+\-\(\)]+$/]|min_length[10]|max_length[20]',
-            'foto' => 'permit_empty|is_image[foto]|max_size[foto,2048]|ext_in[foto,jpg,jpeg,png]',
             'semester' => 'permit_empty|numeric',
             'gender' => 'permit_empty|in_list[L,P]',
         ], [
@@ -78,31 +77,6 @@ class AuthController extends BaseController
         $last4Nim = substr((string) $data['nim'], -4);
         $data['username'] = $middleName . $last4Nim;
 
-        // Handle foto upload with security checks
-        $fotoPath = null;
-        $foto = $this->request->getFile('foto');
-        if ($foto && $foto->isValid() && !$foto->hasMoved()) {
-            // Verify mime type matches extension (security check)
-            $mimeType = $foto->getMimeType();
-            $allowedMimes = ['image/jpeg', 'image/png', 'image/jpg'];
-            if (!in_array($mimeType, $allowedMimes)) {
-                return redirect()->back()->withInput()->with('error', 'Format file foto tidak valid.');
-            }
-            
-            // Ensure upload directory exists and is secure
-            $uploadDir = WRITEPATH . 'uploads/profiles';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
-                // Create .htaccess to prevent direct access
-                file_put_contents($uploadDir . '/.htaccess', "deny from all\n");
-            }
-            
-            // Generate secure random filename
-            $newName = $foto->getRandomName();
-            $foto->move($uploadDir, $newName);
-            $fotoPath = 'uploads/profiles/' . $newName;
-        }
-
         // Create Shield user provider
         $users = auth()->getProvider();
 
@@ -121,6 +95,7 @@ class AuthController extends BaseController
             'username' => $finalUsername,
             'email' => $data['email'],
             'password' => $data['password'],
+            'active' => 1,
         ]);
 
         $db = \Config\Database::connect();
@@ -143,7 +118,6 @@ class AuthController extends BaseController
                 'prodi' => $data['prodi'],
                 'semester' => $data['semester'] ?? 1,
                 'phone' => $data['phone'],
-                'foto' => $fotoPath,
                 'gender' => $data['gender'] ?? 'L',
             ];
 
@@ -214,17 +188,9 @@ class AuthController extends BaseController
             return redirect()->to('mahasiswa/pitching-desk')->with('message', 'Registrasi berhasil! Mulai dengan melengkapi Pitching Desk.');
         } catch (ValidationException $e) {
             $db->transRollback();
-            // Delete uploaded foto if error
-            if ($fotoPath && file_exists(WRITEPATH . $fotoPath)) {
-                unlink(WRITEPATH . $fotoPath);
-            }
             return redirect()->back()->withInput()->with('error', 'Validasi gagal: ' . $e->getMessage());
         } catch (\Exception $e) {
             $db->transRollback();
-            // Delete uploaded foto if error
-            if ($fotoPath && file_exists(WRITEPATH . $fotoPath)) {
-                unlink(WRITEPATH . $fotoPath);
-            }
             return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }

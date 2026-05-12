@@ -20,8 +20,6 @@
             passwordStrength: 0,
             passwordStrengthText: '',
             passwordStrengthColor: 'text-slate-400',
-            fotoPreview: null,
-            fotoName: '',
 
             init() {
                 this.generateUsername();
@@ -102,32 +100,6 @@
                 });
             },
 
-            handleFotoChange(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    // Check size (2MB)
-                    if (file.size > 2 * 1024 * 1024) {
-                        this.showToast('Ukuran file maksimal 2MB', 'error');
-                        event.target.value = '';
-                        return;
-                    }
-                    
-                    this.fotoName = file.name;
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        this.fotoPreview = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            },
-
-            removeFoto() {
-                this.fotoPreview = null;
-                this.fotoName = '';
-                const input = document.querySelector('input[name="foto"]');
-                if (input) input.value = '';
-            },
-
             showToast(message, type = 'info') {
                 const toast = document.createElement('div');
                 const bgColor = type === 'success' ? 'bg-emerald-500' : type === 'error' ? 'bg-rose-500' : 'bg-sky-500';
@@ -184,7 +156,7 @@
                     </div>
                 <?php endif; ?>
 
-                <form action="<?= base_url('register') ?>" method="post" enctype="multipart/form-data" class="space-y-5 sm:space-y-6">
+                <form action="<?= base_url('register') ?>" method="post" class="space-y-5 sm:space-y-6">
                     <?= csrf_field() ?>
 
                     <input type="hidden" name="username" :value="username">
@@ -365,54 +337,6 @@
                         <p class="mt-1.5 text-[11px] text-slate-400 italic">Pastikan nomor aktif untuk koordinasi via WhatsApp.</p>
                         <?php if (isset(session('errors')['phone'])): ?>
                             <p class="mt-1 text-xs text-rose-500"><?= session('errors')['phone'] ?></p>
-                        <?php endif; ?>
-                    </div>
-
-                    <!-- Foto Profile -->
-                    <div class="bg-slate-50 rounded-xl p-4 sm:p-5 border border-slate-100">
-                        <label class="block text-sm font-medium text-slate-700 mb-3">Foto Profil (Opsional)</label>
-                        
-                        <!-- Foto Preview -->
-                        <div x-show="fotoPreview" x-cloak class="mb-4 flex items-center gap-4">
-                            <div class="relative">
-                                <img :src="fotoPreview" class="w-20 h-20 rounded-xl object-cover border-2 border-sky-200 shadow-sm">
-                                <button type="button" @click="removeFoto()" class="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-rose-600 transition-colors shadow-sm">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-slate-700 truncate" x-text="fotoName"></p>
-                                <p class="text-xs text-slate-500">Foto siap diupload</p>
-                            </div>
-                        </div>
-                        
-                        <!-- File Input -->
-                        <div x-show="!fotoPreview" x-cloak>
-                            <input type="file" name="foto" accept="image/jpeg,image/jpg,image/png" @change="handleFotoChange($event)"
-                                class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-sky-400 outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 text-sm">
-                        </div>
-                        
-                        <!-- Re-upload button when preview exists -->
-                        <div x-show="fotoPreview" x-cloak class="mt-2">
-                            <input type="file" name="foto" accept="image/jpeg,image/jpg,image/png" @change="handleFotoChange($event)" id="foto-reupload"
-                                class="hidden">
-                            <button type="button" onclick="document.getElementById('foto-reupload').click()" 
-                                class="text-sm text-sky-600 hover:text-sky-700 font-medium flex items-center gap-1.5">
-                                <i class="fas fa-sync-alt"></i> Ganti foto
-                            </button>
-                        </div>
-                        
-                        <div class="mt-2 flex items-start gap-2">
-                            <i class="fas fa-shield-alt text-emerald-500 text-xs mt-0.5"></i>
-                            <div>
-                                <p class="text-[11px] text-slate-500">Format: JPG, JPEG, PNG. Maks: 2MB.</p>
-                                <p class="text-[11px] text-emerald-600 font-medium">File dienkripsi & dipindai untuk keamanan</p>
-                            </div>
-                        </div>
-                        <?php if (isset(session('errors')['foto'])): ?>
-                            <p class="mt-2 text-xs text-rose-500 flex items-center gap-1">
-                                <i class="fas fa-exclamation-triangle"></i><?= session('errors')['foto'] ?>
-                            </p>
                         <?php endif; ?>
                     </div>
 

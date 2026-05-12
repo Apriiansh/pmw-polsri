@@ -123,13 +123,21 @@
                         $statusText = $user->active ? 'Aktif' : 'Nonaktif';
                         $statusIcon = $user->active ? 'fa-circle-check' : 'fa-circle-xmark';
                     ?>
+                        <?php
+                        $hasFoto = !empty($user->profile['foto']);
+                        $fotoUrl = $hasFoto ? base_url('profile/foto/' . $user->id) : null;
+                        ?>
                         <tr class="user-row group" data-role="<?= $mainGroup ?>">
                             <!-- User Info -->
                             <td class="whitespace-nowrap">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-linear-to-tr from-sky-500 to-sky-400 flex items-center justify-center text-white font-display font-bold text-xs sm:text-sm shrink-0">
-                                        <?= strtoupper(substr($user->username, 0, 2)) ?>
-                                    </div>
+                                    <?php if ($hasFoto): ?>
+                                        <img src="<?= $fotoUrl ?>" alt="<?= esc($user->username) ?>" class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl object-cover border-2 border-sky-100 shrink-0">
+                                    <?php else: ?>
+                                        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-linear-to-tr from-sky-500 to-sky-400 flex items-center justify-center text-white font-display font-bold text-xs sm:text-sm shrink-0">
+                                            <?= strtoupper(substr($user->username, 0, 2)) ?>
+                                        </div>
+                                    <?php endif; ?>
                                     <div class="min-w-0">
                                         <div class="font-display font-bold text-(--text-heading) text-[13px] truncate max-w-[120px] sm:max-w-none">
                                             <?= esc($user->username) ?>
@@ -175,7 +183,7 @@
                                     $profileEscaped = htmlspecialchars($profileJson, ENT_QUOTES, 'UTF-8');
                                     ?>
                                     <button type="button"
-                                        onclick='openUserModal(<?= $user->id ?>, "<?= esc($user->username) ?>", "<?= esc($user->email ?? '-') ?>", "<?= $roleLabel ?>", "<?= $mainGroup ?>", <?= $user->active ? 'true' : 'false' ?>, "<?= $user->created_at ? date('d M Y H:i', strtotime($user->created_at->toDateTimeString())) : '-' ?>", "<?= $mainGroup ?>", <?= $profileJson ?>)'
+                                        onclick='openUserModal(<?= $user->id ?>, "<?= esc($user->username) ?>", "<?= esc($user->email ?? '-') ?>", "<?= $roleLabel ?>", "<?= $mainGroup ?>", <?= $user->active ? 'true' : 'false' ?>, "<?= $user->created_at ? date('d M Y H:i', strtotime($user->created_at->toDateTimeString())) : '-' ?>", "<?= $mainGroup ?>", <?= $profileJson ?>, "<?= $fotoUrl ?? '' ?>")'
                                         class="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg bg-violet-50 text-violet-500 hover:bg-violet-500 hover:text-white transition-all"
                                         title="Detail">
                                         <i class="fas fa-eye text-[11px] sm:text-xs"></i>
@@ -258,8 +266,8 @@
                 <div class="px-6 py-5">
                     <!-- Avatar & Username -->
                     <div class="text-center mb-5">
-                        <div id="modal-avatar" class="w-16 h-16 mx-auto rounded-2xl bg-linear-to-tr from-sky-500 to-sky-400 flex items-center justify-center text-white font-display font-bold text-xl mb-3">
-                            --
+                        <div id="modal-avatar-container" class="w-16 h-16 mx-auto rounded-2xl bg-linear-to-tr from-sky-500 to-sky-400 flex items-center justify-center text-white font-display font-bold text-xl mb-3 overflow-hidden">
+                            <div id="modal-avatar">--</div>
                         </div>
                         <h4 id="modal-username" class="font-display font-bold text-lg text-slate-800">--</h4>
                         <span id="modal-role-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border mt-2">
@@ -395,10 +403,17 @@
         document.getElementById('visible-user-count').textContent = visibleCount;
     }
 
-    function openUserModal(id, username, email, roleLabel, roleKey, isActive, createdAt, roleGroup, profileData) {
-        // Set avatar initials
-        const initials = username.substring(0, 2).toUpperCase();
-        document.getElementById('modal-avatar').textContent = initials;
+    function openUserModal(id, username, email, roleLabel, roleKey, isActive, createdAt, roleGroup, profileData, fotoUrl) {
+        // Set avatar
+        const avatarContainer = document.getElementById('modal-avatar-container');
+        const avatarEl = document.getElementById('modal-avatar');
+        if (fotoUrl && fotoUrl !== '') {
+            avatarContainer.innerHTML = `<img src="${fotoUrl}" alt="${username}" class="w-full h-full object-cover">`;
+        } else {
+            avatarContainer.innerHTML = '<div id="modal-avatar">--</div>';
+            const initials = username.substring(0, 2).toUpperCase();
+            document.getElementById('modal-avatar').textContent = initials;
+        }
 
         // Set text content
         document.getElementById('modal-userid').textContent = id;

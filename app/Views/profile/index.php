@@ -246,7 +246,7 @@
                             :class="activeTab === 'foto' ? 'active' : ''"
                             class="sidebar-item w-full">
                             <i class="fas fa-camera-retro sidebar-item-icon"></i>
-                            <span class="sidebar-item-label">Foto Biometrik</span>
+                            <span class="sidebar-item-label">Foto Profile</span>
                             <template x-if="activeTab === 'foto'">
                                 <i class="fas fa-chevron-right text-[10px] ml-auto"></i>
                             </template>
@@ -558,11 +558,11 @@
                                 <li>Wajah menghadap ke depan dan terlihat jelas</li>
                                 <li>Latar belakang polos (disarankan putih atau biru)</li>
                                 <li>Pencahayaan cukup, tidak ada bayangan menutupi wajah</li>
-                                <li>Format file JPG/PNG/WebP, maksimal 2MB</li>
+                                <li>Format file JPG/PNG/WebP, maksimal 10MB (dikompres otomatis)</li>
                             </ul>
                         </div>
 
-                        <form action="<?= base_url('profile/upload-foto') ?>" method="post" enctype="multipart/form-data" class="space-y-6">
+                        <form action="<?= base_url('profile/foto') ?>" method="post" enctype="multipart/form-data" class="space-y-6">
                             <?= csrf_field() ?>
                             
                             <div class="form-field">
@@ -873,20 +873,7 @@
                             </button>
                         </div>
 
-                        <div class="pmw-status pmw-status-warning py-4 px-5 rounded-2xl flex items-start gap-3">
-                            <div class="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-                                <i class="fas fa-circle-exclamation text-amber-600 text-sm"></i>
-                            </div>
-                            <div>
-                                <h5 class="text-xs font-bold text-amber-800 uppercase tracking-tight mb-0.5">Aturan Pembentukan Tim</h5>
-                                <p class="text-[11px] text-amber-700/80 leading-relaxed font-medium">Maksimal anggota tim adalah 5 orang (1 Ketua + 4 Anggota). Pastikan seluruh data valid sesuai dengan data di sistem akademik untuk kelancaran verifikasi proposal.</p>
-                            </div>
-                        </div>
-
                         <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
-                            <button type="reset" class="btn-ghost btn-sm">
-                                Reset Semua
-                            </button>
                             <button type="submit" class="btn-primary">
                                 <i class="fas fa-cloud-check mr-2 text-xs"></i>
                                 Simpan Perubahan Tim
