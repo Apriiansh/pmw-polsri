@@ -15,10 +15,9 @@ class PmwSelectionPitchingModel extends Model
     protected $allowedFields    = [
         'proposal_id',
         'student_submitted_at',
-        'dosen_status',
-        'admin_status',
-        'dosen_catatan',
-        'admin_catatan'
+        'status',
+        'catatan',
+        'persentase_nilai',
     ];
 
     // Dates

@@ -113,7 +113,16 @@
                 }
 
                 $displayName = $profile->nama ?? ($user->username ?? 'User');
-                $displayRole = $user ? ($user->getGroups()[0] ?? 'User') : 'Visitor';
+                $rawRole = $user ? ($user->getGroups()[0] ?? 'User') : 'Visitor';
+                $roleLabels = [
+                    'admin'     => 'Administrator',
+                    'mahasiswa' => 'Mahasiswa',
+                    'dosen'     => 'Dosen',
+                    'mentor'    => 'Mentor',
+                    'reviewer'  => 'Reviewer',
+                    'penilai'   => 'Penilai',
+                ];
+                $displayRole = $roleLabels[$rawRole] ?? ucfirst($rawRole);
 
                 // Calculate initials
                 $initials = '??';
@@ -260,6 +269,10 @@
                     // Monitoring Tim - Tahap x (Implementasi & Monev)
                     $navItems[] = ['route' => 'mentor/monitoring', 'icon' => 'fa-briefcase', 'label' => 'Monitoring Tim', 'match' => 'mentor/monitoring'];
                 }
+
+                if ($mainRole === 'penilai') {
+                    $navItems[] = ['route' => 'penilai/pitching-desk', 'icon' => 'fa-gavel', 'label' => 'Penilaian Pitching Desk', 'match' => 'penilai/pitching-desk'];
+                }
                 $currentUrl = current_url();
                 $currentPath = trim((string) parse_url($currentUrl, PHP_URL_PATH), '/');
 
@@ -356,7 +369,8 @@
                     <?php } ?>
                 <?php endforeach; ?>
 
-                <!-- Divider -->
+                <!-- Divider (hidden for penilai) -->
+                <?php if ($mainRole !== 'penilai'): ?>
                 <div class="pt-2 pb-1">
                     <div
                         class="transition-all duration-300 ease-smooth overflow-hidden"
@@ -366,6 +380,7 @@
                         </p>
                     </div>
                 </div>
+                <?php endif; ?>
 
                 <!-- Bottom Items -->
                 <?php

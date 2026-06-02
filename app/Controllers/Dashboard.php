@@ -87,7 +87,9 @@ class Dashboard extends BaseController
         $data['activePeriod'] = $this->activePeriod;
         $data['updates'] = $updates;
 
-        return view('dashboard/index', $data);
+        $viewName = $data['view'] ?? 'dashboard/index';
+        unset($data['view']);
+        return view($viewName, $data);
     }
 
     private function timeAgo($timestamp)
@@ -109,6 +111,7 @@ class Dashboard extends BaseController
             'reviewer'  => $this->getReviewerData($userId),
             'dosen'     => $this->getDosenData($userId),
             'mentor'    => $this->getMentorData($userId),
+            'penilai'   => $this->getPenilaiData(),
             default     => $this->getDefaultData(),
         };
     }
@@ -130,13 +133,13 @@ class Dashboard extends BaseController
             ->select([
                 'p.id', 'p.nama_usaha', 'p.kategori_wirausaha', 'p.created_at',
                 'pm.nama as ketua_nama',
-                'sp.admin_status as pitching_admin_status',
+                'sp.status as pitching_admin_status',
                 'sp.student_submitted_at',
             ])
             ->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id')
             ->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left')
             ->where('sp.student_submitted_at IS NOT NULL')
-            ->whereIn('sp.admin_status', ['pending', 'revision'])
+            ->whereIn('sp.status', ['pending', 'revision'])
             ->orderBy('sp.student_submitted_at', 'ASC')
             ->limit(5)
             ->get()->getResultArray();
@@ -182,7 +185,7 @@ class Dashboard extends BaseController
                 ],
                 [
                     'title' => 'Butuh Review', 
-                    'value' => $db->table('pmw_selection_pitching')->where('student_submitted_at IS NOT NULL')->where('admin_status', 'pending')->countAllResults(), 
+                    'value' => $db->table('pmw_selection_pitching')->where('student_submitted_at IS NOT NULL')->where('status', 'pending')->countAllResults(), 
                     'icon' => 'fa-clock-rotate-left', 
                     'trend' => 'Antrean Pitching', 
                     'trend_up' => false, 
@@ -211,7 +214,7 @@ class Dashboard extends BaseController
         // 2. Pitching
         $pitching = $db->table('pmw_selection_pitching')
             ->where('proposal_id', $proposalId)
-            ->where('admin_status', 'approved')
+            ->where('status', 'approved')
             ->get()->getRowArray();
         if ($pitching) {
             $progress = 25;
@@ -495,5 +498,103 @@ class Dashboard extends BaseController
     private function getDefaultData(): array
     {
         return $this->getAdminData();
+    }
+
+    private function getPenilaiData(): array
+    {
+        $db = \Config\Database::connect();
+
+        // Stats - pitching submissions & progress
+        $pitchingSubmitted = (clone $db)->table('pmw_selection_pitching')
+            ->where('student_submitted_at IS NOT NULL')
+            ->countAllResults();
+
+        $pitchingPending = (clone $db)->table('pmw_selection_pitching')
+            ->where('student_submitted_at IS NOT NULL')
+            ->where('status', 'pending')
+            ->countAllResults();
+
+        $pitchingApproved = (clone $db)->table('pmw_selection_pitching')
+            ->where('status', 'approved')
+            ->countAllResults();
+
+        $pitchingGraded = (clone $db)->table('pmw_selection_pitching')
+            ->where('student_submitted_at IS NOT NULL')
+            ->where('persentase_nilai IS NOT NULL')
+            ->countAllResults();
+
+        // Ranking Top 10 by persentase_nilai DESC, with category split
+        $rankingPemula = $db->table('pmw_proposals p')
+            ->select([
+                'p.id', 'p.nama_usaha', 'p.kategori_wirausaha',
+                'pm.nama as ketua_nama',
+                'per.name as period_name',
+                'sp.persentase_nilai', 'sp.status', 'sp.catatan', 'sp.student_submitted_at',
+            ])
+            ->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left')
+            ->join('pmw_periods per', 'per.id = p.period_id', 'left')
+            ->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left')
+            ->where('sp.student_submitted_at IS NOT NULL')
+            ->where('sp.persentase_nilai IS NOT NULL')
+            ->where('p.kategori_wirausaha', 'pemula')
+            ->orderBy('sp.persentase_nilai', 'DESC')
+            ->orderBy('sp.updated_at', 'DESC')
+            ->limit(10)
+            ->get()->getResultArray();
+
+        $rankingBerkembang = $db->table('pmw_proposals p')
+            ->select([
+                'p.id', 'p.nama_usaha', 'p.kategori_wirausaha',
+                'pm.nama as ketua_nama',
+                'per.name as period_name',
+                'sp.persentase_nilai', 'sp.status', 'sp.catatan', 'sp.student_submitted_at',
+            ])
+            ->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left')
+            ->join('pmw_periods per', 'per.id = p.period_id', 'left')
+            ->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left')
+            ->where('sp.student_submitted_at IS NOT NULL')
+            ->where('sp.persentase_nilai IS NOT NULL')
+            ->where('p.kategori_wirausaha', 'berkembang')
+            ->orderBy('sp.persentase_nilai', 'DESC')
+            ->orderBy('sp.updated_at', 'DESC')
+            ->limit(10)
+            ->get()->getResultArray();
+
+        // Recent activity (5 latest validated)
+        $recent = $db->table('pmw_proposals p')
+            ->select([
+                'p.id', 'p.nama_usaha', 'p.kategori_wirausaha',
+                'pm.nama as ketua_nama',
+                'sp.persentase_nilai', 'sp.status', 'sp.updated_at',
+            ])
+            ->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left')
+            ->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left')
+            ->where('sp.student_submitted_at IS NOT NULL')
+            ->where('sp.status !=', 'pending')
+            ->orderBy('sp.updated_at', 'DESC')
+            ->limit(5)
+            ->get()->getResultArray();
+
+        return [
+            'header_title'    => 'Penilaian Pitching Desk',
+            'header_subtitle' => 'Pantau antrean, beri nilai, dan lihat juara pitching',
+            'view'            => 'penilai/dashboard',
+            'stats' => [
+                ['title' => 'Total Pengajuan', 'value' => $pitchingSubmitted, 'icon' => 'fa-paper-plane', 'trend' => 'Mahasiswa', 'trend_up' => null, 'bg' => 'bg-sky-50', 'icon_color' => 'text-sky-500', 'span' => 'col-span-1'],
+                ['title' => 'Menunggu Nilai', 'value' => $pitchingPending, 'icon' => 'fa-clock-rotate-left', 'trend' => 'Belum dinilai', 'trend_up' => false, 'bg' => 'bg-amber-50', 'icon_color' => 'text-amber-500', 'span' => 'col-span-1'],
+                ['title' => 'Sudah Dinilai', 'value' => $pitchingGraded, 'icon' => 'fa-percent', 'trend' => 'Ada nilai', 'trend_up' => true, 'bg' => 'bg-emerald-50', 'icon_color' => 'text-emerald-500', 'span' => 'col-span-1'],
+                ['title' => 'Lolos Pitching', 'value' => $pitchingApproved, 'icon' => 'fa-trophy', 'trend' => 'Approved', 'trend_up' => true, 'bg' => 'bg-violet-50', 'icon_color' => 'text-violet-500', 'span' => 'col-span-1'],
+            ],
+            'ranking_pemula'      => $rankingPemula,
+            'ranking_berkembang'  => $rankingBerkembang,
+            'recent'              => $recent,
+            'proposals'           => $recent,
+            'quickActions' => [
+                ['url' => 'penilai/pitching-desk', 'icon' => 'fa-gavel', 'label' => 'Buka Antrean Pitching', 'style' => 'btn-primary'],
+                ['url' => 'penilai/pitching-desk?status=approved', 'icon' => 'fa-trophy', 'label' => 'Lihat Tim Lolos', 'style' => 'btn-outline'],
+            ],
+            'tableTitle'    => 'Aktivitas Penilaian Terbaru',
+            'tableSubtitle' => '5 tim terakhir yang Anda (atau penilai lain) nilai',
+        ];
     }
 }

@@ -7,6 +7,7 @@ use App\Models\ProfileModel;
 use App\Models\LecturerModel;
 use App\Models\MentorModel;
 use App\Models\ReviewerModel;
+use App\Models\PmwPenilaiModel;
 use App\Models\PmwPeriodModel;
 use App\Models\PmwScheduleModel;
 use App\Models\PmwDocumentModel;
@@ -116,6 +117,10 @@ class AdminController extends BaseController
                 $reviewerModel = new ReviewerModel();
                 $profileData = $reviewerModel->where('user_id', $id)->first();
                 break;
+            case 'penilai':
+                $penilaiModel = new PmwPenilaiModel();
+                $profileData = $penilaiModel->where('user_id', $id)->first();
+                break;
         }
 
         $data = [
@@ -145,7 +150,7 @@ class AdminController extends BaseController
             'username' => 'required|min_length[3]|max_length[30]|is_unique[users.username]',
             'email'    => 'required|valid_email|is_unique[auth_identities.secret]',
             'password' => 'required|min_length[8]',
-            'role'     => 'required|in_list[admin,mahasiswa,dosen,mentor,reviewer]',
+            'role'     => 'required|in_list[admin,mahasiswa,dosen,mentor,reviewer,penilai]',
             'nama'     => 'required|min_length[3]|max_length[100]',
         ];
 
@@ -217,7 +222,7 @@ class AdminController extends BaseController
         $rules = [
             'username' => "required|min_length[3]|max_length[30]|is_unique[users.username,id,{$id}]",
             'email'    => 'required|valid_email',
-            'role'     => 'required|in_list[admin,mahasiswa,dosen,mentor,reviewer]',
+            'role'     => 'required|in_list[admin,mahasiswa,dosen,mentor,reviewer,penilai]',
             'nama'     => 'required|min_length[3]|max_length[100]',
         ];
 
@@ -903,6 +908,20 @@ class AdminController extends BaseController
                 ]);
                 break;
 
+            case 'penilai':
+                $penilaiModel = new PmwPenilaiModel();
+                $penilaiModel->insert([
+                    'user_id'     => $userId,
+                    'nama'        => $data['nama'] ?? $data['username'],
+                    'nidn'        => $data['nidn'] ?? '',
+                    'nip'         => $data['nip'] ?? '',
+                    'institution' => $data['institution'] ?? '',
+                    'expertise'   => $data['penilai_expertise'] ?? $data['expertise'] ?? '',
+                    'phone'       => $data['phone'] ?? '',
+                    'bio'         => $data['penilai_bio'] ?? $data['bio'] ?? '',
+                ]);
+                break;
+
             case 'admin':
                 // Create minimal profile for admin to store name
                 $profileModel = new ProfileModel();
@@ -1012,6 +1031,26 @@ class AdminController extends BaseController
                 }
                 break;
 
+            case 'penilai':
+                $penilaiModel = new PmwPenilaiModel();
+                $existing = $penilaiModel->where('user_id', $userId)->first();
+                $profileData = [
+                    'user_id'     => $userId,
+                    'nama'        => $data['nama'] ?? $data['username'],
+                    'nidn'        => $data['nidn'] ?? '',
+                    'nip'         => $data['nip'] ?? '',
+                    'institution' => $data['institution'] ?? '',
+                    'expertise'   => $data['penilai_expertise'] ?? $data['expertise'] ?? '',
+                    'phone'       => $data['phone'] ?? '',
+                    'bio'         => $data['penilai_bio'] ?? $data['bio'] ?? '',
+                ];
+                if ($existing) {
+                    $penilaiModel->update($existing['id'], $profileData);
+                } else {
+                    $penilaiModel->insert($profileData);
+                }
+                break;
+
             case 'admin':
                 $profileModel = new ProfileModel();
                 $existing = $profileModel->where('user_id', $userId)->first();
@@ -1066,6 +1105,13 @@ class AdminController extends BaseController
                     $reviewerModel->delete($existing['id']);
                 }
                 break;
+            case 'penilai':
+                $penilaiModel = new PmwPenilaiModel();
+                $existing = $penilaiModel->where('user_id', $userId)->first();
+                if ($existing) {
+                    $penilaiModel->delete($existing['id']);
+                }
+                break;
         }
     }
 
@@ -1116,7 +1162,7 @@ class AdminController extends BaseController
             '(SELECT COUNT(*) FROM pmw_activity_schedules pas 
               JOIN pmw_activity_logbooks pal ON pal.schedule_id = pas.id 
               WHERE pas.proposal_id = p.id AND pal.status = "approved") as total_kegiatan',
-            'sp.admin_status as pitching_admin_status',
+            'sp.status as pitching_admin_status',
             'sp.student_submitted_at',
             '(SELECT status FROM pmw_reports WHERE proposal_id = p.id AND type = "kemajuan" ORDER BY created_at DESC LIMIT 1) as kemajuan_status',
             '(SELECT status FROM pmw_reports WHERE proposal_id = p.id AND type = "akhir" ORDER BY created_at DESC LIMIT 1) as akhir_status',
@@ -1129,7 +1175,7 @@ class AdminController extends BaseController
         $builder->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left');
 
         // Only show teams that have passed pitching desk (approved by admin)
-        $builder->where('sp.admin_status', 'approved');
+        $builder->where('sp.status', 'approved');
 
         // Apply filters
         if ($periodFilter) {

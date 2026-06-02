@@ -60,8 +60,9 @@ class PmwProposalModel extends Model
                 'l.nama as dosen_nama',
                 'm.nama as mentor_nama',
                 'sp.student_submitted_at as student_submitted_at',
-                'sp.admin_status as pitching_admin_status',
-                'sp.admin_catatan as pitching_admin_catatan',
+                'sp.status as pitching_admin_status',
+                'sp.catatan as pitching_admin_catatan',
+                'sp.persentase_nilai as pitching_persentase_nilai',
                 'pj.admin_status as perjanjian_status',
                 'pj.created_at as perjanjian_submitted_at',
                 'pj.admin_catatan as perjanjian_catatan',
@@ -107,7 +108,7 @@ class PmwProposalModel extends Model
             'l.nip as dosen_nip',
             'per.name as period_name',
             'per.year as period_year',
-            'sp.admin_status as pitching_admin_status',
+            'sp.status as pitching_admin_status',
             'spr.dosen_status as proposal_dosen_status',
             'spr.admin_status as proposal_admin_status',
             '(SELECT COUNT(*) FROM pmw_proposal_members pm2 WHERE pm2.proposal_id = p.id) as member_count',
@@ -156,8 +157,9 @@ class PmwProposalModel extends Model
             'per.name as period_name',
             'per.year as period_year',
             // Add selection statuses
-            'sp.admin_status as pitching_admin_status',
-            'sp.admin_catatan as pitching_admin_catatan',
+            'sp.status as pitching_admin_status',
+            'sp.catatan as pitching_admin_catatan',
+            'sp.persentase_nilai as pitching_persentase_nilai',
             'sp.student_submitted_at',
             'spr.dosen_status as proposal_dosen_status',
             'spr.dosen_catatan as proposal_dosen_catatan',
@@ -284,7 +286,7 @@ class PmwProposalModel extends Model
             'l.nama as dosen_nama',
             'per.name as period_name',
             'per.year as period_year',
-            'sp.admin_status as pitching_admin_status',
+            'sp.status as pitching_admin_status',
             'sp.student_submitted_at',
             'pa.lecturer_id',
             '(SELECT id FROM pmw_documents WHERE proposal_id = p.id AND doc_key = "pitching_ppt" LIMIT 1) as pitching_ppt_id'
@@ -294,26 +296,26 @@ class PmwProposalModel extends Model
         $builder->join('pmw_lecturers l', 'l.id = pa.lecturer_id', 'left');
         $builder->join('pmw_periods per', 'per.id = p.period_id', 'left');
         $builder->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left');
-        
+
         $builder->where('l.user_id', $lecturerUserId);
         $builder->where('sp.student_submitted_at IS NOT NULL');
-        
+
         if ($statusFilter) {
-            $builder->where('sp.admin_status', $statusFilter);
+            $builder->where('sp.status', $statusFilter);
         }
-        
+
         $builder->orderBy('p.updated_at', 'DESC');
-        
+
         return $builder->get()->getResultArray();
     }
 
     /**
-     * Get proposals for Admin Pitching Desk validation
+     * Get proposals for Admin/Penilai Pitching Desk validation
      */
-    public function getProposalsForAdminPitching(?string $statusFilter = null): array
+    public function getProposalsForAdminPitching(?string $statusFilter = null, ?string $kategoriFilter = null): array
     {
         $db = \Config\Database::connect();
-        
+
         $builder = $db->table('pmw_proposals p');
         $builder->select([
             'p.*',
@@ -321,22 +323,31 @@ class PmwProposalModel extends Model
             'pm.nim as ketua_nim',
             'per.name as period_name',
             'per.year as period_year',
-            'sp.admin_status as pitching_admin_status',
+            'sp.status as pitching_admin_status',
+            'sp.catatan as pitching_admin_catatan',
+            'sp.persentase_nilai as pitching_persentase_nilai',
             'sp.student_submitted_at',
             '(SELECT id FROM pmw_documents WHERE proposal_id = p.id AND doc_key = "pitching_ppt" LIMIT 1) as pitching_ppt_id'
         ]);
         $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
         $builder->join('pmw_periods per', 'per.id = p.period_id', 'left');
         $builder->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left');
-        
+
         $builder->where('sp.student_submitted_at IS NOT NULL');
-        
+
         if ($statusFilter) {
-            $builder->where('sp.admin_status', $statusFilter);
+            $builder->where('sp.status', $statusFilter);
         }
-        
+
+        if ($kategoriFilter && in_array($kategoriFilter, ['pemula', 'berkembang'], true)) {
+            $builder->where('p.kategori_wirausaha', $kategoriFilter);
+        }
+
+        // Sort: pending first, then by persentase_nilai DESC
+        $builder->orderBy("CASE WHEN sp.status = 'pending' THEN 0 ELSE 1 END", 'ASC', false);
+        $builder->orderBy('sp.persentase_nilai', 'DESC', false);
         $builder->orderBy('p.updated_at', 'DESC');
-        
+
         return $builder->get()->getResultArray();
     }
 
@@ -454,7 +465,7 @@ class PmwProposalModel extends Model
             // Initialize Pitching Selection
             $db->table('pmw_selection_pitching')->insert([
                 'proposal_id'  => $proposalId,
-                'admin_status' => 'pending',
+                'status'       => 'pending',
                 'created_at'   => date('Y-m-d H:i:s'),
                 'updated_at'   => date('Y-m-d H:i:s'),
             ]);

@@ -18,12 +18,14 @@ class PitchingDeskController extends BaseController
     public function index()
     {
         $proposalModel = new PmwProposalModel();
-        
-        $statusFilter = $this->request->getGet('status');
-        $proposals = $proposalModel->getProposalsForAdminPitching($statusFilter);
-        
+
+        $statusFilter   = $this->request->getGet('status') ?? 'pending';
+        $kategoriFilter = $this->request->getGet('kategori');
+
+        $proposals = $proposalModel->getProposalsForAdminPitching($statusFilter, $kategoriFilter);
+
         // Stats for Admin Pitching stage
-        $allProposals = $proposalModel->getProposalsForAdminPitching();
+        $allProposals = $proposalModel->getProposalsForAdminPitching(null, $kategoriFilter);
         $stats = [
             'total'     => count($allProposals),
             'pending'   => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'pending' && empty($p['student_submitted_at']))),
@@ -38,6 +40,7 @@ class PitchingDeskController extends BaseController
             'proposals'       => $proposals,
             'stats'           => $stats,
             'statusFilter'    => $statusFilter,
+            'kategoriFilter'  => $kategoriFilter,
         ]);
     }
 
@@ -81,24 +84,36 @@ class PitchingDeskController extends BaseController
     {
         $proposalModel = new PmwProposalModel();
         $selectionModel = new \App\Models\Selection\PmwSelectionPitchingModel();
-        
+
         $proposal = $proposalModel->getProposalForValidation($id);
-        
+
         if (!$proposal) {
             return redirect()->to('admin/pitching-desk')->with('error', 'Akses ditolak');
         }
 
-        $status = $this->request->getPost('status');
+        $status  = $this->request->getPost('status');
         $catatan = $this->request->getPost('catatan');
+        $persentaseNilai = $this->request->getPost('persentase_nilai');
+
+        // Validate catatan: wajib diisi (min 5 char agar tidak cuma titik)
+        $rules = [
+            'catatan' => 'required|min_length[5]|max_length[1000]',
+        ];
+        if (!$this->validateData(['catatan' => $catatan], $rules)) {
+            return redirect()->back()->withInput()->with('error', 'Catatan validasi wajib diisi (minimal 5 karakter) agar mahasiswa mendapat umpan balik yang jelas.');
+        }
 
         if (!in_array($status, ['approved', 'rejected', 'revision'])) {
             return redirect()->back()->with('error', 'Status tidak valid');
         }
 
         $updateData = [
-            'admin_status'  => $status,
-            'admin_catatan' => $catatan ?: null,
-            'updated_at'    => date('Y-m-d H:i:s'),
+            'status'           => $status,
+            'catatan'          => $catatan,
+            'persentase_nilai' => ($persentaseNilai !== null && $persentaseNilai !== '')
+                ? (float) $persentaseNilai
+                : null,
+            'updated_at'       => date('Y-m-d H:i:s'),
         ];
 
         if ($selectionModel->where('proposal_id', $id)->set($updateData)->update()) {

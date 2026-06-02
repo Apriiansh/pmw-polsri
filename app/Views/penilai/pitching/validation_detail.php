@@ -17,11 +17,11 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-stagger">
         <div>
             <h2 class="section-title text-xl sm:text-2xl">
-                Validasi Final <span class="text-gradient">Pitching Desk</span>
+                Penilaian <span class="text-gradient">Pitching Desk</span>
             </h2>
-            <p class="section-subtitle text-[10px] sm:text-[11px]"><?= esc($proposal['nama_usaha'] ?? 'Proposal #' . $proposal['id']) ?> &mdash; Validasi Administrasi & Desk Evaluation oleh Admin/UPAPKK</p>
+            <p class="section-subtitle text-[10px] sm:text-[11px]"><?= esc($proposal['nama_usaha'] ?? 'Proposal #' . $proposal['id']) ?> &mdash; Penilaian & Penentuan Kelolosan Pitching</p>
         </div>
-        <a href="<?= base_url('admin/pitching-desk') ?>" class="btn-ghost inline-flex items-center gap-2">
+        <a href="<?= base_url('penilai/pitching-desk') ?>" class="btn-ghost inline-flex items-center gap-2">
             <i class="fas fa-arrow-left"></i>
             Kembali
         </a>
@@ -253,7 +253,7 @@
                 $doc = $docsByKey[$key];
                 $ext = strtolower(pathinfo($doc['original_name'], PATHINFO_EXTENSION));
                 $isPdf = ($ext === 'pdf');
-                $docUrl = base_url('admin/pitching-desk/doc/' . $doc['id']);
+                $docUrl = base_url('penilai/pitching-desk/doc/' . $doc['id']);
             ?>
             <div x-show="activeDoc === '<?= $key ?>'" x-cloak>
                 <div class="p-0">
@@ -307,12 +307,12 @@
         <div class="px-5 sm:px-7 py-4 sm:py-5 border-b border-sky-50 bg-white/60">
             <h3 class="font-display text-base font-bold text-(--text-heading)">
                 <i class="fas fa-clipboard-check text-sky-500 mr-2"></i>
-                Validasi Final Admin
+                Penilaian Pitching
             </h3>
-            <p class="text-[11px] text-(--text-muted) mt-0.5">Tentukan keputusan akhir untuk tahap Pitching Desk</p>
+            <p class="text-[11px] text-(--text-muted) mt-0.5">Berikan nilai dan keputusan akhir untuk tahap Pitching Desk</p>
         </div>
 
-        <form action="<?= base_url('admin/pitching-desk/' . $proposal['id'] . '/validate') ?>" method="post">
+        <form action="<?= base_url('penilai/pitching-desk/' . $proposal['id'] . '/validate') ?>" method="post">
             <?= csrf_field() ?>
             <div class="p-5 sm:p-7 space-y-6">
                 <!-- Validation Error Banner -->
@@ -388,7 +388,7 @@
                 <!-- Catatan -->
                 <div class="space-y-1.5">
                     <label class="form-label">
-                        Catatan Validasi Admin
+                        Catatan Penilai
                         <span class="required" title="Wajib diisi">*</span>
                         <span class="inline-flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-rose-50 text-rose-600 border border-rose-200">
                             <i class="fas fa-circle-exclamation text-[8px]"></i>Wajib
@@ -512,7 +512,7 @@
 
                 <!-- Actions -->
                 <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
-                    <a href="<?= base_url('admin/pitching-desk') ?>" class="btn-outline">
+                    <a href="<?= base_url('penilai/pitching-desk') ?>" class="btn-outline">
                         <i class="fas fa-times mr-2"></i>Batal
                     </a>
                     <button type="submit" class="btn-primary px-8">

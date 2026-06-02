@@ -16,7 +16,6 @@
     --color-orange-600: oklch(64.6% 0.222 41.116);
     --color-orange-700: oklch(55.3% 0.195 38.402);
     --color-orange-800: oklch(47% 0.157 37.304);
-    --color-orange-900: oklch(40.8% 0.123 38.172);
     --color-amber-50: oklch(98.7% 0.022 95.277);
     --color-amber-100: oklch(96.2% 0.059 95.617);
     --color-amber-200: oklch(92.4% 0.12 95.746);
@@ -1608,6 +1607,9 @@
   }
   .cursor-pointer {
     cursor: pointer;
+  }
+  .resize {
+    resize: both;
   }
   .resize-none {
     resize: none;
@@ -3935,12 +3937,6 @@
   .text-amber-700 {
     color: var(--color-amber-700);
   }
-  .text-amber-700\/80 {
-    color: color-mix(in srgb, oklch(55.5% 0.163 48.998) 80%, transparent);
-    @supports (color: color-mix(in lab, red, red)) {
-      color: color-mix(in oklab, var(--color-amber-700) 80%, transparent);
-    }
-  }
   .text-amber-800 {
     color: var(--color-amber-800);
   }
@@ -6155,12 +6151,6 @@
   .file\:py-2\.5 {
     &::file-selector-button {
       padding-block: calc(var(--spacing) * 2.5);
-    }
-  }
-  .file\:text-sm {
-    &::file-selector-button {
-      font-size: var(--text-sm);
-      line-height: var(--tw-leading, var(--text-sm--line-height));
     }
   }
   .file\:text-xs {

@@ -63,6 +63,7 @@
                             'dosen'     => 'fa-chalkboard-user',
                             'mentor'    => 'fa-handshake-angle',
                             'reviewer'  => 'fa-clipboard-check',
+                            'penilai'   => 'fa-gavel',
                         ];
                         $roleColors = [
                             'admin'     => 'border-rose-400 bg-rose-50 shadow-sm shadow-rose-100',
@@ -70,6 +71,7 @@
                             'dosen'     => 'border-violet-400 bg-violet-50 shadow-sm shadow-violet-100',
                             'mentor'    => 'border-teal-400 bg-teal-50 shadow-sm shadow-teal-100',
                             'reviewer'  => 'border-yellow-400 bg-yellow-50 shadow-sm shadow-yellow-100',
+                            'penilai'   => 'border-amber-400 bg-amber-50 shadow-sm shadow-amber-100',
                         ];
                         $roleIconColors = [
                             'admin'     => 'text-rose-500',
@@ -77,6 +79,7 @@
                             'dosen'     => 'text-violet-500',
                             'mentor'    => 'text-teal-500',
                             'reviewer'  => 'text-yellow-500',
+                            'penilai'   => 'text-amber-500',
                         ];
                         $roleTextColors = [
                             'admin'     => 'text-rose-900',
@@ -84,6 +87,7 @@
                             'dosen'     => 'text-violet-900',
                             'mentor'    => 'text-teal-900',
                             'reviewer'  => 'text-yellow-900',
+                            'penilai'   => 'text-amber-900',
                         ];
                         $roleCheckColors = [
                             'admin'     => 'bg-rose-500 border-rose-500',
@@ -91,6 +95,7 @@
                             'dosen'     => 'bg-violet-500 border-violet-500',
                             'mentor'    => 'bg-teal-500 border-teal-500',
                             'reviewer'  => 'bg-yellow-500 border-yellow-500',
+                            'penilai'   => 'bg-amber-500 border-amber-500',
                         ];
                         
                         foreach ($roles as $roleKey => $roleInfo): 
@@ -143,7 +148,7 @@
                 <div class="border-t border-sky-50 pt-6 mt-6">
                     <h4 class="font-display font-bold text-sm text-(--text-heading) mb-4 flex items-center gap-2">
                         <i class="fas fa-id-card text-sky-500"></i>
-                        Data Profil <span class="text-(--text-muted) font-normal">(<span x-text="selectedRole === 'mahasiswa' ? 'Mahasiswa' : selectedRole === 'dosen' ? 'Dosen' : selectedRole === 'mentor' ? 'Mentor' : selectedRole === 'reviewer' ? 'Reviewer' : 'Admin'"></span>)</span>
+                        Data Profil <span class="text-(--text-muted) font-normal">(<span x-text="selectedRole === 'mahasiswa' ? 'Mahasiswa' : selectedRole === 'dosen' ? 'Dosen' : selectedRole === 'mentor' ? 'Mentor' : selectedRole === 'reviewer' ? 'Reviewer' : selectedRole === 'penilai' ? 'Penilai' : 'Admin'"></span>)</span>
                     </h4>
 
                     <!-- Common Fields -->
@@ -574,6 +579,66 @@
                                           class="form-textarea"
                                           placeholder="Biografi dan pengalaman reviewer (optional)"
                                           :disabled="selectedRole !== 'reviewer'"><?= old('reviewer_bio', $profileData['bio'] ?? '') ?></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PENILAI Fields -->
+                    <div x-show="selectedRole === 'penilai'" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+                        <div class="space-y-4">
+                            <div class="grid md:grid-cols-3 gap-4">
+                                <div class="form-field">
+                                    <label class="form-label">NIDN</label>
+                                    <div class="input-group">
+                                        <span class="input-icon"><i class="fas fa-id-card"></i></span>
+                                        <input type="text"
+                                               name="nidn"
+                                               value="<?= old('nidn', $profileData['nidn'] ?? '') ?>"
+                                               placeholder="Nomor Dosen"
+                                               :disabled="selectedRole !== 'penilai'">
+                                    </div>
+                                </div>
+                                <div class="form-field">
+                                    <label class="form-label">NIP</label>
+                                    <div class="input-group">
+                                        <span class="input-icon"><i class="fas fa-hashtag"></i></span>
+                                        <input type="text"
+                                               name="nip"
+                                               value="<?= old('nip', $profileData['nip'] ?? '') ?>"
+                                               placeholder="Nomor Induk Pegawai"
+                                               :disabled="selectedRole !== 'penilai'">
+                                    </div>
+                                </div>
+                                <div class="form-field">
+                                    <label class="form-label">Institusi</label>
+                                    <div class="input-group">
+                                        <span class="input-icon"><i class="fas fa-university"></i></span>
+                                        <input type="text"
+                                               name="institution"
+                                               value="<?= old('institution', $profileData['institution'] ?? '') ?>"
+                                               placeholder="Asal institusi"
+                                               :disabled="selectedRole !== 'penilai'">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label">Bidang Keahlian</label>
+                                <div class="input-group">
+                                    <span class="input-icon"><i class="fas fa-brain"></i></span>
+                                    <input type="text"
+                                           name="penilai_expertise"
+                                           value="<?= old('penilai_expertise', $profileData['expertise'] ?? '') ?>"
+                                           placeholder="Contoh: Penilaian Pitching, Kewirausahaan"
+                                           :disabled="selectedRole !== 'penilai'">
+                                </div>
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label">Biografi / Catatan</label>
+                                <textarea name="penilai_bio"
+                                          rows="3"
+                                          class="form-textarea"
+                                          placeholder="Biografi dan pengalaman penilai (optional)"
+                                          :disabled="selectedRole !== 'penilai'"><?= old('penilai_bio', $profileData['bio'] ?? '') ?></textarea>
                             </div>
                         </div>
                     </div>

@@ -26,7 +26,7 @@
     ================================================================= -->
     <?php
     $totalUsers = count($users);
-    $roleCounts = ['admin' => 0, 'mahasiswa' => 0, 'dosen' => 0, 'mentor' => 0, 'reviewer' => 0];
+    $roleCounts = ['admin' => 0, 'mahasiswa' => 0, 'dosen' => 0, 'mentor' => 0, 'reviewer' => 0, 'penilai' => 0];
     foreach ($users as $user) {
         foreach ($user->groups as $group) {
             if (isset($roleCounts[$group])) {
@@ -41,10 +41,11 @@
         ['title' => 'Dosen', 'value' => $roleCounts['dosen'], 'icon' => 'fa-chalkboard-user', 'bg' => 'bg-violet-50', 'icon_color' => 'text-violet-500', 'role' => 'dosen'],
         ['title' => 'Mentor', 'value' => $roleCounts['mentor'], 'icon' => 'fa-user-tie', 'bg' => 'bg-emerald-50', 'icon_color' => 'text-emerald-500', 'role' => 'mentor'],
         ['title' => 'Reviewer', 'value' => $roleCounts['reviewer'], 'icon' => 'fa-clipboard-check', 'bg' => 'bg-yellow-50', 'icon_color' => 'text-yellow-500', 'role' => 'reviewer'],
+        ['title' => 'Penilai', 'value' => $roleCounts['penilai'], 'icon' => 'fa-gavel', 'bg' => 'bg-amber-50', 'icon_color' => 'text-amber-500', 'role' => 'penilai'],
     ];
     ?>
 
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
         <?php foreach ($stats as $index => $stat): ?>
             <div onclick="filterByRole('<?= $stat['role'] ?>', this)" 
                  class="stat-card cursor-pointer group card-premium p-3 sm:p-4 flex items-center gap-3 animate-stagger delay-<?= ($index + 1) * 100 ?> transition-all hover:shadow-lg hover:-translate-y-1"
@@ -105,6 +106,7 @@
                             'dosen'     => 'bg-violet-50 text-violet-600 border-violet-200',
                             'mentor'    => 'bg-teal-50 text-teal-600 border-teal-200',
                             'reviewer'  => 'bg-yellow-50 text-yellow-600 border-yellow-200',
+                            'penilai'   => 'bg-amber-50 text-amber-600 border-amber-200',
                         ];
                         $roleBadge = $roleColors[$mainGroup] ?? 'bg-slate-50 text-slate-600 border-slate-200';
 
@@ -115,6 +117,7 @@
                             'dosen'     => 'Dosen',
                             'mentor'    => 'Mentor',
                             'reviewer'  => 'Reviewer',
+                            'penilai'   => 'Penilai',
                         ];
                         $roleLabel = $roleLabels[$mainGroup] ?? ucfirst($mainGroup);
 
@@ -499,6 +502,15 @@
                 `;
                     break;
                 case 'reviewer':
+                    html = `
+                    ${renderProfileField('fa-id-badge', 'NIP/NIDN', profileData.nip || profileData.nidn)}
+                    ${renderProfileField('fa-user', 'Nama Lengkap', profileData.nama)}
+                    ${renderProfileField('fa-university', 'Institusi', profileData.institution)}
+                    ${renderProfileField('fa-star', 'Keahlian', profileData.expertise)}
+                    ${renderProfileField('fa-phone', 'No. HP', profileData.phone)}
+                `;
+                    break;
+                case 'penilai':
                     html = `
                     ${renderProfileField('fa-id-badge', 'NIP/NIDN', profileData.nip || profileData.nidn)}
                     ${renderProfileField('fa-user', 'Nama Lengkap', profileData.nama)}

@@ -274,6 +274,15 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         });
     });
 
+    // Penilai Routes (verifies Pitching Desk submissions)
+    $routes->group('penilai', ['filter' => 'group:penilai'], static function ($routes) {
+        $routes->get('/', 'Penilai\\PitchingDeskController::index');
+        $routes->get('pitching-desk', 'Penilai\\PitchingDeskController::index');
+        $routes->get('pitching-desk/(:num)', 'Penilai\\PitchingDeskController::detail/$1');
+        $routes->post('pitching-desk/(:num)/validate', 'Penilai\\PitchingDeskController::validateAction/$1');
+        $routes->get('pitching-desk/doc/(:num)', 'Penilai\\PitchingDeskController::viewDoc/$1');
+    });
+
     // Dosen Routes
     $routes->group('dosen', ['filter' => 'group:dosen'], static function ($routes) {
         $routes->get('monitoring', 'Dosen\MonitoringController::index');

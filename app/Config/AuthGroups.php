@@ -46,6 +46,10 @@ class AuthGroups extends ShieldAuthGroups
             'title'       => 'Reviewer',
             'description' => 'Assessors for proposal and report quality.',
         ],
+        'penilai' => [
+            'title'       => 'Penilai',
+            'description' => 'Assessors for pitching desk evaluation.',
+        ],
     ];
 
     public array $permissions = [
@@ -55,6 +59,7 @@ class AuthGroups extends ShieldAuthGroups
         'data.mentoring'      => 'Can record mentoring activities',
         'data.verify'         => 'Can verify/sign-off mentoring logs',
         'data.assess'         => 'Can assess/score proposals and reports',
+        'data.pitching_verify' => 'Can verify/assess pitching desk submissions',
         'data.view_all'       => 'Can view all student data',
     ];
 
@@ -77,6 +82,10 @@ class AuthGroups extends ShieldAuthGroups
         ],
         'reviewer' => [
             'data.assess',
+            'data.view_all',
+        ],
+        'penilai' => [
+            'data.pitching_verify',
             'data.view_all',
         ],
     ];

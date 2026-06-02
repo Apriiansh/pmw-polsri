@@ -51,8 +51,8 @@ class PitchingDeskController extends BaseController
         $proposal = $proposalModel->select([
             'pmw_proposals.*',
             'pm.nama as ketua_nama',
-            'sp.admin_status as pitching_admin_status',
-            'sp.admin_catatan as pitching_admin_catatan',
+            'sp.status as pitching_admin_status',
+            'sp.catatan as pitching_admin_catatan',
             'sp.student_submitted_at',
         ])
             ->join('pmw_proposal_members pm', 'pm.proposal_id = pmw_proposals.id AND pm.role = "ketua"', 'left')
@@ -542,7 +542,7 @@ class PitchingDeskController extends BaseController
         $pitchingRecord = $pitchingModel->where('proposal_id', $proposal['id'])->first();
         $data = [
             'student_submitted_at' => date('Y-m-d H:i:s'),
-            'admin_status'         => 'pending',
+            'status'               => 'pending',
         ];
 
         if ($pitchingRecord) {

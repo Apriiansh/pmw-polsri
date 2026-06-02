@@ -43,7 +43,7 @@ class PerjanjianController extends BaseController
         $builder->join('pmw_perjanjian pj', 'pj.proposal_id = p.id', 'left');
 
         // Filter: Must be approved in Pitching Desk by Admin
-        $builder->where('sp.admin_status', 'approved');
+        $builder->where('sp.status', 'approved');
 
         if ($statusFilter) {
             $builder->where('pj.admin_status', $statusFilter);
@@ -57,7 +57,7 @@ class PerjanjianController extends BaseController
         $statsBuilder->select('pj.admin_status as status, COUNT(*) as count');
         $statsBuilder->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left');
         $statsBuilder->join('pmw_perjanjian pj', 'pj.proposal_id = p.id', 'left');
-        $statsBuilder->where('sp.admin_status', 'approved');
+        $statsBuilder->where('sp.status', 'approved');
         $statsBuilder->groupBy('pj.admin_status');
         $rawStats = $statsBuilder->get()->getResultArray();
 

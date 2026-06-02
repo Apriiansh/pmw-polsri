@@ -17,9 +17,9 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-stagger">
         <div>
             <h2 class="section-title text-xl sm:text-2xl">
-                Validasi Akhir <span class="text-gradient">Pitching Desk</span>
+                Penilaian <span class="text-gradient">Pitching Desk</span>
             </h2>
-            <p class="section-subtitle text-[10px] sm:text-[11px]">Validasi Administrasi & Desk Evaluation</p>
+            <p class="section-subtitle text-[10px] sm:text-[11px]">Penilaian & Penentuan Kelolosan Pitching Desk</p>
         </div>
     </div>
 
@@ -53,38 +53,38 @@
     ================================================================= -->
     <div class="space-y-3 animate-stagger delay-300">
         <div class="flex flex-wrap gap-2">
-            <a href="<?= base_url('admin/pitching-desk') ?>"
+            <a href="<?= base_url('penilai/pitching-desk') ?>"
                class="btn-outline btn-sm <?= !$statusFilter ? 'bg-sky-500 text-white border-sky-500 hover:bg-sky-600' : '' ?>">
                 Semua
             </a>
-            <a href="<?= base_url('admin/pitching-desk?status=pending') ?>"
+            <a href="<?= base_url('penilai/pitching-desk?status=pending') ?>"
                class="btn-outline btn-sm <?= $statusFilter === 'pending' ? 'bg-yellow-500 text-white border-yellow-500 hover:bg-yellow-600' : '' ?>">
                 <i class="fas fa-clock mr-1"></i> Menunggu
             </a>
-            <a href="<?= base_url('admin/pitching-desk?status=approved') ?>"
+            <a href="<?= base_url('penilai/pitching-desk?status=approved') ?>"
                class="btn-outline btn-sm <?= $statusFilter === 'approved' ? 'bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-600' : '' ?>">
                 <i class="fas fa-check mr-1"></i> Disetujui
             </a>
-            <a href="<?= base_url('admin/pitching-desk?status=revision') ?>"
+            <a href="<?= base_url('penilai/pitching-desk?status=revision') ?>"
                class="btn-outline btn-sm <?= $statusFilter === 'revision' ? 'bg-orange-500 text-white border-orange-500 hover:bg-orange-600' : '' ?>">
                 <i class="fas fa-rotate mr-1"></i> Revisi
             </a>
-            <a href="<?= base_url('admin/pitching-desk?status=rejected') ?>"
+            <a href="<?= base_url('penilai/pitching-desk?status=rejected') ?>"
                class="btn-outline btn-sm <?= $statusFilter === 'rejected' ? 'bg-rose-500 text-white border-rose-500 hover:bg-rose-600' : '' ?>">
                 <i class="fas fa-circle-xmark mr-1"></i> Ditolak
             </a>
         </div>
         <div class="flex flex-wrap items-center gap-2">
             <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kategori:</span>
-            <a href="<?= base_url('admin/pitching-desk?' . http_build_query(array_filter(['status' => $statusFilter]))) ?>"
+            <a href="<?= base_url('penilai/pitching-desk?' . http_build_query(array_filter(['status' => $statusFilter]))) ?>"
                class="btn-outline btn-sm <?= !$kategoriFilter ? 'bg-slate-700 text-white border-slate-700 hover:bg-slate-800' : '' ?>">
                 Semua
             </a>
-            <a href="<?= base_url('admin/pitching-desk?' . http_build_query(array_filter(['status' => $statusFilter, 'kategori' => 'pemula']))) ?>"
+            <a href="<?= base_url('penilai/pitching-desk?' . http_build_query(array_filter(['status' => $statusFilter, 'kategori' => 'pemula']))) ?>"
                class="btn-outline btn-sm <?= $kategoriFilter === 'pemula' ? 'bg-sky-500 text-white border-sky-500 hover:bg-sky-600' : '' ?>">
                 <i class="fas fa-rocket mr-1"></i> Pemula
             </a>
-            <a href="<?= base_url('admin/pitching-desk?' . http_build_query(array_filter(['status' => $statusFilter, 'kategori' => 'berkembang']))) ?>"
+            <a href="<?= base_url('penilai/pitching-desk?' . http_build_query(array_filter(['status' => $statusFilter, 'kategori' => 'berkembang']))) ?>"
                class="btn-outline btn-sm <?= $kategoriFilter === 'berkembang' ? 'bg-violet-500 text-white border-violet-500 hover:bg-violet-600' : '' ?>">
                 <i class="fas fa-chart-line mr-1"></i> Berkembang
             </a>
@@ -171,7 +171,7 @@
                         </td>
                         <td class="text-center">
                             <?php if ($proposal['pitching_ppt_id']): ?>
-                                <a href="<?= base_url('admin/pitching-desk/doc/' . $proposal['pitching_ppt_id']) ?>" class="text-orange-500 hover:text-orange-600">
+                                <a href="<?= base_url('penilai/pitching-desk/doc/' . $proposal['pitching_ppt_id']) ?>" class="text-orange-500 hover:text-orange-600">
                                     <i class="fas fa-file-powerpoint text-xl"></i>
                                 </a>
                             <?php else: ?>
@@ -214,7 +214,7 @@
                             </span>
                         </td>
                         <td class="text-right whitespace-nowrap">
-                            <a href="<?= base_url('admin/pitching-desk/' . $proposal['id']) ?>" 
+                            <a href="<?= base_url('penilai/pitching-desk/' . $proposal['id']) ?>" 
                                class="btn-outline btn-sm bg-violet-50 text-violet-600 border-violet-200 hover:bg-violet-500 hover:text-white transition-all">
                                 <i class="fas fa-eye mr-1.5"></i> Detail & Validasi
                             </a>
