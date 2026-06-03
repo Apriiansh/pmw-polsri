@@ -29,10 +29,10 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
         <?php
         $statItems = [
-            ['title' => 'Total Dikirim', 'value' => $stats['total'], 'icon' => 'fa-clipboard-check', 'bg' => 'bg-sky-50', 'icon_color' => 'text-sky-500'],
-            ['title' => 'Sudah Kirim', 'value' => $stats['submitted'], 'icon' => 'fa-paper-plane', 'bg' => 'bg-emerald-50', 'icon_color' => 'text-emerald-500'],
-            ['title' => 'Belum Kirim', 'value' => $stats['pending'], 'icon' => 'fa-clock', 'bg' => 'bg-yellow-50', 'icon_color' => 'text-yellow-500'],
-            ['title' => 'Lolos', 'value' => $stats['approved'], 'icon' => 'fa-circle-check', 'bg' => 'bg-violet-50', 'icon_color' => 'text-violet-500'],
+            ['title' => 'Total Proposal', 'value' => $stats['total'], 'icon' => 'fa-clipboard-list', 'bg' => 'bg-sky-50', 'icon_color' => 'text-sky-500'],
+            ['title' => 'Sudah Dinilai Saya', 'value' => $stats['my_submitted'], 'icon' => 'fa-check-circle', 'bg' => 'bg-emerald-50', 'icon_color' => 'text-emerald-500'],
+            ['title' => 'Belum Dinilai', 'value' => $stats['pending'], 'icon' => 'fa-clock', 'bg' => 'bg-yellow-50', 'icon_color' => 'text-yellow-500'],
+            ['title' => 'Total Tersubmit', 'value' => $stats['submitted'], 'icon' => 'fa-paper-plane', 'bg' => 'bg-violet-50', 'icon_color' => 'text-violet-500'],
         ];
         ?>
         <?php foreach ($statItems as $index => $stat): ?>
@@ -59,19 +59,15 @@
             </a>
             <a href="<?= base_url('penilai/pitching-desk?status=pending') ?>"
                class="btn-outline btn-sm <?= $statusFilter === 'pending' ? 'bg-yellow-500 text-white border-yellow-500 hover:bg-yellow-600' : '' ?>">
-                <i class="fas fa-clock mr-1"></i> Menunggu
+                <i class="fas fa-clock mr-1"></i> Pending
             </a>
             <a href="<?= base_url('penilai/pitching-desk?status=approved') ?>"
                class="btn-outline btn-sm <?= $statusFilter === 'approved' ? 'bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-600' : '' ?>">
-                <i class="fas fa-check mr-1"></i> Disetujui
-            </a>
-            <a href="<?= base_url('penilai/pitching-desk?status=revision') ?>"
-               class="btn-outline btn-sm <?= $statusFilter === 'revision' ? 'bg-orange-500 text-white border-orange-500 hover:bg-orange-600' : '' ?>">
-                <i class="fas fa-rotate mr-1"></i> Revisi
+                <i class="fas fa-check mr-1"></i> Lolos
             </a>
             <a href="<?= base_url('penilai/pitching-desk?status=rejected') ?>"
                class="btn-outline btn-sm <?= $statusFilter === 'rejected' ? 'bg-rose-500 text-white border-rose-500 hover:bg-rose-600' : '' ?>">
-                <i class="fas fa-circle-xmark mr-1"></i> Ditolak
+                <i class="fas fa-circle-xmark mr-1"></i> Tdk Lolos
             </a>
         </div>
         <div class="flex flex-wrap items-center gap-2">
@@ -98,9 +94,9 @@
         
         <div class="px-4 sm:px-7 py-4 sm:py-5 border-b border-sky-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/60">
             <div>
-                <h3 class="font-display text-base font-bold text-(--text-heading)">Antrian Validasi Final</h3>
+                <h3 class="font-display text-base font-bold text-(--text-heading)">Daftar Penilaian Pitching</h3>
                 <p class="text-[11px] text-(--text-muted) font-semibold mt-0.5">
-                    Proposal yang sudah dikirim mahasiswa dan menunggu validasi Admin/UPAPKK
+                    Proposal yang sudah dikirim mahasiswa dan siap dinilai
                 </p>
             </div>
         </div>
@@ -114,7 +110,8 @@
                         <th>Kategori</th>
                         <th class="text-center">Link Video</th>
                         <th class="text-center">PPT/PDF</th>
-                        <th class="text-center">Nilai (%)</th>
+                        <th class="text-center">Nilai Saya</th>
+                        <th class="text-center">Nilai Rata-rata</th>
                         <th>Status</th>
                         <th class="text-right">Aksi</th>
                     </tr>
@@ -179,6 +176,21 @@
                             <?php endif; ?>
                         </td>
                         <td class="text-center">
+                            <?php if ($proposal['has_submitted']): ?>
+                                <?php
+                                $myScore = (float)$proposal['my_score'];
+                                $myScoreCls = $myScore >= 80 ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200';
+                                $myIcon = $myScore >= 80 ? 'fa-trophy' : 'fa-circle-xmark';
+                                ?>
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[12px] font-black border <?= $myScoreCls ?>">
+                                    <i class="fas <?= $myIcon ?> text-[10px]"></i>
+                                    <?= number_format($myScore, 2) ?>
+                                </span>
+                            <?php else: ?>
+                                <span class="text-[11px] text-slate-300">—</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="text-center">
                             <?php $nilai = $proposal['pitching_persentase_nilai'] ?? null; ?>
                             <?php if ($nilai !== null && $nilai !== ''): ?>
                                 <?php
@@ -202,7 +214,7 @@
                             $effColor = $statusColors[$effStatus];
                             
                             if ($effStatus === 'pending' && !empty($proposal['student_submitted_at'])) {
-                                $effLabel = 'Siap Validasi';
+                                $effLabel = 'Siap Dinilai';
                                 $effColor = 'bg-sky-500 text-white border-sky-600 shadow-sm';
                             } elseif ($effStatus === 'pending') {
                                 $effLabel = 'Belum Kirim';
@@ -224,7 +236,7 @@
                     
                     <?php if (empty($proposals)): ?>
                     <tr>
-                        <td colspan="8" class="text-center py-12">
+                        <td colspan="9" class="text-center py-12">
                             <div class="text-(--text-muted)">
                                 <i class="fas fa-inbox text-4xl mb-3 opacity-30"></i>
                                 <p class="text-sm">Tidak ada tim bimbingan yang membutuhkan validasi akhir saat ini.</p>

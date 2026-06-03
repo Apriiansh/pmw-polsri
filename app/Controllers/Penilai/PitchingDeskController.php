@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\Proposal\PmwProposalModel;
 use App\Models\Proposal\PmwProposalMemberModel;
 use App\Models\PmwDocumentModel;
+use App\Services\PmwPitchingAssessmentService;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class PitchingDeskController extends BaseController
@@ -13,30 +14,29 @@ class PitchingDeskController extends BaseController
     protected $helpers = ['form', 'url', 'pmw'];
 
     /**
-     * List of proposals already approved by lecturer, ready for final validation
+     * List of proposals for penilai assessment
      */
     public function index()
     {
         $proposalModel = new PmwProposalModel();
+        $assessmentService = new PmwPitchingAssessmentService();
 
-        $statusFilter   = $this->request->getGet('status') ?? 'pending';
+        $statusFilter   = $this->request->getGet('status');
         $kategoriFilter = $this->request->getGet('kategori');
 
-        $proposals = $proposalModel->getProposalsForAdminPitching($statusFilter, $kategoriFilter);
+        $proposals = $proposalModel->getProposalsForPenilai(user()->id, $statusFilter, $kategoriFilter);
 
-        // Stats
-        $allProposals = $proposalModel->getProposalsForAdminPitching(null, $kategoriFilter);
+        $allProposals = $proposalModel->getProposalsForPenilai(user()->id, null, $kategoriFilter);
+        $mySubmitted = count(array_filter($allProposals, fn($p) => $p['has_submitted']));
         $stats = [
             'total'     => count($allProposals),
-            'pending'   => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'pending' && empty($p['student_submitted_at']))),
-            'submitted' => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'pending' && !empty($p['student_submitted_at']))),
-            'approved'  => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'approved')),
-            'revision'  => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'revision')),
-            'rejected'  => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'rejected')),
+            'submitted' => count(array_filter($allProposals, fn($p) => !empty($p['student_submitted_at']))),
+            'my_submitted' => $mySubmitted,
+            'pending'   => count($allProposals) - $mySubmitted,
         ];
 
         return view('penilai/pitching/validation', [
-            'title'           => 'Validasi Pitching Desk | PMW Polsri',
+            'title'           => 'Penilaian Pitching Desk | PMW Polsri',
             'proposals'       => $proposals,
             'stats'           => $stats,
             'statusFilter'    => $statusFilter,
@@ -45,13 +45,14 @@ class PitchingDeskController extends BaseController
     }
 
     /**
-     * Detail and Final Validation
+     * Detail with assessment form
      */
     public function detail(int $id)
     {
         $proposalModel = new PmwProposalModel();
         $memberModel = new PmwProposalMemberModel();
         $documentModel = new PmwDocumentModel();
+        $assessmentService = new PmwPitchingAssessmentService();
 
         $proposal = $proposalModel->getProposalForValidation($id);
 
@@ -69,67 +70,45 @@ class PitchingDeskController extends BaseController
             }
         }
 
+        $myAssessment = $assessmentService->getMyAssessment($id, user()->id);
+
         return view('penilai/pitching/validation_detail', [
-            'title'     => 'Detail Validasi Pitching | PMW Polsri',
-            'proposal'  => $proposal,
-            'members'   => $members,
-            'docsByKey' => $docsByKey,
+            'title'        => 'Detail Penilaian Pitching | PMW Polsri',
+            'proposal'     => $proposal,
+            'members'      => $members,
+            'docsByKey'    => $docsByKey,
+            'myAssessment' => $myAssessment,
         ]);
     }
 
     /**
-     * Final validation process
+     * Submit penilai assessment via service
      */
     public function validateAction(int $id)
     {
-        $proposalModel = new PmwProposalModel();
-        $selectionModel = new \App\Models\Selection\PmwSelectionPitchingModel();
-
-        $proposal = $proposalModel->getProposalForValidation($id);
-
-        if (!$proposal) {
-            return redirect()->to('penilai/pitching-desk')->with('error', 'Akses ditolak');
-        }
-
-        $status  = $this->request->getPost('status');
-        $catatan = $this->request->getPost('catatan');
-        $persentaseNilai = $this->request->getPost('persentase_nilai');
-
-        // Validate catatan: wajib diisi (min 5 char agar tidak cuma titik)
         $rules = [
-            'catatan' => 'required|min_length[5]|max_length[1000]',
-        ];
-        if (!$this->validateData(['catatan' => $catatan], $rules)) {
-            return redirect()->back()->withInput()->with('error', 'Catatan validasi wajib diisi (minimal 5 karakter) agar mahasiswa mendapat umpan balik yang jelas.');
-        }
-
-        if (!in_array($status, ['approved', 'rejected', 'revision'])) {
-            return redirect()->back()->with('error', 'Status tidak valid');
-        }
-
-        $updateData = [
-            'status'           => $status,
-            'catatan'          => $catatan,
-            'persentase_nilai' => ($persentaseNilai !== null && $persentaseNilai !== '')
-                ? (float) $persentaseNilai
-                : null,
-            'updated_at'       => date('Y-m-d H:i:s'),
+            'status'           => 'required|in_list[approved,rejected]',
+            'catatan'          => 'required|min_length[5]|max_length[1000]',
+            'persentase_nilai' => 'required|decimal|greater_than_equal_to[0]|less_than_equal_to[100]',
         ];
 
-        if ($selectionModel->where('proposal_id', $id)->set($updateData)->update()) {
-            $notifModel = new \App\Models\NotificationModel();
-            $notifModel->createPitchingValidationNotification(
-                (int) $proposal['leader_user_id'],
-                $id,
-                $proposal['nama_usaha'] ?? 'Tanpa Nama',
-                $status,
-                $catatan
-            );
-
-            return redirect()->to('penilai/pitching-desk')->with('message', 'Validasi pitching berhasil disimpan');
+        if (!$this->validateData($this->request->getPost(), $rules)) {
+            return redirect()->back()->withInput()->with('error', 'Validasi gagal. Pastikan status, catatan (min 5 karakter), dan nilai sudah diisi.');
         }
 
-        return redirect()->back()->with('error', 'Gagal menyimpan validasi');
+        $service = new PmwPitchingAssessmentService();
+        $service->submitAssessment(
+            (int) $id,
+            user()->id,
+            [
+                'status'           => $this->request->getPost('status'),
+                'catatan'          => $this->request->getPost('catatan'),
+                'persentase_nilai' => $this->request->getPost('persentase_nilai'),
+            ]
+        );
+
+        return redirect()->to('penilai/pitching-desk')
+            ->with('message', 'Nilai berhasil disimpan');
     }
 
     /**

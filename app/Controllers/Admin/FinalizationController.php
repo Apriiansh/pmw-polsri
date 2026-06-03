@@ -81,8 +81,9 @@ class FinalizationController extends BaseController
         $builder->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left');
         $builder->join('pmw_selection_finalization sf', 'sf.proposal_id = p.id', 'left');
 
-        // Only teams that passed pitching
+        // Only teams that passed pitching AND finalization
         $builder->where('sp.status', 'approved');
+        $builder->where('sp.penilaian_final_at IS NOT NULL');
 
         if ($periodFilter) {
             $builder->where('p.period_id', $periodFilter);
@@ -121,10 +122,10 @@ class FinalizationController extends BaseController
             return redirect()->to('admin/finalisasi')->with('error', 'Tim tidak ditemukan');
         }
 
-        // Verify eligibility: Must have passed pitching
+        // Verify eligibility: Must have passed pitching AND finalized
         $db = \Config\Database::connect();
         $pitching = $db->table('pmw_selection_pitching')->where('proposal_id', $id)->get()->getRowArray();
-        if (!$pitching || $pitching['status'] !== 'approved') {
+        if (!$pitching || $pitching['status'] !== 'approved' || empty($pitching['penilaian_final_at'])) {
             return redirect()->to('admin/finalisasi')->with('error', 'Tim belum melewati tahap Pitching Desk');
         }
 

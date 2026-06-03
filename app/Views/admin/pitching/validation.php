@@ -17,9 +17,9 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-stagger">
         <div>
             <h2 class="section-title text-xl sm:text-2xl">
-                Validasi Akhir <span class="text-gradient">Pitching Desk</span>
+                Validasi <span class="text-gradient">Pitching Desk</span>
             </h2>
-            <p class="section-subtitle text-[10px] sm:text-[11px]">Validasi Administrasi & Desk Evaluation</p>
+            <p class="section-subtitle text-[10px] sm:text-[11px]">Multi-Penilai &mdash; Agregasi & Finalisasi Hasil Pitching</p>
         </div>
     </div>
 
@@ -29,10 +29,10 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
         <?php
         $statItems = [
-            ['title' => 'Total Dikirim', 'value' => $stats['total'], 'icon' => 'fa-clipboard-check', 'bg' => 'bg-sky-50', 'icon_color' => 'text-sky-500'],
-            ['title' => 'Sudah Kirim', 'value' => $stats['submitted'], 'icon' => 'fa-paper-plane', 'bg' => 'bg-emerald-50', 'icon_color' => 'text-emerald-500'],
-            ['title' => 'Belum Kirim', 'value' => $stats['pending'], 'icon' => 'fa-clock', 'bg' => 'bg-yellow-50', 'icon_color' => 'text-yellow-500'],
-            ['title' => 'Lolos', 'value' => $stats['approved'], 'icon' => 'fa-circle-check', 'bg' => 'bg-violet-50', 'icon_color' => 'text-violet-500'],
+            ['title' => 'Total Proposal', 'value' => $stats['total'], 'icon' => 'fa-clipboard-list', 'bg' => 'bg-sky-50', 'icon_color' => 'text-sky-500'],
+            ['title' => 'Sudah Dinilai', 'value' => $stats['assessed'], 'icon' => 'fa-users', 'bg' => 'bg-emerald-50', 'icon_color' => 'text-emerald-500'],
+            ['title' => 'Dikirim Mahasiswa', 'value' => $stats['submitted'], 'icon' => 'fa-paper-plane', 'bg' => 'bg-yellow-50', 'icon_color' => 'text-yellow-500'],
+            ['title' => 'Sudah Finalisasi', 'value' => $stats['finalized'], 'icon' => 'fa-check-circle', 'bg' => 'bg-violet-50', 'icon_color' => 'text-violet-500'],
         ];
         ?>
         <?php foreach ($statItems as $index => $stat): ?>
@@ -63,15 +63,11 @@
             </a>
             <a href="<?= base_url('admin/pitching-desk?status=approved') ?>"
                class="btn-outline btn-sm <?= $statusFilter === 'approved' ? 'bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-600' : '' ?>">
-                <i class="fas fa-check mr-1"></i> Disetujui
-            </a>
-            <a href="<?= base_url('admin/pitching-desk?status=revision') ?>"
-               class="btn-outline btn-sm <?= $statusFilter === 'revision' ? 'bg-orange-500 text-white border-orange-500 hover:bg-orange-600' : '' ?>">
-                <i class="fas fa-rotate mr-1"></i> Revisi
+                <i class="fas fa-check mr-1"></i> Lolos
             </a>
             <a href="<?= base_url('admin/pitching-desk?status=rejected') ?>"
                class="btn-outline btn-sm <?= $statusFilter === 'rejected' ? 'bg-rose-500 text-white border-rose-500 hover:bg-rose-600' : '' ?>">
-                <i class="fas fa-circle-xmark mr-1"></i> Ditolak
+                <i class="fas fa-circle-xmark mr-1"></i> Tdk Lolos
             </a>
         </div>
         <div class="flex flex-wrap items-center gap-2">
@@ -98,9 +94,9 @@
         
         <div class="px-4 sm:px-7 py-4 sm:py-5 border-b border-sky-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/60">
             <div>
-                <h3 class="font-display text-base font-bold text-(--text-heading)">Antrian Validasi Final</h3>
+                <h3 class="font-display text-base font-bold text-(--text-heading)">Daftar Penilaian Pitching</h3>
                 <p class="text-[11px] text-(--text-muted) font-semibold mt-0.5">
-                    Proposal yang sudah dikirim mahasiswa dan menunggu validasi Admin/UPAPKK
+                    Agregasi multi-penilai & finalisasi hasil pitching
                 </p>
             </div>
         </div>
@@ -112,10 +108,10 @@
                         <th>Tim / Usaha</th>
                         <th>Ketua</th>
                         <th>Kategori</th>
-                        <th class="text-center">Link Video</th>
-                        <th class="text-center">PPT/PDF</th>
-                        <th class="text-center">Nilai (%)</th>
-                        <th>Status</th>
+                        <th class="text-center">Video</th>
+                        <th class="text-center">PPT</th>
+                        <th class="text-center">Penilaian</th>
+                        <th class="text-center">Status Akhir</th>
                         <th class="text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -135,6 +131,11 @@
                     ];
                     ?>
                     <?php foreach ($proposals as $proposal): ?>
+                    <?php
+                    $assCount = (int)($proposal['assessment_count'] ?? 0);
+                    $assAvg = $proposal['assessment_avg'] ?? null;
+                    $isFinalized = !empty($proposal['penilaian_final_at']);
+                    ?>
                     <tr class="group">
                         <td>
                             <div class="font-display font-bold text-(--text-heading) text-[13px]">
@@ -179,44 +180,36 @@
                             <?php endif; ?>
                         </td>
                         <td class="text-center">
-                            <?php $nilai = $proposal['pitching_persentase_nilai'] ?? null; ?>
-                            <?php if ($nilai !== null && $nilai !== ''): ?>
+                            <?php if ($assCount > 0 && $assAvg !== null): ?>
                                 <?php
-                                $nv = (float)$nilai;
-                                $nilaiCls = $nv >= 80 ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
-                                    : 'bg-rose-50 text-rose-600 border-rose-200';
-                                $iconNilai = $nv >= 80 ? 'fa-trophy' : 'fa-circle-xmark';
+                                $avgVal = (float)$assAvg;
+                                $avgCls = $avgVal >= 80 ? 'text-emerald-600' : 'text-rose-600';
                                 ?>
-                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[12px] font-black border <?= $nilaiCls ?>">
-                                    <i class="fas <?= $iconNilai ?> text-[10px]"></i>
-                                    <?= number_format($nv, 2) ?>
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[12px] font-black border <?= $avgCls ?>">
+                                    <span class="text-[10px] text-slate-400 mr-0.5"><?= $assCount ?>/</span>
+                                    <?= number_format($avgVal, 2) ?>%
                                 </span>
                             <?php else: ?>
                                 <span class="text-[11px] text-slate-300">—</span>
                             <?php endif; ?>
                         </td>
-                        <td>
-                            <?php 
-                            $effStatus = $proposal['pitching_admin_status'];
-                            $effLabel = $statusLabels[$effStatus];
-                            $effColor = $statusColors[$effStatus];
-                            
-                            if ($effStatus === 'pending' && !empty($proposal['student_submitted_at'])) {
-                                $effLabel = 'Siap Validasi';
-                                $effColor = 'bg-sky-500 text-white border-sky-600 shadow-sm';
-                            } elseif ($effStatus === 'pending') {
-                                $effLabel = 'Belum Kirim';
-                                $effColor = 'bg-slate-100 text-slate-500 border-slate-200';
-                            }
-                            ?>
-                            <span class="pmw-status <?= $effColor ?>">
-                                <?= $effLabel ?>
-                            </span>
+                        <td class="text-center">
+                            <?php if ($isFinalized): ?>
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
+                                    <i class="fas fa-check-circle"></i> Sudah Final
+                                </span>
+                            <?php elseif ($assCount > 0): ?>
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200">
+                                    <i class="fas fa-clock"></i> Menunggu Final
+                                </span>
+                            <?php else: ?>
+                                <span class="text-[11px] text-slate-300">—</span>
+                            <?php endif; ?>
                         </td>
                         <td class="text-right whitespace-nowrap">
                             <a href="<?= base_url('admin/pitching-desk/' . $proposal['id']) ?>" 
                                class="btn-outline btn-sm bg-violet-50 text-violet-600 border-violet-200 hover:bg-violet-500 hover:text-white transition-all">
-                                <i class="fas fa-eye mr-1.5"></i> Detail & Validasi
+                                <i class="fas fa-eye mr-1.5"></i> Detail
                             </a>
                         </td>
                     </tr>

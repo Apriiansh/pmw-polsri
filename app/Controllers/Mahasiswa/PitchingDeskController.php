@@ -11,6 +11,7 @@ use App\Models\Proposal\PmwProposalAssignmentModel;
 use App\Models\PmwDocumentModel;
 use App\Models\PmwPeriodModel;
 use App\Models\PmwScheduleModel;
+use App\Services\PmwPitchingAssessmentService;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class PitchingDeskController extends BaseController
@@ -53,7 +54,9 @@ class PitchingDeskController extends BaseController
             'pm.nama as ketua_nama',
             'sp.status as pitching_admin_status',
             'sp.catatan as pitching_admin_catatan',
+            'sp.persentase_nilai as pitching_persentase_nilai',
             'sp.student_submitted_at',
+            'sp.penilaian_final_at as pitching_final_at',
         ])
             ->join('pmw_proposal_members pm', 'pm.proposal_id = pmw_proposals.id AND pm.role = "ketua"', 'left')
             ->join('pmw_selection_pitching sp', 'sp.proposal_id = pmw_proposals.id', 'left')
@@ -85,12 +88,31 @@ class PitchingDeskController extends BaseController
         // Profile ketua untuk isian default
         $profile = $profileModel->where('user_id', $user->id)->first();
 
+        // Multi-penilai aggregation info
+        $aggregation = ['count' => 0, 'avg' => null, 'approved' => 0, 'rejected' => 0];
+        $assessments = [];
+        $totalPenilai = 0;
+        $isLocked = false;
+        if ($proposal) {
+            $assessmentService = new PmwPitchingAssessmentService();
+            $aggregation = $assessmentService->getAggregation((int) $proposal['id']);
+            $isLocked = $aggregation['count'] >= 1;
+            $totalPenilai = $assessmentService->getTotalPenilaiCount();
+            if ($isLocked || !empty($proposal['pitching_final_at'])) {
+                $assessments = $assessmentService->getAssessmentsForProposal((int) $proposal['id']);
+            }
+        }
+
         return view('mahasiswa/pitching_desk', [
             'title'           => 'Administrasi & Desk Evaluation | PMW Polsri',
             'header_title'    => 'Administrasi & Desk Evaluation',
             'header_subtitle' => 'Pengajuan awal dan kelengkapan administrasi',
             'proposal'        => $proposal,
             'isSubmitted'     => !empty($proposal['student_submitted_at']),
+            'isLocked'        => $isLocked,
+            'aggregation'     => $aggregation,
+            'assessments'     => $assessments,
+            'totalPenilai'    => $totalPenilai,
             'activePeriod'    => $activePeriod,
             'phase'           => $phase,
             'isPhaseOpen'     => $isPhaseOpen,
@@ -500,6 +522,14 @@ class PitchingDeskController extends BaseController
 
         if (!$proposal) {
             return $this->response->setJSON(['success' => false, 'message' => 'Simpan draft identitas usaha terlebih dahulu']);
+        }
+
+        // Lock check: if already submitted AND a penilai has assessed, block resubmission
+        if (!empty($proposal['student_submitted_at'])) {
+            $lockService = new PmwPitchingAssessmentService();
+            if ($lockService->countAssessments((int) $proposal['id']) >= 1) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Tidak bisa kirim ulang — sudah ada penilai yang menilai proposal ini.']);
+            }
         }
 
         // Validasi nama usaha & kategori sudah terisi

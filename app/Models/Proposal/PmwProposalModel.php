@@ -63,6 +63,7 @@ class PmwProposalModel extends Model
                 'sp.status as pitching_admin_status',
                 'sp.catatan as pitching_admin_catatan',
                 'sp.persentase_nilai as pitching_persentase_nilai',
+                'sp.penilaian_final_at as pitching_final_at',
                 'pj.admin_status as perjanjian_status',
                 'pj.created_at as perjanjian_submitted_at',
                 'pj.admin_catatan as perjanjian_catatan',
@@ -109,6 +110,7 @@ class PmwProposalModel extends Model
             'per.name as period_name',
             'per.year as period_year',
             'sp.status as pitching_admin_status',
+            'sp.penilaian_final_at as pitching_final_at',
             'spr.dosen_status as proposal_dosen_status',
             'spr.admin_status as proposal_admin_status',
             '(SELECT COUNT(*) FROM pmw_proposal_members pm2 WHERE pm2.proposal_id = p.id) as member_count',
@@ -161,6 +163,7 @@ class PmwProposalModel extends Model
             'sp.catatan as pitching_admin_catatan',
             'sp.persentase_nilai as pitching_persentase_nilai',
             'sp.student_submitted_at',
+            'sp.penilaian_final_at as pitching_final_at',
             'spr.dosen_status as proposal_dosen_status',
             'spr.dosen_catatan as proposal_dosen_catatan',
             'spr.admin_status as proposal_admin_status',
@@ -310,6 +313,51 @@ class PmwProposalModel extends Model
     }
 
     /**
+     * Get proposals for Penilai Pitching Desk with per-penilai submission status.
+     */
+    public function getProposalsForPenilai(int $currentUserId, ?string $statusFilter = null, ?string $kategoriFilter = null): array
+    {
+        $db = \Config\Database::connect();
+
+        $builder = $db->table('pmw_proposals p');
+        $builder->select([
+            'p.*',
+            'pm.nama as ketua_nama',
+            'pm.nim as ketua_nim',
+            'per.name as period_name',
+            'per.year as period_year',
+            'sp.status as pitching_admin_status',
+            'sp.catatan as pitching_admin_catatan',
+            'sp.persentase_nilai as pitching_persentase_nilai',
+            'sp.student_submitted_at',
+            'sp.penilaian_final_at',
+            'CASE WHEN pa2.id IS NOT NULL THEN 1 ELSE 0 END as has_submitted',
+            'pa2.persentase_nilai as my_score',
+            'pa2.status as my_status',
+            '(SELECT id FROM pmw_documents WHERE proposal_id = p.id AND doc_key = "pitching_ppt" LIMIT 1) as pitching_ppt_id',
+        ]);
+        $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
+        $builder->join('pmw_periods per', 'per.id = p.period_id', 'left');
+        $builder->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left');
+        $builder->join('pmw_pitching_assessments pa2', 'pa2.proposal_id = p.id AND pa2.penilai_user_id = ' . (int) $currentUserId, 'left');
+
+        $builder->where('sp.student_submitted_at IS NOT NULL');
+
+        if ($statusFilter) {
+            $builder->where('sp.status', $statusFilter);
+        }
+
+        if ($kategoriFilter && in_array($kategoriFilter, ['pemula', 'berkembang'], true)) {
+            $builder->where('p.kategori_wirausaha', $kategoriFilter);
+        }
+
+        $builder->orderBy('sp.persentase_nilai', 'DESC', false);
+        $builder->orderBy('p.updated_at', 'DESC');
+
+        return $builder->get()->getResultArray();
+    }
+
+    /**
      * Get proposals for Admin/Penilai Pitching Desk validation
      */
     public function getProposalsForAdminPitching(?string $statusFilter = null, ?string $kategoriFilter = null): array
@@ -327,6 +375,10 @@ class PmwProposalModel extends Model
             'sp.catatan as pitching_admin_catatan',
             'sp.persentase_nilai as pitching_persentase_nilai',
             'sp.student_submitted_at',
+            'sp.penilaian_final_at',
+            'sp.penilaian_final_by',
+            '(SELECT COUNT(*) FROM pmw_pitching_assessments WHERE proposal_id = p.id AND submitted_at IS NOT NULL) as assessment_count',
+            '(SELECT ROUND(AVG(persentase_nilai), 2) FROM pmw_pitching_assessments WHERE proposal_id = p.id AND submitted_at IS NOT NULL) as assessment_avg',
             '(SELECT id FROM pmw_documents WHERE proposal_id = p.id AND doc_key = "pitching_ppt" LIMIT 1) as pitching_ppt_id'
         ]);
         $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');

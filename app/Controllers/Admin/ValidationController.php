@@ -25,13 +25,15 @@ class ValidationController extends BaseController
         
         $allProposals = $proposalModel->getWithDetails(null);
 
-        // Filter: hanya tampilkan proposal yang sudah lolos pitching DAN sudah disetujui dosen
+        // Filter: hanya tampilkan proposal yang sudah lolos pitching (finalized) DAN sudah disetujui dosen
         $proposals = array_values(array_filter($proposals, fn($p) =>
             ($p['pitching_admin_status'] ?? '') === 'approved' &&
+            !empty($p['pitching_final_at']) &&
             ($p['proposal_dosen_status'] ?? '') === 'approved'
         ));
         $allFiltered = array_values(array_filter($allProposals, fn($p) =>
             ($p['pitching_admin_status'] ?? '') === 'approved' &&
+            !empty($p['pitching_final_at']) &&
             ($p['proposal_dosen_status'] ?? '') === 'approved'
         ));
         $stats = [

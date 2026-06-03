@@ -42,8 +42,9 @@ class PerjanjianController extends BaseController
         $builder->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left');
         $builder->join('pmw_perjanjian pj', 'pj.proposal_id = p.id', 'left');
 
-        // Filter: Must be approved in Pitching Desk by Admin
+        // Filter: Must be approved AND finalized in Pitching Desk
         $builder->where('sp.status', 'approved');
+        $builder->where('sp.penilaian_final_at IS NOT NULL');
 
         if ($statusFilter) {
             $builder->where('pj.admin_status', $statusFilter);
@@ -58,6 +59,7 @@ class PerjanjianController extends BaseController
         $statsBuilder->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left');
         $statsBuilder->join('pmw_perjanjian pj', 'pj.proposal_id = p.id', 'left');
         $statsBuilder->where('sp.status', 'approved');
+        $statsBuilder->where('sp.penilaian_final_at IS NOT NULL');
         $statsBuilder->groupBy('pj.admin_status');
         $rawStats = $statsBuilder->get()->getResultArray();
 
@@ -94,7 +96,7 @@ class PerjanjianController extends BaseController
 
         $proposal = $proposalModel->getProposalForValidation($id);
 
-        if (!$proposal || $proposal['pitching_admin_status'] !== 'approved') {
+        if (!$proposal || $proposal['pitching_admin_status'] !== 'approved' || empty($proposal['pitching_final_at'])) {
             return redirect()->to('admin/perjanjian')->with('error', 'Proposal belum layak masuk tahap perjanjian atau tidak ditemukan');
         }
 
@@ -130,7 +132,7 @@ class PerjanjianController extends BaseController
         
         $proposal = $proposalModel->getProposalForValidation($id);
 
-        if (!$proposal || $proposal['pitching_admin_status'] !== 'approved') {
+        if (!$proposal || $proposal['pitching_admin_status'] !== 'approved' || empty($proposal['pitching_final_at'])) {
             return redirect()->to('admin/perjanjian')->with('error', 'Akses ditolak');
         }
 

@@ -301,6 +301,50 @@
     </div>
 
     <!-- ================================================================
+         5. ASSESSMENT STATUS BANNER
+    ================================================================= -->
+    <?php if ($myAssessment && !empty($myAssessment['submitted_at'])): ?>
+    <div class="card-premium overflow-hidden animate-stagger delay-400 border-l-4 border-l-emerald-500" @mousemove="handleMouseMove">
+        <div class="p-5 sm:p-7 flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                <i class="fas fa-check-circle text-2xl"></i>
+            </div>
+            <div class="flex-1">
+                <h4 class="font-display font-bold text-(--text-heading)">Anda sudah menilai proposal ini</h4>
+                <p class="text-sm text-slate-600 mt-1">
+                    Nilai Anda: <strong><?= number_format((float)$myAssessment['persentase_nilai'], 2) ?>%</strong>
+                    &middot; Status: <span class="font-semibold <?= $myAssessment['status'] === 'approved' ? 'text-emerald-600' : 'text-rose-600' ?>">
+                        <?= $myAssessment['status'] === 'approved' ? 'LOLOS' : 'BELUM LOLOS' ?>
+                    </span>
+                </p>
+                <p class="text-xs text-slate-400 mt-1">Dikirim: <?= date('d/m/Y H:i', strtotime($myAssessment['submitted_at'])) ?></p>
+            </div>
+            <span class="px-3 py-1.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-600 border border-emerald-200 shrink-0">
+                SUDAH DINILAI
+            </span>
+        </div>
+    </div>
+    <?php else: ?>
+    <div class="card-premium overflow-hidden animate-stagger delay-400 border-l-4 border-l-slate-300" @mousemove="handleMouseMove">
+        <div class="p-5 sm:p-7 flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+                <i class="fas fa-pen-circle text-2xl"></i>
+            </div>
+            <div class="flex-1">
+                <h4 class="font-display font-bold text-(--text-heading)">Anda belum menilai proposal ini</h4>
+                <p class="text-sm text-slate-500 mt-1">
+                    Setelah submit, mahasiswa akan di-lock dan nilai masuk ke perhitungan rata-rata.
+                    Admin akan memfinalisasi hasil akhir.
+                </p>
+            </div>
+            <span class="px-3 py-1.5 rounded-full text-[10px] font-black bg-slate-100 text-slate-500 border border-slate-200 shrink-0">
+                BELUM DINILAI
+            </span>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <!-- ================================================================
          5. VALIDATION FORM
     ================================================================= -->
     <div class="card-premium overflow-hidden animate-stagger delay-500 border-l-4 border-l-sky-500" @mousemove="handleMouseMove">
@@ -309,7 +353,7 @@
                 <i class="fas fa-clipboard-check text-sky-500 mr-2"></i>
                 Penilaian Pitching
             </h3>
-            <p class="text-[11px] text-(--text-muted) mt-0.5">Berikan nilai dan keputusan akhir untuk tahap Pitching Desk</p>
+            <p class="text-[11px] text-(--text-muted) mt-0.5">Berikan nilai dan keputusan untuk tahap Pitching Desk</p>
         </div>
 
         <form action="<?= base_url('penilai/pitching-desk/' . $proposal['id'] . '/validate') ?>" method="post">
@@ -331,45 +375,68 @@
                 </div>
                 <?php endif; ?>
 
-                <!-- Status Selection -->
-                <div>
-                    <label class="form-label mb-3 block">Hasil Validasi <span class="required">*</span></label>
-                    <div class="grid sm:grid-cols-3 gap-4">
+                <!-- Hasil Penilaian Pitching (Unified: Slider <-> Status Radio) -->
+                <div class="space-y-3" x-data="{
+                    nilai: <?= !empty($proposal['pitching_persentase_nilai']) ? (float)$proposal['pitching_persentase_nilai'] : 0 ?>,
+                    get v() { return parseFloat(this.nilai); },
+                    get valid() { return !isNaN(this.v) && this.nilai !== null && this.nilai !== ''; },
+                    get accent() {
+                        if (!this.valid) return '#94a3b8';
+                        return this.v >= 80 ? '#10b981' : '#f43f5e';
+                    },
+                    get label() {
+                        if (!this.valid) return { text: '—', cls: 'bg-slate-50 text-slate-500 border-slate-200', icon: 'fa-circle-question' };
+                        if (this.v >= 80) return { text: 'LOLOS', cls: 'bg-emerald-50 text-emerald-600 border-emerald-200', icon: 'fa-trophy' };
+                        return { text: 'BELUM LOLOS', cls: 'bg-rose-50 text-rose-600 border-rose-200', icon: 'fa-circle-xmark' };
+                    },
+                    get pos() { return this.valid ? Math.min(98, Math.max(2, this.v)) : 0; },
+                    syncRadio() {
+                        if (!this.valid) return;
+                        const target = this.v >= 80 ? 'approved' : 'rejected';
+                        const radio = this.$root.querySelector(`input[name=status][value='${target}']`);
+                        if (radio && !radio.checked) radio.checked = true;
+                    },
+                    onRadioChange(value) {
+                        if (value === 'approved') this.nilai = 90;
+                        else if (value === 'rejected') this.nilai = 40;
+                    }
+                }" x-init="syncRadio(); $watch('nilai', () => syncRadio())">
+                    <div class="flex items-center justify-between gap-3 flex-wrap">
+                        <div>
+                            <label class="form-label mb-0">Hasil Penilaian Pitching <span class="required">*</span></label>
+                            <p class="text-[10px] text-slate-400 font-medium mt-0.5">Batas kelulusan: <span class="font-black text-emerald-600">≥ 80%</span>. Geser slider atau klik pilihan di bawah.</p>
+                        </div>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-black border transition-all duration-300"
+                              :class="label.cls"
+                              x-show="valid" x-cloak>
+                            <i class="fas" :class="label.icon"></i>
+                            <span x-text="label.text"></span>
+                        </span>
+                    </div>
+
+                    <!-- Status Radio (2 opsi, terikat slider) -->
+                    <div class="grid sm:grid-cols-2 gap-4">
                         <!-- Lolos -->
                         <label class="relative cursor-pointer">
-                            <input type="radio" name="status" value="approved" class="peer sr-only" <?= $proposal['pitching_admin_status'] === 'approved' ? 'checked' : '' ?> required>
+                            <input type="radio" name="status" value="approved" class="peer sr-only"
+                                   @change="onRadioChange('approved')" required>
                             <div class="p-4 rounded-2xl border-2 border-slate-100 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 transition-all hover:border-emerald-300 shadow-sm peer-checked:shadow-emerald-100">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center peer-checked:bg-emerald-500 peer-checked:text-white transition-colors">
-                                        <i class="fas fa-award"></i>
+                                        <i class="fas fa-trophy"></i>
                                     </div>
                                     <div>
                                         <p class="font-bold text-(--text-heading) text-sm leading-tight">Lolos</p>
-                                        <p class="text-[10px] text-slate-400 font-medium">Pitching Diterima</p>
+                                        <p class="text-[10px] text-slate-400 font-medium">Pitching Diterima · ≥ 80%</p>
                                     </div>
                                 </div>
                             </div>
                         </label>
 
-                        <!-- Revisi -->
+                        <!-- Belum Lolos -->
                         <label class="relative cursor-pointer">
-                            <input type="radio" name="status" value="revision" class="peer sr-only" <?= $proposal['pitching_admin_status'] === 'revision' ? 'checked' : '' ?>>
-                            <div class="p-4 rounded-2xl border-2 border-slate-100 peer-checked:border-orange-500 peer-checked:bg-orange-50 transition-all hover:border-orange-300 shadow-sm peer-checked:shadow-orange-100">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center peer-checked:bg-orange-500 peer-checked:text-white transition-colors">
-                                        <i class="fas fa-rotate"></i>
-                                    </div>
-                                    <div>
-                                        <p class="font-bold text-(--text-heading) text-sm leading-tight">Revisi</p>
-                                        <p class="text-[10px] text-slate-400 font-medium">Perlu Perbaikan</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </label>
-
-                        <!-- Tolak -->
-                        <label class="relative cursor-pointer">
-                            <input type="radio" name="status" value="rejected" class="peer sr-only" <?= $proposal['pitching_admin_status'] === 'rejected' ? 'checked' : '' ?>>
+                            <input type="radio" name="status" value="rejected" class="peer sr-only"
+                                   @change="onRadioChange('rejected')">
                             <div class="p-4 rounded-2xl border-2 border-slate-100 peer-checked:border-rose-500 peer-checked:bg-rose-50 transition-all hover:border-rose-300 shadow-sm peer-checked:shadow-rose-100">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center peer-checked:bg-rose-500 peer-checked:text-white transition-colors">
@@ -377,11 +444,47 @@
                                     </div>
                                     <div>
                                         <p class="font-bold text-(--text-heading) text-sm leading-tight">Belum Lolos</p>
-                                        <p class="text-[10px] text-slate-400 font-medium">Tidak Lolos Tahap 3</p>
+                                        <p class="text-[10px] text-slate-400 font-medium">Tidak Lolos Tahap 3 · &lt; 80%</p>
                                     </div>
                                 </div>
                             </div>
                         </label>
+                    </div>
+
+                    <!-- Slider -->
+                    <div class="relative pt-14 pb-2">
+                        <!-- Floating value bubble -->
+                        <div class="absolute top-0 transition-all duration-100 -translate-x-1/2 z-10 pointer-events-none"
+                             :style="`left: ${pos}%`"
+                             x-show="valid" x-cloak>
+                            <div class="px-3 py-1.5 rounded-xl bg-white shadow-xl border-2 font-display font-black text-base whitespace-nowrap"
+                                 :style="`border-color: ${accent}; color: ${accent}`">
+                                <span x-text="v.toFixed(2)"></span><span class="text-[10px] opacity-60 ml-0.5 font-bold">%</span>
+                            </div>
+                            <div class="w-0 h-0 border-l-[7px] border-r-[7px] border-t-[7px] border-l-transparent border-r-transparent mx-auto -mt-0.5"
+                                 :style="`border-top-color: ${accent}`"></div>
+                        </div>
+
+                        <input type="range" min="0" max="100" step="0.01"
+                               x-model="nilai"
+                               :style="`accent-color: ${accent}`"
+                               class="w-full h-3 rounded-full appearance-none cursor-pointer bg-slate-200 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-sky-100 transition-all">
+
+                        <div class="relative h-6 mt-2 text-[10px] font-bold text-slate-500 select-none">
+                            <span class="absolute" style="left: 0%"><span class="block w-px h-2 bg-slate-300 mx-auto mb-1"></span>0</span>
+                            <span class="absolute -translate-x-1/2" style="left: 80%"><span class="block w-px h-2.5 bg-emerald-500 mx-auto mb-1"></span>80</span>
+                            <span class="absolute -translate-x-full" style="left: 100%"><span class="block w-px h-2 bg-slate-300 ml-auto mb-1"></span>100</span>
+                        </div>
+
+                        <input type="hidden" name="persentase_nilai" :value="valid ? v.toFixed(2) : ''">
+                    </div>
+
+                    <!-- Reset button -->
+                    <div class="flex items-center justify-end text-[10px] font-medium pt-1">
+                        <button type="button" @click="nilai = 0"
+                                class="text-slate-400 hover:text-rose-500 font-bold inline-flex items-center gap-1 transition-colors">
+                            <i class="fas fa-rotate-left"></i>Reset
+                        </button>
                     </div>
                 </div>
 
@@ -406,107 +509,6 @@
                             <i class="fas fa-info-circle text-rose-400 mr-0.5"></i>
                             Wajib diisi — catatan ini akan muncul di dashboard mahasiswa sebagai umpan balik resmi.
                         </p>
-                    </div>
-                </div>
-
-                <!-- Persentase Nilai (Slider) -->
-                <div class="space-y-3"
-                     x-data="{
-                         nilai: <?= !empty($proposal['pitching_persentase_nilai']) ? (float)$proposal['pitching_persentase_nilai'] : 0 ?>,
-                         get v() { return parseFloat(this.nilai); },
-                         get valid() { return !isNaN(this.v) && this.nilai !== null && this.nilai !== ''; },
-                         get accent() {
-                             if (!this.valid) return '#94a3b8';
-                             return this.v >= 80 ? '#10b981' : '#f43f5e';
-                         },
-                         get label() {
-                             if (!this.valid) return { text: '—', range: 'Belum dinilai', cls: 'bg-slate-50 text-slate-500 border-slate-200', textCls: 'text-slate-500', icon: 'fa-circle-question' };
-                             if (this.v >= 80) return { text: 'LOLOS', range: '≥ 80', cls: 'bg-emerald-50 text-emerald-600 border-emerald-200', textCls: 'text-emerald-600', icon: 'fa-trophy' };
-                             return { text: 'TIDAK LOLOS', range: '< 80', cls: 'bg-rose-50 text-rose-600 border-rose-200', textCls: 'text-rose-600', icon: 'fa-circle-xmark' };
-                         },
-                         get pos() { return this.valid ? Math.min(98, Math.max(2, this.v)) : 0; },
-                         get activeTier() {
-                             if (!this.valid) return -1;
-                             return this.v >= 80 ? 1 : 0;
-                         }
-                     }">
-                    <div class="flex items-center justify-between gap-3 flex-wrap">
-                        <div>
-                            <label class="form-label mb-0">Persentase Nilai Pitching</label>
-                            <p class="text-[10px] text-slate-400 font-medium mt-0.5">Batas kelulusan: <span class="font-black text-emerald-600">≥ 80%</span>. Geser slider atau klik tier di bawah.</p>
-                        </div>
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-black border transition-all duration-300"
-                              :class="label.cls"
-                              x-show="valid" x-cloak>
-                            <i class="fas" :class="label.icon"></i>
-                            <span x-text="label.text"></span>
-                        </span>
-                    </div>
-
-                    <div class="relative pt-14 pb-2">
-                        <!-- Floating value bubble -->
-                        <div class="absolute top-0 transition-all duration-100 -translate-x-1/2 z-10 pointer-events-none"
-                             :style="`left: ${pos}%`"
-                             x-show="valid" x-cloak>
-                            <div class="px-3 py-1.5 rounded-xl bg-white shadow-xl border-2 font-display font-black text-base whitespace-nowrap"
-                                 :style="`border-color: ${accent}; color: ${accent}`">
-                                <span x-text="v.toFixed(2)"></span><span class="text-[10px] opacity-60 ml-0.5 font-bold">%</span>
-                            </div>
-                            <div class="w-0 h-0 border-l-[7px] border-r-[7px] border-t-[7px] border-l-transparent border-r-transparent mx-auto -mt-0.5"
-                                 :style="`border-top-color: ${accent}`"></div>
-                        </div>
-
-                        <!-- Native range slider -->
-                        <input type="range" min="0" max="100" step="0.01"
-                               x-model="nilai"
-                               :style="`accent-color: ${accent}`"
-                               class="w-full h-3 rounded-full appearance-none cursor-pointer bg-slate-200 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-sky-100 transition-all">
-
-                        <!-- Tick marks at 0, 80, 100 -->
-                        <div class="relative h-6 mt-2 text-[10px] font-bold text-slate-500 select-none">
-                            <span class="absolute" style="left: 0%"><span class="block w-px h-2 bg-slate-300 mx-auto mb-1"></span>0</span>
-                            <span class="absolute -translate-x-1/2" style="left: 80%"><span class="block w-px h-2.5 bg-emerald-500 mx-auto mb-1"></span>80</span>
-                            <span class="absolute -translate-x-full" style="left: 100%"><span class="block w-px h-2 bg-slate-300 ml-auto mb-1"></span>100</span>
-                        </div>
-
-                        <!-- Hidden input for form submission -->
-                        <input type="hidden" name="persentase_nilai" :value="valid ? v.toFixed(2) : ''">
-                    </div>
-
-                    <!-- 2 tier quick-snap cards -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <button type="button" @click="nilai = 40"
-                            class="rounded-xl p-3 border-2 text-left transition-all hover:scale-[1.02] active:scale-95"
-                            :class="activeTier === 0 ? 'border-rose-400 bg-rose-50 shadow-md ring-2 ring-rose-200' : 'border-slate-100 bg-white hover:border-rose-200 opacity-70'">
-                            <div class="flex items-center justify-between mb-1.5">
-                                <i class="fas fa-circle-xmark text-rose-500 text-base"></i>
-                                <span class="text-[9px] font-black text-rose-500/70">RANGE</span>
-                            </div>
-                            <p class="text-[11px] font-black uppercase tracking-wider text-rose-600 leading-tight">Tidak Lolos</p>
-                            <p class="text-[10px] font-bold text-slate-400 mt-0.5">&lt; 80%</p>
-                        </button>
-                        <button type="button" @click="nilai = 90"
-                            class="rounded-xl p-3 border-2 text-left transition-all hover:scale-[1.02] active:scale-95"
-                            :class="activeTier === 1 ? 'border-emerald-400 bg-emerald-50 shadow-md ring-2 ring-emerald-200' : 'border-slate-100 bg-white hover:border-emerald-200 opacity-70'">
-                            <div class="flex items-center justify-between mb-1.5">
-                                <i class="fas fa-trophy text-emerald-500 text-base"></i>
-                                <span class="text-[9px] font-black text-emerald-500/70">RANGE</span>
-                            </div>
-                            <p class="text-[11px] font-black uppercase tracking-wider text-emerald-600 leading-tight">Lolos</p>
-                            <p class="text-[10px] font-bold text-slate-400 mt-0.5">≥ 80%</p>
-                        </button>
-                    </div>
-
-                    <!-- Reset button -->
-                    <div class="flex items-center justify-between text-[10px] font-medium pt-1">
-                        <span class="text-slate-400 inline-flex items-center gap-1">
-                            <i class="fas fa-info-circle text-slate-300"></i>
-                            Step 0.01 untuk presisi (contoh: 87.50)
-                        </span>
-                        <button type="button" @click="nilai = 0"
-                                class="text-slate-400 hover:text-rose-500 font-bold inline-flex items-center gap-1 transition-colors">
-                            <i class="fas fa-rotate-left"></i>Reset
-                        </button>
                     </div>
                 </div>
 

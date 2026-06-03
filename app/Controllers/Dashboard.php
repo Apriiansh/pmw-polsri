@@ -127,7 +127,7 @@ class Dashboard extends BaseController
         
         $successRate = $totalProposals > 0 ? round(($approvedProposals / $totalProposals) * 100, 1) : 0;
 
-        // Map pitching desk antrean for view
+        // Map pitching desk antrean for view (submitted but not finalized)
         $db = \Config\Database::connect();
         $rawPitching = $db->table('pmw_proposals p')
             ->select([
@@ -139,13 +139,14 @@ class Dashboard extends BaseController
             ->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id')
             ->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left')
             ->where('sp.student_submitted_at IS NOT NULL')
-            ->whereIn('sp.status', ['pending', 'revision'])
+            ->where('sp.penilaian_final_at IS NULL')
             ->orderBy('sp.student_submitted_at', 'ASC')
             ->limit(5)
             ->get()->getResultArray();
 
         $mappedProposals = array_map(function($p) {
             $statusLabel = match($p['pitching_admin_status']) {
+                'approved' => 'Menunggu Finalisasi',
                 'revision' => 'Revisi',
                 default    => 'Review',
             };
@@ -185,7 +186,7 @@ class Dashboard extends BaseController
                 ],
                 [
                     'title' => 'Butuh Review', 
-                    'value' => $db->table('pmw_selection_pitching')->where('student_submitted_at IS NOT NULL')->where('status', 'pending')->countAllResults(), 
+                    'value' => $db->table('pmw_selection_pitching')->where('student_submitted_at IS NOT NULL')->where('penilaian_final_at IS NULL')->countAllResults(), 
                     'icon' => 'fa-clock-rotate-left', 
                     'trend' => 'Antrean Pitching', 
                     'trend_up' => false, 
@@ -211,10 +212,11 @@ class Dashboard extends BaseController
         $progress = 10;
         $stage = 'Proposal';
 
-        // 2. Pitching
+        // 2. Pitching (must be finalized)
         $pitching = $db->table('pmw_selection_pitching')
             ->where('proposal_id', $proposalId)
             ->where('status', 'approved')
+            ->where('penilaian_final_at IS NOT NULL')
             ->get()->getRowArray();
         if ($pitching) {
             $progress = 25;
@@ -503,6 +505,17 @@ class Dashboard extends BaseController
     private function getPenilaiData(): array
     {
         $db = \Config\Database::connect();
+        $userId = user()->id;
+
+        // Multi-penilai stats
+        $mySubmissions = (clone $db)->table('pmw_pitching_assessments')
+            ->where('penilai_user_id', $userId)
+            ->where('submitted_at IS NOT NULL')
+            ->countAllResults();
+
+        $totalPenilai = (clone $db)->table('auth_groups_users')
+            ->where('group', 'penilai')
+            ->countAllResults();
 
         // Stats - pitching submissions & progress
         $pitchingSubmitted = (clone $db)->table('pmw_selection_pitching')
@@ -511,16 +524,18 @@ class Dashboard extends BaseController
 
         $pitchingPending = (clone $db)->table('pmw_selection_pitching')
             ->where('student_submitted_at IS NOT NULL')
-            ->where('status', 'pending')
+            ->where('penilaian_final_at IS NULL')
             ->countAllResults();
 
         $pitchingApproved = (clone $db)->table('pmw_selection_pitching')
             ->where('status', 'approved')
+            ->where('penilaian_final_at IS NOT NULL')
             ->countAllResults();
 
         $pitchingGraded = (clone $db)->table('pmw_selection_pitching')
             ->where('student_submitted_at IS NOT NULL')
             ->where('persentase_nilai IS NOT NULL')
+            ->where('penilaian_final_at IS NOT NULL')
             ->countAllResults();
 
         // Ranking Top 10 by persentase_nilai DESC, with category split
@@ -536,6 +551,7 @@ class Dashboard extends BaseController
             ->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left')
             ->where('sp.student_submitted_at IS NOT NULL')
             ->where('sp.persentase_nilai IS NOT NULL')
+            ->where('sp.penilaian_final_at IS NOT NULL')
             ->where('p.kategori_wirausaha', 'pemula')
             ->orderBy('sp.persentase_nilai', 'DESC')
             ->orderBy('sp.updated_at', 'DESC')
@@ -554,23 +570,25 @@ class Dashboard extends BaseController
             ->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left')
             ->where('sp.student_submitted_at IS NOT NULL')
             ->where('sp.persentase_nilai IS NOT NULL')
+            ->where('sp.penilaian_final_at IS NOT NULL')
             ->where('p.kategori_wirausaha', 'berkembang')
             ->orderBy('sp.persentase_nilai', 'DESC')
             ->orderBy('sp.updated_at', 'DESC')
             ->limit(10)
             ->get()->getResultArray();
 
-        // Recent activity (5 latest validated)
+        // Recent activity (5 latest assessments by current penilai or others)
         $recent = $db->table('pmw_proposals p')
             ->select([
                 'p.id', 'p.nama_usaha', 'p.kategori_wirausaha',
                 'pm.nama as ketua_nama',
+                'pa2.persentase_nilai as my_score', 'pa2.status as my_status', 'pa2.submitted_at',
                 'sp.persentase_nilai', 'sp.status', 'sp.updated_at',
             ])
             ->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left')
             ->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left')
+            ->join('pmw_pitching_assessments pa2', 'pa2.proposal_id = p.id AND pa2.penilai_user_id = ' . (int) $userId, 'left')
             ->where('sp.student_submitted_at IS NOT NULL')
-            ->where('sp.status !=', 'pending')
             ->orderBy('sp.updated_at', 'DESC')
             ->limit(5)
             ->get()->getResultArray();
@@ -581,9 +599,9 @@ class Dashboard extends BaseController
             'view'            => 'penilai/dashboard',
             'stats' => [
                 ['title' => 'Total Pengajuan', 'value' => $pitchingSubmitted, 'icon' => 'fa-paper-plane', 'trend' => 'Mahasiswa', 'trend_up' => null, 'bg' => 'bg-sky-50', 'icon_color' => 'text-sky-500', 'span' => 'col-span-1'],
+                ['title' => 'Anda Sudah Nilai', 'value' => $mySubmissions, 'icon' => 'fa-check-circle', 'trend' => 'Dari ' . $totalPenilai . ' penilai', 'trend_up' => null, 'bg' => 'bg-emerald-50', 'icon_color' => 'text-emerald-500', 'span' => 'col-span-1'],
+                ['title' => 'Sudah Difinalisasi', 'value' => $pitchingGraded, 'icon' => 'fa-percent', 'trend' => 'Final admin', 'trend_up' => true, 'bg' => 'bg-violet-50', 'icon_color' => 'text-violet-500', 'span' => 'col-span-1'],
                 ['title' => 'Menunggu Nilai', 'value' => $pitchingPending, 'icon' => 'fa-clock-rotate-left', 'trend' => 'Belum dinilai', 'trend_up' => false, 'bg' => 'bg-amber-50', 'icon_color' => 'text-amber-500', 'span' => 'col-span-1'],
-                ['title' => 'Sudah Dinilai', 'value' => $pitchingGraded, 'icon' => 'fa-percent', 'trend' => 'Ada nilai', 'trend_up' => true, 'bg' => 'bg-emerald-50', 'icon_color' => 'text-emerald-500', 'span' => 'col-span-1'],
-                ['title' => 'Lolos Pitching', 'value' => $pitchingApproved, 'icon' => 'fa-trophy', 'trend' => 'Approved', 'trend_up' => true, 'bg' => 'bg-violet-50', 'icon_color' => 'text-violet-500', 'span' => 'col-span-1'],
             ],
             'ranking_pemula'      => $rankingPemula,
             'ranking_berkembang'  => $rankingBerkembang,

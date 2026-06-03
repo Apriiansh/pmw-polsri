@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\Proposal\PmwProposalModel;
 use App\Models\Proposal\PmwProposalMemberModel;
 use App\Models\PmwDocumentModel;
+use App\Services\PmwPitchingAssessmentService;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class PitchingDeskController extends BaseController
@@ -13,30 +14,27 @@ class PitchingDeskController extends BaseController
     protected $helpers = ['form', 'url', 'pmw'];
 
     /**
-     * List of proposals already approved by lecturer, ready for final admin validation
+     * List of proposals with multi-penilai aggregation
      */
     public function index()
     {
         $proposalModel = new PmwProposalModel();
 
-        $statusFilter   = $this->request->getGet('status') ?? 'pending';
+        $statusFilter   = $this->request->getGet('status');
         $kategoriFilter = $this->request->getGet('kategori');
 
         $proposals = $proposalModel->getProposalsForAdminPitching($statusFilter, $kategoriFilter);
 
-        // Stats for Admin Pitching stage
         $allProposals = $proposalModel->getProposalsForAdminPitching(null, $kategoriFilter);
         $stats = [
-            'total'     => count($allProposals),
-            'pending'   => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'pending' && empty($p['student_submitted_at']))),
-            'submitted' => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'pending' && !empty($p['student_submitted_at']))),
-            'approved'  => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'approved')),
-            'revision'  => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'revision')),
-            'rejected'  => count(array_filter($allProposals, fn($p) => $p['pitching_admin_status'] === 'rejected')),
+            'total'      => count($allProposals),
+            'submitted'  => count(array_filter($allProposals, fn($p) => !empty($p['student_submitted_at']))),
+            'assessed'   => count(array_filter($allProposals, fn($p) => ($p['assessment_count'] ?? 0) > 0)),
+            'finalized'  => count(array_filter($allProposals, fn($p) => !empty($p['penilaian_final_at']))),
         ];
 
         return view('admin/pitching/validation', [
-            'title'           => 'Validasi Akhir Pitching | PMW Polsri',
+            'title'           => 'Validasi Pitching Desk | PMW Polsri',
             'proposals'       => $proposals,
             'stats'           => $stats,
             'statusFilter'    => $statusFilter,
@@ -45,23 +43,24 @@ class PitchingDeskController extends BaseController
     }
 
     /**
-     * Detail and Final Validation
+     * Detail with aggregation panel (read-only) + finalize button
      */
     public function detail(int $id)
     {
         $proposalModel = new PmwProposalModel();
-        $memberModel = new \App\Models\Proposal\PmwProposalMemberModel();
-        $documentModel = new \App\Models\PmwDocumentModel();
-        
+        $memberModel = new PmwProposalMemberModel();
+        $documentModel = new PmwDocumentModel();
+        $assessmentService = new PmwPitchingAssessmentService();
+
         $proposal = $proposalModel->getProposalForValidation($id);
-        
+
         if (!$proposal) {
             return redirect()->to('admin/pitching-desk')->with('error', 'Proposal tidak ditemukan');
         }
 
         $members = $memberModel->getByProposalId($id);
         $documents = $documentModel->getProposalDocs($id);
-        
+
         $docsByKey = [];
         foreach ($documents as $doc) {
             if (!empty($doc['doc_key'])) {
@@ -69,67 +68,31 @@ class PitchingDeskController extends BaseController
             }
         }
 
+        $assessments = $assessmentService->getAssessmentsForProposal($id);
+        $aggregation = $assessmentService->getAggregation($id);
+        $totalPenilai = $assessmentService->getTotalPenilaiCount();
+
         return view('admin/pitching/validation_detail', [
-            'title'     => 'Validasi Final Pitching | PMW Polsri',
-            'proposal'  => $proposal,
-            'members'   => $members,
-            'docsByKey' => $docsByKey,
+            'title'         => 'Validasi Pitching Desk | PMW Polsri',
+            'proposal'      => $proposal,
+            'members'       => $members,
+            'docsByKey'     => $docsByKey,
+            'assessments'   => $assessments,
+            'aggregation'   => $aggregation,
+            'totalPenilai'  => $totalPenilai,
         ]);
     }
 
     /**
-     * Final validation process
+     * Admin finalizes/approves the aggregated assessment result
      */
-    public function validateAction(int $id)
+    public function finalizeAction(int $id)
     {
-        $proposalModel = new PmwProposalModel();
-        $selectionModel = new \App\Models\Selection\PmwSelectionPitchingModel();
+        $service = new PmwPitchingAssessmentService();
+        $service->finalizeAssessment((int) $id, user()->id);
 
-        $proposal = $proposalModel->getProposalForValidation($id);
-
-        if (!$proposal) {
-            return redirect()->to('admin/pitching-desk')->with('error', 'Akses ditolak');
-        }
-
-        $status  = $this->request->getPost('status');
-        $catatan = $this->request->getPost('catatan');
-        $persentaseNilai = $this->request->getPost('persentase_nilai');
-
-        // Validate catatan: wajib diisi (min 5 char agar tidak cuma titik)
-        $rules = [
-            'catatan' => 'required|min_length[5]|max_length[1000]',
-        ];
-        if (!$this->validateData(['catatan' => $catatan], $rules)) {
-            return redirect()->back()->withInput()->with('error', 'Catatan validasi wajib diisi (minimal 5 karakter) agar mahasiswa mendapat umpan balik yang jelas.');
-        }
-
-        if (!in_array($status, ['approved', 'rejected', 'revision'])) {
-            return redirect()->back()->with('error', 'Status tidak valid');
-        }
-
-        $updateData = [
-            'status'           => $status,
-            'catatan'          => $catatan,
-            'persentase_nilai' => ($persentaseNilai !== null && $persentaseNilai !== '')
-                ? (float) $persentaseNilai
-                : null,
-            'updated_at'       => date('Y-m-d H:i:s'),
-        ];
-
-        if ($selectionModel->where('proposal_id', $id)->set($updateData)->update()) {
-            // Send notification to mahasiswa
-            $notifModel = new \App\Models\NotificationModel();
-            $notifModel->createPitchingValidationNotification(
-                (int) $proposal['leader_user_id'],
-                $id,
-                $proposal['nama_usaha'] ?? 'Tanpa Nama',
-                $status,
-                $catatan
-            );
-
-            return redirect()->to('admin/pitching-desk')->with('message', 'Validasi final berhasil disimpan');
-        }
-
+        return redirect()->to('admin/pitching-desk')
+            ->with('message', 'Hasil penilaian pitching berhasil difinalisasi. Mahasiswa telah mendapat notifikasi.');
     }
 
     /**
@@ -150,12 +113,11 @@ class PitchingDeskController extends BaseController
         }
 
         $inline = $this->request->getGet('inline');
-        
-        // If inline viewing is requested (e.g. from iframe)
+
         if ($inline) {
             $file = new \CodeIgniter\Files\File($path);
             $mime = $file->getMimeType();
-            
+
             return $this->response
                 ->setHeader('Content-Type', $mime)
                 ->setHeader('Content-Disposition', 'inline; filename="' . $doc['original_name'] . '"')

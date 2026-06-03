@@ -295,7 +295,8 @@ function medalClass(int $rank): array {
                         <th>Tim / Usaha</th>
                         <th>Ketua</th>
                         <th>Kategori</th>
-                        <th class="text-center">Nilai</th>
+                        <th class="text-center">Nilai Rata-rata</th>
+                        <th class="text-center">Nilai Saya</th>
                         <th>Status</th>
                         <th>Update</th>
                         <th class="text-right">Aksi</th>
@@ -335,6 +336,15 @@ function medalClass(int $rank): array {
                             <?php if (!empty($row['persentase_nilai'])): ?>
                                 <span class="font-display text-[14px] font-black text-(--text-heading) tabular-nums">
                                     <?= number_format((float)$row['persentase_nilai'], 2) ?>
+                                </span>
+                            <?php else: ?>
+                                <span class="text-slate-300">&mdash;</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="text-center">
+                            <?php if (!empty($row['my_score'])): ?>
+                                <span class="font-display text-[14px] font-black text-emerald-600 tabular-nums">
+                                    <?= number_format((float)$row['my_score'], 2) ?>
                                 </span>
                             <?php else: ?>
                                 <span class="text-slate-300">&mdash;</span>

@@ -49,8 +49,10 @@ class ProposalController extends BaseController
             $proposal = $proposalModel->findByPeriodAndLeader((int) $activePeriod['id'], (int) $user->id);
         }
 
-        // Gate: hanya bisa akses jika pitching_admin_status = approved
-        $isEligible = $proposal && ($proposal['pitching_admin_status'] ?? '') === 'approved';
+        // Gate: hanya bisa akses jika pitching_admin_status = approved AND penilaian_final_at IS NOT NULL
+        $isEligible = $proposal
+            && ($proposal['pitching_admin_status'] ?? '') === 'approved'
+            && !empty($proposal['pitching_final_at']);
 
         if (!$isEligible) {
             return view('mahasiswa/proposal', [
@@ -133,8 +135,8 @@ class ProposalController extends BaseController
 
         $this->guardOwner((int) $proposal['leader_user_id']);
 
-        // Gate: pitching harus sudah admin approved
-        if (($proposal['pitching_admin_status'] ?? '') !== 'approved') {
+        // Gate: pitching harus sudah admin approved AND finalized
+        if (($proposal['pitching_admin_status'] ?? '') !== 'approved' || empty($proposal['pitching_final_at'])) {
             return view('mahasiswa/proposal', [
                 'title'        => 'Proposal Kami',
                 'activePeriod' => (new \App\Models\PmwPeriodModel())->getActive(),

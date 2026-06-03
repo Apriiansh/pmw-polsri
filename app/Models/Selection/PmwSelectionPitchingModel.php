@@ -18,6 +18,8 @@ class PmwSelectionPitchingModel extends Model
         'status',
         'catatan',
         'persentase_nilai',
+        'penilaian_final_at',
+        'penilaian_final_by',
     ];
 
     // Dates
@@ -29,5 +31,22 @@ class PmwSelectionPitchingModel extends Model
     public function getByProposal($proposalId)
     {
         return $this->where('proposal_id', $proposalId)->first();
+    }
+
+    public function getWithAggregation(int $proposalId): ?object
+    {
+        $db = \Config\Database::connect();
+
+        $row = $db->table('pmw_selection_pitching sp')
+            ->select('
+                sp.*,
+                (SELECT COUNT(*) FROM pmw_pitching_assessments WHERE proposal_id = sp.proposal_id AND submitted_at IS NOT NULL) as assessment_count,
+                (SELECT ROUND(AVG(persentase_nilai), 2) FROM pmw_pitching_assessments WHERE proposal_id = sp.proposal_id AND submitted_at IS NOT NULL) as assessment_avg
+            ')
+            ->where('sp.proposal_id', $proposalId)
+            ->get()
+            ->getRow();
+
+        return $row ?: null;
     }
 }

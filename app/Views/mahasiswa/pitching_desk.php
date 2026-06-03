@@ -231,7 +231,113 @@
         </div>
 
         <!-- ================================================================
-             4. IDENTITAS USAHA & TIM (DRAFT FORM)
+             4. PENILAIAN JURI (PENILAI)
+        ================================================================= -->
+        <?php if ($isSubmitted && !empty($aggregation) && $aggregation['count'] > 0): ?>
+        <div class="card-premium overflow-hidden animate-stagger delay-400" @mousemove="handleMouseMove">
+            <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60">
+                <h3 class="font-display text-base font-bold text-(--text-heading)">
+                    <i class="fas fa-gavel text-violet-500 mr-2"></i>
+                    Penilaian Juri
+                </h3>
+                <p class="text-[11px] text-(--text-muted) mt-0.5">
+                    <?= $aggregation['count'] ?> dari <?= $totalPenilai ?> juri telah memberikan penilaian
+                </p>
+            </div>
+            <div class="p-5 sm:p-7 space-y-5">
+
+                <!-- Aggregation Summary -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 text-center">
+                        <p class="text-2xl font-black text-slate-800 tabular-nums"><?= $aggregation['count'] ?></p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Juri Menilai</p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-sky-50 border border-sky-100 text-center">
+                        <p class="text-2xl font-black text-sky-700 tabular-nums">
+                            <?= $aggregation['avg'] !== null ? number_format((float)$aggregation['avg'], 1) : '-' ?>
+                        </p>
+                        <p class="text-[10px] font-bold text-sky-500 uppercase tracking-wider mt-0.5">Rata-rata</p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 text-center">
+                        <p class="text-2xl font-black text-emerald-700 tabular-nums"><?= $aggregation['approved'] ?></p>
+                        <p class="text-[10px] font-bold text-emerald-500 uppercase tracking-wider mt-0.5">Lolos</p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-rose-50 border border-rose-100 text-center">
+                        <p class="text-2xl font-black text-rose-700 tabular-nums"><?= $aggregation['rejected'] ?></p>
+                        <p class="text-[10px] font-bold text-rose-500 uppercase tracking-wider mt-0.5">Tidak Lolos</p>
+                    </div>
+                </div>
+
+                <!-- Finalized Banner -->
+                <?php if (!empty($proposal['pitching_final_at'])): ?>
+                <div class="p-5 rounded-2xl border <?= $proposal['pitching_admin_status'] === 'approved' ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200' ?>">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl <?= $proposal['pitching_admin_status'] === 'approved' ? 'bg-emerald-500' : 'bg-rose-500' ?> flex items-center justify-center text-white shrink-0">
+                            <i class="fas <?= $proposal['pitching_admin_status'] === 'approved' ? 'fa-trophy' : 'fa-xmark' ?> text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-black uppercase tracking-widest <?= $proposal['pitching_admin_status'] === 'approved' ? 'text-emerald-800' : 'text-rose-800' ?>">
+                                <?= $proposal['pitching_admin_status'] === 'approved' ? 'LOLOS PITCHING DESK ✓' : 'BELUM LOLOS PITCHING DESK' ?>
+                            </p>
+                            <p class="text-xs text-slate-600 mt-0.5">Difinalisasi oleh Admin pada <?= formatIndonesianDate($proposal['pitching_final_at']) ?></p>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <!-- Individual Assessments -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Detail Penilaian Setiap Juri</h4>
+                    <?php foreach ($assessments as $a): ?>
+                    <div class="p-4 sm:p-5 rounded-2xl border border-slate-100 bg-white flex flex-col sm:flex-row sm:items-start gap-4">
+                        <div class="flex items-center sm:flex-col sm:items-center gap-3 sm:gap-2 shrink-0">
+                            <div class="w-12 h-12 rounded-2xl <?= $a['status'] === 'approved' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600' ?> flex items-center justify-center font-display font-bold text-base">
+                                <?= strtoupper(substr($a['penilai_nama'] ?? $a['penilai_username'] ?? '?', 0, 2)) ?>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-base font-black tabular-nums <?= $a['status'] === 'approved' ? 'text-emerald-600' : 'text-rose-600' ?>">
+                                    <?= number_format((float)$a['persentase_nilai'], 1) ?>
+                                </p>
+                                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider -mt-0.5">Nilai</p>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-bold text-sm text-slate-800"><?= esc($a['penilai_nama'] ?? $a['penilai_username'] ?? 'Juri') ?></span>
+                                <?php if (!empty($a['penilai_expertise'])): ?>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-semibold"><?= esc($a['penilai_expertise']) ?></span>
+                                <?php endif; ?>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full font-bold <?= $a['status'] === 'approved' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-rose-50 text-rose-600 border border-rose-200' ?>">
+                                    <?= $a['status'] === 'approved' ? 'LOLOS' : 'BELUM LOLOS' ?>
+                                </span>
+                            </div>
+                            <?php if (!empty($a['catatan'])): ?>
+                            <div class="mt-2 p-3 rounded-xl bg-slate-50 border border-slate-100 text-sm text-slate-600 italic leading-relaxed">
+                                "<?= esc($a['catatan']) ?>"
+                            </div>
+                            <?php endif; ?>
+                            <?php if (!empty($a['submitted_at'])): ?>
+                            <p class="text-[10px] text-slate-400 mt-2">Dinilai pada <?= formatIndonesianDate($a['submitted_at']) ?></p>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+        <?php elseif ($isSubmitted && $isLocked === false && empty($proposal['pitching_final_at'])): ?>
+        <!-- Pending assessment state -->
+        <div class="card-premium p-6 animate-stagger delay-400 text-center" @mousemove="handleMouseMove">
+            <div class="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-hourglass-half text-amber-500 text-xl"></i>
+            </div>
+            <h4 class="font-display font-bold text-slate-700">Menunggu Penilaian Juri</h4>
+            <p class="text-sm text-slate-400 mt-1">Proposal Anda sedang dalam proses penilaian oleh para juri. Hasil akan muncul di sini setelah ada penilaian.</p>
+        </div>
+        <?php endif; ?>
+
+        <!-- ================================================================
+             5. IDENTITAS USAHA & TIM (DRAFT FORM)
         ================================================================= -->
         <div class="card-premium overflow-hidden animate-stagger delay-300" @mousemove="handleMouseMove">
             <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60 flex items-center justify-between">
