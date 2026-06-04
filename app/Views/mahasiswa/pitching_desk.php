@@ -233,7 +233,7 @@
         <!-- ================================================================
              4. PENILAIAN JURI (PENILAI)
         ================================================================= -->
-        <?php if ($isSubmitted && !empty($aggregation) && $aggregation['count'] > 0): ?>
+        <?php if ($isSubmitted && !empty($aggregation) && ($aggregation['count'] > 0 || !empty($aggregation['hasAdminAssessment']))): ?>
         <div class="card-premium overflow-hidden animate-stagger delay-400" @mousemove="handleMouseMove">
             <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60">
                 <h3 class="font-display text-base font-bold text-(--text-heading)">
@@ -285,21 +285,52 @@
                 </div>
                 <?php endif; ?>
 
+                <!-- Admin Assessment (Final) -->
+                <?php if ($aggregation['hasAdminAssessment']): ?>
+                <?php
+                $adminA = current(array_filter($assessments ?? [], fn($aa) => !empty($aa['is_admin_assessment'])));
+                ?>
+                <div class="p-5 rounded-2xl border border-sky-200 bg-sky-50/80">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-sky-500 flex items-center justify-center text-white shrink-0 shadow-sm">
+                            <i class="fas fa-shield-hooded text-lg"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h4 class="font-display font-bold text-sky-800">Penilaian Admin (Final)</h4>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold <?= $adminA && $adminA['status'] === 'approved' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-rose-100 text-rose-700 border border-rose-200' ?>">
+                                    <?= $adminA && $adminA['status'] === 'approved' ? 'LOLOS' : 'BELUM LOLOS' ?>
+                                </span>
+                            </div>
+                            <?php if ($adminA && !empty($adminA['catatan'])): ?>
+                            <div class="mt-2 p-3 rounded-xl bg-white/60 border border-sky-100 text-sm text-slate-600 italic leading-relaxed">
+                                "<?= esc($adminA['catatan']) ?>"
+                            </div>
+                            <?php endif; ?>
+                            <?php if ($adminA && !empty($adminA['submitted_at'])): ?>
+                            <p class="text-[10px] text-slate-400 mt-2"><?= date('d/m/Y H:i', strtotime($adminA['submitted_at'])) ?></p>
+                            <?php endif; ?>
+                        </div>
+                        <?php if ($adminA): ?>
+                        <div class="text-right shrink-0">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[12px] font-black bg-sky-50 text-sky-600 border border-sky-200">
+                                <i class="fas fa-crown"></i>
+                                100%
+                            </span>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+
                 <!-- Individual Assessments -->
                 <div class="space-y-4">
                     <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Detail Penilaian Setiap Juri</h4>
                     <?php foreach ($assessments as $a): ?>
+                    <?php if (!empty($a['is_admin_assessment'])) continue; ?>
                     <div class="p-4 sm:p-5 rounded-2xl border border-slate-100 bg-white flex flex-col sm:flex-row sm:items-start gap-4">
-                        <div class="flex items-center sm:flex-col sm:items-center gap-3 sm:gap-2 shrink-0">
-                            <div class="w-12 h-12 rounded-2xl <?= $a['status'] === 'approved' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600' ?> flex items-center justify-center font-display font-bold text-base">
-                                <?= strtoupper(substr($a['penilai_nama'] ?? $a['penilai_username'] ?? '?', 0, 2)) ?>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-base font-black tabular-nums <?= $a['status'] === 'approved' ? 'text-emerald-600' : 'text-rose-600' ?>">
-                                    <?= number_format((float)$a['persentase_nilai'], 1) ?>
-                                </p>
-                                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider -mt-0.5">Nilai</p>
-                            </div>
+                        <div class="w-11 h-11 rounded-2xl <?= $a['status'] === 'approved' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600' ?> flex items-center justify-center font-display font-bold text-base shrink-0">
+                            <?= strtoupper(substr($a['penilai_nama'] ?? $a['penilai_username'] ?? '?', 0, 2)) ?>
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2 flex-wrap">
