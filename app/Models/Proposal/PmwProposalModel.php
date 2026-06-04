@@ -331,11 +331,11 @@ class PmwProposalModel extends Model
             'sp.persentase_nilai as pitching_persentase_nilai',
             'sp.student_submitted_at',
             'sp.penilaian_final_at',
-            'CASE WHEN pa2.id IS NOT NULL THEN 1 ELSE 0 END as has_submitted',
             'pa2.persentase_nilai as my_score',
             'pa2.status as my_status',
-            '(SELECT id FROM pmw_documents WHERE proposal_id = p.id AND doc_key = "pitching_ppt" LIMIT 1) as pitching_ppt_id',
         ]);
+        $builder->select('CASE WHEN pa2.id IS NOT NULL THEN 1 ELSE 0 END as has_submitted', false);
+        $builder->select('(SELECT id FROM pmw_documents WHERE proposal_id = p.id AND doc_key = "pitching_ppt" LIMIT 1) as pitching_ppt_id', false);
         $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
         $builder->join('pmw_periods per', 'per.id = p.period_id', 'left');
         $builder->join('pmw_selection_pitching sp', 'sp.proposal_id = p.id', 'left');

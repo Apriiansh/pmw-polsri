@@ -65,7 +65,7 @@ class PmwPitchingAssessmentService
             return ['success' => false, 'message' => 'Data pitching tidak ditemukan.'];
         }
 
-        if ($selection['penilaian_final_at'] !== null) {
+        if ($selection->penilaian_final_at !== null) {
             return ['success' => false, 'message' => 'Proposal ini sudah difinalisasi.'];
         }
 
@@ -95,7 +95,7 @@ class PmwPitchingAssessmentService
         $status = $score >= 80 ? 'approved' : 'rejected';
         $catatan = $data['catatan'] ?? '';
 
-        $this->selectionModel->update($selection['id'], [
+        $this->selectionModel->update($selection->id, [
             'persentase_nilai'  => $score,
             'status'            => $status,
             'catatan'           => $catatan,
@@ -159,34 +159,31 @@ class PmwPitchingAssessmentService
             ->countAllResults();
 
         $finalStatus = $avgScore >= 80 ? 'approved' : 'rejected';
-        $finalCatatan = sprintf(
-            'Otomatis: rata-rata %.2f%% dari %d penilai',
-            $avgScore,
-            $count
-        );
 
-        $this->selectionModel->update($selection['id'], [
+        $this->selectionModel->update($selection->id, [
             'persentase_nilai' => $avgScore,
             'status'           => $finalStatus,
-            'catatan'          => $finalCatatan,
         ]);
     }
 
-    public function finalizeAssessment(int $proposalId, int $adminUserId): void
+    public function finalizeAssessment(int $proposalId, int $adminUserId, ?string $catatan = null): void
     {
         $selection = $this->selectionModel
             ->where('proposal_id', $proposalId)
             ->first();
 
         if (!$selection) return;
-        if ($selection['penilaian_final_at'] !== null) return;
+        if ($selection->penilaian_final_at !== null) return;
 
-        $this->selectionModel->update($selection['id'], [
+        $finalCatatan = $catatan ?? $selection->catatan ?? '';
+
+        $this->selectionModel->update($selection->id, [
             'penilaian_final_at' => date('Y-m-d H:i:s'),
             'penilaian_final_by' => $adminUserId,
+            'catatan'            => $finalCatatan,
         ]);
 
-        $this->notifyFinal($proposalId, $selection['status'], $selection['catatan']);
+        $this->notifyFinal($proposalId, $selection->status, $finalCatatan);
     }
 
     public function getAssessmentsForProposal(int $proposalId): array

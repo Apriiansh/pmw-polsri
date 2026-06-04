@@ -364,7 +364,7 @@
                 <div class="flex items-start gap-4 p-4 rounded-2xl border <?= $isAdminAssessment ? 'border-sky-200 bg-sky-50/50' : ($aPassed ? 'border-emerald-100 bg-emerald-50/30' : 'border-rose-100 bg-rose-50/30') ?>">
                     <div class="w-11 h-11 rounded-xl <?= $isAdminAssessment ? 'bg-sky-500' : ($aPassed ? 'bg-emerald-500' : 'bg-rose-500') ?> flex items-center justify-center text-white font-bold shrink-0 shadow-sm">
                         <?php if ($isAdminAssessment): ?>
-                        <i class="fas fa-shield-hooded text-sm"></i>
+                        <i class="fas fa-shield-halved text-sm"></i>
                         <?php else: ?>
                         <?= strtoupper(substr($assessment['penilai_nama'] ?? $assessment['penilai_username'] ?? '??', 0, 2)) ?>
                         <?php endif; ?>
@@ -447,15 +447,17 @@
     </div>
 
     <!-- ================================================================
-         6. PENILAIAN ADMIN (100%)
+         6. PENILAIAN / FINALISASI ADMIN
     ================================================================= -->
     <?php
     $isFinalized = !empty($proposal['penilaian_final_at'] ?? $proposal['pitching_final_at'] ?? null);
+    $hasPenilaiAssessments = $aggregation['count'] > 0;
+    $adminAssessFinalized = $aggregation['hasAdminAssessment'];
     ?>
-    <div class="card-premium overflow-hidden animate-stagger delay-600 border-l-4 <?= $aggregation['hasAdminAssessment'] ? 'border-l-emerald-500' : 'border-l-sky-500' ?>" @mousemove="handleMouseMove"
+    <div class="card-premium overflow-hidden animate-stagger delay-600 border-l-4 <?= $adminAssessFinalized ? 'border-l-emerald-500' : ($hasPenilaiAssessments ? 'border-l-violet-500' : 'border-l-sky-500') ?>" @mousemove="handleMouseMove"
          x-data="{
-             nilai: <?= $aggregation['hasAdminAssessment'] ? (float)$aggregation['adminScore'] : '70' ?>,
-             status: '<?= $aggregation['hasAdminAssessment'] ? ($aggregation['adminScore'] >= 80 ? 'approved' : 'rejected') : 'approved' ?>',
+             nilai: <?= $adminAssessFinalized ? (float)$aggregation['adminScore'] : ($aggregation['avg'] ?? 70) ?>,
+             status: '<?= $adminAssessFinalized ? ($aggregation['adminScore'] >= 80 ? 'approved' : 'rejected') : (($aggregation['avg'] ?? 70) >= 80 ? 'approved' : 'rejected') ?>',
              get v() { return parseFloat(this.nilai); },
              get valid() { return !isNaN(this.v) && this.nilai !== null && this.nilai !== ''; },
              get accent() {
@@ -467,38 +469,30 @@
                  if (this.v >= 80) return { text: 'LOLOS', cls: 'bg-emerald-50 text-emerald-600 border-emerald-200', icon: 'fa-trophy' };
                  return { text: 'BELUM LOLOS', cls: 'bg-rose-50 text-rose-600 border-rose-200', icon: 'fa-circle-xmark' };
              },
-             get pos() { return this.valid ? Math.min(98, Math.max(2, this.v)) : 0; },
-             syncRadio() {
-                 if (!this.valid) return;
-                 const target = this.v >= 80 ? 'approved' : 'rejected';
-                 const radio = this.$root.querySelector(`input[name=status][value='${target}']`);
-                 if (radio && !radio.checked) radio.checked = true;
-             },
-             onRadioChange(value) {
-                 if (value === 'approved') this.nilai = 90;
-                 else if (value === 'rejected') this.nilai = 40;
-             }
-         }" x-init="syncRadio(); $watch('nilai', () => syncRadio())">
+             get pos() { return this.valid ? Math.min(98, Math.max(2, this.v)) : 0; }
+         }">
         <div class="px-5 sm:px-7 py-4 sm:py-5 border-b border-sky-50 bg-white/60">
             <h3 class="font-display text-base font-bold text-(--text-heading)">
-                <i class="fas fa-shield-hooded text-sky-500 mr-2"></i>
-                Penilaian Admin (100%)
+                <i class="fas fa-shield-halved text-sky-500 mr-2"></i>
+                <?= $adminAssessFinalized ? 'Penilaian Admin (Final)' : ($hasPenilaiAssessments ? 'Finalisasi Penilaian' : 'Penilaian Admin (100%)') ?>
             </h3>
             <p class="text-[11px] text-(--text-muted) mt-0.5">
-                <?= $aggregation['hasAdminAssessment'] ? 'Penilaian Anda — hasil ini sudah difinalisasi.' : 'Nilai Anda langsung menjadi nilai final (100%). Penilai otomatis terkunci.' ?>
+                <?php if ($isFinalized): ?>
+                    Hasil final — <?= $adminAssessFinalized ? 'penilaian admin' : 'rata-rata penilai' ?> sudah dikunci.
+                <?php elseif ($hasPenilaiAssessments): ?>
+                    Penilai sudah menilai. Anda bisa edit nilai penilai atau langsung finalisasi rata-rata di bawah.
+                <?php else: ?>
+                    Nilai Anda langsung menjadi nilai final (100%). Penilai otomatis terkunci.
+                <?php endif; ?>
             </p>
         </div>
 
         <div class="p-5 sm:p-7">
             <?php if ($isFinalized): ?>
-            <!-- Already finalized — read-only display -->
+            <!-- ===== STATE: SUDAH DIFINALISASI ===== -->
             <div class="space-y-4">
-                <?php
-                $adminAssess = current(array_filter($assessments ?? [], fn($a) => !empty($a['is_admin_assessment'])));
-                if ($adminAssess):
-                $aScore = (float)$adminAssess['persentase_nilai'];
-                $aPassed = $aScore >= 80;
-                ?>
+                <?php $adminAssess = current(array_filter($assessments ?? [], fn($a) => !empty($a['is_admin_assessment']))); ?>
+                <?php if ($adminAssess): $aScore = (float)$adminAssess['persentase_nilai']; $aPassed = $aScore >= 80; ?>
                 <div class="flex items-start gap-4 p-5 rounded-2xl bg-sky-50 border border-sky-200">
                     <div class="w-12 h-12 rounded-xl bg-sky-500 text-white flex items-center justify-center shrink-0">
                         <i class="fas fa-crown text-xl"></i>
@@ -521,10 +515,32 @@
                         </p>
                     </div>
                 </div>
+                <?php elseif ($aggregation['avg'] !== null): ?>
+                <!-- Finalized from penilai average (no admin assessment) -->
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-violet-50 border border-violet-200">
+                    <div class="w-12 h-12 rounded-xl bg-violet-500 text-white flex items-center justify-center shrink-0">
+                        <i class="fas fa-users-between-lines text-xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-display font-bold text-violet-700">Rata-rata Penilai (Final)</h4>
+                            <?php $avgPassed = $aggregation['avg'] >= 80; ?>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold <?= $avgPassed ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-rose-50 text-rose-600 border border-rose-200' ?>">
+                                <?= $avgPassed ? 'LOLOS' : 'BELUM LOLOS' ?>
+                            </span>
+                        </div>
+                        <p class="text-2xl font-black text-violet-700 mt-1 tabular-nums"><?= number_format($aggregation['avg'], 2) ?>%</p>
+                        <p class="text-xs text-slate-400 mt-1">Dari <?= $aggregation['count'] ?> penilai</p>
+                        <p class="text-xs text-slate-400 mt-0.5">
+                            Difinalisasi oleh Admin — rata-rata penilai dikunci.
+                        </p>
+                    </div>
+                </div>
                 <?php endif; ?>
             </div>
-            <?php else: ?>
-            <!-- Admin can assess form -->
+
+            <?php elseif ($hasPenilaiAssessments && !$adminAssessFinalized): ?>
+            <!-- ===== STATE: PENILAI SUDAH MENILAI — FINALISASI ===== -->
             <?php if (session()->getFlashdata('error')): ?>
             <div class="flex items-start gap-3 p-3.5 rounded-xl bg-rose-50 border border-rose-200 mb-5">
                 <div class="w-9 h-9 rounded-lg bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-sm">
@@ -540,7 +556,104 @@
             </div>
             <?php endif; ?>
 
-            <form action="<?= base_url('admin/pitching-desk/' . $proposal['id'] . '/admin-nilai') ?>" method="post">
+            <div class="space-y-6">
+                <!-- Rata-rata dari penilai -->
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-violet-50 border border-violet-200">
+                    <div class="w-12 h-12 rounded-xl bg-violet-500 text-white flex items-center justify-center shrink-0">
+                        <i class="fas fa-users-between-lines text-xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-display font-bold text-violet-700">Rata-rata Penilai</h4>
+                            <?php $avgPassed = ($aggregation['avg'] ?? 0) >= 80; ?>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold <?= $avgPassed ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-rose-50 text-rose-600 border border-rose-200' ?>">
+                                <?= $avgPassed ? 'LOLOS' : 'BELUM LOLOS' ?>
+                            </span>
+                        </div>
+                        <p class="text-2xl font-black text-violet-700 mt-1 tabular-nums"><?= number_format($aggregation['avg'], 2) ?>%</p>
+                        <p class="text-xs text-slate-400 mt-1">Dari <?= $aggregation['count'] ?> penilai</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-3 p-4 rounded-2xl bg-amber-50 border border-amber-200">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0">
+                        <i class="fas fa-pen-to-square"></i>
+                    </div>
+                    <div class="flex-1 text-sm text-amber-800">
+                        <p class="font-bold">Ingin mengubah nilai penilai?</p>
+                        <p class="text-amber-700 mt-0.5">Gunakan tombol <strong>Edit</strong> di kartu penilai pada panel <strong>"Penilaian Juri"</strong> di atas.</p>
+                    </div>
+                </div>
+
+                <!-- Finalisasi action -->
+                <form action="<?= base_url('admin/pitching-desk/' . $proposal['id'] . '/finalize') ?>" method="post">
+                    <?= csrf_field() ?>
+                    <div class="space-y-1.5">
+                        <label class="form-label">
+                            Catatan Final
+                            <span class="required" title="Wajib diisi">*</span>
+                        </label>
+                        <div class="input-group items-start py-2 group focus-within:ring-4 focus-within:ring-violet-100 transition-all border-violet-200">
+                            <div class="input-icon mt-2 text-slate-400 group-focus-within:text-violet-500">
+                                <i class="fas fa-comment-medical text-base"></i>
+                            </div>
+                            <textarea name="catatan" rows="3" required minlength="5" maxlength="1000"
+                                      placeholder="Catatan final untuk mahasiswa (wajib, min. 5 karakter)..."></textarea>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-4">
+                        <button type="submit" class="btn-primary px-8 bg-violet-500 hover:bg-violet-600 focus:ring-violet-100"
+                                onclick="return confirm('Rata-rata penilai (<?= number_format($aggregation['avg'], 2) ?>%) akan dikunci sebagai nilai final. Lanjutkan?')">
+                            <i class="fas fa-lock mr-2"></i>Finalisasi & Kunci
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <?php else: ?>
+            <!-- ===== STATE: BELUM ADA PENILAI — ADMIN MENILAI LANGSUNG ===== -->
+            <?php if (session()->getFlashdata('error')): ?>
+            <div class="flex items-start gap-3 p-3.5 rounded-xl bg-rose-50 border border-rose-200 mb-5">
+                <div class="w-9 h-9 rounded-lg bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+                    <i class="fas fa-circle-exclamation"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-[11px] font-black uppercase tracking-wider text-rose-700">Gagal</p>
+                    <p class="text-sm font-semibold text-rose-600 mt-0.5"><?= esc(session()->getFlashdata('error')) ?></p>
+                </div>
+                <button type="button" onclick="this.closest('div').remove()" class="text-rose-400 hover:text-rose-600 shrink-0">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <?php endif; ?>
+
+            <form action="<?= base_url('admin/pitching-desk/' . $proposal['id'] . '/admin-nilai') ?>" method="post"
+                  x-data="{
+                      nilai: 70,
+                      status: 'approved',
+                      get v() { return parseFloat(this.nilai); },
+                      get valid() { return !isNaN(this.v) && this.nilai !== null && this.nilai !== ''; },
+                      get accent() {
+                          if (!this.valid) return '#94a3b8';
+                          return this.v >= 80 ? '#10b981' : '#f43f5e';
+                      },
+                      get label() {
+                          if (!this.valid) return { text: '—', cls: 'bg-slate-50 text-slate-500 border-slate-200', icon: 'fa-circle-question' };
+                          if (this.v >= 80) return { text: 'LOLOS', cls: 'bg-emerald-50 text-emerald-600 border-emerald-200', icon: 'fa-trophy' };
+                          return { text: 'BELUM LOLOS', cls: 'bg-rose-50 text-rose-600 border-rose-200', icon: 'fa-circle-xmark' };
+                      },
+                      get pos() { return this.valid ? Math.min(98, Math.max(2, this.v)) : 0; },
+                      syncRadio() {
+                          if (!this.valid) return;
+                          const target = this.v >= 80 ? 'approved' : 'rejected';
+                          const radio = this.$root.querySelector(`input[name=status][value='${target}']`);
+                          if (radio && !radio.checked) radio.checked = true;
+                      },
+                      onRadioChange(value) {
+                          if (value === 'approved') this.nilai = 90;
+                          else if (value === 'rejected') this.nilai = 40;
+                      }
+                  }" x-init="syncRadio(); $watch('nilai', () => syncRadio())">
                 <?= csrf_field() ?>
                 <div class="space-y-6">
                     <div class="flex items-center justify-between gap-3 flex-wrap">
@@ -630,7 +743,7 @@
                                 <i class="fas fa-comment-medical text-base"></i>
                             </div>
                             <textarea name="catatan" rows="4" required minlength="5" maxlength="1000"
-                                      placeholder="Berikan catatan final untuk mahasiswa (wajib, min. 5 karakter)..."><?= !empty($adminAssess['catatan'] ?? null) ? esc($adminAssess['catatan']) : '' ?></textarea>
+                                      placeholder="Berikan catatan final untuk mahasiswa (wajib, min. 5 karakter)..."></textarea>
                         </div>
                     </div>
 

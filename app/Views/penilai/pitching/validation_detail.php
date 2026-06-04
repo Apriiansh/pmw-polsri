@@ -328,7 +328,7 @@
     <div class="card-premium overflow-hidden animate-stagger delay-400 border-l-4 border-l-slate-300" @mousemove="handleMouseMove">
         <div class="p-5 sm:p-7 flex items-start gap-4">
             <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
-                <i class="fas fa-pen-circle text-2xl"></i>
+                <i class="fas fa-pen-to-square text-2xl"></i>
             </div>
             <div class="flex-1">
                 <h4 class="font-display font-bold text-(--text-heading)">Anda belum menilai proposal ini</h4>
@@ -444,7 +444,7 @@
                                     </div>
                                     <div>
                                         <p class="font-bold text-(--text-heading) text-sm leading-tight">Belum Lolos</p>
-                                        <p class="text-[10px] text-slate-400 font-medium">Tidak Lolos Tahap 3 · &lt; 80%</p>
+                                        <p class="text-[10px] text-slate-400 font-medium">Belum Lolos (revisi) · &lt; 80%</p>
                                     </div>
                                 </div>
                             </div>

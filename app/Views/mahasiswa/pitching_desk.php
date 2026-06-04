@@ -30,13 +30,16 @@
     $aStatus      = $proposal['pitching_admin_status'] ?? 'pending';
     $isSubmitted  = !empty($proposal['student_submitted_at'] ?? null);
     $isLocked     = $hasProposal && (($isSubmitted && $aStatus !== 'revision') || $aStatus === 'approved');
+    $isFinalized  = !empty($proposal['pitching_final_at'] ?? null);
+    $isFinalApproved = $aStatus === 'approved' && $isFinalized;
+    $adminCatatan = (!empty($proposal['pitching_admin_catatan']) && !str_starts_with($proposal['pitching_admin_catatan'], 'Otomatis')) ? $proposal['pitching_admin_catatan'] : '';
     ?>
 
     <?php if ($hasProposal): ?>
         <!-- ─── STICKY ACTION BAR ────────────────────────────────────────── -->
         <div class="sticky top-4 z-20 bg-white/90 backdrop-blur-md shadow-lg border border-sky-100 rounded-2xl p-4 mb-6 animate-stagger delay-150 flex items-center justify-between gap-4 flex-wrap">
             <div class="flex items-center gap-3 min-w-0">
-                <?php if ($aStatus === 'approved'): ?>
+                <?php if ($isFinalApproved): ?>
                     <div class="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
                         <i class="fas fa-circle-check text-emerald-500 text-base"></i>
                     </div>
@@ -52,6 +55,15 @@
                         <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status Tahap 1</p>
                         <p class="text-sm font-black text-amber-700">Menunggu Verifikasi Admin</p>
                         <p class="text-[10px] text-amber-500 font-mono">Dikirim: <?= date('d M Y H:i', strtotime($proposal['student_submitted_at'])) ?></p>
+                    </div>
+                <?php elseif ($isSubmitted && !$isFinalized && ($aStatus === 'approved' || $aStatus === 'rejected')): ?>
+                    <div class="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center shrink-0">
+                        <i class="fas fa-hourglass-half text-violet-500 text-base animate-pulse-soft"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Status Tahap 1</p>
+                        <p class="text-sm font-black text-violet-700">Menunggu Finalisasi Admin</p>
+                        <p class="text-[10px] text-violet-500 font-mono">Dikirim: <?= date('d M Y H:i', strtotime($proposal['student_submitted_at'])) ?></p>
                     </div>
                 <?php else: ?>
                     <div class="w-9 h-9 rounded-xl bg-sky-50 flex items-center justify-center shrink-0">
@@ -90,10 +102,15 @@
                     </div>
                 </template>
             </div>
-            <?php elseif ($aStatus === 'approved'): ?>
+            <?php elseif ($isFinalApproved): ?>
             <div class="inline-flex items-center gap-2 h-9 px-4 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 font-bold text-xs">
                 <i class="fas fa-check-circle"></i>
                 Tahap 1 Selesai
+            </div>
+            <?php elseif ($aStatus === 'approved' || $aStatus === 'rejected'): ?>
+            <div class="inline-flex items-center gap-2 h-9 px-4 rounded-xl bg-violet-50 border border-violet-100 text-violet-600 font-bold text-xs">
+                <i class="fas fa-lock"></i>
+                Menunggu Finalisasi
             </div>
             <?php else: ?>
             <div class="inline-flex items-center gap-2 h-9 px-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 font-bold text-xs">
@@ -139,9 +156,9 @@
 
         <?php
         // Notification Alert
-        $hasAdminNote = !empty($proposal['pitching_admin_catatan']) && $aStatus !== 'approved' && $aStatus !== 'pending';
+        $hasAdminNote = !empty($adminCatatan) && $aStatus !== 'approved' && $aStatus !== 'pending';
         if ($hasAdminNote):
-            $note = $proposal['pitching_admin_catatan'];
+            $note = $adminCatatan;
             $noteStatus = $aStatus;
             $source = 'Admin/UPAPKK';
             $alertClass = ($noteStatus === 'rejected') ? 'bg-rose-50 border-rose-200 text-rose-800' : 'bg-orange-50 border-orange-200 text-orange-800';
@@ -162,7 +179,7 @@
         <!-- ================================================================
              SUCCESS BANNER — lolos ke Tahap 2
         ================================================================= -->
-        <?php if ($aStatus === 'approved'): ?>
+        <?php if ($isFinalApproved): ?>
         <div class="card-premium bg-linear-to-br from-emerald-600 to-teal-600 animate-stagger delay-200 overflow-hidden" @mousemove="handleMouseMove">
             <div class="bg-white/10 backdrop-blur-md p-8 sm:p-10 rounded-[1.4rem] text-white flex flex-col items-center text-center gap-5 relative overflow-hidden">
                 <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
@@ -198,11 +215,13 @@
                 <div class="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-0">
                     <div class="hidden md:block absolute top-6 left-0 w-full h-0.5 bg-slate-100 z-0"></div>
                     <?php
+                    // Show actual status only after admin finalizes; before that, show "Menunggu"
+                    $stepStatus = !$pptDoc ? 'empty' : ($isFinalized ? $aStatus : 'pending');
                     $steps = [
-                        ['label' => 'Validasi UPAPKK', 'sublabel' => 'Admin/UPAPKK', 'status' => (!$pptDoc ? 'empty' : $aStatus), 'note' => $proposal['pitching_admin_catatan'], 'icon' => 'fa-award'],
+                        ['label' => 'Status Penilaian', 'sublabel' => 'Penilai / UPAPKK', 'status' => $stepStatus, 'note' => $adminCatatan, 'icon' => 'fa-award'],
                     ];
                     $stepColors = [
-                        'pending'  => ['bg' => 'bg-amber-500',   'text' => 'text-amber-500',   'light' => 'bg-amber-50',   'icon' => 'fa-clock',  'label' => 'PENDING'],
+                        'pending'  => ['bg' => 'bg-amber-500',   'text' => 'text-amber-500',   'light' => 'bg-amber-50',   'icon' => 'fa-clock',  'label' => 'MENUNGGU'],
                         'approved' => ['bg' => 'bg-emerald-500', 'text' => 'text-emerald-500', 'light' => 'bg-emerald-50', 'icon' => 'fa-check',  'label' => 'DISETUJUI'],
                         'revision' => ['bg' => 'bg-orange-500',  'text' => 'text-orange-500',  'light' => 'bg-orange-50',  'icon' => 'fa-rotate', 'label' => 'REVISI'],
                         'rejected' => ['bg' => 'bg-rose-500',    'text' => 'text-rose-500',    'light' => 'bg-rose-50',    'icon' => 'fa-xmark',  'label' => 'DITOLAK'],
@@ -241,23 +260,18 @@
                     Penilaian Juri
                 </h3>
                 <p class="text-[11px] text-(--text-muted) mt-0.5">
-                    <?= $aggregation['count'] ?> dari <?= $totalPenilai ?> juri telah memberikan penilaian
+                    <?= $aggregation['count'] ?> juri telah memberikan penilaian
                 </p>
             </div>
             <div class="p-5 sm:p-7 space-y-5">
 
                 <!-- Aggregation Summary -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 text-center">
                         <p class="text-2xl font-black text-slate-800 tabular-nums"><?= $aggregation['count'] ?></p>
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Juri Menilai</p>
                     </div>
-                    <div class="p-4 rounded-2xl bg-sky-50 border border-sky-100 text-center">
-                        <p class="text-2xl font-black text-sky-700 tabular-nums">
-                            <?= $aggregation['avg'] !== null ? number_format((float)$aggregation['avg'], 1) : '-' ?>
-                        </p>
-                        <p class="text-[10px] font-bold text-sky-500 uppercase tracking-wider mt-0.5">Rata-rata</p>
-                    </div>
+
                     <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 text-center">
                         <p class="text-2xl font-black text-emerald-700 tabular-nums"><?= $aggregation['approved'] ?></p>
                         <p class="text-[10px] font-bold text-emerald-500 uppercase tracking-wider mt-0.5">Lolos</p>
@@ -293,7 +307,7 @@
                 <div class="p-5 rounded-2xl border border-sky-200 bg-sky-50/80">
                     <div class="flex items-start gap-4">
                         <div class="w-12 h-12 rounded-2xl bg-sky-500 flex items-center justify-center text-white shrink-0 shadow-sm">
-                            <i class="fas fa-shield-hooded text-lg"></i>
+                            <i class="fas fa-shield-halved text-lg"></i>
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2 flex-wrap">

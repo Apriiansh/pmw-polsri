@@ -24,9 +24,9 @@ class PitchingDeskController extends BaseController
         $statusFilter   = $this->request->getGet('status');
         $kategoriFilter = $this->request->getGet('kategori');
 
-        $proposals = $proposalModel->getProposalsForPenilai(user()->id, $statusFilter, $kategoriFilter);
+        $proposals = $proposalModel->getProposalsForPenilai(auth()->user()->id, $statusFilter, $kategoriFilter);
 
-        $allProposals = $proposalModel->getProposalsForPenilai(user()->id, null, $kategoriFilter);
+        $allProposals = $proposalModel->getProposalsForPenilai(auth()->user()->id, null, $kategoriFilter);
         $mySubmitted = count(array_filter($allProposals, fn($p) => $p['has_submitted']));
         $stats = [
             'total'     => count($allProposals),
@@ -70,7 +70,7 @@ class PitchingDeskController extends BaseController
             }
         }
 
-        $myAssessment = $assessmentService->getMyAssessment($id, user()->id);
+        $myAssessment = $assessmentService->getMyAssessment($id, auth()->user()->id);
 
         return view('penilai/pitching/validation_detail', [
             'title'        => 'Detail Penilaian Pitching | PMW Polsri',
@@ -99,7 +99,7 @@ class PitchingDeskController extends BaseController
         $service = new PmwPitchingAssessmentService();
         $service->submitAssessment(
             (int) $id,
-            user()->id,
+            auth()->user()->id,
             [
                 'status'           => $this->request->getPost('status'),
                 'catatan'          => $this->request->getPost('catatan'),

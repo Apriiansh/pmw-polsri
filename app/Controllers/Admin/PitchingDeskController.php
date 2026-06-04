@@ -106,7 +106,7 @@ class PitchingDeskController extends BaseController
             return redirect()->back()->withInput()->with('error', 'Catatan wajib diisi.');
         }
 
-        $result = $service->submitAdminAssessment($id, user()->id, [
+        $result = $service->submitAdminAssessment($id, auth()->user()->id, [
             'status'           => $status,
             'persentase_nilai' => $persentaseNilai,
             'catatan'          => $catatan,
@@ -118,6 +118,25 @@ class PitchingDeskController extends BaseController
 
         return redirect()->to('admin/pitching-desk/' . $id)
             ->with('message', 'Penilaian admin (100%) berhasil dikirim dan difinalisasi.');
+    }
+
+    /**
+     * Admin finalizes with penilai average (no admin assessment record)
+     */
+    public function finalizeAction(int $id)
+    {
+        $service = new PmwPitchingAssessmentService();
+
+        $catatan = $this->request->getPost('catatan');
+
+        if (empty($catatan)) {
+            return redirect()->back()->withInput()->with('error', 'Catatan final wajib diisi.');
+        }
+
+        $service->finalizeAssessment($id, auth()->user()->id, $catatan);
+
+        return redirect()->to('admin/pitching-desk/' . $id)
+            ->with('message', 'Rata-rata penilai berhasil difinalisasi dan dikunci.');
     }
 
     /**
@@ -142,7 +161,7 @@ class PitchingDeskController extends BaseController
             return redirect()->back()->with('error', 'Nilai harus antara 0-100.');
         }
 
-        $result = $service->editPenilaiAssessment($assessmentId, user()->id, [
+        $result = $service->editPenilaiAssessment($assessmentId, auth()->user()->id, [
             'status'           => $status,
             'persentase_nilai' => $persentaseNilai,
             'catatan'          => $catatan,

@@ -505,7 +505,7 @@ class Dashboard extends BaseController
     private function getPenilaiData(): array
     {
         $db = \Config\Database::connect();
-        $userId = user()->id;
+        $userId = auth()->user()->id;
 
         // Multi-penilai stats
         $mySubmissions = (clone $db)->table('pmw_pitching_assessments')
