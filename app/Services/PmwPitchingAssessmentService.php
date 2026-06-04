@@ -24,14 +24,20 @@ class PmwPitchingAssessmentService
 
     public function submitAssessment(int $proposalId, int $penilaiUserId, array $data): array
     {
+        if ($this->adminHasAssessment($proposalId)) {
+            return ['success' => false, 'message' => 'Admin sudah menilai proposal ini. Penilai tidak bisa lagi mengirim penilaian.'];
+        }
+
         $existing = $this->assessmentModel
             ->where('proposal_id', $proposalId)
             ->where('penilai_user_id', $penilaiUserId)
+            ->where('is_admin_assessment', 0)
             ->first();
 
         $payload = [
             'proposal_id'       => $proposalId,
             'penilai_user_id'   => $penilaiUserId,
+            'is_admin_assessment' => 0,
             'status'            => $data['status'],
             'catatan'           => $data['catatan'] ?? null,
             'persentase_nilai'  => (float) $data['persentase_nilai'],
@@ -49,6 +55,82 @@ class PmwPitchingAssessmentService
         return ['success' => true];
     }
 
+    public function submitAdminAssessment(int $proposalId, int $adminUserId, array $data): array
+    {
+        $selection = $this->selectionModel
+            ->where('proposal_id', $proposalId)
+            ->first();
+
+        if (!$selection) {
+            return ['success' => false, 'message' => 'Data pitching tidak ditemukan.'];
+        }
+
+        if ($selection['penilaian_final_at'] !== null) {
+            return ['success' => false, 'message' => 'Proposal ini sudah difinalisasi.'];
+        }
+
+        $existing = $this->assessmentModel
+            ->where('proposal_id', $proposalId)
+            ->where('penilai_user_id', $adminUserId)
+            ->where('is_admin_assessment', 1)
+            ->first();
+
+        $payload = [
+            'proposal_id'       => $proposalId,
+            'penilai_user_id'   => $adminUserId,
+            'is_admin_assessment' => 1,
+            'status'            => $data['status'],
+            'catatan'           => $data['catatan'] ?? null,
+            'persentase_nilai'  => (float) $data['persentase_nilai'],
+            'submitted_at'      => date('Y-m-d H:i:s'),
+        ];
+
+        if ($existing) {
+            $this->assessmentModel->update($existing['id'], $payload);
+        } else {
+            $this->assessmentModel->insert($payload);
+        }
+
+        $score = (float) $data['persentase_nilai'];
+        $status = $score >= 80 ? 'approved' : 'rejected';
+        $catatan = $data['catatan'] ?? '';
+
+        $this->selectionModel->update($selection['id'], [
+            'persentase_nilai'  => $score,
+            'status'            => $status,
+            'catatan'           => $catatan,
+            'penilaian_final_at' => date('Y-m-d H:i:s'),
+            'penilaian_final_by' => $adminUserId,
+        ]);
+
+        $this->notifyFinal($proposalId, $status, $catatan);
+
+        return ['success' => true];
+    }
+
+    public function editPenilaiAssessment(int $assessmentId, int $adminUserId, array $data): array
+    {
+        $assessment = $this->assessmentModel->find($assessmentId);
+        if (!$assessment) {
+            return ['success' => false, 'message' => 'Penilaian tidak ditemukan.'];
+        }
+
+        if ((int) $assessment['is_admin_assessment'] === 1) {
+            return ['success' => false, 'message' => 'Tidak bisa mengedit penilaian admin lewat sini.'];
+        }
+
+        $this->assessmentModel->update($assessmentId, [
+            'persentase_nilai'  => (float) $data['persentase_nilai'],
+            'status'            => $data['status'],
+            'catatan'           => $data['catatan'] ?? null,
+            'edited_by_admin'   => 1,
+        ]);
+
+        $this->recomputeAverage((int) $assessment['proposal_id']);
+
+        return ['success' => true];
+    }
+
     public function recomputeAverage(int $proposalId): void
     {
         $selection = $this->selectionModel
@@ -57,9 +139,13 @@ class PmwPitchingAssessmentService
 
         if (!$selection) return;
 
+        // If admin has an assessment, don't recompute from penilai
+        if ($this->adminHasAssessment($proposalId)) return;
+
         $avgRow = $this->assessmentModel
             ->selectAvg('persentase_nilai', 'avg_score')
             ->where('proposal_id', $proposalId)
+            ->where('is_admin_assessment', 0)
             ->where('submitted_at IS NOT NULL')
             ->first();
 
@@ -68,6 +154,7 @@ class PmwPitchingAssessmentService
 
         $count = $this->assessmentModel
             ->where('proposal_id', $proposalId)
+            ->where('is_admin_assessment', 0)
             ->where('submitted_at IS NOT NULL')
             ->countAllResults();
 
@@ -104,6 +191,7 @@ class PmwPitchingAssessmentService
 
     public function getAssessmentsForProposal(int $proposalId): array
     {
+        $db = \Config\Database::connect();
         return $this->assessmentModel
             ->select('
                 pmw_pitching_assessments.*,
@@ -113,8 +201,9 @@ class PmwPitchingAssessmentService
             ')
             ->join('users', 'users.id = pmw_pitching_assessments.penilai_user_id', 'left')
             ->join('pmw_penilai', 'pmw_penilai.user_id = users.id', 'left')
-            ->where('proposal_id', $proposalId)
-            ->orderBy('submitted_at', 'DESC')
+            ->where('pmw_pitching_assessments.proposal_id', $proposalId)
+            ->orderBy('pmw_pitching_assessments.is_admin_assessment', 'DESC')
+            ->orderBy('pmw_pitching_assessments.submitted_at', 'DESC')
             ->findAll();
     }
 
@@ -125,14 +214,20 @@ class PmwPitchingAssessmentService
             ->where('submitted_at IS NOT NULL')
             ->findAll();
 
-        $count = count($assessments);
-        $sum   = array_sum(array_column($assessments, 'persentase_nilai'));
+        $penilaiAssessments = array_filter($assessments, fn($a) => (int) $a['is_admin_assessment'] === 0);
+        $adminAssessment = current(array_filter($assessments, fn($a) => (int) $a['is_admin_assessment'] === 1)) ?: null;
+
+        $count = count($penilaiAssessments);
+        $sum   = array_sum(array_column($penilaiAssessments, 'persentase_nilai'));
         $avg   = $count > 0 ? $sum / $count : null;
 
         $approved = count(array_filter($assessments, fn($a) => $a['status'] === 'approved'));
         $rejected = count(array_filter($assessments, fn($a) => $a['status'] === 'rejected'));
 
-        return compact('count', 'avg', 'approved', 'rejected');
+        $adminScore = $adminAssessment ? (float) $adminAssessment['persentase_nilai'] : null;
+        $hasAdminAssessment = $adminAssessment !== null;
+
+        return compact('count', 'avg', 'approved', 'rejected', 'adminScore', 'hasAdminAssessment');
     }
 
     public function hasSubmitted(int $proposalId, int $penilaiUserId): bool
@@ -140,6 +235,7 @@ class PmwPitchingAssessmentService
         return $this->assessmentModel
             ->where('proposal_id', $proposalId)
             ->where('penilai_user_id', $penilaiUserId)
+            ->where('is_admin_assessment', 0)
             ->where('submitted_at IS NOT NULL')
             ->countAllResults() > 0;
     }
@@ -148,6 +244,7 @@ class PmwPitchingAssessmentService
     {
         return $this->assessmentModel
             ->where('proposal_id', $proposalId)
+            ->where('is_admin_assessment', 0)
             ->where('submitted_at IS NOT NULL')
             ->countAllResults();
     }
@@ -166,6 +263,20 @@ class PmwPitchingAssessmentService
         return $db->table('auth_groups_users')
             ->where('group', 'penilai')
             ->countAllResults();
+    }
+
+    public function canPenilaiAssess(int $proposalId): bool
+    {
+        return !$this->adminHasAssessment($proposalId);
+    }
+
+    public function adminHasAssessment(int $proposalId): bool
+    {
+        return $this->assessmentModel
+            ->where('proposal_id', $proposalId)
+            ->where('is_admin_assessment', 1)
+            ->where('submitted_at IS NOT NULL')
+            ->countAllResults() > 0;
     }
 
     protected function notifyFinal(int $proposalId, string $status, string $catatan): void

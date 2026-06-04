@@ -102,7 +102,8 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         // Tahap 3 - Pitching Desk Validation
         $routes->get('pitching-desk', 'Admin\\PitchingDeskController::index');
         $routes->get('pitching-desk/(:num)', 'Admin\\PitchingDeskController::detail/$1');
-        $routes->post('pitching-desk/(:num)/finalize', 'Admin\\PitchingDeskController::finalizeAction/$1');
+        $routes->post('pitching-desk/(:num)/admin-nilai', 'Admin\\PitchingDeskController::submitAdminAssessment/$1');
+        $routes->post('pitching-desk/(:num)/edit-penilai', 'Admin\\PitchingDeskController::editPenilaiAssessment/$1');
         $routes->get('pitching-desk/doc/(:num)', 'Admin\\PitchingDeskController::viewDoc/$1');
 
         // Tahap 3 - Perjanjian Implementasi

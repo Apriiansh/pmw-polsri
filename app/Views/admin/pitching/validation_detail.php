@@ -301,7 +301,7 @@
     </div>
 
     <!-- ================================================================
-         5. JURI ASSESSMENT PANEL (Aggregation View)
+         5. JURI ASSESSMENT PANEL (Aggregation View) + Edit Penilai
     ================================================================= -->
     <div class="card-premium overflow-hidden animate-stagger delay-500 border-l-4 border-l-violet-500" @mousemove="handleMouseMove">
         <div class="px-5 sm:px-7 py-4 sm:py-5 border-b border-sky-50 bg-white/60 flex items-center justify-between">
@@ -313,10 +313,11 @@
                 <p class="text-[11px] text-(--text-muted) mt-0.5">Hasil penilaian dari para penilai</p>
             </div>
             <div class="flex items-center gap-2">
-                <?php if ($aggregation['count'] > 0): ?>
-                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-black border <?= ($aggregation['avg'] ?? 0) >= 80 ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200' ?>">
-                    <i class="fas <?= ($aggregation['avg'] ?? 0) >= 80 ? 'fa-trophy' : 'fa-circle-xmark' ?>"></i>
-                    Rata-rata: <?= number_format($aggregation['avg'] ?? 0, 2) ?>%
+                <?php $finalScore = $aggregation['hasAdminAssessment'] ? $aggregation['adminScore'] : ($aggregation['avg'] ?? null); ?>
+                <?php if ($finalScore !== null): ?>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-black border <?= $finalScore >= 80 ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200' ?>">
+                    <i class="fas <?= $finalScore >= 80 ? 'fa-trophy' : 'fa-circle-xmark' ?>"></i>
+                    <?= $aggregation['hasAdminAssessment'] ? 'Final (Admin)' : 'Rata-rata' ?>: <?= number_format($finalScore, 2) ?>%
                 </span>
                 <?php endif; ?>
             </div>
@@ -324,7 +325,7 @@
 
         <div class="p-5 sm:p-7 space-y-4">
             <!-- Summary Bar -->
-            <div class="grid grid-cols-3 gap-3 mb-4">
+            <div class="grid grid-cols-4 gap-3 mb-4">
                 <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Menilai</p>
                     <p class="font-display text-xl font-black text-(--text-heading)"><?= $aggregation['count'] ?>/<?= $totalPenilai ?></p>
@@ -337,6 +338,17 @@
                     <p class="text-[10px] font-black text-rose-500 uppercase tracking-wider">Tdk Lolos</p>
                     <p class="font-display text-xl font-black text-rose-600"><?= $aggregation['rejected'] ?></p>
                 </div>
+                <?php if ($aggregation['hasAdminAssessment']): ?>
+                <div class="p-3 rounded-xl bg-sky-50 border border-sky-100 text-center">
+                    <p class="text-[10px] font-black text-sky-500 uppercase tracking-wider">Admin</p>
+                    <p class="font-display text-xl font-black text-sky-600"><?= number_format($aggregation['adminScore'], 1) ?></p>
+                </div>
+                <?php else: ?>
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Admin</p>
+                    <p class="font-display text-xl font-black text-slate-400">&mdash;</p>
+                </div>
+                <?php endif; ?>
             </div>
 
             <!-- Per-Penilai Cards -->
@@ -347,16 +359,29 @@
                 $aStatus = $assessment['status'];
                 $aScore = (float)($assessment['persentase_nilai'] ?? 0);
                 $aPassed = $aScore >= 80;
+                $isAdminAssessment = !empty($assessment['is_admin_assessment']);
                 ?>
-                <div class="flex items-start gap-4 p-4 rounded-2xl border <?= $aPassed ? 'border-emerald-100 bg-emerald-50/30' : 'border-rose-100 bg-rose-50/30' ?>">
-                    <div class="w-11 h-11 rounded-xl <?= $aPassed ? 'bg-emerald-500' : 'bg-rose-500' ?> flex items-center justify-center text-white font-bold shrink-0 shadow-sm">
+                <div class="flex items-start gap-4 p-4 rounded-2xl border <?= $isAdminAssessment ? 'border-sky-200 bg-sky-50/50' : ($aPassed ? 'border-emerald-100 bg-emerald-50/30' : 'border-rose-100 bg-rose-50/30') ?>">
+                    <div class="w-11 h-11 rounded-xl <?= $isAdminAssessment ? 'bg-sky-500' : ($aPassed ? 'bg-emerald-500' : 'bg-rose-500') ?> flex items-center justify-center text-white font-bold shrink-0 shadow-sm">
+                        <?php if ($isAdminAssessment): ?>
+                        <i class="fas fa-shield-hooded text-sm"></i>
+                        <?php else: ?>
                         <?= strtoupper(substr($assessment['penilai_nama'] ?? $assessment['penilai_username'] ?? '??', 0, 2)) ?>
+                        <?php endif; ?>
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 flex-wrap">
-                            <span class="font-bold text-(--text-heading) text-sm"><?= esc($assessment['penilai_nama'] ?? $assessment['penilai_username'] ?? 'Penilai') ?></span>
+                            <span class="font-bold text-(--text-heading) text-sm">
+                                <?= esc($assessment['penilai_nama'] ?? $assessment['penilai_username'] ?? 'Penilai') ?>
+                            </span>
+                            <?php if ($isAdminAssessment): ?>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-700 border border-sky-200">ADMIN (100%)</span>
+                            <?php endif; ?>
                             <?php if (!empty($assessment['penilai_expertise'])): ?>
                             <span class="text-[10px] text-slate-400"><?= esc($assessment['penilai_expertise']) ?></span>
+                            <?php endif; ?>
+                            <?php if (!empty($assessment['edited_by_admin'])): ?>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">Diedit Admin</span>
                             <?php endif; ?>
                         </div>
                         <?php if (!empty($assessment['catatan'])): ?>
@@ -368,14 +393,26 @@
                         </p>
                         <?php endif; ?>
                     </div>
-                    <div class="text-right shrink-0">
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[12px] font-black border <?= $aPassed ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200' ?>">
-                            <i class="fas <?= $aPassed ? 'fa-check' : 'fa-xmark' ?>"></i>
+                    <div class="text-right shrink-0 flex flex-col items-end gap-1">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[12px] font-black border <?= $isAdminAssessment ? 'bg-sky-50 text-sky-600 border-sky-200' : ($aPassed ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200') ?>">
+                            <i class="fas <?= $isAdminAssessment ? 'fa-crown' : ($aPassed ? 'fa-check' : 'fa-xmark') ?>"></i>
                             <?= number_format($aScore, 2) ?>%
                         </span>
-                        <p class="text-[10px] font-semibold <?= $aPassed ? 'text-emerald-600' : 'text-rose-600' ?> mt-0.5">
+                        <p class="text-[10px] font-semibold <?= $aPassed ? 'text-emerald-600' : 'text-rose-600' ?>">
                             <?= $aPassed ? 'LOLOS' : 'BELUM LOLOS' ?>
                         </p>
+                        <?php if (!$isAdminAssessment && !$aggregation['hasAdminAssessment']): ?>
+                        <button type="button" onclick="openEditPenilai(<?= htmlspecialchars(json_encode([
+                            'id' => $assessment['id'],
+                            'persentase_nilai' => $aScore,
+                            'status' => $aStatus,
+                            'catatan' => $assessment['catatan'] ?? '',
+                            'penilai_nama' => $assessment['penilai_nama'] ?? $assessment['penilai_username'] ?? 'Penilai',
+                        ]), ENT_QUOTES, 'UTF-8') ?>)"
+                            class="text-[10px] font-bold text-amber-600 hover:text-amber-700 inline-flex items-center gap-1">
+                            <i class="fas fa-pen-to-square"></i> Edit
+                        </button>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -386,104 +423,229 @@
                     <i class="fas fa-users-slash text-xl"></i>
                 </div>
                 <p class="text-slate-500 font-semibold">Belum ada penilai yang menilai</p>
-                <p class="text-xs text-slate-400 mt-1">Menunggu penilai mengirimkan penilaian mereka</p>
+                <p class="text-xs text-slate-400 mt-1">Anda bisa langsung menilai di form "Penilaian Admin (100%)" di bawah.</p>
             </div>
             <?php endif; ?>
-        </div>
-    </div>
 
-    <!-- ================================================================
-         6. ADMIN FINALISASI
-    ================================================================= -->
-    <?php
-    $isFinalized = !empty($proposal['penilaian_final_at'] ?? $proposal['pitching_final_at'] ?? null);
-    $avgScore = $aggregation['avg'] ?? null;
-    $autoStatus = ($avgScore !== null && $avgScore >= 80) ? 'approved' : 'rejected';
-    $statusLabel = $autoStatus === 'approved' ? 'LOLOS' : 'BELUM LOLOS';
-    $statusClass = $autoStatus === 'approved' ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : 'text-rose-600 bg-rose-50 border-rose-200';
-    ?>
-    <div class="card-premium overflow-hidden animate-stagger delay-600 border-l-4 <?= $isFinalized ? 'border-l-emerald-500' : 'border-l-amber-500' ?>" @mousemove="handleMouseMove">
-        <div class="px-5 sm:px-7 py-4 sm:py-5 border-b border-sky-50 bg-white/60">
-            <h3 class="font-display text-base font-bold text-(--text-heading)">
-                <i class="fas fa-file-signature text-amber-500 mr-2"></i>
-                Finalisasi Admin
-            </h3>
-            <p class="text-[11px] text-(--text-muted) mt-0.5">Setujui hasil akhir penilaian untuk membuka tahap selanjutnya</p>
-        </div>
-
-        <div class="p-5 sm:p-7">
-            <?php if ($isFinalized): ?>
-            <!-- Already finalized -->
+            <?php if ($aggregation['hasAdminAssessment']): ?>
+            <!-- Already finalized via admin assessment -->
             <div class="flex items-start gap-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
                 <div class="w-12 h-12 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
                     <i class="fas fa-check-circle text-xl"></i>
                 </div>
                 <div class="flex-1">
                     <h4 class="font-display font-bold text-emerald-700">✔ Sudah Difinalisasi</h4>
-                    <p class="text-sm text-emerald-600 mt-1">Hasil penilaian pitching telah difinalisasi.</p>
-                    <?php if ($avgScore !== null): ?>
-                    <p class="text-xs text-emerald-500 mt-1">
-                        Rata-rata: <strong><?= number_format($avgScore, 2) ?>%</strong> &middot;
-                        Status akhir: <strong><?= $statusLabel ?></strong>
-                        &middot; <?= $aggregation['count'] ?> penilai
-                    </p>
-                    <?php endif; ?>
+                    <p class="text-sm text-emerald-600 mt-1">Penilaian admin (100%) sudah dikirim dan difinalisasi.</p>
+                    <p class="text-xs text-emerald-500 mt-1">Nilai final: <strong><?= number_format($aggregation['adminScore'], 2) ?>%</strong></p>
                 </div>
                 <span class="px-3 py-1.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-700 border border-emerald-200 shrink-0">
                     FINAL
                 </span>
             </div>
-            <?php elseif ($avgScore === null || $aggregation['count'] === 0): ?>
-            <!-- No assessments yet -->
-            <div class="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                <div class="w-12 h-12 rounded-xl bg-slate-300 text-white flex items-center justify-center shrink-0">
-                    <i class="fas fa-hourglass-half text-xl"></i>
-                </div>
-                <div class="flex-1">
-                    <h4 class="font-display font-bold text-slate-600">Menunggu Penilaian</h4>
-                    <p class="text-sm text-slate-500 mt-1">Belum ada penilai yang mengirimkan penilaian. Finalisasi belum dapat dilakukan.</p>
-                </div>
-                <span class="px-3 py-1.5 rounded-full text-[10px] font-black bg-slate-100 text-slate-500 border border-slate-200 shrink-0">
-                    TUNGGU
-                </span>
-            </div>
-            <?php else: ?>
-            <!-- Ready to finalize -->
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         6. PENILAIAN ADMIN (100%)
+    ================================================================= -->
+    <?php
+    $isFinalized = !empty($proposal['penilaian_final_at'] ?? $proposal['pitching_final_at'] ?? null);
+    ?>
+    <div class="card-premium overflow-hidden animate-stagger delay-600 border-l-4 <?= $aggregation['hasAdminAssessment'] ? 'border-l-emerald-500' : 'border-l-sky-500' ?>" @mousemove="handleMouseMove"
+         x-data="{
+             nilai: <?= $aggregation['hasAdminAssessment'] ? (float)$aggregation['adminScore'] : '70' ?>,
+             status: '<?= $aggregation['hasAdminAssessment'] ? ($aggregation['adminScore'] >= 80 ? 'approved' : 'rejected') : 'approved' ?>',
+             get v() { return parseFloat(this.nilai); },
+             get valid() { return !isNaN(this.v) && this.nilai !== null && this.nilai !== ''; },
+             get accent() {
+                 if (!this.valid) return '#94a3b8';
+                 return this.v >= 80 ? '#10b981' : '#f43f5e';
+             },
+             get label() {
+                 if (!this.valid) return { text: '—', cls: 'bg-slate-50 text-slate-500 border-slate-200', icon: 'fa-circle-question' };
+                 if (this.v >= 80) return { text: 'LOLOS', cls: 'bg-emerald-50 text-emerald-600 border-emerald-200', icon: 'fa-trophy' };
+                 return { text: 'BELUM LOLOS', cls: 'bg-rose-50 text-rose-600 border-rose-200', icon: 'fa-circle-xmark' };
+             },
+             get pos() { return this.valid ? Math.min(98, Math.max(2, this.v)) : 0; },
+             syncRadio() {
+                 if (!this.valid) return;
+                 const target = this.v >= 80 ? 'approved' : 'rejected';
+                 const radio = this.$root.querySelector(`input[name=status][value='${target}']`);
+                 if (radio && !radio.checked) radio.checked = true;
+             },
+             onRadioChange(value) {
+                 if (value === 'approved') this.nilai = 90;
+                 else if (value === 'rejected') this.nilai = 40;
+             }
+         }" x-init="syncRadio(); $watch('nilai', () => syncRadio())">
+        <div class="px-5 sm:px-7 py-4 sm:py-5 border-b border-sky-50 bg-white/60">
+            <h3 class="font-display text-base font-bold text-(--text-heading)">
+                <i class="fas fa-shield-hooded text-sky-500 mr-2"></i>
+                Penilaian Admin (100%)
+            </h3>
+            <p class="text-[11px] text-(--text-muted) mt-0.5">
+                <?= $aggregation['hasAdminAssessment'] ? 'Penilaian Anda — hasil ini sudah difinalisasi.' : 'Nilai Anda langsung menjadi nilai final (100%). Penilai otomatis terkunci.' ?>
+            </p>
+        </div>
+
+        <div class="p-5 sm:p-7">
+            <?php if ($isFinalized): ?>
+            <!-- Already finalized — read-only display -->
             <div class="space-y-4">
-                <div class="flex items-start gap-4 p-4 rounded-2xl bg-sky-50 border border-sky-200">
+                <?php
+                $adminAssess = current(array_filter($assessments ?? [], fn($a) => !empty($a['is_admin_assessment'])));
+                if ($adminAssess):
+                $aScore = (float)$adminAssess['persentase_nilai'];
+                $aPassed = $aScore >= 80;
+                ?>
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-sky-50 border border-sky-200">
                     <div class="w-12 h-12 rounded-xl bg-sky-500 text-white flex items-center justify-center shrink-0">
-                        <i class="fas fa-chart-simple text-xl"></i>
+                        <i class="fas fa-crown text-xl"></i>
                     </div>
                     <div class="flex-1">
-                        <h4 class="font-display font-bold text-sky-700">Hasil Otomatis</h4>
-                        <p class="text-sm text-sky-600 mt-1">
-                            Rata-rata: <strong><?= number_format($avgScore, 2) ?>%</strong>
-                            &middot; Status: <span class="font-bold <?= $autoStatus === 'approved' ? 'text-emerald-600' : 'text-rose-600' ?>"><?= $statusLabel ?></span>
-                            &middot; Dari <?= $aggregation['count'] ?> penilai
-                        </p>
-                        <p class="text-xs text-sky-500 mt-1">
-                            <?php if ($autoStatus === 'approved'): ?>
-                            ✔ Rata-rata <?= number_format($avgScore, 2) ?>% ≥ 80% → <strong>LOLOS</strong>
-                            <?php else: ?>
-                            ✘ Rata-rata <?= number_format($avgScore, 2) ?>% < 80% → <strong>BELUM LOLOS</strong>
-                            <?php endif; ?>
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-display font-bold text-sky-700">Nilai Admin</h4>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold <?= $aPassed ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-rose-50 text-rose-600 border border-rose-200' ?>">
+                                <?= $aPassed ? 'LOLOS' : 'BELUM LOLOS' ?>
+                            </span>
+                        </div>
+                        <p class="text-2xl font-black text-sky-700 mt-1 tabular-nums"><?= number_format($aScore, 2) ?>%</p>
+                        <?php if (!empty($adminAssess['catatan'])): ?>
+                        <div class="mt-2 p-3 rounded-xl bg-white/60 border border-sky-100 italic text-sm text-slate-600">
+                            "<?= esc($adminAssess['catatan']) ?>"
+                        </div>
+                        <?php endif; ?>
+                        <p class="text-xs text-slate-400 mt-2">
+                            Difinalisasi <?= date('d/m/Y H:i', strtotime($adminAssess['submitted_at'])) ?>
                         </p>
                     </div>
-                    <span class="px-3 py-1.5 rounded-full text-[10px] font-black <?= $statusClass ?> shrink-0">
-                        <?= $statusLabel ?>
-                    </span>
                 </div>
+                <?php endif; ?>
+            </div>
+            <?php else: ?>
+            <!-- Admin can assess form -->
+            <?php if (session()->getFlashdata('error')): ?>
+            <div class="flex items-start gap-3 p-3.5 rounded-xl bg-rose-50 border border-rose-200 mb-5">
+                <div class="w-9 h-9 rounded-lg bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+                    <i class="fas fa-circle-exclamation"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-[11px] font-black uppercase tracking-wider text-rose-700">Gagal</p>
+                    <p class="text-sm font-semibold text-rose-600 mt-0.5"><?= esc(session()->getFlashdata('error')) ?></p>
+                </div>
+                <button type="button" onclick="this.closest('div').remove()" class="text-rose-400 hover:text-rose-600 shrink-0">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <?php endif; ?>
 
-                <form action="<?= base_url('admin/pitching-desk/' . $proposal['id'] . '/finalize') ?>" method="post"
-                      onsubmit="return confirm('Setujui hasil final penilaian pitching ini?\n\nRata-rata: <?= number_format($avgScore, 2) ?>%\nStatus: <?= $statusLabel ?>\n\nSetelah difinalisasi, mahasiswa akan mendapat notifikasi dan tahap selanjutnya akan terbuka.')">
-                    <?= csrf_field() ?>
-                    <div class="flex justify-end">
-                        <button type="submit" class="btn-primary px-8 bg-amber-500 hover:bg-amber-600 focus:ring-amber-100">
-                            <i class="fas fa-check-circle mr-2"></i>Setujui Hasil & Finalisasi
+            <form action="<?= base_url('admin/pitching-desk/' . $proposal['id'] . '/admin-nilai') ?>" method="post">
+                <?= csrf_field() ?>
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between gap-3 flex-wrap">
+                        <div>
+                            <label class="form-label mb-0">Hasil Penilaian <span class="required">*</span></label>
+                            <p class="text-[10px] text-slate-400 font-medium mt-0.5">
+                                Nilai Anda <strong>langsung 100%</strong> menjadi final. Penilai akan terkunci.
+                            </p>
+                        </div>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-black border transition-all duration-300"
+                              :class="label.cls"
+                              x-show="valid" x-cloak>
+                            <i class="fas" :class="label.icon"></i>
+                            <span x-text="label.text"></span>
+                        </span>
+                    </div>
+
+                    <!-- Status Radio -->
+                    <div class="grid sm:grid-cols-2 gap-4">
+                        <label class="relative cursor-pointer">
+                            <input type="radio" name="status" value="approved" class="peer sr-only"
+                                   @change="onRadioChange('approved')" required>
+                            <div class="p-4 rounded-2xl border-2 border-slate-100 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 transition-all hover:border-emerald-300 shadow-sm">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center peer-checked:bg-emerald-500 peer-checked:text-white transition-colors">
+                                        <i class="fas fa-trophy"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-(--text-heading) text-sm leading-tight">Lolos</p>
+                                        <p class="text-[10px] text-slate-400 font-medium">≥ 80%</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="relative cursor-pointer">
+                            <input type="radio" name="status" value="rejected" class="peer sr-only"
+                                   @change="onRadioChange('rejected')">
+                            <div class="p-4 rounded-2xl border-2 border-slate-100 peer-checked:border-rose-500 peer-checked:bg-rose-50 transition-all hover:border-rose-300 shadow-sm">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center peer-checked:bg-rose-500 peer-checked:text-white transition-colors">
+                                        <i class="fas fa-circle-xmark"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-(--text-heading) text-sm leading-tight">Belum Lolos</p>
+                                        <p class="text-[10px] text-slate-400 font-medium">&lt; 80%</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Slider -->
+                    <div class="relative pt-14 pb-2">
+                        <div class="absolute top-0 transition-all duration-100 -translate-x-1/2 z-10 pointer-events-none"
+                             :style="`left: ${pos}%`"
+                             x-show="valid" x-cloak>
+                            <div class="px-3 py-1.5 rounded-xl bg-white shadow-xl border-2 font-display font-black text-base whitespace-nowrap"
+                                 :style="`border-color: ${accent}; color: ${accent}`">
+                                <span x-text="v.toFixed(2)"></span><span class="text-[10px] opacity-60 ml-0.5 font-bold">%</span>
+                            </div>
+                            <div class="w-0 h-0 border-l-[7px] border-r-[7px] border-t-[7px] border-l-transparent border-r-transparent mx-auto -mt-0.5"
+                                 :style="`border-top-color: ${accent}`"></div>
+                        </div>
+
+                        <input type="range" min="0" max="100" step="0.01"
+                               x-model="nilai"
+                               :style="`accent-color: ${accent}`"
+                               class="w-full h-3 rounded-full appearance-none cursor-pointer bg-slate-200 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-sky-100 transition-all">
+
+                        <div class="relative h-6 mt-2 text-[10px] font-bold text-slate-500 select-none">
+                            <span class="absolute" style="left: 0%"><span class="block w-px h-2 bg-slate-300 mx-auto mb-1"></span>0</span>
+                            <span class="absolute -translate-x-1/2" style="left: 80%"><span class="block w-px h-2.5 bg-emerald-500 mx-auto mb-1"></span>80</span>
+                            <span class="absolute -translate-x-full" style="left: 100%"><span class="block w-px h-2 bg-slate-300 ml-auto mb-1"></span>100</span>
+                        </div>
+
+                        <input type="hidden" name="persentase_nilai" :value="valid ? v.toFixed(2) : ''">
+                    </div>
+
+                    <!-- Catatan -->
+                    <div class="space-y-1.5">
+                        <label class="form-label">
+                            Catatan Admin
+                            <span class="required" title="Wajib diisi">*</span>
+                        </label>
+                        <div class="input-group items-start py-2 group focus-within:ring-4 focus-within:ring-rose-100 transition-all border-rose-200">
+                            <div class="input-icon mt-2 text-slate-400 group-focus-within:text-rose-500">
+                                <i class="fas fa-comment-medical text-base"></i>
+                            </div>
+                            <textarea name="catatan" rows="4" required minlength="5" maxlength="1000"
+                                      placeholder="Berikan catatan final untuk mahasiswa (wajib, min. 5 karakter)..."><?= !empty($adminAssess['catatan'] ?? null) ? esc($adminAssess['catatan']) : '' ?></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                        <a href="<?= base_url('admin/pitching-desk') ?>" class="btn-outline">
+                            <i class="fas fa-times mr-2"></i>Batal
+                        </a>
+                        <button type="submit" class="btn-primary px-8 bg-sky-500 hover:bg-sky-600 focus:ring-sky-100"
+                                onclick="return confirm('Nilai Anda (100%) akan langsung menjadi final dan penilai akan terkunci. Lanjutkan?')">
+                            <i class="fas fa-crown mr-2"></i>Submit Penilaian Admin (100%)
                         </button>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
             <?php endif; ?>
         </div>
     </div>
@@ -493,8 +655,102 @@
 </div><!-- /page wrapper -->
 
 <!-- ================================================================
-     BIODATA MODAL
+     EDIT PENILAI MODAL
 ================================================================= -->
+<div id="editPenilaiModal" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeEditPenilaiModal()"></div>
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                <form id="editPenilaiForm" method="post">
+                    <?= csrf_field() ?>
+                    <div class="px-6 py-4 bg-amber-500">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-display font-bold text-white">Edit Penilaian Penilai</h3>
+                            <button type="button" onclick="closeEditPenilaiModal()" class="text-white/80 hover:text-white transition-colors">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="px-6 py-5 space-y-5" x-data="{
+                        nilai: 70,
+                        status: 'approved',
+                        get v() { return parseFloat(this.nilai); },
+                        get accent() {
+                            if (isNaN(this.v)) return '#94a3b8';
+                            return this.v >= 80 ? '#10b981' : '#f43f5e';
+                        },
+                        get pos() { return !isNaN(this.v) ? Math.min(98, Math.max(2, this.v)) : 0; },
+                        syncRadio() {
+                            if (isNaN(this.v)) return;
+                            const target = this.v >= 80 ? 'approved' : 'rejected';
+                            const radio = this.$root.querySelector(`input[name=status][value='${target}']`);
+                            if (radio && !radio.checked) radio.checked = true;
+                        },
+                        onRadioChange(value) {
+                            if (value === 'approved') this.nilai = 90;
+                            else if (value === 'rejected') this.nilai = 40;
+                        }
+                    }" x-init="syncRadio(); $watch('nilai', () => syncRadio())">
+                        <input type="hidden" name="assessment_id" value="">
+                        <p class="text-xs text-slate-500" id="editPenilaiName">Edit nilai untuk: <strong>—</strong></p>
+
+                        <!-- Radio -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="relative cursor-pointer">
+                            <input type="radio" name="status" value="approved" class="peer sr-only"
+                                   @change="onRadioChange('approved')" required>
+                                <div class="p-3 rounded-xl border-2 border-slate-100 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 transition-all">
+                                    <p class="font-bold text-sm text-center">Lolos</p>
+                                </div>
+                            </label>
+                            <label class="relative cursor-pointer">
+                                <input type="radio" name="status" value="rejected" class="peer sr-only"
+                                       @change="onRadioChange('rejected')">
+                                <div class="p-3 rounded-xl border-2 border-slate-100 peer-checked:border-rose-500 peer-checked:bg-rose-50 transition-all">
+                                    <p class="font-bold text-sm text-center">Belum Lolos</p>
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Slider -->
+                        <div class="relative pt-14 pb-2">
+                            <div class="absolute top-0 transition-all duration-100 -translate-x-1/2 z-10 pointer-events-none"
+                                 :style="`left: ${pos}%`" x-show="!isNaN(v)">
+                                <div class="px-3 py-1.5 rounded-xl bg-white shadow-xl border-2 font-display font-black text-base"
+                                     :style="`border-color: ${accent}; color: ${accent}`">
+                                    <span x-text="v.toFixed(2)"></span><span class="text-[10px] opacity-60 ml-0.5 font-bold">%</span>
+                                </div>
+                                <div class="w-0 h-0 border-l-[7px] border-r-[7px] border-t-[7px] border-l-transparent border-r-transparent mx-auto -mt-0.5"
+                                     :style="`border-top-color: ${accent}`"></div>
+                            </div>
+                            <input type="range" min="0" max="100" step="0.01"
+                                   x-model="nilai"
+                                   :style="`accent-color: ${accent}`"
+                                   class="w-full h-3 rounded-full appearance-none cursor-pointer bg-slate-200 transition-all">
+                            <input type="hidden" name="persentase_nilai" :value="!isNaN(v) ? v.toFixed(2) : ''">
+                        </div>
+
+                        <!-- Catatan -->
+                        <div>
+                            <label class="form-label text-xs">Catatan</label>
+                            <textarea name="catatan" rows="3" class="form-textarea w-full text-sm"
+                                      placeholder="Catatan penilai (bisa diedit)"></textarea>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 px-6 py-4 flex justify-end gap-3">
+                        <button type="button" onclick="closeEditPenilaiModal()" class="btn-outline text-sm">
+                            Batal
+                        </button>
+                        <button type="submit" class="btn-primary text-sm bg-amber-500 hover:bg-amber-600">
+                            <i class="fas fa-save mr-1"></i> Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 <div id="biodataModal" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">
     <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeBiodataModal()"></div>
     <div class="fixed inset-0 z-10 overflow-y-auto">
@@ -591,7 +847,38 @@ function closeBiodataModal() {
     document.body.style.overflow = '';
 }
 
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeBiodataModal(); });
+function openEditPenilai(data) {
+    const modal = document.getElementById('editPenilaiModal');
+    const form = document.getElementById('editPenilaiForm');
+    const nameEl = document.getElementById('editPenilaiName');
+
+    form.action = '<?= base_url('admin/pitching-desk/' . $proposal['id'] . '/edit-penilai') ?>';
+    form.querySelector('input[name="assessment_id"]').value = data.id;
+    form.querySelector('textarea[name="catatan"]').value = data.catatan || '';
+
+    nameEl.innerHTML = 'Edit nilai untuk: <strong>' + data.penilai_nama + '</strong>';
+
+    const alpineEl = form.querySelector('[x-data]');
+    if (alpineEl && alpineEl.__x) {
+        alpineEl.__x.$data.nilai = data.persentase_nilai;
+        alpineEl.__x.$data.status = data.status;
+    }
+
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeEditPenilaiModal() {
+    document.getElementById('editPenilaiModal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeBiodataModal();
+        closeEditPenilaiModal();
+    }
+});
 </script>
 
 <?= $this->endSection() ?>

@@ -12,7 +12,8 @@ class PmwPitchingAssessmentModel extends Model
     protected $useTimestamps = true;
     protected $allowedFields = [
         'proposal_id', 'penilai_user_id', 'status',
-        'catatan', 'persentase_nilai', 'submitted_at',
+        'is_admin_assessment', 'catatan', 'edited_by_admin',
+        'persentase_nilai', 'submitted_at',
     ];
 
     protected $validationRules = [

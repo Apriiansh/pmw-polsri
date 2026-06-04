@@ -43,7 +43,7 @@ class PitchingDeskController extends BaseController
     }
 
     /**
-     * Detail with aggregation panel (read-only) + finalize button
+     * Detail with aggregation panel + admin assessment form + edit penilai
      */
     public function detail(int $id)
     {
@@ -71,28 +71,89 @@ class PitchingDeskController extends BaseController
         $assessments = $assessmentService->getAssessmentsForProposal($id);
         $aggregation = $assessmentService->getAggregation($id);
         $totalPenilai = $assessmentService->getTotalPenilaiCount();
+        $canPenilaiAssess = $assessmentService->canPenilaiAssess($id);
 
         return view('admin/pitching/validation_detail', [
-            'title'         => 'Validasi Pitching Desk | PMW Polsri',
-            'proposal'      => $proposal,
-            'members'       => $members,
-            'docsByKey'     => $docsByKey,
-            'assessments'   => $assessments,
-            'aggregation'   => $aggregation,
-            'totalPenilai'  => $totalPenilai,
+            'title'            => 'Validasi Pitching Desk | PMW Polsri',
+            'proposal'         => $proposal,
+            'members'          => $members,
+            'docsByKey'        => $docsByKey,
+            'assessments'      => $assessments,
+            'aggregation'      => $aggregation,
+            'totalPenilai'     => $totalPenilai,
+            'canPenilaiAssess' => $canPenilaiAssess,
         ]);
     }
 
     /**
-     * Admin finalizes/approves the aggregated assessment result
+     * Admin submits their own assessment (100% weight)
      */
-    public function finalizeAction(int $id)
+    public function submitAdminAssessment(int $id)
     {
         $service = new PmwPitchingAssessmentService();
-        $service->finalizeAssessment((int) $id, user()->id);
 
-        return redirect()->to('admin/pitching-desk')
-            ->with('message', 'Hasil penilaian pitching berhasil difinalisasi. Mahasiswa telah mendapat notifikasi.');
+        $status = $this->request->getPost('status');
+        $persentaseNilai = (float) $this->request->getPost('persentase_nilai');
+        $catatan = $this->request->getPost('catatan');
+
+        if (empty($status) || !in_array($status, ['approved', 'rejected'])) {
+            return redirect()->back()->withInput()->with('error', 'Status penilaian harus dipilih.');
+        }
+        if ($persentaseNilai < 0 || $persentaseNilai > 100) {
+            return redirect()->back()->withInput()->with('error', 'Nilai harus antara 0-100.');
+        }
+        if (empty($catatan)) {
+            return redirect()->back()->withInput()->with('error', 'Catatan wajib diisi.');
+        }
+
+        $result = $service->submitAdminAssessment($id, user()->id, [
+            'status'           => $status,
+            'persentase_nilai' => $persentaseNilai,
+            'catatan'          => $catatan,
+        ]);
+
+        if (!$result['success']) {
+            return redirect()->back()->with('error', $result['message']);
+        }
+
+        return redirect()->to('admin/pitching-desk/' . $id)
+            ->with('message', 'Penilaian admin (100%) berhasil dikirim dan difinalisasi.');
+    }
+
+    /**
+     * Admin edits a penilai's assessment
+     */
+    public function editPenilaiAssessment(int $id)
+    {
+        $service = new PmwPitchingAssessmentService();
+
+        $assessmentId = (int) $this->request->getPost('assessment_id');
+        $status = $this->request->getPost('status');
+        $persentaseNilai = (float) $this->request->getPost('persentase_nilai');
+        $catatan = $this->request->getPost('catatan');
+
+        if (!$assessmentId) {
+            return redirect()->back()->with('error', 'ID penilaian tidak valid.');
+        }
+        if (empty($status) || !in_array($status, ['approved', 'rejected'])) {
+            return redirect()->back()->with('error', 'Status penilaian harus dipilih.');
+        }
+        if ($persentaseNilai < 0 || $persentaseNilai > 100) {
+            return redirect()->back()->with('error', 'Nilai harus antara 0-100.');
+        }
+
+        $result = $service->editPenilaiAssessment($assessmentId, user()->id, [
+            'status'           => $status,
+            'persentase_nilai' => $persentaseNilai,
+            'catatan'          => $catatan,
+        ]);
+
+        if (!$result['success']) {
+            return redirect()->back()->with('error', $result['message']);
+        }
+
+        return redirect()->to('admin/pitching-desk/' . $id)
+            ->with('message', 'Penilaian penilai berhasil diperbarui.');
     }
 
     /**
