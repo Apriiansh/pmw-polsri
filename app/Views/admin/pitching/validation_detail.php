@@ -380,9 +380,11 @@
                             <?php if (!empty($assessment['penilai_expertise'])): ?>
                             <span class="text-[10px] text-slate-400"><?= esc($assessment['penilai_expertise']) ?></span>
                             <?php endif; ?>
+                            <!--
                             <?php if (!empty($assessment['edited_by_admin'])): ?>
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">Diedit Admin</span>
-                            <?php endif; ?>
+                            <?php endif; ?> 
+                            -->
                         </div>
                         <?php if (!empty($assessment['catatan'])): ?>
                         <p class="text-xs text-slate-600 mt-1 line-clamp-2"><?= esc($assessment['catatan']) ?></p>

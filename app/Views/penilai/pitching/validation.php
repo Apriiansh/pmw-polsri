@@ -105,6 +105,7 @@
             <table class="pmw-table">
                 <thead>
                     <tr>
+                        <th class="text-center w-10">#</th>
                         <th>Tim / Usaha</th>
                         <th>Ketua</th>
                         <th>Kategori</th>
@@ -130,9 +131,11 @@
                         'revision' => 'Revisi',
                         'rejected' => 'Ditolak',
                     ];
+                    $no = 1;
                     ?>
                     <?php foreach ($proposals as $proposal): ?>
                     <tr class="group">
+                        <td class="text-center text-[11px] font-bold text-slate-400 tabular-nums"><?= $no++ ?></td>
                         <td>
                             <div class="font-display font-bold text-(--text-heading) text-[13px]">
                                 <?= esc($proposal['nama_usaha'] ?: 'Tim #' . $proposal['id']) ?>

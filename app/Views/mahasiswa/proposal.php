@@ -429,7 +429,7 @@
                             <p class="text-xs font-bold mt-1 <?= $proposal['kategori_wirausaha'] === 'berkembang' ? 'text-violet-600' : 'text-sky-600' ?>">
                                 <i class="fas fa-info-circle mr-1"></i>
                                 <?php if ($proposal['kategori_wirausaha'] === 'berkembang'): ?>
-                                    Batas RAB Berkembang: <span class="font-black">Rp 5.000.000 – Rp 8.000.000</span>
+                                    Batas RAB Berkembang: <span class="font-black">Rp 5.000.000 – Rp 15.000.000</span>
                                 <?php else: ?>
                                     Batas RAB Pemula: <span class="font-black">Rp 3.000.000 – Rp 5.000.000</span>
                                 <?php endif; ?>
@@ -758,7 +758,7 @@
         ?>
         const kategoriWirausaha = <?= json_encode($proposal['kategori_wirausaha'] ?? 'pemula') ?>;
         const rabMin = kategoriWirausaha === 'berkembang' ? 5000000 : 3000000;
-        const rabMax = kategoriWirausaha === 'berkembang' ? 8000000 : 5000000;
+        const rabMax = kategoriWirausaha === 'berkembang' ? 15000000 : 5000000;
 
         return {
             members: <?= json_encode($anggotaData) ?>,

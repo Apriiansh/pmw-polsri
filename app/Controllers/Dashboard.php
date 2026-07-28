@@ -157,6 +157,7 @@ class Dashboard extends BaseController
                 'progress' => 40,
                 'status'   => $statusLabel,
                 'date'     => date('d M Y', strtotime($p['student_submitted_at'])),
+                'url'      => base_url('admin/pitching-desk/' . $p['id']),
             ];
         }, $rawPitching);
 
@@ -392,7 +393,8 @@ class Dashboard extends BaseController
                 'category' => $p['kategori_usaha'] ?? 'Umum',
                 'progress' => $pProgress['progress'],
                 'status'   => $statusLabel,
-                'date'     => $pProgress['stage']
+                'date'     => $pProgress['stage'],
+                'url'      => base_url('dosen/pitching-desk/' . $p['id']),
             ];
         }, array_slice($rawProposals, 0, 5));
 
@@ -476,7 +478,8 @@ class Dashboard extends BaseController
                 'category' => $p['kategori_usaha'] ?? 'Umum',
                 'progress' => $pProgress['progress'],
                 'status'   => $statusLabel,
-                'date'     => $pProgress['stage']
+                'date'     => $pProgress['stage'],
+                'url'      => base_url('mentor/monitoring/' . $p['id']),
             ];
         }, array_slice($rawProposals, 0, 5));
 

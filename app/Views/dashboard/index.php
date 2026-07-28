@@ -229,17 +229,16 @@
 
                             <!-- Action -->
                             <td class="text-right">
-                                <button class="
-                                    opacity-0 translate-x-3
-                                    group-hover:opacity-100 group-hover:translate-x-0
-                                    transition-all duration-300
-                                    w-9 h-9 flex items-center justify-center ml-auto
-                                    bg-white border border-sky-100 rounded-xl
-                                    text-slate-400 hover:text-sky-500 hover:border-sky-300
-                                    shadow-sm hover:shadow-sky-100
-                                ">
+                                <?php if (!empty($row['url'])): ?>
+                                <a href="<?= $row['url'] ?>"
+                                    class="opacity-0 translate-x-3 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 w-9 h-9 flex items-center justify-center ml-auto bg-white border border-sky-100 rounded-xl text-slate-400 hover:text-sky-500 hover:border-sky-300 shadow-sm hover:shadow-sky-100">
                                     <i class="fas fa-chevron-right text-xs"></i>
-                                </button>
+                                </a>
+                                <?php else: ?>
+                                <span class="w-9 h-9 flex items-center justify-center ml-auto text-slate-200">
+                                    <i class="fas fa-chevron-right text-xs"></i>
+                                </span>
+                                <?php endif; ?>
                             </td>
                         </tr>
                         <?php endforeach; ?>
