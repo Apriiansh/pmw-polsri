@@ -161,13 +161,13 @@ use App\Models\Proposal\PmwProposalModel;
     <!-- ================================================================
          4. ACTION AREA
     ================================================================= -->
-    <div class="grid animate-stagger delay-300">
+    <div class="grid md:grid-cols-2 gap-6 animate-stagger delay-300">
         
-        <!-- Upload Section -->
-        <div class="card-premium p-6 sm:p-8 flex flex-col mx-auto w-full max-w-xl" @mousemove="handleMouseMove">
+        <!-- Upload Bukti Perjanjian -->
+        <div class="card-premium p-6 sm:p-8 flex flex-col" @mousemove="handleMouseMove">
             <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                <i class="fas fa-upload text-emerald-500"></i>
-                Upload Berkas Perjanjian
+                <i class="fas fa-file-signature text-emerald-500"></i>
+                Bukti Perjanjian
             </h3>
             
             <div class="flex-1 flex flex-col justify-center">
@@ -177,12 +177,11 @@ use App\Models\Proposal\PmwProposalModel;
                             <i class="fas fa-file-signature text-xl"></i>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <p class="text-sm font-bold text-slate-700">Bukti Perjanjian Implementasi (PDF)</p>
+                            <p class="text-sm font-bold text-slate-700">Bukti Perjanjian Implementasi</p>
                             <p class="text-xs text-slate-500 mt-1 truncate">
                                 <span x-text="perjanjianFilename || 'Belum ada file diunggah'"></span>
                             </p>
                             
-                            <!-- Progress Badge -->
                             <div class="mt-2 flex items-center gap-2">
                                 <template x-if="perjanjianStatus === 'uploaded'">
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-emerald-100 text-emerald-700 uppercase tracking-tighter" :class="isLocked ? 'ring-1 ring-emerald-200' : ''">
@@ -205,8 +204,8 @@ use App\Models\Proposal\PmwProposalModel;
                             <i class="fas fa-lock"></i>
                         </div>
                         <div>
-                            <p class="text-[11px] font-black text-emerald-800 uppercase tracking-tight">Perjanjian Final</p>
-                            <p class="text-[10px] text-emerald-600 font-medium">Berkas telah divalidasi dan tidak dapat diubah kembali.</p>
+                            <p class="text-[11px] font-black text-emerald-800 uppercase tracking-tight">Final</p>
+                            <p class="text-[10px] text-emerald-600 font-medium">Berkas telah divalidasi.</p>
                         </div>
                     </div>
                     <?php elseif ($isPhaseOpen): ?>
@@ -214,11 +213,78 @@ use App\Models\Proposal\PmwProposalModel;
                         <label class="relative block cursor-pointer group/upload">
                             <div class="btn-outline w-full py-4 flex items-center justify-center gap-2 border-2 border-dashed border-slate-200 grow group-hover/upload:border-emerald-400 group-hover/upload:text-emerald-600 transition-all">
                                 <i class="fas fa-cloud-arrow-up text-lg"></i>
-                                <span class="text-sm font-bold">Pilih & Upload Hasil Scan</span>
+                                <span class="text-sm font-bold">Pilih & Upload</span>
                             </div>
                             <input type="file" class="hidden" accept="application/pdf" @change="handleFileUpload($event)">
                         </label>
-                        <p class="text-[10px] text-slate-400 mt-3 text-center">Harap pastikan berkas sudah ditandatangani lengkap (PDF, Max 2MB)</p>
+                        <p class="text-[10px] text-slate-400 mt-3 text-center">PDF, Max 2MB</p>
+                    </div>
+                    <?php else: ?>
+                    <div class="mt-6 p-3 rounded-lg bg-rose-50 border border-rose-100 text-center">
+                        <p class="text-xs text-rose-600 font-bold">
+                            <i class="fas fa-lock mr-1"></i> Upload Ditutup
+                        </p>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Surat Pernyataan Penerima Dana -->
+        <div class="card-premium p-6 sm:p-8 flex flex-col" @mousemove="handleMouseMove">
+            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <i class="fas fa-file-pen text-violet-500"></i>
+                Surat Pernyataan Penerima Dana
+            </h3>
+            
+            <div class="flex-1 flex flex-col justify-center">
+                <div class="p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-violet-200 transition-all group relative">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-slate-400 group-hover:text-violet-500 shadow-sm shrink-0">
+                            <i class="fas fa-file-pen text-xl"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-bold text-slate-700">Surat Pernyataan Penerima Dana</p>
+                            <p class="text-xs text-slate-500 mt-1 truncate">
+                                <span x-text="suratPernyataanFilename || 'Belum ada file diunggah'"></span>
+                            </p>
+                            
+                            <div class="mt-2 flex items-center gap-2">
+                                <template x-if="suratPernyataanStatus === 'uploaded'">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-emerald-100 text-emerald-700 uppercase tracking-tighter" :class="isLocked ? 'ring-1 ring-emerald-200' : ''">
+                                        <i class="fas fa-check-circle mr-1"></i> 
+                                        <span x-text="isLocked ? 'Berkas Sah & Terkunci' : 'Tersimpan'"></span>
+                                    </span>
+                                </template>
+                                <template x-if="suratPernyataanStatus === 'uploading'">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-sky-100 text-sky-700 animate-pulse uppercase tracking-tighter">
+                                        <i class="fas fa-spinner fa-spin mr-1"></i> Proses...
+                                    </span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <?php if ($isLocked): ?>
+                    <div class="mt-6 p-4 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-emerald-200">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <div>
+                            <p class="text-[11px] font-black text-emerald-800 uppercase tracking-tight">Final</p>
+                            <p class="text-[10px] text-emerald-600 font-medium">Berkas telah divalidasi.</p>
+                        </div>
+                    </div>
+                    <?php elseif ($isPhaseOpen): ?>
+                    <div class="mt-6">
+                        <label class="relative block cursor-pointer group/upload">
+                            <div class="btn-outline w-full py-4 flex items-center justify-center gap-2 border-2 border-dashed border-slate-200 grow group-hover/upload:border-violet-400 group-hover/upload:text-violet-600 transition-all">
+                                <i class="fas fa-cloud-arrow-up text-lg"></i>
+                                <span class="text-sm font-bold">Pilih & Upload</span>
+                            </div>
+                            <input type="file" class="hidden" accept="application/pdf" @change="handleSuratPernyataanUpload($event)">
+                        </label>
+                        <p class="text-[10px] text-slate-400 mt-3 text-center">PDF, Max 2MB</p>
                     </div>
                     <?php else: ?>
                     <div class="mt-6 p-3 rounded-lg bg-rose-50 border border-rose-100 text-center">
@@ -243,10 +309,13 @@ use App\Models\Proposal\PmwProposalModel;
 function wawancaraForm() {
     <?php
     $perjanjianDoc = $docsByKey['bukti_perjanjian'] ?? null;
+    $suratDoc = $docsByKey['surat_pernyataan_penerima_dana'] ?? null;
     ?>
     return {
         perjanjianStatus: '<?= $perjanjianDoc ? 'uploaded' : 'missing' ?>',
         perjanjianFilename: <?= json_encode($perjanjianDoc['original_name'] ?? '') ?>,
+        suratPernyataanStatus: '<?= $suratDoc ? 'uploaded' : 'missing' ?>',
+        suratPernyataanFilename: <?= json_encode($suratDoc['original_name'] ?? '') ?>,
         isLocked: <?= ($isLocked ?? false) ? 'true' : 'false' ?>,
 
         handleMouseMove(e) {
@@ -257,10 +326,17 @@ function wawancaraForm() {
         },
 
         handleFileUpload(e) {
+            this._uploadFile(e, 'perjanjian_file', 'perjanjianStatus', 'perjanjianFilename', '<?= base_url('mahasiswa/perjanjian/upload') ?>', 'Berkas perjanjian berhasil diunggah dan siap divalidasi.');
+        },
+
+        handleSuratPernyataanUpload(e) {
+            this._uploadFile(e, 'surat_pernyataan_file', 'suratPernyataanStatus', 'suratPernyataanFilename', '<?= base_url('mahasiswa/perjanjian/upload-surat') ?>', 'Surat pernyataan berhasil diunggah dan siap divalidasi.');
+        },
+
+        _uploadFile(e, fieldName, statusKey, filenameKey, url, successMsg) {
             const file = e.target.files[0];
             if (!file) return;
 
-            // Validate PDF
             if (file.type !== 'application/pdf') {
                 Swal.fire({
                     title: 'Bukan PDF',
@@ -271,7 +347,6 @@ function wawancaraForm() {
                 return;
             }
 
-            // Validate Size
             if (file.size > 2 * 1024 * 1024) {
                 Swal.fire({
                     title: 'Terlalu Besar',
@@ -282,13 +357,13 @@ function wawancaraForm() {
                 return;
             }
 
-            this.perjanjianStatus = 'uploading';
+            this[statusKey] = 'uploading';
 
             const formData = new FormData();
-            formData.append('perjanjian_file', file);
+            formData.append(fieldName, file);
             formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
 
-            fetch('<?= base_url('mahasiswa/perjanjian/upload') ?>', {
+            fetch(url, {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -298,29 +373,28 @@ function wawancaraForm() {
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    this.perjanjianStatus = 'uploaded';
-                    this.perjanjianFilename = data.filename;
+                    this[statusKey] = 'uploaded';
+                    this[filenameKey] = data.filename;
                     
-                    // Centralized Toast Notification
                     window.dispatchEvent(new CustomEvent('toast-notify', {
                         detail: { message: data.message, type: 'success' }
                     }));
 
                     Swal.fire({
                         title: 'Berhasil!',
-                        text: 'Berkas perjanjian Anda telah diunggah dan siap divalidasi.',
+                        text: successMsg,
                         icon: 'success',
                         confirmButtonColor: '#10b981'
                     }).then(() => {
                         window.location.reload();
                     });
                 } else {
-                    this.perjanjianStatus = 'missing';
+                    this[statusKey] = 'missing';
                     Swal.fire('Gagal', data.message, 'error');
                 }
             })
             .catch(() => {
-                this.perjanjianStatus = 'missing';
+                this[statusKey] = 'missing';
                 Swal.fire('Error', 'Terjadi kesalahan pada server.', 'error');
             });
         }

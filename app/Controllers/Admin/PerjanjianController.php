@@ -32,7 +32,8 @@ class PerjanjianController extends BaseController
             'per.name as period_name',
             'per.year as period_year',
             'pj.admin_status as perjanjian_status',
-            '(SELECT id FROM pmw_documents WHERE proposal_id = p.id AND doc_key = "bukti_perjanjian" LIMIT 1) as bukti_perjanjian_id'
+            '(SELECT id FROM pmw_documents WHERE proposal_id = p.id AND doc_key = "bukti_perjanjian" LIMIT 1) as bukti_perjanjian_id',
+            '(SELECT id FROM pmw_documents WHERE proposal_id = p.id AND doc_key = "surat_pernyataan_penerima_dana" LIMIT 1) as surat_pernyataan_id'
         ]);
         $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
         $builder->join('pmw_proposal_assignments pa', 'pa.proposal_id = p.id', 'left');

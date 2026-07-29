@@ -87,6 +87,7 @@
                         <th>Dosen Pembimbing</th>
                         <th>Mentor (Praktisi)</th>
                         <th class="text-center">Berkas PDF</th>
+                        <th class="text-center">Surat Pernyataan</th>
                         <th>Status Admin</th>
                         <th class="text-right">Aksi</th>
                     </tr>
@@ -130,11 +131,20 @@
                         </td>
                         <td class="text-center">
                             <?php if ($proposal['bukti_perjanjian_id']): ?>
-                                <a href="<?= base_url('admin/perjanjian/doc/' . $proposal['bukti_perjanjian_id']) ?>" class="text-rose-500 hover:text-rose-600">
+                                <a href="<?= base_url('admin/perjanjian/doc/' . $proposal['bukti_perjanjian_id']) ?>" class="text-rose-500 hover:text-rose-600" title="Bukti Perjanjian">
                                     <i class="fas fa-file-pdf text-xl"></i>
                                 </a>
                             <?php else: ?>
-                                <span class="text-slate-300 italic text-[10px]">Belum Upload</span>
+                                <span class="text-slate-300 italic text-[10px]">-</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="text-center">
+                            <?php if ($proposal['surat_pernyataan_id']): ?>
+                                <a href="<?= base_url('admin/perjanjian/doc/' . $proposal['surat_pernyataan_id']) ?>" class="text-violet-500 hover:text-violet-600" title="Surat Pernyataan Penerima Dana">
+                                    <i class="fas fa-file-pen text-xl"></i>
+                                </a>
+                            <?php else: ?>
+                                <span class="text-slate-300 italic text-[10px]">-</span>
                             <?php endif; ?>
                         </td>
                         <td>
@@ -153,7 +163,7 @@
                     
                     <?php if (empty($proposals)): ?>
                     <tr>
-                        <td colspan="6" class="text-center py-12">
+                        <td colspan="7" class="text-center py-12">
                             <div class="text-(--text-muted)">
                                 <i class="fas fa-file-invoice text-4xl mb-3 opacity-30"></i>
                                 <p class="text-sm">Tidak ada berkas perjanjian yang masuk dalam tahap ini.</p>

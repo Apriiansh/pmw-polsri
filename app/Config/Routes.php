@@ -219,6 +219,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         // Tahap 3 - Perjanjian Implementasi
         $routes->get('perjanjian', 'Mahasiswa\\PerjanjianController::index');
         $routes->post('perjanjian/upload', 'Mahasiswa\\PerjanjianController::upload');
+        $routes->post('perjanjian/upload-surat', 'Mahasiswa\\PerjanjianController::uploadSuratPernyataan');
         $routes->get('perjanjian/doc/(:num)', 'Mahasiswa\\PerjanjianController::downloadDoc/$1');
 
         // Tahap 5 - Pengumuman Kelolosan Dana Tahap I

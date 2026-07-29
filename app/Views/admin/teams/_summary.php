@@ -174,7 +174,8 @@
                             'surat_kesediaan_dosen'   => 'Surat Kesediaan Dosen',
                             'ktm'                     => 'Kartu Tanda Mahasiswa',
                             'pitching_ppt'            => 'Presentasi Pitching',
-                            'bukti_perjanjian'        => 'Bukti Perjanjian',
+                            'bukti_perjanjian'                 => 'Bukti Perjanjian',
+                        'surat_pernyataan_penerima_dana'  => 'Surat Pernyataan Penerima Dana',
                         ];
                         ?>
                         <?php foreach ($documents as $doc): ?>

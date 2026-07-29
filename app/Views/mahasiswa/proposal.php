@@ -425,16 +425,12 @@
                         <div>
                             <h3 class="font-display text-lg font-bold text-slate-800">Rincian Rencana Anggaran Biaya (RAB)</h3>
                             <p class="text-xs text-slate-500">Tambahkan rincian setiap item biaya program. Total dihitung otomatis.</p>
-                            <?php if (!empty($proposal['kategori_wirausaha'])): ?>
-                            <p class="text-xs font-bold mt-1 <?= $proposal['kategori_wirausaha'] === 'berkembang' ? 'text-violet-600' : 'text-sky-600' ?>">
+                            <p x-show="kategoriWirausaha" class="text-xs font-bold mt-1"
+                               :class="kategoriWirausaha === 'berkembang' ? 'text-violet-600' : 'text-sky-600'">
                                 <i class="fas fa-info-circle mr-1"></i>
-                                <?php if ($proposal['kategori_wirausaha'] === 'berkembang'): ?>
-                                    Batas RAB Berkembang: <span class="font-black">Rp 5.000.000 – Rp 15.000.000</span>
-                                <?php else: ?>
-                                    Batas RAB Pemula: <span class="font-black">Rp 3.000.000 – Rp 5.000.000</span>
-                                <?php endif; ?>
+                                Batas RAB <span x-text="kategoriWirausaha.charAt(0).toUpperCase() + kategoriWirausaha.slice(1)"></span>:
+                                <span class="font-black" x-text="'Rp ' + Number(rabMin).toLocaleString('id-ID') + ' – Rp ' + Number(rabMax).toLocaleString('id-ID')"></span>
                             </p>
-                            <?php endif; ?>
                         </div>
                     </div>
                     <?php if (!$isLocked): ?>
@@ -758,7 +754,7 @@
         ?>
         const kategoriWirausaha = <?= json_encode($proposal['kategori_wirausaha'] ?? 'pemula') ?>;
         const rabMin = kategoriWirausaha === 'berkembang' ? 5000000 : 3000000;
-        const rabMax = kategoriWirausaha === 'berkembang' ? 15000000 : 5000000;
+        const rabMax = 15000000;
 
         return {
             members: <?= json_encode($anggotaData) ?>,

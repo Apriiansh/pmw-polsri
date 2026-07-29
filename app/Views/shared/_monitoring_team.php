@@ -34,7 +34,8 @@
         'surat_kesediaan_dosen'  => 'Surat Kesediaan Dosen Pendamping',
         'ktm'                    => 'Scan KTM (gabungan)',
         'pitching_ppt'           => 'Presentasi Pitching',
-        'bukti_perjanjian'       => 'Bukti Perjanjian',
+        'bukti_perjanjian'               => 'Bukti Perjanjian',
+        'surat_pernyataan_penerima_dana' => 'Surat Pernyataan Penerima Dana',
     ];
 
     $badgeClasses = [

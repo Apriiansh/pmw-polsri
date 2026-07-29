@@ -100,37 +100,86 @@
 
             <!-- Document Viewer -->
             <div class="lg:col-span-2 space-y-6">
-                <div class="card-premium overflow-hidden flex flex-col h-[calc(100vh-200px)] min-h-[500px]" @mousemove="handleMouseMove">
-                    <div class="px-5 sm:px-7 py-4 border-b border-sky-50 bg-white/60 flex items-center justify-between shrink-0">
-                        <h3 class="font-display text-base font-bold text-(--text-heading)">
-                            <i class="fas fa-file-pdf text-rose-500 mr-2"></i>
-                            Berkas Perjanjian (Scan PDF)
-                        </h3>
-                        <?php if (isset($docsByKey['bukti_perjanjian'])): ?>
-                            <div class="flex items-center gap-2">
-                                <a href="<?= base_url('admin/perjanjian/doc/' . $docsByKey['bukti_perjanjian']['id']) ?>" class="btn-outline btn-xs">
-                                    <i class="fas fa-download mr-1"></i> Download
-                                </a>
-                                <a href="<?= base_url('admin/perjanjian/doc/' . $docsByKey['bukti_perjanjian']['id'] . '?inline=1') ?>" target="_blank" class="btn-outline btn-xs">
-                                    <i class="fas fa-expand-alt mr-1"></i> Layar Penuh
-                                </a>
-                            </div>
-                        <?php endif; ?>
+                <div class="card-premium overflow-hidden flex flex-col h-[calc(100vh-200px)] min-h-[500px]" x-data="{ docTab: 'bukti_perjanjian' }" @mousemove="handleMouseMove">
+                    <!-- Tab Header -->
+                    <div class="shrink-0 flex border-b border-sky-50 bg-white/60">
+                        <button @click="docTab = 'bukti_perjanjian'" :class="docTab === 'bukti_perjanjian' ? 'border-b-2 border-sky-500 text-sky-600 bg-sky-50/50' : 'text-slate-500 hover:text-slate-700'" class="px-5 sm:px-7 py-4 text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                            <i class="fas fa-file-pdf text-rose-500"></i>
+                            Bukti Perjanjian
+                        </button>
+                        <button @click="docTab = 'surat_pernyataan'" :class="docTab === 'surat_pernyataan' ? 'border-b-2 border-violet-500 text-violet-600 bg-violet-50/50' : 'text-slate-500 hover:text-slate-700'" class="px-5 sm:px-7 py-4 text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                            <i class="fas fa-file-pen text-violet-500"></i>
+                            Surat Pernyataan
+                        </button>
                     </div>
 
-                    <div class="flex-1 bg-slate-100 relative">
-                        <?php if (isset($docsByKey['bukti_perjanjian'])): ?>
-                            <iframe src="<?= base_url('admin/perjanjian/doc/' . $docsByKey['bukti_perjanjian']['id'] . '?inline=1') ?>" class="w-full h-full border-none"></iframe>
-                        <?php else: ?>
-                            <div class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 p-8 text-center">
-                                <div class="w-20 h-20 rounded-full bg-slate-200 flex items-center justify-center mb-4">
-                                    <i class="fas fa-file-circle-exclamation text-3xl"></i>
-                                </div>
-                                <h4 class="font-bold text-slate-600">Berkas Belum Diunggah</h4>
-                                <p class="text-sm max-w-xs mt-2">Mahasiswa belum mengunggah scan berkas perjanjian yang sudah ditanda tangani.</p>
+                    <!-- Tab Content: Bukti Perjanjian -->
+                    <template x-if="docTab === 'bukti_perjanjian'">
+                        <div class="flex-1 flex flex-col">
+                            <div class="px-5 sm:px-7 py-3 border-b border-sky-50 bg-white/40 flex items-center justify-between shrink-0">
+                                <h3 class="font-display text-sm font-bold text-(--text-heading)">
+                                    Berkas Perjanjian (Scan PDF)
+                                </h3>
+                                <?php if (isset($docsByKey['bukti_perjanjian'])): ?>
+                                    <div class="flex items-center gap-2">
+                                        <a href="<?= base_url('admin/perjanjian/doc/' . $docsByKey['bukti_perjanjian']['id']) ?>" class="btn-outline btn-xs">
+                                            <i class="fas fa-download mr-1"></i> Download
+                                        </a>
+                                        <a href="<?= base_url('admin/perjanjian/doc/' . $docsByKey['bukti_perjanjian']['id'] . '?inline=1') ?>" target="_blank" class="btn-outline btn-xs">
+                                            <i class="fas fa-expand-alt mr-1"></i> Layar Penuh
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
                             </div>
-                        <?php endif; ?>
-                    </div>
+                            <div class="flex-1 bg-slate-100 relative">
+                                <?php if (isset($docsByKey['bukti_perjanjian'])): ?>
+                                    <iframe src="<?= base_url('admin/perjanjian/doc/' . $docsByKey['bukti_perjanjian']['id'] . '?inline=1') ?>" class="w-full h-full border-none"></iframe>
+                                <?php else: ?>
+                                    <div class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 p-8 text-center">
+                                        <div class="w-20 h-20 rounded-full bg-slate-200 flex items-center justify-center mb-4">
+                                            <i class="fas fa-file-circle-exclamation text-3xl"></i>
+                                        </div>
+                                        <h4 class="font-bold text-slate-600">Berkas Belum Diunggah</h4>
+                                        <p class="text-sm max-w-xs mt-2">Mahasiswa belum mengunggah scan berkas perjanjian yang sudah ditanda tangani.</p>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Tab Content: Surat Pernyataan Penerima Dana -->
+                    <template x-if="docTab === 'surat_pernyataan'">
+                        <div class="flex-1 flex flex-col">
+                            <div class="px-5 sm:px-7 py-3 border-b border-violet-50 bg-white/40 flex items-center justify-between shrink-0">
+                                <h3 class="font-display text-sm font-bold text-(--text-heading)">
+                                    Surat Pernyataan Penerima Dana
+                                </h3>
+                                <?php if (isset($docsByKey['surat_pernyataan_penerima_dana'])): ?>
+                                    <div class="flex items-center gap-2">
+                                        <a href="<?= base_url('admin/perjanjian/doc/' . $docsByKey['surat_pernyataan_penerima_dana']['id']) ?>" class="btn-outline btn-xs">
+                                            <i class="fas fa-download mr-1"></i> Download
+                                        </a>
+                                        <a href="<?= base_url('admin/perjanjian/doc/' . $docsByKey['surat_pernyataan_penerima_dana']['id'] . '?inline=1') ?>" target="_blank" class="btn-outline btn-xs">
+                                            <i class="fas fa-expand-alt mr-1"></i> Layar Penuh
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="flex-1 bg-slate-100 relative">
+                                <?php if (isset($docsByKey['surat_pernyataan_penerima_dana'])): ?>
+                                    <iframe src="<?= base_url('admin/perjanjian/doc/' . $docsByKey['surat_pernyataan_penerima_dana']['id'] . '?inline=1') ?>" class="w-full h-full border-none"></iframe>
+                                <?php else: ?>
+                                    <div class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 p-8 text-center">
+                                        <div class="w-20 h-20 rounded-full bg-slate-200 flex items-center justify-center mb-4">
+                                            <i class="fas fa-file-circle-exclamation text-3xl"></i>
+                                        </div>
+                                        <h4 class="font-bold text-slate-600">Berkas Belum Diunggah</h4>
+                                        <p class="text-sm max-w-xs mt-2">Mahasiswa belum mengunggah surat pernyataan penerima dana.</p>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
 
