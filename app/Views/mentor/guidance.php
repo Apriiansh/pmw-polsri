@@ -249,7 +249,7 @@
 
                 <div class="grid grid-cols-2 gap-5">
                     <div class="form-field">
-                        <label class="form-label">Tanggal Sesi <span class="required">*</span></label>
+                        <label class="form-label">Tanggal Mulai <span class="required">*</span></label>
                         <div class="input-group bg-white!">
                             <div class="input-icon"><i class="fas fa-calendar-day text-amber-500"></i></div>
                             <input type="date" name="schedule_date" required>
@@ -265,21 +265,32 @@
                 </div>
 
                 <div class="form-field">
+                    <label class="form-label">Tanggal &amp; Waktu Selesai <span class="required">*</span></label>
+                    <div class="grid grid-cols-2 gap-5">
+                        <div class="form-field">
+                            <label class="form-label">Tanggal Selesai <span class="required">*</span></label>
+                            <div class="input-group bg-white!">
+                                <div class="input-icon"><i class="fas fa-calendar-day text-amber-500"></i></div>
+                                <input type="date" name="deadline_date" required>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Waktu Selesai <span class="required">*</span></label>
+                            <div class="input-group bg-white!">
+                                <div class="input-icon"><i class="fas fa-clock text-amber-500"></i></div>
+                                <input type="time" name="deadline_time" value="23:59" required>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-2 ml-1 italic">Waktu selesai pengisian logbook oleh mahasiswa sampai <span class="font-bold text-amber-600">tanggal &amp; jam</span> tersebut.</p>
+                </div>
+
+                <div class="form-field">
                     <label class="form-label">Topik Utama Mentoring <span class="required">*</span></label>
                     <div class="input-group bg-white!">
                         <div class="input-icon"><i class="fas fa-comment-dots text-amber-500"></i></div>
                         <input type="text" name="topic" placeholder="Contoh: Strategi Penetrasi Pasar & Branding Identity" required>
                     </div>
-                </div>
-
-                <div class="form-field">
-                    <label class="form-label">Deadline Pengisian Logbook <span class="required">*</span></label>
-                    <div class="input-group bg-white!">
-                        <div class="input-icon"><i class="fas fa-hourglass-half text-amber-500"></i></div>
-                        <input type="number" name="deadline_days" value="5" min="1" max="30" required>
-                        <span class="text-[10px] font-black text-slate-400 uppercase pr-3">Hari</span>
-                    </div>
-                    <p class="text-[10px] text-slate-400 mt-2 ml-1 italic">Mahasiswa memiliki waktu <span class="font-bold text-amber-600">X hari</span> setelah jadwal selesai untuk mengisi logbook.</p>
                 </div>
 
                 <div class="pt-4 flex gap-3">

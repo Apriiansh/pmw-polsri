@@ -45,7 +45,8 @@ class PmwGuidanceService
             'schedule_date' => $data['schedule_date'],
             'schedule_time' => $data['schedule_time'],
             'topic'         => $data['topic'],
-            'deadline_days' => $data['deadline_days'] ?? 5,
+            'deadline_date' => $data['deadline_date'] ?? null,
+            'deadline_time' => $data['deadline_time'] ?? null,
             'status'        => 'planned',
         ]);
     }
@@ -61,14 +62,12 @@ class PmwGuidanceService
         // Check deadline (only if not saving as draft)
         $isDraft = ($data['status'] ?? 'pending') === 'draft';
         if (!$isDraft) {
-            $deadlineDays = $schedule->deadline_days ?? 5;
-            $scheduleDate = new \DateTime($schedule->schedule_date);
-            $deadlineDate = (clone $scheduleDate)->modify("+$deadlineDays days");
-            $now = new \DateTime();
+            $deadlineDate = new \DateTime(
+                ($schedule->deadline_date ?: $schedule->schedule_date) . ' ' . ($schedule->deadline_time ?: '23:59')
+            );
 
-            if ($now > $deadlineDate) {
-                $formattedDeadline = $deadlineDate->format('d M Y');
-                throw new Exception("Batas waktu pengisian logbook telah berakhir pada $formattedDeadline ($deadlineDays hari setelah jadwal).");
+            if (new \DateTime() > $deadlineDate) {
+                throw new Exception("Batas waktu pengisian logbook telah berakhir pada " . $deadlineDate->format('d M Y H:i') . ".");
             }
         }
 

@@ -304,7 +304,7 @@
                                           "logbook_id" => $log->logbook_id,
                                           "status" => $log->log_status ?? "waiting",
                                           "schedule_date" => date("d M Y", strtotime($log->schedule_date)),
-                                          "deadline_info" => date("d M Y", strtotime($log->schedule_date . " + " . ($log->deadline_days ?? 5) . " days")),
+                                          "deadline_info" => date("d M Y H:i", strtotime(($log->deadline_date ?? $log->schedule_date) . " " . ($log->deadline_time ?? "23:59"))),
                                           "topic" => $log->topic,
                                           "material_explanation" => $log->material_explanation,
                                           "video_url" => $log->video_url,
@@ -355,7 +355,7 @@
                                           "logbook_id" => $log->logbook_id,
                                           "status" => $log->log_status ?? "waiting",
                                           "schedule_date" => date("d M Y", strtotime($log->schedule_date)),
-                                          "deadline_info" => date("d M Y", strtotime($log->schedule_date . " + " . ($log->deadline_days ?? 5) . " days")),
+                                          "deadline_info" => date("d M Y H:i", strtotime(($log->deadline_date ?? $log->schedule_date) . " " . ($log->deadline_time ?? "23:59"))),
                                           "topic" => $log->topic,
                                           "material_explanation" => $log->material_explanation,
                                           "video_url" => $log->video_url,
@@ -725,12 +725,12 @@
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div class="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm">
-                                <p class="text-[9px] text-slate-400 font-bold uppercase mb-1">Tanggal Sesi</p>
+                                <p class="text-[9px] text-slate-400 font-bold uppercase mb-1">Tanggal Mulai</p>
                                 <p class="text-sm font-bold text-slate-700" x-text="selectedLog.schedule_date || selectedLog.activity_date || '-'"></p>
                             </div>
                             <div class="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm">
                                 <p class="text-[9px] text-slate-400 font-bold uppercase mb-1"
-                                   x-text="selectedLog.type === 'kegiatan' ? 'Lokasi Rencana' : 'Deadline Pengisian'"></p>
+                                   x-text="selectedLog.type === 'kegiatan' ? 'Lokasi Rencana' : 'Waktu Selesai'"></p>
                                 <p class="text-sm font-bold break-words"
                                    :class="selectedLog.type === 'kegiatan' ? 'text-slate-700' : 'text-rose-500'"
                                    x-text="selectedLog.type === 'kegiatan' ? (selectedLog.schedule_location || '-') : (selectedLog.deadline_info || '-')"></p>

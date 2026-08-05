@@ -11,6 +11,5 @@ class PmwGuidanceSchedule extends Entity
         'id'            => 'integer',
         'proposal_id'   => 'integer',
         'user_id'       => 'integer',
-        'deadline_days' => 'integer',
     ];
 }

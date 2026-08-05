@@ -137,11 +137,11 @@ $fileRoute = $c['route_file'];
                     $isRejected = $logbook && $logbook->status === 'rejected';
 
                     // Deadline logic
-                    $deadlineDays = $s->deadline_days ?? 5;
-                    $deadlineDate = (new \DateTime($s->schedule_date))->modify("+$deadlineDays days");
-                    $now = new \DateTime();
-                    $isOverdue = $now > $deadlineDate;
-                    $daysRemaining = $now->diff($deadlineDate)->days;
+                    $deadlineDate = new \DateTime(
+                        ($s->deadline_date ?: $s->schedule_date) . ' ' . ($s->deadline_time ?: '23:59')
+                    );
+                    $deadlineInfo = 'Selesai: ' . $deadlineDate->format('d M Y, H:i');
+                    $isOverdue    = new \DateTime() > $deadlineDate;
 
                     $canFill = (!$logbook || $isDraft || $isRejected) && !$isApproved && !$isPending;
                     if ($isOverdue && !$isPending && !$isApproved && !$isRejected) {
@@ -212,7 +212,7 @@ $fileRoute = $c['route_file'];
                                             <i class="fas fa-lock text-[9px]"></i>Locked
                                         </span>
                                         <p class="text-[9px] font-bold text-rose-400 mt-1 uppercase tracking-tighter">
-                                            Deadline: <?= $deadlineDate->format('d M Y') ?> (Lewat)
+                                            <?= $deadlineInfo ?> (Lewat)
                                         </p>
                                     </div>
                                 <?php elseif ($isDraft): ?>
@@ -229,7 +229,7 @@ $fileRoute = $c['route_file'];
                                             <i class="fas fa-clock text-[9px]"></i>Belum Diisi
                                         </span>
                                         <p class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">
-                                            Deadline: <?= $deadlineDate->format('d M Y') ?> (<?= $daysRemaining ?> hari lagi)
+                                            <?= $deadlineInfo ?>
                                         </p>
                                     </div>
                                 <?php endif; ?>
@@ -488,7 +488,7 @@ $fileRoute = $c['route_file'];
                                                 <div>
                                                     <p class="text-[11px] font-black text-rose-800 uppercase tracking-widest">Akses Pengiriman Terkunci</p>
                                                     <p class="text-[10px] text-rose-600 mt-0.5 font-medium italic">
-                                                        Batas waktu pengisian (<?= $deadlineDate->format('d M Y') ?>) telah berakhir.
+                                                        Waktu selesai pengisian (<?= $deadlineInfo ?>) telah berakhir.
                                                     </p>
                                                 </div>
                                             </div>

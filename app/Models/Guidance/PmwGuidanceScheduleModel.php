@@ -20,7 +20,8 @@ class PmwGuidanceScheduleModel extends Model
         'schedule_date',
         'schedule_time',
         'topic',
-        'deadline_days',
+        'deadline_date',
+        'deadline_time',
         'status',
     ];
 
