@@ -754,7 +754,7 @@
         ?>
         const kategoriWirausaha = <?= json_encode($proposal['kategori_wirausaha'] ?? 'pemula') ?>;
         const rabMin = kategoriWirausaha === 'berkembang' ? 5000000 : 3000000;
-        const rabMax = 15000000;
+        const rabMax = 16000000;
 
         return {
             members: <?= json_encode($anggotaData) ?>,
