@@ -45,9 +45,9 @@ class ActivityController extends BaseController
         }
 
         // Check if proposal is approved in implementasi
-        if (!$this->isImplementasiApproved($proposal['id'])) {
-            return redirect()->to('dashboard')->with('error', 'Fitur ini hanya tersedia setelah tahap implementasi di-approve.');
-        }
+        // if (!$this->isImplementasiApproved($proposal['id'])) {
+        //     return redirect()->to('dashboard')->with('error', 'Fitur ini hanya tersedia setelah tahap implementasi di-approve.');
+        // }
 
         $scheduleModel = new PmwActivityScheduleModel();
         $schedules     = $scheduleModel->getSchedulesByProposal($proposal['id']);

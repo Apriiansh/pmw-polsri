@@ -492,7 +492,7 @@ class PmwProposalModel extends Model
         $builder->join('pmw_selection_implementasi psi', 'psi.proposal_id = p.id');
         $builder->join('pmw_proposal_members pm', 'pm.proposal_id = p.id AND pm.role = "ketua"', 'left');
         $builder->where('p.period_id', $periodId);
-        $builder->where('psi.admin_status', 'approved');
+        // $builder->where('psi.admin_status', 'approved');
         $builder->where('p.status', 'approved');
         $builder->orderBy('p.nama_usaha', 'ASC');
 
