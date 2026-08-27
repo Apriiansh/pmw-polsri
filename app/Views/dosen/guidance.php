@@ -4,10 +4,43 @@
 
 <div class="space-y-8" x-data="{
     showScheduleModal: false,
+    editingSchedule: null,
+    form: {
+        proposal_id: '',
+        schedule_date: '',
+        schedule_time: '',
+        deadline_date: '',
+        deadline_time: '23:59',
+        topic: ''
+    },
     showVerifyModal: false,
     showTeamModal: false,
     selectedTeam: null,
     selectedLogbook: null,
+    openCreateSchedule() {
+        this.editingSchedule = null;
+        this.form = {
+            proposal_id: '',
+            schedule_date: '',
+            schedule_time: '',
+            deadline_date: '',
+            deadline_time: '23:59',
+            topic: ''
+        };
+        this.showScheduleModal = true;
+    },
+    openEditSchedule(schedule) {
+        this.editingSchedule = schedule;
+        this.form = {
+            proposal_id: schedule.proposal_id ?? '',
+            schedule_date: schedule.schedule_date ?? '',
+            schedule_time: schedule.schedule_time ?? '',
+            deadline_date: schedule.deadline_date ?? '',
+            deadline_time: schedule.deadline_time ?? '23:59',
+            topic: schedule.topic ?? ''
+        };
+        this.showScheduleModal = true;
+    },
     handleMouseMove(e) {
         const card = e.currentTarget;
         const rect = card.getBoundingClientRect();
@@ -26,7 +59,7 @@
             </h2>
             <p class="section-subtitle text-[10px] sm:text-[11px]">Penjadwalan, Monitoring, dan Verifikasi Logbook Mahasiswa</p>
         </div>
-        <button @click="showScheduleModal = true" class="btn-primary">
+        <button @click="openCreateSchedule()" class="btn-primary">
             <i class="fas fa-calendar-plus mr-2"></i> Buat Jadwal
         </button>
     </div>
@@ -169,6 +202,11 @@
                             </div>
 
                             <div class="flex items-center md:pt-0 border-t md:border-t-0 border-slate-50 mt-2 md:mt-0 pt-3">
+                                <button @click="openEditSchedule(<?= htmlspecialchars(json_encode($schedule->toArray())) ?>)" 
+                                        class="w-9 h-9 shrink-0 rounded-xl border border-slate-200 text-slate-400 hover:text-sky-600 hover:border-sky-300 hover:bg-sky-50 flex items-center justify-center transition-all mr-2"
+                                        title="Edit Jadwal">
+                                    <i class="fas fa-pen text-xs"></i>
+                                </button>
                                 <?php if ($schedule->logbook): 
                                     $lb = $schedule->logbook;
                                     $lb->parsed_items = json_decode($lb->nota_items ?? '[]', true) ?? [];
@@ -223,20 +261,20 @@
         
         <div class="card-premium w-full max-w-lg bg-white shadow-2xl animate-modal" @click.away="showScheduleModal = false">
             <div class="p-6 border-b border-sky-50 flex justify-between items-center bg-sky-50/30">
-                <h3 class="font-display text-lg font-black text-sky-900 uppercase">Buat Jadwal Bimbingan</h3>
+                <h3 class="font-display text-lg font-black text-sky-900 uppercase" x-text="editingSchedule ? 'Edit Jadwal Bimbingan' : 'Buat Jadwal Bimbingan'"></h3>
                 <button @click="showScheduleModal = false" class="text-slate-400 hover:text-rose-500 transition-colors">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
             
-            <form action="<?= base_url('dosen/bimbingan/schedule') ?>" method="POST" class="p-6 space-y-6">
+            <form :action="editingSchedule ? `<?= base_url('dosen/bimbingan/schedule') ?>/${editingSchedule.id}/update` : `<?= base_url('dosen/bimbingan/schedule') ?>`" method="POST" class="p-6 space-y-6">
                 <?= csrf_field() ?>
                 
-                <div class="form-field">
+                <div class="form-field" x-show="!editingSchedule">
                     <label class="form-label">Pilih Tim Bimbingan <span class="required">*</span></label>
                     <div class="input-group bg-white!">
                         <div class="input-icon"><i class="fas fa-users text-sky-500"></i></div>
-                        <select name="proposal_id" required>
+                        <select name="proposal_id" x-model="form.proposal_id" :required="!editingSchedule">
                             <option value="">-- Pilih Tim --</option>
                             <?php foreach($teams as $team): ?>
                                 <option value="<?= $team['id'] ?>"><?= esc($team['nama_usaha']) ?></option>
@@ -250,14 +288,14 @@
                         <label class="form-label">Tanggal Mulai <span class="required">*</span></label>
                         <div class="input-group bg-white!">
                             <div class="input-icon"><i class="fas fa-calendar-day text-sky-500"></i></div>
-                            <input type="date" name="schedule_date" required>
+                            <input type="date" name="schedule_date" x-model="form.schedule_date" required>
                         </div>
                     </div>
                     <div class="form-field">
                         <label class="form-label">Waktu Mulai <span class="required">*</span></label>
                         <div class="input-group bg-white!">
                             <div class="input-icon"><i class="fas fa-clock text-sky-500"></i></div>
-                            <input type="time" name="schedule_time" required>
+                            <input type="time" name="schedule_time" x-model="form.schedule_time" required>
                         </div>
                     </div>
                 </div>
@@ -268,14 +306,14 @@
                             <label class="form-label">Tanggal Selesai <span class="required">*</span></label>
                             <div class="input-group bg-white!">
                                 <div class="input-icon"><i class="fas fa-calendar-day text-sky-500"></i></div>
-                                <input type="date" name="deadline_date" required>
+                                <input type="date" name="deadline_date" x-model="form.deadline_date" required>
                             </div>
                         </div>
                         <div class="form-field">
                             <label class="form-label">Waktu Selesai <span class="required">*</span></label>
                             <div class="input-group bg-white!">
                                 <div class="input-icon"><i class="fas fa-clock text-sky-500"></i></div>
-                                <input type="time" name="deadline_time" value="23:59" required>
+                                <input type="time" name="deadline_time" x-model="form.deadline_time" required>
                             </div>
                         </div>
                     </div>
@@ -286,13 +324,13 @@
                     <label class="form-label">Topik Utama Bimbingan <span class="required">*</span></label>
                     <div class="input-group bg-white!">
                         <div class="input-icon"><i class="fas fa-comment-dots text-sky-500"></i></div>
-                        <input type="text" name="topic" placeholder="Contoh: Review Laporan Keuangan & Strategi Marketing" required>
+                        <input type="text" name="topic" x-model="form.topic" placeholder="Contoh: Review Laporan Keuangan & Strategi Marketing" required>
                     </div>
                 </div>
 
                 <div class="pt-4 flex gap-3">
                     <button type="button" @click="showScheduleModal = false" class="btn-outline flex-1 py-3">Batal</button>
-                    <button type="submit" class="btn-primary flex-1 py-3 shadow-lg shadow-sky-500/20">Buat Jadwal Sesi</button>
+                    <button type="submit" class="btn-primary flex-1 py-3 shadow-lg shadow-sky-500/20" x-text="editingSchedule ? 'Simpan Perubahan' : 'Buat Jadwal Sesi'"></button>
                 </div>
             </form>
         </div>
@@ -323,7 +361,7 @@
                 </div>
                 <button @click="showVerifyModal = false" class="text-slate-400 hover:text-rose-500 transition-colors">
                     <i class="fas fa-times text-xl"></i>
-                </button>
+                </button> 
             </div>
             
             <div class="overflow-y-auto p-6 space-y-8 flex-1 custom-scrollbar" x-show="selectedLogbook">

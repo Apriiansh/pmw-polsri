@@ -307,6 +307,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         // Tahap 8 - Manajemen Jadwal Bimbingan
         $routes->get('bimbingan', 'Dosen\\GuidanceController::index');
         $routes->post('bimbingan/schedule', 'Dosen\\GuidanceController::createSchedule');
+        $routes->post('bimbingan/schedule/(:num)/update', 'Dosen\\GuidanceController::editSchedule/$1');
         $routes->post('bimbingan/verify/(:num)', 'Dosen\\GuidanceController::verify/$1');
         $routes->get('bimbingan/file/(:segment)/(:num)', 'Dosen\\GuidanceController::viewFile/$1/$2');
 

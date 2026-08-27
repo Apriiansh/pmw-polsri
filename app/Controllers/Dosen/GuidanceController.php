@@ -88,6 +88,40 @@ class GuidanceController extends BaseController
     }
 
     /**
+     * Edit an existing bimbingan schedule
+     */
+    public function editSchedule(int $scheduleId): ResponseInterface
+    {
+        try {
+            $data = $this->request->getPost();
+            $data['type'] = 'bimbingan';
+
+            $this->guidanceService->updateSchedule($scheduleId, $data);
+
+            // Send Notification
+            $scheduleModel = new PmwGuidanceScheduleModel();
+            $schedule = $scheduleModel->find($scheduleId);
+            if ($schedule) {
+                $proposal = $this->proposalModel->find($schedule->proposal_id);
+                if ($proposal) {
+                    $notifModel = new \App\Models\NotificationModel();
+                    $timeStr = ($data['schedule_date'] ?? '') . ' ' . ($data['schedule_time'] ?? '');
+                    $notifModel->createGuidanceScheduleNotification(
+                        (int)$proposal['leader_user_id'],
+                        $timeStr,
+                        'Lokasi sesuai kesepakatan',
+                        'bimbingan'
+                    );
+                }
+            }
+
+            return redirect()->back()->with('success', 'Jadwal bimbingan berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
      * Verify logbook entry
      */
     public function verify(int $logbookId): ResponseInterface
