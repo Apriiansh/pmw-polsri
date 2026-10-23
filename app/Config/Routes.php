@@ -214,6 +214,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         // Milestone Reports
         $routes->get('milestone', 'Mahasiswa\\MilestoneReportController::index');
         $routes->post('milestone/submit', 'Mahasiswa\\MilestoneReportController::submit');
+        $routes->post('milestone/boothcamp', 'Mahasiswa\\MilestoneReportController::uploadBoothcamp');
         $routes->get('milestone/view/(:num)', 'Admin\\MilestoneReportController::viewFile/$1'); // Share view logic
 
         // Tahap 3 - Perjanjian Implementasi

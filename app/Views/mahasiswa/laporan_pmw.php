@@ -8,6 +8,7 @@
     fileNameKemajuan: '',
     fileNameAkhir: '',
     fileNameMagang: '',
+    fileNameBoothcamp: '',
     openPreview(url) {
         this.previewUrl = url;
         this.showPreview = true;
@@ -117,7 +118,6 @@
                             <form action="<?= base_url('mahasiswa/milestone/submit') ?>" method="post" enctype="multipart/form-data" class="space-y-4">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="schedule_id" value="<?= $sched['id'] ?>">
-                                <input type="hidden" name="proposal_id" value="<?= $proposal['id'] ?>">
                                 
                                 <div class="flex flex-col gap-2">
                                     <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Catatan Tambahan (Opsional)</label>
@@ -192,7 +192,71 @@
 
             <!-- Akhir Tab -->
             <template x-if="activeTab === 'akhir'">
-                <div class="card-premium animate-fade-in">
+                <div class="space-y-6">
+
+                    <!-- Dokumentasi Boothcamp (prasyarat laporan akhir) -->
+                    <div class="card-premium animate-fade-in">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
+                                    <i class="fas fa-images"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-800">Dokumentasi Boothcamp</h3>
+                                    <p class="text-xs text-slate-500">Wajib sebelum Laporan Akhir. Bisa diunggah kapan pun, tanpa verifikasi.</p>
+                                </div>
+                            </div>
+                            <?php if ($boothcampDoc): ?>
+                                <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-700">Sudah Diunggah</span>
+                            <?php else: ?>
+                                <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-rose-100 text-rose-700">Belum Ada</span>
+                            <?php endif; ?>
+                        </div>
+
+                        <?php if ($boothcampDoc): ?>
+                            <?php $uploadedAt = $boothcampDoc['updated_at'] ?: ($boothcampDoc['created_at'] ?? null); ?>
+                            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 mb-4">
+                                <div class="flex items-center justify-between gap-4">
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-bold text-slate-700 truncate">
+                                            <?= esc($boothcampDoc['original_name'] ?: 'Dokumentasi Boothcamp.pdf') ?>
+                                        </p>
+                                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                                            Diunggah <?= $uploadedAt ? esc(date('d M Y H:i', strtotime($uploadedAt))) : '-' ?>
+                                        </p>
+                                    </div>
+                                    <button type="button"
+                                            @click="openPreview('<?= base_url('mahasiswa/proposal/doc/'.$boothcampDoc['id'].'?inline=1') ?>')"
+                                            class="shrink-0 px-4 py-2 rounded-xl border border-sky-200 text-sky-600 text-xs font-bold hover:bg-sky-50 transition-colors flex items-center gap-2">
+                                        <i class="fas fa-file-pdf"></i> Lihat
+                                    </button>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <form action="<?= base_url('mahasiswa/milestone/boothcamp') ?>" method="post" enctype="multipart/form-data" class="space-y-4">
+                            <?= csrf_field() ?>
+                            <div class="relative group h-[140px]">
+                                <input type="file" name="boothcamp_file" accept="application/pdf" required
+                                       @change="fileNameBoothcamp = $event.target.files[0] ? $event.target.files[0].name : ''"
+                                       class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                <div class="h-full border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 group-hover:bg-amber-50 group-hover:border-amber-200 transition-all flex flex-col items-center justify-center text-center p-6">
+                                    <div class="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                        <i class="fas fa-cloud-arrow-up text-xl text-amber-500"></i>
+                                    </div>
+                                    <p class="text-sm font-bold text-slate-700"
+                                       x-text="fileNameBoothcamp || '<?= $boothcampDoc ? 'Pilih PDF Pengganti' : 'Pilih Berkas PDF' ?>'"></p>
+                                    <p class="text-[10px] text-slate-400 mt-1 uppercase tracking-widest font-black">Maksimal 5MB</p>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full py-3 rounded-2xl bg-linear-to-r from-amber-600 to-amber-500 text-white font-bold shadow-lg shadow-amber-200 hover:shadow-amber-300 hover:-translate-y-0.5 transition-all">
+                                <?= $boothcampDoc ? 'Ganti Dokumentasi Boothcamp' : 'Unggah Dokumentasi Boothcamp' ?>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="card-premium animate-fade-in">
                     <?php if (isset($schedules['akhir'])): $sched = $schedules['akhir']; ?>
                         <div class="flex items-center justify-between mb-6">
                             <div class="flex items-center gap-3">
@@ -235,11 +299,10 @@
                             </div>
                         <?php endif; ?>
 
-                        <?php if ($isOpen && (!isset($reports['akhir']) || $reports['akhir']['status'] === 'rejected' || $reports['akhir']['status'] === 'revision')): ?>
+                        <?php if ($isOpen && $boothcampDoc && (!isset($reports['akhir']) || $reports['akhir']['status'] === 'rejected' || $reports['akhir']['status'] === 'revision')): ?>
                             <form action="<?= base_url('mahasiswa/milestone/submit') ?>" method="post" enctype="multipart/form-data" class="space-y-4">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="schedule_id" value="<?= $sched['id'] ?>">
-                                <input type="hidden" name="proposal_id" value="<?= $proposal['id'] ?>">
                                 
                                 <div class="flex flex-col gap-2">
                                     <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Catatan Tambahan (Opsional)</label>
@@ -298,6 +361,11 @@
                                 <i class="fas fa-lock text-3xl text-slate-300 mb-3 block"></i>
                                 <p class="text-sm font-medium text-slate-500 italic">Pengumpulan laporan akhir belum dibuka.</p>
                             </div>
+                        <?php elseif (!$boothcampDoc): ?>
+                            <div class="p-8 text-center bg-amber-50 rounded-2xl border border-dashed border-amber-200">
+                                <i class="fas fa-triangle-exclamation text-3xl text-amber-400 mb-3 block"></i>
+                                <p class="text-sm font-medium text-amber-700 italic">Unggah Dokumentasi Boothcamp terlebih dahulu sebelum mengumpulkan Laporan Akhir.</p>
+                            </div>
                         <?php endif; ?>
 
                     <?php else: ?>
@@ -309,6 +377,7 @@
                             <p class="text-sm text-slate-500 italic">Admin belum merilis jadwal pengumpulan laporan akhir.</p>
                         </div>
                     <?php endif; ?>
+                    </div>
                 </div>
             </template>
 
@@ -361,7 +430,6 @@
                             <form action="<?= base_url('mahasiswa/milestone/submit') ?>" method="post" enctype="multipart/form-data" class="space-y-4">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="schedule_id" value="<?= $sched['id'] ?>">
-                                <input type="hidden" name="proposal_id" value="<?= $proposal['id'] ?>">
                                 
                                 <div class="flex flex-col gap-2">
                                     <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Catatan Tambahan (Opsional)</label>

@@ -14,6 +14,7 @@ class PmwReportService
     protected $reportModel;
     protected $proposalModel;
     protected $notificationModel;
+    protected $boothcampDocService;
 
     public function __construct()
     {
@@ -21,6 +22,7 @@ class PmwReportService
         $this->reportModel = new PmwReportModel();
         $this->proposalModel = new PmwProposalModel();
         $this->notificationModel = new NotificationModel();
+        $this->boothcampDocService = new PmwBoothcampDocService();
     }
 
     /**
@@ -69,13 +71,25 @@ class PmwReportService
             throw new Exception("Pengumpulan laporan saat ini sedang ditutup.");
         }
 
+        if ($schedule['type'] === 'akhir' && !$this->boothcampDocService->hasDoc($proposalId)) {
+            throw new Exception("Unggah Dokumentasi Boothcamp terlebih dahulu sebelum mengumpulkan Laporan Akhir.");
+        }
+
         $existing = $this->reportModel->where('proposal_id', $proposalId)
                                       ->where('type', $schedule['type'])
                                       ->first();
 
+        if ($existing && $existing['status'] === 'approved') {
+            throw new Exception("Laporan Anda sudah disetujui dan tidak dapat diubah.");
+        }
+
+        $oldPath = $existing['file_path'] ?? null;
+
         if ($file && $file->isValid() && !$file->hasMoved()) {
             $newName = $file->getRandomName();
-            $file->move(WRITEPATH . 'uploads/milestone_reports', $newName);
+            if (!$file->move(WRITEPATH . 'uploads/milestone_reports', $newName)) {
+                throw new Exception('Berkas gagal diunggah: ' . $file->getErrorString());
+            }
             $data['file_path'] = 'milestone_reports/' . $newName;
         }
 
@@ -83,11 +97,16 @@ class PmwReportService
         $data['status'] = 'submitted';
 
         if ($existing) {
-            // If already approved, can't update unless it's a specific requirement
-            if ($existing['status'] === 'approved') {
-                throw new Exception("Laporan Anda sudah disetujui dan tidak dapat diubah.");
+            $result = $this->reportModel->update($existing['id'], $data);
+
+            if ($result && $oldPath && isset($data['file_path']) && $oldPath !== $data['file_path']) {
+                $oldAbs = WRITEPATH . 'uploads/' . $oldPath;
+                if (is_file($oldAbs)) {
+                    unlink($oldAbs);
+                }
             }
-            return $this->reportModel->update($existing['id'], $data);
+
+            return $result;
         }
 
         $data['proposal_id'] = $proposalId;

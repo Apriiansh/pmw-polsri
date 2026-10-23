@@ -89,16 +89,49 @@ class MilestoneReportController extends BaseController
         $reportModel = new \App\Models\Milestone\PmwReportModel();
         $report = $reportModel->find($reportId);
 
-        if (!$report) {
+        if (!$report || !$this->canViewReport((int) $report['proposal_id'])) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
         $filePath = WRITEPATH . 'uploads/' . $report['file_path'];
-        if (!file_exists($filePath)) {
+        if (!is_file($filePath)) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
         return $this->response->setHeader('Content-Type', 'application/pdf')
                              ->setBody(file_get_contents($filePath));
+    }
+
+    private function canViewReport(int $proposalId): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        $groups = $user->getGroups();
+
+        if (in_array('admin', $groups, true)) {
+            return true;
+        }
+
+        if (in_array('mahasiswa', $groups, true)) {
+            $proposal = (new \App\Models\Proposal\PmwProposalModel())->find($proposalId);
+            return $proposal && (int) $proposal['leader_user_id'] === (int) $user->id;
+        }
+
+        if (in_array('dosen', $groups, true)) {
+            $lecturer = (new \App\Models\LecturerModel())->where('user_id', $user->id)->first();
+            if (!$lecturer) {
+                return false;
+            }
+
+            return (new \App\Models\Proposal\PmwProposalAssignmentModel())
+                ->where('proposal_id', $proposalId)
+                ->where('lecturer_id', $lecturer['id'])
+                ->first() !== null;
+        }
+
+        return false;
     }
 }

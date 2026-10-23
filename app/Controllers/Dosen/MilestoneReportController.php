@@ -83,9 +83,32 @@ class MilestoneReportController extends BaseController
 
     public function verify()
     {
-        $reportId = $this->request->getPost('report_id');
-        $status = $this->request->getPost('status');
-        $note = $this->request->getPost('dosen_note');
+        $reportId = (int) $this->request->getPost('report_id');
+        $status   = $this->request->getPost('status');
+        $note     = $this->request->getPost('dosen_note');
+
+        if (!in_array($status, ['approved', 'rejected', 'revision'], true)) {
+            return redirect()->back()->with('error', 'Status verifikasi tidak valid.');
+        }
+
+        $lecturer = $this->lecturerModel->where('user_id', auth()->id())->first();
+        if (!$lecturer) {
+            return redirect()->to('dashboard')->with('error', 'Profil dosen tidak ditemukan.');
+        }
+
+        $report = (new \App\Models\Milestone\PmwReportModel())->find($reportId);
+        if (!$report) {
+            return redirect()->back()->with('error', 'Laporan tidak ditemukan.');
+        }
+
+        $owns = (new \App\Models\Proposal\PmwProposalAssignmentModel())
+            ->where('proposal_id', $report['proposal_id'])
+            ->where('lecturer_id', $lecturer['id'])
+            ->first();
+
+        if (!$owns) {
+            return redirect()->back()->with('error', 'Anda tidak berhak memverifikasi laporan ini.');
+        }
 
         try {
             $this->reportService->verifyReport($reportId, [
