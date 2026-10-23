@@ -1,0 +1,368 @@
+<?php
+
+use CodeIgniter\Router\RouteCollection;
+
+/**
+ * @var RouteCollection $routes
+ */
+$routes->get('/', 'Home::index');
+
+// Override dengan Custom PMW Auth Routes - MUST BE BEFORE Shield routes to take precedence
+$routes->get('register', 'AuthController::register', ['as' => 'register']);
+$routes->post('register', 'AuthController::attemptRegister');
+$routes->get('login', 'AuthController::login', ['as' => 'login']);
+$routes->post('login', 'AuthController::attemptLogin');
+$routes->get('logout', 'AuthController::logout');
+$routes->post('logout', 'AuthController::logout');
+$routes->get('forgot', '\CodeIgniter\Shield\Controllers\MagicLinkController::loginView');
+
+
+$routes->get('admin/cms/image/(:any)', 'AdminController::viewCmsImage/$1');
+
+// Public Pages
+$routes->get('tentang', 'PublicPages::tentang');
+$routes->get('tahapan', 'PublicPages::tahapan');
+$routes->get('galeri', 'PublicPages::galeri');
+$routes->get('pengumuman', 'PublicPages::pengumuman');
+$routes->get('pengumuman/(:segment)', 'PublicPages::detail/$1');
+$routes->get('sitemap.xml', 'Sitemap::index');
+
+// API Push Notification Routes
+$routes->post('api/push-subscribe', 'Public\PushSubscriptionController::subscribe');
+$routes->post('api/push-unsubscribe', 'Public\PushSubscriptionController::unsubscribe');
+
+$routes->group('', ['filter' => 'session'], static function ($routes) {
+    $routes->get('dashboard', 'Dashboard::index');
+    
+    // Admin Routes
+    $routes->group('admin', ['filter' => 'group:admin'], static function ($routes) {
+        // User Management
+        $routes->get('users', 'AdminController::users');
+        $routes->get('users/create', 'AdminController::createUser');
+        $routes->post('users/store', 'AdminController::storeUser');
+        $routes->get('users/edit/(:num)', 'AdminController::editUser/$1');
+        $routes->post('users/update/(:num)', 'AdminController::updateUser/$1');
+        $routes->get('users/toggle-status/(:num)', 'AdminController::toggleUserStatus/$1');
+        $routes->get('users/delete/(:num)', 'AdminController::deleteUser/$1');
+
+        // Teams / Peserta Management
+        $routes->get('teams', 'AdminController::teams');
+        $routes->get('teams/(:num)', 'AdminController::teamDetail/$1');
+
+        // Tahap 2 - Seleksi Administrasi
+        $routes->get('validasi', 'Admin\\ValidationController::seleksiAdministrasi'); // Alias for notifications
+        $routes->group('administrasi', static function ($routes) {
+            $routes->get('seleksi', 'Admin\\ValidationController::seleksiAdministrasi');
+            $routes->get('seleksi/(:num)', 'Admin\\ValidationController::detailProposal/$1');
+            $routes->post('seleksi/(:num)/validasi', 'Admin\\ValidationController::validasiAdministrasi/$1');
+            $routes->get('seleksi/(:num)/hapus', 'Admin\\ValidationController::hapusProposal/$1');
+            $routes->get('seleksi/doc/(:num)', 'Admin\\ValidationController::downloadDoc/$1');
+        });
+
+        $routes->get('cms', 'AdminController::cms');
+        $routes->post('cms/save', 'AdminController::saveCms');
+        $routes->post('cms/upload-image', 'AdminController::uploadCmsImage');
+    });
+
+    $routes->group('admin', ['filter' => 'group:admin'], static function ($routes) {
+        // Portal Announcements (News/Blog)
+        $routes->group('portal-announcements', static function ($routes) {
+            $routes->get('/', 'Admin\\PortalAnnouncementController::index');
+            $routes->get('create', 'Admin\\PortalAnnouncementController::create');
+            $routes->post('store', 'Admin\\PortalAnnouncementController::store');
+            $routes->get('send-push/(:num)', 'Admin\\PortalAnnouncementController::sendPushManual/$1');
+            $routes->get('edit/(:num)', 'Admin\\PortalAnnouncementController::edit/$1');
+            $routes->post('update/(:num)', 'Admin\\PortalAnnouncementController::update/$1');
+            $routes->get('delete/(:num)', 'Admin\\PortalAnnouncementController::delete/$1');
+            $routes->delete('deleteAttachment/(:num)', 'Admin\\PortalAnnouncementController::deleteAttachment/$1');
+        });
+        
+        // Portal Gallery
+        $routes->group('gallery', static function ($routes) {
+            $routes->get('/', 'Admin\GalleryController::index');
+            $routes->get('create', 'Admin\GalleryController::create');
+            $routes->post('store', 'Admin\GalleryController::store');
+            $routes->get('edit/(:num)', 'Admin\GalleryController::edit/$1');
+            $routes->post('update/(:num)', 'Admin\GalleryController::update/$1');
+            $routes->get('delete/(:num)', 'Admin\GalleryController::delete/$1');
+        });
+
+        // PMW System - Master Jadwal
+        $routes->get('pmw-system', 'AdminController::pmwSystem');
+        $routes->post('pmw-system/period', 'AdminController::storePeriod');
+        $routes->post('pmw-system/period/activate/(:num)', 'AdminController::activatePeriod/$1');
+        $routes->post('pmw-system/period/deactivate/(:num)', 'AdminController::deactivatePeriod/$1');
+        $routes->get('pmw-system/period/delete/(:num)', 'AdminController::deletePeriod/$1');
+        $routes->post('pmw-system/schedule', 'AdminController::updateSchedule');
+
+        $routes->get('laporan', 'AdminController::laporan');
+        // Legacy alias
+        $routes->get('rekap', 'AdminController::laporan');
+
+        // Tahap 3 - Pitching Desk Validation
+        $routes->get('pitching-desk', 'Admin\\PitchingDeskController::index');
+        $routes->get('pitching-desk/(:num)', 'Admin\\PitchingDeskController::detail/$1');
+        $routes->post('pitching-desk/(:num)/admin-nilai', 'Admin\\PitchingDeskController::submitAdminAssessment/$1');
+        $routes->post('pitching-desk/(:num)/edit-penilai', 'Admin\\PitchingDeskController::editPenilaiAssessment/$1');
+        $routes->post('pitching-desk/(:num)/finalize', 'Admin\\PitchingDeskController::finalizeAction/$1');
+        $routes->get('pitching-desk/doc/(:num)', 'Admin\\PitchingDeskController::viewDoc/$1');
+
+        // Tahap 3 - Perjanjian Implementasi
+        $routes->get('perjanjian', 'Admin\\PerjanjianController::index');
+        $routes->get('perjanjian/(:num)', 'Admin\\PerjanjianController::detail/$1');
+        $routes->post('perjanjian/(:num)/validate', 'Admin\\PerjanjianController::validateAction/$1');
+        $routes->get('perjanjian/doc/(:num)', 'Admin\\PerjanjianController::downloadDoc/$1');
+
+        // Tahap 5 - Pengumuman Kelolosan Dana Tahap I
+        $routes->get('pengumuman', 'Admin\\AnnouncementController::index');
+        $routes->post('pengumuman/(:num)/save', 'Admin\\AnnouncementController::save/$1');
+        $routes->post('pengumuman/(:num)/publish', 'Admin\\AnnouncementController::publish/$1');
+        $routes->post('pengumuman/(:num)/upload-sk', 'Admin\\AnnouncementController::uploadSk/$1');
+        $routes->post('pengumuman/(:num)/delete-sk', 'Admin\\AnnouncementController::deleteSk/$1');
+        $routes->get('pengumuman/(:num)/sk', 'Admin\\AnnouncementController::downloadSk/$1');
+        $routes->get('pengumuman/rekening/(:num)/download', 'Admin\\AnnouncementController::downloadTeamBankBook/$1');
+        $routes->get('pengumuman/pembekalan/foto/(:num)', 'Admin\\AnnouncementController::downloadTrainingPhoto/$1');
+
+        // Tahap 7 - Implementasi List Perjanjian (Admin Verification)
+        $routes->get('implementasi', 'Admin\\ImplementasiController::index');
+        $routes->get('implementasi/detail/(:num)', 'Admin\\ImplementasiController::detail/$1');
+        $routes->post('implementasi/verify/(:num)', 'Admin\\ImplementasiController::verify/$1');
+        $routes->get('implementasi/photo/(:num)', 'Admin\\ImplementasiController::viewPhoto/$1');
+        $routes->get('implementasi/payment/(:num)', 'Admin\\ImplementasiController::viewPayment/$1');
+        $routes->get('implementasi/konsumsi/(:num)', 'Admin\\ImplementasiController::viewKonsumsi/$1');
+
+        // Tahap 9 - Kegiatan Wirausaha (Activity)
+        $routes->get('kegiatan', 'Admin\\ActivityController::index');
+        $routes->post('kegiatan/schedule', 'Admin\\ActivityController::createSchedule');
+        $routes->get('kegiatan/detail/(:num)', 'Admin\\ActivityController::detail/$1');
+        $routes->post('kegiatan/verify/(:num)', 'Admin\\ActivityController::verify/$1');
+        $routes->post('kegiatan/review/(:num)', 'Admin\\ActivityController::submitReview/$1');
+        $routes->post('kegiatan/delete/(:num)', 'Admin\\ActivityController::deleteSchedule/$1');
+        $routes->post('kegiatan/delete-batch', 'Admin\\ActivityController::deleteBatch');
+        $routes->post('kegiatan/update-batch', 'Admin\\ActivityController::updateBatch');
+        $routes->post('kegiatan/quick-update-status', 'Admin\\ActivityController::quickUpdateStatus');
+        $routes->get('kegiatan/file/(:segment)/(:num)', 'Admin\\ActivityController::viewFile/$1/$2');
+        $routes->get('kegiatan/gallery/(:num)', 'Admin\\ActivityController::viewGalleryFile/$1');
+        $routes->get('guidance/file/(:segment)/(:num)', 'AdminController::viewGuidanceFile/$1/$2');
+
+        // Milestone Reports
+        $routes->get('milestone', 'Admin\\MilestoneReportController::index');
+        $routes->post('milestone/schedule', 'Admin\\MilestoneReportController::saveSchedule');
+        $routes->get('milestone/view/(:num)', 'Admin\\MilestoneReportController::viewFile/$1');
+
+        // Tahap Finalisasi Dana II
+        $routes->get('finalisasi', 'Admin\\FinalizationController::index');
+        $routes->get('finalisasi/(:num)', 'Admin\\FinalizationController::detail/$1');
+        $routes->post('finalisasi/validate', 'Admin\\FinalizationController::validateAction');
+
+        // Tahap 10 - Awarding & Expo Kewirausahaan
+        $routes->group('expo', static function ($routes) {
+            $routes->get('/', 'Admin\\ExpoController::index');
+            $routes->post('schedule', 'Admin\\ExpoController::saveSchedule');
+            $routes->post('status', 'Admin\\ExpoController::toggleStatus');
+            $routes->post('category', 'Admin\\ExpoController::saveCategory');
+            $routes->get('category/delete/(:num)', 'Admin\\ExpoController::deleteCategory/$1');
+            $routes->get('submission/(:num)', 'Admin\\ExpoController::submissionDetail/$1');
+            $routes->post('upload-certificate', 'Admin\\ExpoController::uploadCertificate');
+            $routes->get('delete-certificate/(:num)', 'Admin\\ExpoController::deleteCertificate/$1');
+            $routes->get('certificate/(:num)', 'Admin\\ExpoController::viewCertificate/$1');
+            $routes->get('attachment/(:num)', 'Admin\\ExpoController::viewAttachment/$1');
+        });
+        $routes->group('awards', static function ($routes) {
+            $routes->get('/', 'Admin\\AwardController::index');
+            $routes->post('assign', 'Admin\\AwardController::assignWinner');
+            $routes->get('delete/(:num)', 'Admin\\AwardController::deleteWinner/$1');
+        });
+    });
+
+    // Mahasiswa Routes
+    $routes->group('mahasiswa', ['filter' => 'group:mahasiswa'], static function ($routes) {
+        $routes->get('proposal', 'Mahasiswa\\ProposalController::index');
+        $routes->get('proposal/create', 'Mahasiswa\\ProposalController::create');
+        $routes->get('proposal/edit/(:num)', 'Mahasiswa\\ProposalController::edit/$1');
+        $routes->post('proposal/save', 'Mahasiswa\\ProposalController::save');
+        $routes->post('proposal/upload/(:num)', 'Mahasiswa\\ProposalController::uploadDoc/$1');
+        $routes->post('proposal/submit/(:num)', 'Mahasiswa\\ProposalController::submit/$1');
+        $routes->get('proposal/doc/(:num)', 'Mahasiswa\\ProposalController::downloadDoc/$1');
+        $routes->get('proposal/reset/(:num)', 'Mahasiswa\\ProposalController::reset/$1');
+        // Tahap 1 - Administrasi & Desk Evaluation
+        $routes->get('pitching-desk', 'Mahasiswa\PitchingDeskController::index');
+        $routes->post('pitching-desk/save-draft', 'Mahasiswa\PitchingDeskController::saveDraft');
+        $routes->post('pitching-desk/upload-ppt', 'Mahasiswa\PitchingDeskController::uploadPpt');
+        $routes->post('pitching-desk/upload-doc', 'Mahasiswa\PitchingDeskController::uploadPitchingDoc');
+        $routes->post('pitching-desk/update-video-url', 'Mahasiswa\PitchingDeskController::updateVideoUrl');
+        $routes->post('pitching-desk/update-detail', 'Mahasiswa\PitchingDeskController::updateDetail');
+        $routes->post('pitching-desk/submit', 'Mahasiswa\PitchingDeskController::submit');
+        $routes->get('pitching-desk/doc/(:num)', 'Mahasiswa\PitchingDeskController::viewDoc/$1');
+        // Tahap 8 - Bimbingan (oleh Dosen Pendamping)
+        $routes->get('bimbingan', 'Mahasiswa\\GuidanceController::bimbingan');
+        $routes->post('bimbingan/logbook/(:num)', 'Mahasiswa\\GuidanceController::submitLogbook/$1');
+        $routes->get('bimbingan/file/(:segment)/(:num)', 'Mahasiswa\\GuidanceController::viewFile/$1/$2');
+
+        // Tahap 8 - Mentoring (oleh Mentor Praktisi)
+        $routes->get('mentoring', 'Mahasiswa\\GuidanceController::mentoring');
+        $routes->post('mentoring/logbook/(:num)', 'Mahasiswa\\GuidanceController::submitLogbook/$1');
+        $routes->get('mentoring/file/(:segment)/(:num)', 'Mahasiswa\\GuidanceController::viewFile/$1/$2');
+
+        // Tahap 9 - Kegiatan Wirausaha
+        $routes->get('kegiatan', 'Mahasiswa\\ActivityController::index');
+        $routes->post('kegiatan/logbook/(:num)', 'Mahasiswa\\ActivityController::submitLogbook/$1');
+        $routes->get('kegiatan/file/(:segment)/(:num)', 'Mahasiswa\\ActivityController::viewFile/$1/$2');
+        $routes->get('kegiatan/gallery/(:num)', 'Mahasiswa\\ActivityController::viewGalleryFile/$1');
+        $routes->delete('kegiatan/photo/(:num)', 'Mahasiswa\\ActivityController::deletePhoto/$1');
+
+        // Milestone Reports
+        $routes->get('milestone', 'Mahasiswa\\MilestoneReportController::index');
+        $routes->post('milestone/submit', 'Mahasiswa\\MilestoneReportController::submit');
+        $routes->post('milestone/boothcamp', 'Mahasiswa\\MilestoneReportController::uploadBoothcamp');
+        $routes->get('milestone/view/(:num)', 'Admin\\MilestoneReportController::viewFile/$1'); // Share view logic
+
+        // Tahap 3 - Perjanjian Implementasi
+        $routes->get('perjanjian', 'Mahasiswa\\PerjanjianController::index');
+        $routes->post('perjanjian/upload', 'Mahasiswa\\PerjanjianController::upload');
+        $routes->post('perjanjian/upload-surat', 'Mahasiswa\\PerjanjianController::uploadSuratPernyataan');
+        $routes->get('perjanjian/doc/(:num)', 'Mahasiswa\\PerjanjianController::downloadDoc/$1');
+
+        // Tahap 5 - Pengumuman Kelolosan Dana Tahap I
+        $routes->get('pengumuman', 'Mahasiswa\\AnnouncementController::index');
+        $routes->get('pengumuman/sk', 'Mahasiswa\\AnnouncementController::downloadSk');
+        $routes->get('pengumuman/rekening', 'Mahasiswa\\AnnouncementController::bankAccount');
+        $routes->post('pengumuman/rekening/save', 'Mahasiswa\\AnnouncementController::saveBankAccount');
+        $routes->get('pengumuman/rekening/download', 'Mahasiswa\\AnnouncementController::downloadBankBook');
+
+        // Tahap 6 - Pembekalan
+        $routes->get('pembekalan', 'Mahasiswa\\TrainingController::index');
+        $routes->post('pembekalan/save', 'Mahasiswa\\TrainingController::save');
+        $routes->post('pembekalan/photo/(:num)/delete', 'Mahasiswa\\TrainingController::deletePhoto/$1');
+        $routes->get('pembekalan/photo/(:num)', 'Mahasiswa\\TrainingController::downloadPhoto/$1');
+
+        // Tahap 7 - Implementasi List Perjanjian
+        $routes->get('implementasi', 'Mahasiswa\\ImplementasiController::index');
+        $routes->post('implementasi/item', 'Mahasiswa\\ImplementasiController::saveItem');
+        $routes->put('implementasi/item/(:num)', 'Mahasiswa\\ImplementasiController::updateItem/$1');
+        $routes->post('implementasi/item/(:num)/photo', 'Mahasiswa\\ImplementasiController::uploadItemPhoto/$1');
+        $routes->delete('implementasi/item/(:num)', 'Mahasiswa\\ImplementasiController::deleteItem/$1');
+        $routes->delete('implementasi/photo/(:num)', 'Mahasiswa\\ImplementasiController::deletePhoto/$1');
+        $routes->post('implementasi/payment', 'Mahasiswa\\ImplementasiController::uploadPaymentProof');
+        $routes->put('implementasi/payment/(:num)', 'Mahasiswa\\ImplementasiController::updatePayment/$1');
+        $routes->delete('implementasi/payment/(:num)', 'Mahasiswa\\ImplementasiController::deletePayment/$1');
+        $routes->post('implementasi/konsumsi', 'Mahasiswa\\ImplementasiController::uploadKonsumsi');
+        $routes->put('implementasi/konsumsi/(:num)', 'Mahasiswa\\ImplementasiController::updateKonsumsi/$1');
+        $routes->delete('implementasi/konsumsi/(:num)', 'Mahasiswa\\ImplementasiController::deleteKonsumsi/$1');
+        $routes->post('implementasi/reset', 'Mahasiswa\\ImplementasiController::resetAll');
+        $routes->post('implementasi/submit', 'Mahasiswa\\ImplementasiController::submit');
+        $routes->get('implementasi/photo/(:num)', 'Mahasiswa\\ImplementasiController::viewPhoto/$1');
+        $routes->get('implementasi/payment/(:num)', 'Mahasiswa\\ImplementasiController::viewPayment/$1');
+        $routes->get('implementasi/konsumsi/(:num)', 'Mahasiswa\\ImplementasiController::viewKonsumsi/$1');
+
+        // Tahap 10 - Expo & Awarding
+        $routes->get('expo', 'Mahasiswa\\ExpoController::index');
+        $routes->post('expo/submit', 'Mahasiswa\\ExpoController::submit');
+        $routes->get('expo/attachment/(:num)', 'Mahasiswa\\ExpoController::viewAttachment/$1');
+        $routes->delete('expo/attachment/(:num)', 'Mahasiswa\\ExpoController::deleteAttachment/$1');
+        $routes->get('expo/certificate', 'Mahasiswa\\ExpoController::viewCertificate');
+    });
+
+    // Reviewer Routes
+    $routes->group('reviewer', ['filter' => 'group:reviewer'], static function ($routes) {
+        $routes->get('penilaian-proposal', 'ReviewerController::penilaianProposal');
+        $routes->get('penilaian-laporan', 'ReviewerController::penilaianLaporan');
+
+        // Tahap 9 - Verifikasi Kegiatan Wirausaha
+        $routes->group('kegiatan', ['namespace' => 'App\Controllers\Reviewer'], function($routes) {
+            $routes->get('/', 'ActivityController::index');
+            $routes->get('detail/(:num)', 'ActivityController::detail/$1');
+            $routes->post('review/(:num)', 'ActivityController::submitReview/$1');
+            $routes->get('file/(:segment)/(:num)', 'ActivityController::viewFile/$1/$2');
+            $routes->get('gallery/(:num)', 'ActivityController::viewGalleryFile/$1');
+        });
+    });
+
+    // Penilai Routes (verifies Pitching Desk submissions)
+    $routes->group('penilai', ['filter' => 'group:penilai'], static function ($routes) {
+        $routes->get('/', 'Penilai\\PitchingDeskController::index');
+        $routes->get('pitching-desk', 'Penilai\\PitchingDeskController::index');
+        $routes->get('pitching-desk/(:num)', 'Penilai\\PitchingDeskController::detail/$1');
+        $routes->post('pitching-desk/(:num)/validate', 'Penilai\\PitchingDeskController::validateAction/$1');
+        $routes->get('pitching-desk/doc/(:num)', 'Penilai\\PitchingDeskController::viewDoc/$1');
+    });
+
+    // Dosen Routes
+    $routes->group('dosen', ['filter' => 'group:dosen'], static function ($routes) {
+        $routes->get('monitoring', 'Dosen\MonitoringController::index');
+        $routes->get('monitoring/detail/(:num)', 'Dosen\MonitoringController::detail/$1');
+        $routes->get('validasi', 'DosenController::validasi');
+        $routes->get('proposal-validation', 'Dosen\\ProposalController::index');
+        $routes->get('proposal-validation/(:num)', 'Dosen\\ProposalController::detail/$1');
+        $routes->post('proposal-validation/(:num)/validate', 'Dosen\\ProposalController::validateAction/$1');
+        $routes->get('proposal-validation/doc/(:num)', 'Dosen\\ProposalController::viewDoc/$1');
+
+        // Tahap 7 - Validasi Implementasi
+        $routes->get('implementasi', 'Dosen\\ImplementasiController::index');
+        $routes->get('implementasi/(:num)', 'Dosen\\ImplementasiController::detail/$1');
+        $routes->post('implementasi/(:num)/validate', 'Dosen\\ImplementasiController::validateAction/$1');
+        $routes->get('implementasi/photo/(:num)', 'Dosen\\ImplementasiController::viewPhoto/$1');
+        $routes->get('implementasi/payment/(:num)', 'Dosen\\ImplementasiController::viewPayment/$1');
+        $routes->get('implementasi/konsumsi/(:num)', 'Dosen\\ImplementasiController::viewKonsumsi/$1');
+
+        // Tahap 8 - Manajemen Jadwal Bimbingan
+        $routes->get('bimbingan', 'Dosen\\GuidanceController::index');
+        $routes->post('bimbingan/schedule', 'Dosen\\GuidanceController::createSchedule');
+        $routes->post('bimbingan/schedule/(:num)/update', 'Dosen\\GuidanceController::editSchedule/$1');
+        $routes->post('bimbingan/verify/(:num)', 'Dosen\\GuidanceController::verify/$1');
+        $routes->get('bimbingan/file/(:segment)/(:num)', 'Dosen\\GuidanceController::viewFile/$1/$2');
+
+        // Tahap 9 - Verifikasi Kegiatan Wirausaha
+        $routes->get('kegiatan', 'Dosen\\ActivityController::index');
+        $routes->post('kegiatan/verify/(:num)', 'Dosen\\ActivityController::verify/$1');
+        $routes->get('kegiatan/file/(:any)/(:num)', 'Dosen\\ActivityController::viewFile/$1/$2');
+        $routes->get('kegiatan/gallery/(:num)', 'Dosen\\ActivityController::viewGalleryFile/$1');
+
+        // Milestone Reports
+        $routes->get('milestone', 'Dosen\\MilestoneReportController::index');
+        $routes->post('milestone/verify', 'Dosen\\MilestoneReportController::verify');
+        $routes->get('milestone/view/(:num)', 'Admin\\MilestoneReportController::viewFile/$1'); // Share view logic
+    });
+
+    // Mentor Routes
+    $routes->group('mentor', ['filter' => 'group:mentor'], static function ($routes) {
+        $routes->get('monitoring', 'Mentor\MonitoringController::index');
+        $routes->get('monitoring/detail/(:num)', 'Mentor\MonitoringController::detail/$1');
+        $routes->get('monitoring/doc/(:num)', 'Mentor\MonitoringController::viewDoc/$1');
+
+        // Tahap 8 - Manajemen Jadwal Mentoring
+        $routes->get('mentoring', 'Mentor\\GuidanceController::index');
+        $routes->post('mentoring/schedule', 'Mentor\\GuidanceController::createSchedule');
+        $routes->post('mentoring/verify/(:num)', 'Mentor\\GuidanceController::verify/$1');
+        $routes->get('mentoring/file/(:segment)/(:num)', 'Mentor\\GuidanceController::viewFile/$1/$2');
+
+        // Tahap 9 - Verifikasi Kegiatan Wirausaha
+        $routes->get('kegiatan', 'Mentor\\ActivityController::index');
+        $routes->post('kegiatan/verify/(:num)', 'Mentor\\ActivityController::verify/$1');
+        $routes->get('kegiatan/file/(:any)/(:num)', 'Mentor\\ActivityController::viewFile/$1/$2');
+        $routes->get('kegiatan/gallery/(:num)', 'Mentor\\ActivityController::viewGalleryFile/$1');
+    });
+
+    // Profile Settings Routes - All authenticated users
+    $routes->get('profile', 'ProfileController::index');
+    $routes->post('profile/update', 'ProfileController::updateProfile');
+    $routes->post('profile/password', 'ProfileController::updatePassword');
+    $routes->post('profile/foto', 'ProfileController::updateFoto');
+    $routes->post('profile/foto/delete', 'ProfileController::deleteFoto');
+    $routes->get('profile/foto/(:num)', 'ProfileController::viewFoto/$1');
+    $routes->get('profile/foto/member/(:num)', 'ProfileController::viewMemberFoto/$1');
+    $routes->post('profile/team', 'ProfileController::updateTeam');
+
+    // Notifications Routes - All authenticated users
+    $routes->get('notifications', 'NotificationsController::index');
+    $routes->post('notifications/mark-read/(:num)', 'NotificationsController::markAsRead/$1');
+    $routes->post('notifications/mark-all-read', 'NotificationsController::markAllAsRead');
+    $routes->get('notifications/unread-count', 'NotificationsController::unreadCount');
+    $routes->get('notifications/recent', 'NotificationsController::recent');
+
+    // Dev Tools
+    $routes->get('dev/ui', 'Dev\UI::index');
+});
+
+// Shield Auth Routes (bawaan)
+service('auth')->routes($routes);
