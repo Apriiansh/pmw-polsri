@@ -30,16 +30,15 @@ class MilestoneReportController extends BaseController
             return view('errors/html/error_404', ['message' => 'Anda belum memiliki proposal yang terdaftar.']);
         }
 
-        // Check if passed implementation
+        // Cukup sudah pernah submit implementasi (ada record), tidak perlu tunggu validasi admin
         $db = \Config\Database::connect();
         $selection = $db->table('pmw_selection_implementasi')
                         ->where('proposal_id', $proposal['id'])
-                        ->where('admin_status', 'approved')
                         ->get()
                         ->getRow();
 
         if (!$selection) {
-            return redirect()->to('dashboard')->with('error', 'Fitur ini hanya tersedia untuk tim yang lolos seleksi implementasi.');
+            return redirect()->to('dashboard')->with('error', 'Fitur ini hanya tersedia untuk tim yang sudah mengisi data Implementasi List Perjanjian.');
         }
 
         $activePeriod = $this->periodModel->where('is_active', 1)->first();
@@ -58,11 +57,7 @@ class MilestoneReportController extends BaseController
 
         $reports = $this->reportService->getProposalReports($proposal['id']);
 
-        // Filter 'magang' for Pemula only
-        if ($proposal['kategori_wirausaha'] !== 'pemula') {
-            unset($formattedSchedules['magang']);
-            unset($reports['magang']);
-        }
+        // Semua kategori (pemula & berkembang) dapat mengakses laporan magang
 
         return view('mahasiswa/laporan_pmw', [
             'title' => 'Laporan Milestone',

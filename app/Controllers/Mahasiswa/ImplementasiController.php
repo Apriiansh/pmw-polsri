@@ -304,7 +304,7 @@ class ImplementasiController extends BaseController
      */
     public function deleteItem(int $itemId)
     {
-        if (!$this->request->is('ajax') && $this->request->getMethod() !== 'delete') {
+        if (!$this->request->is('ajax') && strtolower($this->request->getMethod()) !== 'delete') {
             return redirect()->back();
         }
 
@@ -346,7 +346,7 @@ class ImplementasiController extends BaseController
      */
     public function deletePhoto(int $photoId)
     {
-        if (!$this->request->is('ajax') && $this->request->getMethod() !== 'delete') {
+        if (!$this->request->is('ajax') && strtolower($this->request->getMethod()) !== 'delete') {
             return redirect()->back();
         }
 
@@ -395,7 +395,7 @@ class ImplementasiController extends BaseController
      */
     public function deletePayment(int $paymentId)
     {
-        if (!$this->request->is('ajax') && $this->request->getMethod() !== 'delete') {
+        if (!$this->request->is('ajax') && strtolower($this->request->getMethod()) !== 'delete') {
             return redirect()->back();
         }
 
@@ -437,7 +437,7 @@ class ImplementasiController extends BaseController
      */
     public function deleteKonsumsi(int $konsumsiId)
     {
-        if (!$this->request->is('ajax') && $this->request->getMethod() !== 'delete') {
+        if (!$this->request->is('ajax') && strtolower($this->request->getMethod()) !== 'delete') {
             return redirect()->back();
         }
 
@@ -624,7 +624,7 @@ class ImplementasiController extends BaseController
      */
     public function resetAll()
     {
-        if (!$this->request->is('ajax') && $this->request->getMethod() !== 'post') {
+        if (!$this->request->is('ajax') && strtolower($this->request->getMethod()) !== 'post') {
             return redirect()->back();
         }
 

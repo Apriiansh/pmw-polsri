@@ -109,7 +109,7 @@
                         </div>
                         <div>
                             <h3 class="font-bold text-slate-800">Laporan Magang</h3>
-                            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-black">Khusus Tim Pemula</p>
+                            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-black">Semua Kategori Usaha</p>
                         </div>
                     </div>
 
@@ -272,9 +272,7 @@
                                                     <i class="fas <?= $info['icon'] ?> text-[10px] text-slate-200 group-hover/status:text-sky-200 transition-colors"></i>
                                                 </div>
 
-                                                <?php if ($type === 'magang' && ($p['category'] ?? '') !== 'pemula'): ?>
-                                                    <span class="text-[10px] font-bold text-slate-200 uppercase tracking-widest italic">N/A</span>
-                                                <?php elseif (isset($submissions[$p['id']][$type])): $sub = $submissions[$p['id']][$type]; ?>
+                                                <?php if (isset($submissions[$p['id']][$type])): $sub = $submissions[$p['id']][$type]; ?>
                                                     <div class="flex items-center justify-between gap-2">
                                                         <span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest <?= $sub['status'] === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-700' ?>">
                                                             <?= $sub['status'] ?>
