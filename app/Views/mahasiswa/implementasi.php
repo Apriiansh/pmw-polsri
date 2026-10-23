@@ -1279,34 +1279,7 @@
                 this.newPayment.file = e.target.files[0];
             },
 
-            openEditItem(id, title, desc, qty, price, category) {
-                this.editItem = {
-                    id: id,
-                    item_title: title,
-                    item_description: desc,
-                    category: category || '',
-                    qty: qty,
-                    price: price
-                };
-                this.showEditItemModal = true;
-            },
 
-            openEditPayment(id, title, link) {
-                this.editPayment = {
-                    id: id,
-                    payment_title: title,
-                    link_pembelian: link || ''
-                };
-                this.showEditPaymentModal = true;
-            },
-
-            openEditKonsumsi(id, title) {
-                this.editKonsumsi = {
-                    id: id,
-                    konsumsi_title: title
-                };
-                this.showEditKonsumsiModal = true;
-            },
 
             async uploadPayment() {
                 if (!this.newPayment.payment_title || !this.newPayment.file) return;

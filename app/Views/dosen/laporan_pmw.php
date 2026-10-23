@@ -98,9 +98,8 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                         <?php 
-                        $types = ['kemajuan'];
-                        if (($p['kategori_wirausaha'] ?? 'pemula') === 'pemula') $types[] = 'magang';
-                        $types[] = 'akhir';
+                        $types = ['kemajuan', 'magang', 'akhir'];
+
                         ?>
                         <?php foreach ($types as $type): ?>
                             <?php 

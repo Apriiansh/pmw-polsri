@@ -36,8 +36,7 @@
                 <span>Laporan Kemajuan</span>
             </button>
 
-            <!-- Tab Magang (Conditional) -->
-            <?php if ($proposal['kategori_wirausaha'] === 'pemula'): ?>
+            <!-- Tab Magang (Semua Kategori) -->
             <button @click="activeTab = 'magang'" 
                 :class="activeTab === 'magang' ? 'bg-white text-emerald-600 shadow-md shadow-emerald-100/50 translate-x-1 md:translate-x-0 md:scale-[1.02]' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'"
                 class="px-5 py-3 rounded-2xl text-sm font-bold transition-all duration-300 flex items-center gap-3 shrink-0">
@@ -47,7 +46,6 @@
                 </div>
                 <span>Laporan Magang</span>
             </button>
-            <?php endif; ?>
 
             <!-- Tab Akhir -->
             <button @click="activeTab = 'akhir'" 
@@ -315,7 +313,6 @@
             </template>
 
             <!-- Magang Tab -->
-            <?php if ($proposal['kategori_wirausaha'] === 'pemula'): ?>
             <template x-if="activeTab === 'magang'">
                 <div class="card-premium animate-fade-in">
                     <?php if (isset($schedules['magang'])): $sched = $schedules['magang']; ?>
@@ -436,7 +433,7 @@
                     <?php endif; ?>
                 </div>
             </template>
-            <?php endif; ?>
+
         </div>
 
         <!-- Right: Information & Guidelines -->

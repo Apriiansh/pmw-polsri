@@ -52,6 +52,25 @@ class PmwGuidanceService
     }
 
     /**
+     * Update an existing bimbingan/mentoring schedule.
+     */
+    public function updateSchedule(int $scheduleId, array $data): bool
+    {
+        $schedule = $this->scheduleModel->find($scheduleId);
+        if (!$schedule) {
+            throw new Exception("Jadwal tidak ditemukan.");
+        }
+
+        return (bool) $this->scheduleModel->update($scheduleId, [
+            'schedule_date' => $data['schedule_date'],
+            'schedule_time' => $data['schedule_time'],
+            'topic'         => $data['topic'],
+            'deadline_date' => $data['deadline_date'] ?? null,
+            'deadline_time' => $data['deadline_time'] ?? null,
+        ]);
+    }
+
+    /**
      * Submit logbook report from Student.
      */
     public function submitLogbook(int $scheduleId, array $data, array $files)
