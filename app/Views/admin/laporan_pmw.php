@@ -257,7 +257,7 @@
                                     </div>
 
                                     <!-- Reports Status Section -->
-                                    <div class="lg:w-2/3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div class="lg:w-2/3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
                                         <?php 
                                         $reportTypes = [
                                             'kemajuan' => ['label' => 'Kemajuan', 'icon' => 'fa-chart-line'],
@@ -286,6 +286,24 @@
                                                 <?php endif; ?>
                                             </div>
                                         <?php endforeach; ?>
+
+                                        <?php $boothcamp = $boothcampDocs[$p['id']] ?? null; ?>
+                                        <div class="p-3 rounded-2xl bg-amber-50/40 border border-amber-100 flex flex-col justify-between gap-3 relative overflow-hidden group/status">
+                                            <div class="flex items-center justify-between">
+                                                <p class="text-[9px] font-black uppercase tracking-widest text-amber-600" title="Dokumentasi Boothcamp — tanpa verifikasi">Boothcamp</p>
+                                                <i class="fas fa-images text-[10px] text-amber-200 group-hover/status:text-amber-300 transition-colors"></i>
+                                            </div>
+                                            <div class="flex items-center justify-between gap-2">
+                                                <span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest <?= $boothcamp ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500' ?>">
+                                                    <?= $boothcamp ? 'Sudah Diunggah' : 'Belum Ada' ?>
+                                                </span>
+                                                <?php if ($boothcamp): ?>
+                                                    <button @click="openPreview('<?= base_url('admin/milestone/doc/'.$boothcamp['id']) ?>')" class="w-8 h-8 rounded-lg bg-white text-rose-500 shadow-sm border border-slate-100 flex items-center justify-center hover:bg-rose-50 transition-colors" title="Lihat Dokumentasi Boothcamp">
+                                                        <i class="fas fa-file-pdf text-sm"></i>
+                                                    </button>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -4,6 +4,8 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Services\PmwReportService;
+use App\Services\PmwBoothcampDocService;
+use App\Models\PmwDocumentModel;
 use App\Models\PmwPeriodModel;
 use App\Models\Proposal\PmwProposalModel;
 use CodeIgniter\API\ResponseTrait;
@@ -13,12 +15,14 @@ class MilestoneReportController extends BaseController
     use ResponseTrait;
 
     protected $reportService;
+    protected $boothcampService;
     protected $periodModel;
     protected $proposalModel;
 
     public function __construct()
     {
         $this->reportService = new PmwReportService();
+        $this->boothcampService = new PmwBoothcampDocService();
         $this->periodModel = new PmwPeriodModel();
         $this->proposalModel = new PmwProposalModel();
     }
@@ -51,11 +55,14 @@ class MilestoneReportController extends BaseController
             $formattedSubmissions[$sub['proposal_id']][$sub['type']] = $sub;
         }
 
+        $boothcampDocs = $this->boothcampService->getDocsForProposals(array_column($proposals, 'id'));
+
         return view('admin/laporan_pmw', [
             'title' => 'Laporan Milestone',
             'schedules' => $formattedSchedules,
             'proposals' => $proposals,
             'submissions' => $formattedSubmissions,
+            'boothcampDocs' => $boothcampDocs,
             'activePeriod' => $activePeriod
         ]);
     }
@@ -94,6 +101,28 @@ class MilestoneReportController extends BaseController
         }
 
         $filePath = WRITEPATH . 'uploads/' . $report['file_path'];
+        if (!is_file($filePath)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        return $this->response->setHeader('Content-Type', 'application/pdf')
+                             ->setBody(file_get_contents($filePath));
+    }
+
+    /**
+     * View dokumen pendukung (Dokumentasi Boothcamp) berdasarkan ID pmw_documents.
+     */
+    public function viewDocument($documentId)
+    {
+        $document = (new PmwDocumentModel())->find((int) $documentId);
+
+        if (!$document
+            || $document['doc_key'] !== PmwBoothcampDocService::DOC_KEY
+            || !$this->canViewReport((int) $document['proposal_id'])) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        $filePath = WRITEPATH . ltrim($document['file_path'], '/\\');
         if (!is_file($filePath)) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }

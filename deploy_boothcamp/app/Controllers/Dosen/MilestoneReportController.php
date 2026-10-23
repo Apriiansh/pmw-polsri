@@ -4,6 +4,7 @@ namespace App\Controllers\Dosen;
 
 use App\Controllers\BaseController;
 use App\Services\PmwReportService;
+use App\Services\PmwBoothcampDocService;
 use App\Models\Proposal\PmwProposalModel;
 use App\Models\LecturerModel;
 use Exception;
@@ -11,12 +12,14 @@ use Exception;
 class MilestoneReportController extends BaseController
 {
     protected $reportService;
+    protected $boothcampService;
     protected $proposalModel;
     protected $lecturerModel;
 
     public function __construct()
     {
         $this->reportService = new PmwReportService();
+        $this->boothcampService = new PmwBoothcampDocService();
         $this->proposalModel = new PmwProposalModel();
         $this->lecturerModel = new LecturerModel();
     }
@@ -42,7 +45,8 @@ class MilestoneReportController extends BaseController
                 'title' => 'Laporan Milestone',
                 'proposals' => [],
                 'schedules' => [],
-                'reports' => []
+                'reports' => [],
+                'boothcampDocs' => []
             ]);
         }
 
@@ -64,6 +68,8 @@ class MilestoneReportController extends BaseController
             $reportMap[$r['proposal_id']][$r['type']] = $r;
         }
 
+        $boothcampDocs = $this->boothcampService->getDocsForProposals(array_column($proposals, 'id'));
+
         // Enrich proposals with ketua_nama
         foreach ($proposals as &$p) {
             $ketua = (new \App\Models\Proposal\PmwProposalMemberModel())
@@ -77,7 +83,8 @@ class MilestoneReportController extends BaseController
             'title' => 'Laporan Milestone',
             'proposals' => $proposals,
             'schedules' => $schedMap,
-            'reports' => $reportMap
+            'reports' => $reportMap,
+            'boothcampDocs' => $boothcampDocs
         ]);
     }
 

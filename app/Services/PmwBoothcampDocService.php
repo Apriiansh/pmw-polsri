@@ -29,6 +29,32 @@ class PmwBoothcampDocService
         return $this->getDoc($proposalId) !== null;
     }
 
+    /**
+     * Ambil dokumentasi boothcamp untuk banyak proposal sekaligus.
+     *
+     * @param int[] $proposalIds
+     * @return array<int, array>
+     */
+    public function getDocsForProposals(array $proposalIds): array
+    {
+        $ids = array_values(array_unique(array_map('intval', $proposalIds)));
+        if ($ids === []) {
+            return [];
+        }
+
+        $rows = $this->docModel
+            ->whereIn('proposal_id', $ids)
+            ->where('doc_key', self::DOC_KEY)
+            ->findAll();
+
+        $map = [];
+        foreach ($rows as $row) {
+            $map[(int) $row['proposal_id']] = $row;
+        }
+
+        return $map;
+    }
+
     public function store(int $proposalId, int $uploaderId, UploadedFile $file): array
     {
         if (!$file->isValid()) {

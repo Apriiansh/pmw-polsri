@@ -96,7 +96,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                         <?php 
                         $types = ['kemajuan', 'magang', 'akhir'];
 
@@ -180,6 +180,45 @@
                                 <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
+
+                        <?php $boothcamp = $boothcampDocs[$p['id']] ?? null; ?>
+                        <div class="group relative p-5 rounded-2xl transition-all duration-300 <?= $boothcamp ? 'bg-white border border-slate-100 shadow-sm hover:shadow-md' : 'bg-amber-50/40 border border-dashed border-amber-200' ?>">
+                            <div class="flex items-center justify-between gap-4 mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
+                                        <i class="fas fa-images"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Dokumentasi Boothcamp</p>
+                                        <div class="flex items-center gap-2 mt-0.5">
+                                            <?php if ($boothcamp): ?>
+                                                <span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest bg-emerald-100 text-emerald-700">Sudah Diunggah</span>
+                                            <?php else: ?>
+                                                <span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-500 text-[9px] font-bold uppercase tracking-widest">Belum Ada</span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <?php if ($boothcamp): ?>
+                                    <button @click="openPreview('<?= base_url('dosen/milestone/doc/'.$boothcamp['id']) ?>')" class="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors flex items-center justify-center" title="Pratinjau PDF">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="flex items-center justify-between gap-2 pt-4 border-t border-slate-50">
+                                <?php if ($boothcamp): ?>
+                                    <div class="flex items-center gap-2 text-[10px] text-slate-400 font-medium min-w-0">
+                                        <i class="fas fa-file-pdf shrink-0"></i>
+                                        <span class="truncate"><?= esc($boothcamp['original_name'] ?: 'Dokumentasi Boothcamp.pdf') ?></span>
+                                    </div>
+                                <?php else: ?>
+                                    <span class="text-[10px] text-amber-600 italic">Belum diunggah mahasiswa</span>
+                                <?php endif; ?>
+                                <span class="shrink-0 text-[9px] font-bold uppercase tracking-widest text-slate-300">Tanpa verifikasi</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             <?php endforeach; ?>

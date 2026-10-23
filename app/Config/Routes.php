@@ -149,6 +149,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('milestone', 'Admin\\MilestoneReportController::index');
         $routes->post('milestone/schedule', 'Admin\\MilestoneReportController::saveSchedule');
         $routes->get('milestone/view/(:num)', 'Admin\\MilestoneReportController::viewFile/$1');
+        $routes->get('milestone/doc/(:num)', 'Admin\\MilestoneReportController::viewDocument/$1');
 
         // Tahap Finalisasi Dana II
         $routes->get('finalisasi', 'Admin\\FinalizationController::index');
@@ -322,6 +323,7 @@ $routes->group('', ['filter' => 'session'], static function ($routes) {
         $routes->get('milestone', 'Dosen\\MilestoneReportController::index');
         $routes->post('milestone/verify', 'Dosen\\MilestoneReportController::verify');
         $routes->get('milestone/view/(:num)', 'Admin\\MilestoneReportController::viewFile/$1'); // Share view logic
+        $routes->get('milestone/doc/(:num)', 'Admin\\MilestoneReportController::viewDocument/$1');
     });
 
     // Mentor Routes
